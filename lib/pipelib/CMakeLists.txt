@@ -39,7 +39,7 @@ set(pipelib_Header_Files
 
 set(pipelib_Files
   ${pipelib_Header_Files}
-  build/Dummy.cpp      # Have to have a cpp file to make add_library work
+  src/Dummy.cpp      # Have to have a cpp file to make add_library work
 )
 
 include_directories(include)
