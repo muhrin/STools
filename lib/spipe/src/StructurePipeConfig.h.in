@@ -1,0 +1,5 @@
+
+
+// Version number from CMake
+#define SP_VERSION_MAJOR @SP_VERSION_MAJOR@
+#define SP_VERSION_MINOR @SP_VERSION_MINOR@

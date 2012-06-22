@@ -1,0 +1,8 @@
+# Local configuration file, this will be ignored by version control
+
+# Paths to libraries #########
+set(BOOST_ROOT "" CACHE FILEPATH "")
+set(ARMADILLO_ROOT "" CACHE FILEPATH "")
+
+# Build settings
+set(SP_USE_YAML TRUE CACHE BOOL "")

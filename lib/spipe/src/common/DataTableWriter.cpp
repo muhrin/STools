@@ -1,0 +1,170 @@
+/*
+ * DataTableWriter.cpp
+ *
+ *  Created on: Aug 18, 2011
+ *      Author: Martin Uhrin
+ */
+
+// INCLUDES //////////////////////////////////
+#include "common/DataTableWriter.h"
+
+#include <boost/foreach.hpp>
+
+#include "common/DataTableValueChanged.h"
+
+// NAMESPACES ////////////////////////////////
+
+namespace spipe
+{
+namespace common
+{
+
+DataTableWriter::DataTableWriter(
+  spipe::common::DataTable & table,
+  const std::string &filename,
+  const bool        append,
+  const size_t      writeDelay):
+myTable(table),
+myAppend(append),
+myWriteDelay(writeDelay),
+myOutputPath(::boost::filesystem::path(filename)),
+myDataSinceWrite(0),
+myColumnDelimiter(" ")
+{
+  initialise();
+}
+
+DataTableWriter::DataTableWriter(
+  DataTable &                       table,
+  const ::boost::filesystem::path & filepath,
+  const bool                        append,
+  const size_t                      writeDelay ):
+myTable(table),
+myAppend(append),
+myWriteDelay(writeDelay),
+myOutputPath(filepath),
+myDataSinceWrite(0),
+myColumnDelimiter(" ")
+{
+  initialise();
+}
+
+DataTableWriter::~DataTableWriter()
+{
+  if(myOutStream.is_open())
+    myOutStream.close();
+
+  // Tell the table to stop sending us messages
+  myTable.removeDataTableChangeListener(*this);
+}
+
+bool DataTableWriter::write()
+{
+  using ::std::ios_base;
+
+  // Reset changes counter
+  myDataSinceWrite = 0;
+
+  if(!myOutStream.is_open())
+  {
+    myOutStream.open(myOutputPath, ios_base::out | ios_base::in);
+  }
+
+  if(myOutStream.good())
+  {
+
+    // Move the stream to the correct position
+    myOutStream.seekp(myWriteMarker);
+
+    // Print the header first
+    myOutStream << "# " << "[key]";
+    BOOST_FOREACH(const DataTable::Column & colInfo, myTable.myColumns)
+    {
+      myOutStream << myColumnDelimiter << colInfo.getName();
+    }
+    myOutStream << ::std::endl;
+
+    BOOST_FOREACH(const DataTable::RowMap::value_type & rowPair, myTable.myRows)
+    {
+      myOutStream << rowPair.first;
+      BOOST_FOREACH(const DataTable::Value & value, rowPair.second)
+      {
+        myOutStream << myColumnDelimiter << value;
+      }
+      myOutStream << ::std::endl;
+    }
+
+  }
+  else
+    return false;
+
+  if(!myOutStream.is_open())
+  {
+    myOutStream.close();
+  }
+
+  return true;
+}
+
+void DataTableWriter::notify(const DataTableValueChanged & evt)
+{
+  myDataSinceWrite += diff(evt.getOldValue(), evt.getNewValue());
+  
+  if(myDataSinceWrite > myWriteDelay)
+  {
+    write();
+  }
+}
+
+void DataTableWriter::initialise()
+{
+  using ::boost::filesystem::exists;
+  using ::boost::filesystem::path;
+  using ::std::ios_base;
+
+  const bool fileExists = exists(myOutputPath);
+
+  // Make sure that all the folders up the filename exist
+  if(!fileExists)
+  {
+    const path parentPath = myOutputPath.parent_path();
+
+    if(!exists(parentPath))
+      ::boost::filesystem::create_directories(parentPath);
+  }
+
+  ios_base::open_mode openMode = ios_base::out;
+
+  if(fileExists && myAppend)
+  {
+    openMode = openMode | ios_base::app | ios_base::ate;
+  }
+
+  // Try opening the file
+  myOutStream.open(myOutputPath, openMode);
+  // Save the write marker
+  myWriteMarker = myOutStream.tellp();
+  // Clean up
+  myOutStream.close();
+
+  // Listen for changes to the table
+  myTable.addDataTableChangeListener(*this);
+}
+
+size_t DataTableWriter::diff(const ::std::string & v1, const ::std::string & v2) const
+{
+  const size_t min = ::std::min(v1.size(), v2.size());
+  size_t numDifferentChars = 0;
+  for(size_t i = 0; i < min; ++i)
+  {
+    if(v1.at(i) != v2.at(i))
+      ++numDifferentChars;
+  }
+
+  numDifferentChars += ::std::abs((int)v1.size() - (int)v2.size());
+
+  return numDifferentChars;
+}
+
+}
+}
