@@ -65,22 +65,24 @@ public:
   class IteratorDelegator : public IteratorBase<Value, Reference>
   {
   public:
+  
+    typedef IteratorBase<Value, Reference> BaseTyp;
 
     IteratorDelegator(IterDelegate _delegate):
         myDelegate(_delegate) {}
 
     virtual IteratorDelegator<Value, Reference, IterDelegate> & operator++()
     {
-      ++myIter;
+      ++myDelegate;
       return *this;
     }
 
     virtual Reference operator*()
     {
-      return *myIter;
+      return *myDelegate;
     }
 
-    virtual bool operator==(const IteratorBase & rhs) const
+    virtual bool operator==(const BaseTyp & rhs) const
     {
       // Nastyness: have to use RTTI, twice!
       const MyTyp * const rhsDelegator = dynamic_cast<const MyTyp * const>(&rhs);
@@ -97,9 +99,9 @@ public:
       return myDelegate == *rhsDelegate;
     }
 
-    virtual ::boost::shared_ptr<IteratorBase<Value> > clone() const
+    virtual ::boost::shared_ptr<BaseTyp> clone() const
     {
-      return ::boost::shared_ptr<IteratorBase<Value> >(new MyTyp(myDelegate));
+      return ::boost::shared_ptr<BaseTyp>(new MyTyp(myDelegate));
     }
 
   private:

@@ -69,6 +69,8 @@ class AbstractPipeline :
 public:
 	AbstractPipeline();
 	virtual ~AbstractPipeline();
+	
+  typedef IPipeline<PipelineData, SharedData, GlobalData> IPipelineTyp;
 
 	// Blocks ////////////////////
 	virtual StartBlock<PipelineData, SharedData, GlobalData> * getStartBlock() const;
@@ -108,8 +110,6 @@ public:
 protected:
 
 	// TYPEDEFS //////////////////////////////////////
-
-  typedef IPipeline<PipelineData, SharedData, GlobalData> IPipelineTyp;
 
 	/** Data container types */
 	typedef typename ::std::map<PipelineData *, MetadataType> DataMap;

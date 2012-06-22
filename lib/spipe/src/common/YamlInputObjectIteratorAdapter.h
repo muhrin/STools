@@ -44,7 +44,7 @@ public:
 
   virtual Base & operator++();
   virtual Reference operator*();
-  virtual bool operator==(const IteratorBase & rhs) const;
+  virtual bool operator==(const Base & rhs) const;
   virtual ::boost::shared_ptr<Base> clone();
 
 private:

@@ -19,6 +19,8 @@ namespace spipe
 namespace common
 {
 
+namespace fs = ::boost::filesystem;
+
 DataTableWriter::DataTableWriter(
   spipe::common::DataTable & table,
   const std::string &filename,
@@ -118,22 +120,20 @@ void DataTableWriter::notify(const DataTableValueChanged & evt)
 
 void DataTableWriter::initialise()
 {
-  using ::boost::filesystem::exists;
-  using ::boost::filesystem::path;
   using ::std::ios_base;
 
-  const bool fileExists = exists(myOutputPath);
+  const bool fileExists = fs::exists(myOutputPath);
 
   // Make sure that all the folders up the filename exist
   if(!fileExists)
   {
-    const path parentPath = myOutputPath.parent_path();
+    const fs::path parentPath = myOutputPath.parent_path();
 
     if(!exists(parentPath))
-      ::boost::filesystem::create_directories(parentPath);
+      fs::create_directories(parentPath);
   }
 
-  ios_base::open_mode openMode = ios_base::out;
+  ::std::ios_base::openmode openMode = ios_base::out;
 
   if(fileExists && myAppend)
   {

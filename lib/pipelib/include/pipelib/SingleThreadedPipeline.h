@@ -101,7 +101,7 @@ bool SingleThreadedPipeline<PipelineData, SharedData, GlobalData>::initialise()
 
   // Now initialise out children
   bool childrenInitialised = true;
-  for(ChildrenContainer::iterator it = myChildren.begin(), end = myChildren.end();
+  for(typename ChildrenContainer::iterator it = myChildren.begin(), end = myChildren.end();
     it != end; ++it)
   {
     if(!(*it)->initialise())
@@ -119,7 +119,9 @@ SingleThreadedPipeline<PipelineData, SharedData, GlobalData> &
 SingleThreadedPipeline<PipelineData, SharedData, GlobalData>::spawnChild()
 {
 	SingleThreadedPipeline<PipelineData, SharedData, GlobalData> * child =
-    new SingleThreadedPipeline<PipelineData, SharedData, GlobalData>(this, myGlobalData);
+    new SingleThreadedPipeline<PipelineData, SharedData, GlobalData>(
+    this,
+    AbstractLinkPipeline<PipelineData, SharedData, GlobalData>::myGlobalData);
 	myChildren.push_back(child);
 	return *child;
 }

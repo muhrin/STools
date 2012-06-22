@@ -33,7 +33,7 @@ namespace blocks
 {
 
 
-class WriteStructure : public pipelib::AbstractSimpleBlock<::spipe::StructureDataTyp, ::spipe::SharedDataTyp>
+class WriteStructure : public pipelib::AbstractSimpleBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>
 {
 public:
 	WriteStructure(const ::sstbx::io::StructureWriterManager & writerManager);

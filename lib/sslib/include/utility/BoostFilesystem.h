@@ -28,11 +28,13 @@ namespace boost
 namespace filesystem3
 {
 
-template <>
-path & path::append< typename path::iterator >(
-  typename path::iterator begin,
-  typename path::iterator end,
-  const codecvt_type& cvt);
+#ifndef SSLIB_USE_BOOSTFS_V2
+template < >
+::boost::filesystem::path &
+::boost::filesystem::path::append< ::boost::filesystem::path::iterator >(
+  path::iterator begin,
+  path::iterator end);
+#endif
 
 // Return path when appended to a_From will resolve to same as a_To
 boost::filesystem::path make_relative(
@@ -50,6 +52,19 @@ namespace utility
 {
 
 ::std::string stemString(const ::boost::filesystem::path & path);
+
+::boost::filesystem::path
+append(
+  ::boost::filesystem::path appendTo,
+  ::boost::filesystem::path::iterator begin,
+  ::boost::filesystem::path::iterator end
+);
+
+::boost::filesystem::path
+absolute(const ::boost::filesystem::path & p);
+
+bool
+isAbsolute(const ::boost::filesystem::path & toCheck);
 
 
 }

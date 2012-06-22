@@ -193,7 +193,7 @@ void StoichiometrySearch::start()
       if(lastSaved)
       {
         lastSavedRelative = *lastSaved;
-        if(lastSavedRelative.is_absolute())
+        if(ssu::isAbsolute(lastSavedRelative))
         {
           lastSavedRelative = ::boost::filesystem::make_relative(sweepPipeOutputPath, lastSavedRelative);
         }

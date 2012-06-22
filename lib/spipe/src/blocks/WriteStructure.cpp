@@ -33,7 +33,7 @@ myWriterManager(writerManager)
 
 void WriteStructure::in(::spipe::common::StructureData & data)
 {
-	using ::boost::filesystem::path;
+  namespace fs = ::boost::filesystem;
 
 	// Check if the structure has a name already, otherwise give it one
 	if(!data.name)
@@ -46,7 +46,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 	generateIoDataFromStructure(data, ioData);
 	
 	// Create the path to store the structure
-	path p(*data.name + ".res");
+	fs::path p(*data.name + ".res");
 
   // Prepend the pipe output path
   p = myPipeline->getSharedData().getOutputPath() / p;
@@ -56,7 +56,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
     // Save the location that the file was written
     data.objectsStore.insert(
       ::spipe::common::StructureObjectKeys::LAST_ABS_SAVE_PATH,
-      ::boost::filesystem::absolute(p)
+      ::sstbx::utility::absolute(p)
     );
   }
 

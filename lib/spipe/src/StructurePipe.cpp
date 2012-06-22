@@ -18,6 +18,7 @@
 #include "common/PipeFactoryYaml.h"
 
 // TODO: TEMPORARY!!
+#include <factory/ISchemaElementInstance.h>
 #include <factory/SslibElements.h>
 #include <factory/SchemaDoc.h>
 #include <factory/SchemaMap.h>
@@ -30,6 +31,7 @@
 
 int main(const int argc, const char * const argv[])
 {
+/*
   {// START -- TEMPORARY //////////////////////
 
   namespace ssf = ::sstbx::factory;
@@ -47,6 +49,7 @@ int main(const int argc, const char * const argv[])
   return 0;
 
   }// END -- TEMPORARY /////////////////////
+*/
 
   namespace sp = ::spipe;
   namespace spcom = ::spipe::common;

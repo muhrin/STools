@@ -45,8 +45,8 @@ void EventSupport<Listener>::insert(Listener & listener)
 template <class Listener>
 bool EventSupport<Listener>::remove(Listener & listener)
 {
-  const ListenersContainer::iterator end = myListeners.end();
-  ListenersContainer::iterator it = ::std::find(myListeners.begin(), end, &listener);
+  const typename ListenersContainer::iterator end = myListeners.end();
+typename   ListenersContainer::iterator it = ::std::find(myListeners.begin(), end, &listener);
 
   if(it == end)
     return false;
@@ -60,8 +60,8 @@ template <class Listener>
 template <class EventType>
 void EventSupport<Listener>::notify(const EventType &evt)
 {
-  const ListenersContainer::iterator end = myListeners.end();
-  for(ListenersContainer::iterator it = myListeners.begin(); it != end; ++it)
+  const typename ListenersContainer::iterator end = myListeners.end();
+  for(typename ListenersContainer::iterator it = myListeners.begin(); it != end; ++it)
   {
     (*it)->notify(evt);
   }

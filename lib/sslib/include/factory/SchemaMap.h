@@ -19,6 +19,7 @@
 
 #include "factory/IInputObject.h"
 #include "factory/ISchemaElementInstance.h"
+#include "factory/SchemaAnon.h"
 #include "factory/SchemaElement.h"
 #include "factory/SchemaObjectUid.h"
 

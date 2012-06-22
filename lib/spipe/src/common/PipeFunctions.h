@@ -38,9 +38,9 @@ static const ::std::string NAME_DELIMITER("_");
 template <typename T>
 struct ObjectData : public ::std::pair<DataLocation::Value, T *>
 {
-
   ObjectData() {}
-  ObjectData(const DataLocation::Value & x, const T * const y) : first(x), second(y) {}
+  ObjectData(const typename DataLocation::Value & x, const T * const y):
+    ::std::pair<DataLocation::Value, T *>(x, y) {}
 };
 
 template <typename T>
@@ -58,7 +58,7 @@ ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, ::spipe::Structure
     result = getObject(key, pipe);
   }
 
-  return object;
+  return result.second;
 }
 
 template <typename T>

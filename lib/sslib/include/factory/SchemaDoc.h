@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include <map>
 
+#include <boost/shared_ptr.hpp>
+
 #include "factory/ISchemaElementInstance.h"
 #include "factory/SchemaElement.h"
 
@@ -33,7 +35,7 @@ public:
   typedef ::boost::shared_ptr<ISchemaElementInstance> ElementInstPointer;
 
   SchemaDoc();
-  SchemaDoc(ElementInstPointer & root);
+  explicit SchemaDoc(ElementInstPointer & root);
 
   void registerElement(const ElementPointer & obj);
 
