@@ -12,14 +12,14 @@
 // INCLUDES /////////////////////////////////////////////
 #include <string>
 
-#include "common/DataTable.h"
+#include "utility/DataTable.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 class DataTableValueChanged

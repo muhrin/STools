@@ -8,13 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/ParamPotentialGo.h"
 
-#include <cstring>
-#include <locale>
-
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <pipelib/IPipeline.h>
 
@@ -32,92 +27,51 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe
+{
+namespace blocks
+{
+
+namespace fs = ::boost::filesystem;
+namespace common = ::spipe::common;
+namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
 	::sstbx::potential::IParameterisable & paramPotential,
 	::sstbx::potential::IGeomOptimiser & optimiser):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
 myParamPotential(paramPotential),
-myOptimiser(optimiser)
+myOptimiser(optimiser),
+myTableSupport(fs::path("param_pot.dat"))
+{}
+
+void ParamPotentialGo::pipelineInitialising()
 {
-	using namespace ::boost::algorithm;
-	using ::boost::filesystem::path;
-	using ::std::fstream;
-	using ::std::string;
-
-	// Build up the filename
-	string dbName = myParamPotential.getName();
-	// TODO: Fix this to do !is_alnum properly
-	replace_all(dbName, " "/*!is_alnum()*/, "_");
-	to_lower(dbName);
-	dbName += ".dat";
-
-	// Open or create the file
-	const path dbFilePath(dbName);
-
-	// Open the file for io
-	if(exists(dbFilePath))
-	{
-		myDbStream.open(dbFilePath, fstream::in | fstream::out);
-	}
-	else
-	{
-		myDbStream.open(dbFilePath, fstream::out);
-	}
-
-	// TODO: READ IN AND POPULATE DATABASE
-	//string line;
-	//bool found = false;
-	//size_t pos = string::npos;;
-	//size_t strLen = paramString.length();
-	//size_t lineLen = 0;
-	//while(!found && dbFile.good())
-	//{
-	//	::std::getline(dbFile,line);
-	//	lineLen = line.length();
-
-	//	// Can we find this parameter string?
-	//	pos = line.find(paramString);
-	//	// Do some more checks
-	//	if(pos + strLen == lineLen || isspace(line.at(pos + strLen)))
-	//	{
-	//		found = true;
-	//	}
-
-	//	if(found)
-	//	{
-	//		typedef ::boost::tokenizer<boost::char_separator<char> >
-	//			Tok;
-	//		const ::boost::char_separator<char> sep(" \t");
-	//		Tok tok(line, sep);
-	//		// Get the first token
-	//		myStructureGroup = *tok.begin();
-	//	}
-	//}
-}
-
-ParamPotentialGo::~ParamPotentialGo()
-{
-	// Close the file - RAII style
-	if(myDbStream.is_open())
-		myDbStream.close();
+  myTableSupport.registerPipeline(*myPipeline);
 }
 
 void ParamPotentialGo::pipelineStarting()
 {
-  namespace spc = ::spipe::common;
-
   // The pipeline is starting so try and get the potential parameters
-  spc::ObjectData<arma::vec>
-    params = spc::getObject(spc::GlobalKeys::POTENTIAL_PARAMS, *myPipeline);
+  common::ObjectData<arma::vec>
+    params = common::getObject(common::GlobalKeys::POTENTIAL_PARAMS, *myPipeline);
 
-  if(params.first != spc::DataLocation::NONE)
+  if(params.first != common::DataLocation::NONE)
   {
-    const arma::vec actualParams = setPotentialParams(*params.second);
+    // Need to get the actual parameters as the potential may use a combining rule or change
+    // them in some way from those specified
+    myCurrentParams = setPotentialParams(*params.second);
 
     // The potential may have changed the params so reset them in the shared data
-    spc::setObject(spc::GlobalKeys::POTENTIAL_PARAMS, params.first, actualParams, *myPipeline);
+    common::setObject(
+      common::GlobalKeys::POTENTIAL_PARAMS,
+      params.first,
+      myCurrentParams,
+      *myPipeline
+    );
+
+    // Add a note to the table with the current parameter string
+    myTableSupport.getTable().addTableNote("params: " + myParamPotential.getParamString());
   }
 }
 
@@ -129,6 +83,11 @@ void ParamPotentialGo::in(spipe::common::StructureData & data)
 	  // Copy over information from the optimisation results
 	  data.enthalpy.reset(optData->totalEnthalpy);
 	  data.stressMtx.reset(optData->stressMtx);
+
+    data.objectsStore.insert(common::GlobalKeys::POTENTIAL_PARAMS, myCurrentParams);
+
+    // Update our data table with the structure data
+    updateTable(data);
 
 	  myOutput->in(data);
   }
@@ -145,13 +104,18 @@ arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
 
 	myParamPotential.setParams(params);
 
-  arma::vec actualParams = myParamPotential.getParams();
-
-	// Update the structure group name
-	myStructureGroup = ::spipe::common::generateUniqueName();
-	myDbStream << myStructureGroup << " " << myParamPotential.getParamString() << std::endl;
+  const arma::vec actualParams = myParamPotential.getParams();
 
   return actualParams;
+}
+
+void ParamPotentialGo::updateTable(const ::spipe::StructureDataTyp & strData)
+{
+  utility::DataTable & table = myTableSupport.getTable();
+  const ::std::string & strName = *strData.name;
+
+  if(strData.enthalpy)
+    table.insert(strName, "energy", ::boost::lexical_cast< ::std::string>(*strData.enthalpy));
 }
 
 

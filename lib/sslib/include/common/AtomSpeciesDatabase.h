@@ -10,11 +10,12 @@
 #define ATOM_SPECIES_DATABASE_H
 
 // INCLUDES /////////////////////////////////////////////
-
-#include "common/AtomSpeciesId.h"
-
 #include <map>
 #include <string>
+
+#include <boost/shared_ptr.hpp>
+
+#include "common/AtomSpeciesId.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -25,7 +26,6 @@ class AtomSpeciesDatabase
 public:
 
 	AtomSpeciesDatabase();
-	virtual ~AtomSpeciesDatabase();
 
 	virtual void setAll(
     const AtomSpeciesId::Value id,
@@ -53,7 +53,7 @@ protected:
 
 private:
 
-	static AtomSpeciesDatabase * myInstance;
+  static ::boost::shared_ptr<AtomSpeciesDatabase>  INSTANCE;
 
 };
 

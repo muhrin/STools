@@ -11,8 +11,9 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include <cstring>
 #include <vector>
+
+#include <boost/shared_ptr.hpp>
 
 #include <armadillo>
 
@@ -22,14 +23,21 @@
 // From SSTbx
 #include <utility/MultiIdx.h>
 
+// Local includes
+#include "utility/DataTable.h"
+#include "utility/DataTableSupport.h"
 
+namespace spipe
+{
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-template <class DataType, class GlobalDataType>
-class IPipeline;
+namespace common
+{
+class DataTableWriter;
+}
 
-
-namespace spipe { namespace blocks {
+namespace blocks
+{
 
 class PotentialParamSweep :
 	public pipelib::AbstractSimpleStartBlock<StructureDataTyp, SharedDataTyp>,
@@ -54,13 +62,22 @@ public:
 
 private:
 
-  void saveTableData(const StructureDataTyp & strData);
+  void releaseBufferedStructures(
+    const ::spipe::utility::DataTable::Key & key
+  );
+
+  void updateTable(
+    const utility::DataTable::Key & key,
+    const StructureDataTyp & sweepStrData
+  );
 
 	size_t								              myNumParams;
 	const ::arma::vec					          myFrom;
 	const ::arma::vec					          myStep;
 	const ::arma::Col<unsigned int>			myNSteps;
 	::sstbx::utility::MultiIdx<size_t>	myStepExtents;
+
+  ::spipe::utility::DataTableSupport  myTableSupport;
 
 	SpPipelineTyp &                      mySweepPipeline;
 

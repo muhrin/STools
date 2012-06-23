@@ -17,13 +17,14 @@
 
 #include <utility/BoostFilesystem.h>
 
-#include "common/IDataTableChangeListener.h"
+// Local includes
+#include "utility/IDataTableChangeListener.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 

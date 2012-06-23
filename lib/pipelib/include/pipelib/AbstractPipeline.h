@@ -334,14 +334,13 @@ void ABSTRACT_PIPELINE_TTYPE::start()
 	}
 
 	// Tell the blocks that we are finishing
-	// Tell all the blocks that we are starting
 	for(typename BlocksMap::iterator it = myBlocks.begin(), end = myBlocks.end();
 		it != end; ++it)
 	{
 		it->first->pipelineFinishing();
 	}
 
-  changeState(PipelineState::RESET);
+  changeState(PipelineState::FINISHED);
 }
 
 

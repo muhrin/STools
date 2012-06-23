@@ -15,19 +15,13 @@
 namespace sstbx { namespace common {
 
 // Declare the singleton instance
-AtomSpeciesDatabase * AtomSpeciesDatabase::myInstance = NULL;
+::boost::shared_ptr<AtomSpeciesDatabase> AtomSpeciesDatabase::INSTANCE;
 
 AtomSpeciesDatabase::AtomSpeciesDatabase()
 {
   setAll(AtomSpeciesId::H, "H", "Hydrogen");
 	setAll(AtomSpeciesId::NA, "Na", "Sodium");
 	setAll(AtomSpeciesId::CL, "Cl", "Chlorine");
-}
-
-AtomSpeciesDatabase::~AtomSpeciesDatabase()
-{
-	if(myInstance)
-		delete myInstance;
 }
 
 const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId::Value id) const
@@ -82,11 +76,11 @@ void AtomSpeciesDatabase::setAll(
 
 AtomSpeciesDatabase & AtomSpeciesDatabase::inst()
 {
-	if(!myInstance)
+	if(!INSTANCE.get())
 	{
-		myInstance = new AtomSpeciesDatabase();
+		INSTANCE.reset(new AtomSpeciesDatabase());
 	}
-	return *myInstance;
+	return *INSTANCE;
 }
 
 }}

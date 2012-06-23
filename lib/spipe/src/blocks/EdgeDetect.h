@@ -36,7 +36,10 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe
+{
+namespace blocks
+{
 
 class EdgeDetect : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
 {

@@ -24,7 +24,7 @@
 #include <utility/HeterogeneousMap.h>
 
 // Local includes
-#include "common/DataTable.h"
+#include "utility/DataTable.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -99,7 +99,7 @@ public:
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
-  ::spipe::common::DataTable          dataTable;
+  ::spipe::utility::DataTable          dataTable;
 
 private:
 

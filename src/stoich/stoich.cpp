@@ -31,6 +31,7 @@
 
 // From StructurePipe
 #include <StructurePipe.h>
+#include <blocks/DetermineSpaceGroup.h>
 #include <blocks/LowestFreeEnergy.h>
 #include <blocks/NiggliReduction.h>
 #include <blocks/ParamPotentialGo.h>
@@ -142,6 +143,9 @@ int main(const int argc, const char * const argv[])
   ssu::UniqueStructureSet uniqueSet(comparator);
   sp::blocks::RemoveDuplicates remDuplicates(uniqueSet);
 
+  // Determine space group
+  sp::blocks::DetermineSpaceGroup sg;
+
   // Write structures
   ssio::ResReaderWriter resIo;
   ssio::StructureWriterManager writerManager;
@@ -162,13 +166,14 @@ int main(const int argc, const char * const argv[])
   randomSearchPipe.connect(randStr, niggli);
   randomSearchPipe.connect(niggli, go);
   randomSearchPipe.connect(go, remDuplicates);
-  randomSearchPipe.connect(remDuplicates, write1);
+  randomSearchPipe.connect(remDuplicates, sg);
+  randomSearchPipe.connect(sg, write1);
   randomSearchPipe.connect(write1, barrier);
   randomSearchPipe.connect(barrier, write2);
   randomSearchPipe.connect(write2, lowestE);
 
   // Configure stoichiometry sweep pipeline
-  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, 3, 0.75, randomSearchPipe);
+  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, 10, 0.75, randomSearchPipe);
   sp::blocks::LowestFreeEnergy lowestEStoich;
 
   stoichSweepPipe.setStartBlock(stoichSearch);

@@ -81,7 +81,7 @@ void SharedData::notify(const ::pipelib::event::PipeStateChanged< ::spipe::SpPip
 {
   SP_ASSERT(&evt.getPipeline() == myPipe);
 
-  if(evt.getNewState() == ::pipelib::PipelineState::RESET)
+  if(evt.getNewState() == ::pipelib::PipelineState::FINISHED)
   {
     reset();
   }

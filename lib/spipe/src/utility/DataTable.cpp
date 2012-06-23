@@ -7,20 +7,20 @@
 
 // INCLUDES //////////////////////////////////
 #include "StructurePipe.h"
-#include "common/DataTable.h"
+#include "utility/DataTable.h"
 
 #include <fstream>
 
 #include <boost/foreach.hpp>
 
-#include "common/DataTableValueChanged.h"
-#include "common/IDataTableChangeListener.h"
+#include "utility/DataTableValueChanged.h"
+#include "utility/IDataTableChangeListener.h"
 
 // NAMESPACES ////////////////////////////////
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 DataTable::Column::Column() {}
@@ -79,6 +79,11 @@ size_t DataTable::insert(
   return colNo;
 }
 
+void DataTable::addTableNote(const ::std::string & note)
+{
+  myTableNotes.push_back(note);
+}
+
 void DataTable::writeToFile(
   const ::std::string & filename,
   const ::std::string & colDelimiter) const
@@ -111,6 +116,7 @@ void DataTable::clear()
 {
   myRows.clear();
   myColumns.clear();
+  myTableNotes.clear();
 }
 
 

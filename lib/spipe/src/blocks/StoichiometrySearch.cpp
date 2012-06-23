@@ -24,9 +24,9 @@
 #include <utility/Loops.h>
 
 // Local includes
-#include "common/DataTableWriter.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
+#include "utility/DataTable.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -34,9 +34,12 @@
 namespace spipe {
 namespace blocks {
 
+// NAMESPACE ALIASES /////////////////////////
+namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
 namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
+
 
 StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value  species1,
@@ -44,11 +47,12 @@ StoichiometrySearch::StoichiometrySearch(
   const size_t maxAtoms,
   const double atomsRadius,
   SpPipelineTyp &				subpipe):
-pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Convex hull"),
+pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
 myAtomsRadius(atomsRadius),
 mySubpipe(subpipe),
-myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst())
+myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst()),
+myTableSupport(fs::path("stoich.dat"))
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
@@ -66,59 +70,37 @@ mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 myAtomsRadius(atomsRadius),
 mySubpipe(sweepPipe),
-myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst())
+myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst()),
+myTableSupport(fs::path("stoich.dat"))
 {
   init();
 }
-
-StoichiometrySearch::~StoichiometrySearch()
-{}
 
 void StoichiometrySearch::pipelineInitialising()
 {
 	// Set outselves to collect any finished data from the sweep pipeline
   mySubpipe.setFinishedDataSink(*this);
+
+  myTableSupport.registerPipeline(*myPipeline);
 }
 
 void StoichiometrySearch::pipelineStarting()
 {
-  SP_ASSERT(myPipeline);
-
-  using ::boost::filesystem::path;
-
-  // Now that the pipeline is starting the pipeline output path cannot be changed so
-  // get the stoichiometry output file now.
-  const path outputFile = myPipeline->getSharedData().getOutputPath() / path("stoich.dat");
-
-  // Create the data table writer
-  myTableWriter.reset(new ::spipe::common::DataTableWriter(myTable, outputFile));
+  // Save where the pipeline will be writing to
+	myOutputPath = myPipeline->getSharedData().getOutputPath();
 }
 
-void StoichiometrySearch::pipelineFinishing()
-{
-  // Reset ourselves
-  if(myTableWriter.get())
-    myTableWriter->write();
-
-  myTable.clear();
-}
 
 void StoichiometrySearch::start()
 {
-  namespace common = ::spipe::common;
-  namespace ssc = ::sstbx::common;
-  namespace ssu = ::sstbx::utility;
   using ::boost::lexical_cast;
-  using ::boost::filesystem::path;
-  using ::spipe::common::StructureObjectKeys;
   using ::std::string;
 
   SharedDataTyp & sweepPipeData = mySubpipe.getSharedData();
 
   // Start looping over the possible stoichiometries
   size_t totalAtoms = 0;
-  string stoichString;
-  path sweepPipeOutputPath;
+  ::std::string sweepPipeOutputPath;
   for(ssu::Loops<size_t> loops(myStoichExtents); !loops.isAtEnd(); ++loops)
   {
     const ssu::MultiIdx<size_t> & currentIdx = *loops;
@@ -161,11 +143,6 @@ void StoichiometrySearch::start()
 
     } // End loop over atoms
 
-    stoichString = stoichStringStream.str();
-
-    // Update the table
-    updateTable(stoichString, currentIdx);
-
     // Append the species ratios so the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
 
@@ -176,35 +153,19 @@ void StoichiometrySearch::start()
     sweepPipeData.cellDescription = CellDescPtr(new ::sstbx::build_cell::RandomCellDescription<double>());
     sweepPipeData.cellDescription->myVolume.reset(8.0 * totalAtoms * 1.333 * 3.1415 * myAtomsRadius * myAtomsRadius * myAtomsRadius);
 
+    // Find out where all the structures are going to be saved
+    sweepPipeOutputPath = sweepPipeData.getRelativeOutputPath().string();
+
     // Start the sweep pipeline
     mySubpipe.start();
 
-    // TODO : Improve this
-    // Get the full path to the output directory for that subpipe run
-    sweepPipeOutputPath = sweepPipeData.getOutputPath();
+    // Update the table
+    updateTable(sweepPipeOutputPath, currentIdx);
 
-		// Send any finished structure data down my pipe
-    const path * lastSaved;
-    path lastSavedRelative;
-		BOOST_FOREACH(StructureDataTyp * const sweepPipeData, myBuffer)
-		{
-      lastSaved = sweepPipeData->objectsStore.find(StructureObjectKeys::LAST_ABS_SAVE_PATH);
+    // Send any finished structure data down my pipe, this will also
+    // update the table with any information from the buffered structures
+    releaseBufferedStructures(sweepPipeOutputPath);
 
-      if(lastSaved)
-      {
-        lastSavedRelative = *lastSaved;
-        if(ssu::isAbsolute(lastSavedRelative))
-        {
-          lastSavedRelative = ::boost::filesystem::make_relative(sweepPipeOutputPath, lastSavedRelative);
-        }
-        // Insert the relative path to the last place this structre was saved
-        myTable.insert(stoichString, "lowest", lastSavedRelative.string());
-      }
-
-      // Pass the structure on
-			myOutput->in(*sweepPipeData);
-		}
-		myBuffer.clear();
   } // End loop over stoichiometries
 }
 
@@ -215,18 +176,39 @@ void StoichiometrySearch::in(StructureDataTyp * const data)
 	// Register the data with our pipeline to transfer ownership
 	myPipeline->registerNewData(data);
 
-  saveTableData(*data);
-
 	// Save it in the buffer for sending down the pipe
 	myBuffer.push_back(data);
 }
 
-void StoichiometrySearch::saveTableData(const StructureDataTyp & strData)
+void StoichiometrySearch::releaseBufferedStructures(
+  const utility::DataTable::Key & tableKey)
 {
-  using ::spipe::common::GlobalKeys;
-  using ::sstbx::common::Structure;
+	// Send any finished structure data down my pipe
+  utility::DataTable & table = myTableSupport.getTable();
 
-  const Structure * const structure = strData.getStructure();
+  fs::path lastSavedRelative;
+
+  unsigned int * spacegroup;
+	BOOST_FOREACH(StructureDataTyp * const sweepPipeData, myBuffer)
+	{
+    lastSavedRelative = sweepPipeData->getRelativeSavePath(*myPipeline);
+
+    if(!lastSavedRelative.empty())
+    {
+      // Insert the relative path to the last place this structre was saved
+      table.insert(tableKey, "lowest", lastSavedRelative.string());
+    }
+
+    spacegroup = sweepPipeData->objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
+    if(spacegroup)
+    {
+      table.insert(tableKey, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
+    }
+
+    // Pass the structure on
+		myOutput->in(*sweepPipeData);
+	}
+	myBuffer.clear();
 }
 
 void StoichiometrySearch::init()
@@ -246,11 +228,13 @@ void StoichiometrySearch::initStoichExtents()
 }
 
 void StoichiometrySearch::updateTable(
-  const common::DataTable::Key &             key,
+  const utility::DataTable::Key &             key,
   const ::sstbx::utility::MultiIdx<size_t> & currentIdx)
 {
   using ::boost::lexical_cast;
   using ::std::string;
+
+  utility::DataTable & table = myTableSupport.getTable();
 
   ssc::AtomSpeciesId::Value species;
   const string *            speciesSymbol;
@@ -267,7 +251,10 @@ void StoichiometrySearch::updateTable(
     else
       speciesTableColumn = lexical_cast<string>(i);
 
-    myTable.insert(key, speciesTableColumn, lexical_cast<string>(numAtomsOfSpecies));
+    table.insert(
+      key,
+      speciesTableColumn,
+      lexical_cast<string>(numAtomsOfSpecies));
 
   } // End loop over atoms
 }

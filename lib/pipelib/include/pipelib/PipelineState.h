@@ -30,8 +30,8 @@ struct PipelineState
     RUNNING,
     // The pipeline has stopped
     STOPPED,
-    // The pipeline has run through once and has been reset back to the beginning
-    RESET
+    // The pipeline has run through and has finished ready to be started again
+    FINISHED
   };
 };
 

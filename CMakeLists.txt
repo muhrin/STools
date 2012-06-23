@@ -58,6 +58,7 @@ endif()
 add_subdirectory(lib/pipelib)   # Pipeline library
 add_subdirectory(lib/sslib)     # Structure searching library
 add_subdirectory(lib/yaml-cpp)  # YAML library
+add_subdirectory(lib/spglib)    # Space group finder
 add_subdirectory(lib/spipe)	# StructurePipe
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 

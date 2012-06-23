@@ -21,7 +21,7 @@
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 class IDataTableChangeListener;
@@ -59,6 +59,8 @@ public:
   //void insert(const Key & key, const size_t col, const Value & value);
   size_t insert(const Key & key, const Column & col, const Value & value);
 
+  void addTableNote(const ::std::string & note);
+
   void writeToFile(
     const ::std::string & filename,
     const ::std::string & colDelimiter = " ") const;
@@ -79,6 +81,7 @@ private:
   typedef ::std::vector<Column>            ColumnInfo;
 
   typedef ::pipelib::event::EventSupport<IDataTableChangeListener> ChangeListenerSupport;
+  typedef ::std::vector< ::std::string>    NotesContainer;
 
   void insertColumn(const Column & colInfo, const size_t col);
   Value insertValue(const Key & key, const size_t col, const Value & value);
@@ -86,6 +89,8 @@ private:
   ::std::string         myColDelimiter;
   ColumnInfo            myColumns;
   RowMap                myRows;
+  NotesContainer        myTableNotes;
+
 
   ChangeListenerSupport myChangeListenerSupport;
 

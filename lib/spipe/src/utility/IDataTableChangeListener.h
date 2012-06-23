@@ -17,7 +17,7 @@
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 class DataTableValueChanged;

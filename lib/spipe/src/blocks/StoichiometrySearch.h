@@ -25,9 +25,12 @@
 #include <build_cell/StructureDescription.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/AtomSpeciesId.h>
-#include <common/DataTable.h>
+#include <utility/BoostFilesystem.h>
 #include <utility/MultiIdx.h>
 
+// Local includes
+#include "utility/DataTable.h"
+#include "utility/DataTableSupport.h"
 
 namespace spipe
 {
@@ -65,8 +68,8 @@ public:
   StoichiometrySearch(
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
-    const size_t maxAtoms,
-    const double atomsRadius,
+    const size_t          maxAtoms,
+    const double          atomsRadius,
     SpPipelineTyp &				subpipe);
 
   StoichiometrySearch(
@@ -75,12 +78,9 @@ public:
     const double       atomsRadius,
     SpPipelineTyp &    sweepPipe);
 
-	virtual ~StoichiometrySearch();
-
   // From Block ////////
   virtual void pipelineInitialising();
   virtual void pipelineStarting();
-  virtual void pipelineFinishing();
   // End from Block ////
 
   // From StartBlock ///
@@ -96,30 +96,34 @@ private:
   typedef ::spipe::StructureDataTyp                                      StructureDataTyp;
   typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription> StrDescPtr;
   typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription<double> > CellDescPtr;
-  typedef ::boost::scoped_ptr< ::spipe::common::DataTableWriter>          TableWriterPtr;
+  typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>          TableWriterPtr;
 
-  void saveTableData(const StructureDataTyp & strData);
-  
   
   // Initialisation //////////////////////////////
   void init();
   void initStoichExtents();
 
+  void releaseBufferedStructures(
+    const utility::DataTable::Key &             key
+  );
+
   void updateTable(
-    const common::DataTable::Key &             key,
+    const utility::DataTable::Key &             key,
     const ::sstbx::utility::MultiIdx<size_t> & currentIdx
   );
 
   SpPipelineTyp &                       mySubpipe;
 
-  ::spipe::common::DataTable            myTable;
-  TableWriterPtr                        myTableWriter;
+  // Use this to write out our table data
+  ::spipe::utility::DataTableSupport    myTableSupport;
 
   const size_t                          myMaxAtoms;
   const double                          myAtomsRadius;
 
+  ::boost::filesystem::path             myOutputPath;
+
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
-	::std::vector<StructureDataTyp *>		myBuffer;
+	::std::vector<StructureDataTyp *>		  myBuffer;
 
   SpeciesParamters                      mySpeciesParameters;
   ::sstbx::utility::MultiIdx<size_t>    myStoichExtents;

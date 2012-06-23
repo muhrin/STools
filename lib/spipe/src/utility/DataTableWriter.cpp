@@ -6,23 +6,23 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "common/DataTableWriter.h"
+#include "utility/DataTableWriter.h"
 
 #include <boost/foreach.hpp>
 
-#include "common/DataTableValueChanged.h"
+#include "utility/DataTableValueChanged.h"
 
 // NAMESPACES ////////////////////////////////
 
 namespace spipe
 {
-namespace common
+namespace utility
 {
 
 namespace fs = ::boost::filesystem;
 
 DataTableWriter::DataTableWriter(
-  spipe::common::DataTable & table,
+  spipe::utility::DataTable & table,
   const std::string &filename,
   const bool        append,
   const size_t      writeDelay):
@@ -74,7 +74,6 @@ bool DataTableWriter::write()
 
   if(myOutStream.good())
   {
-
     // Move the stream to the correct position
     myOutStream.seekp(myWriteMarker);
 
@@ -85,6 +84,12 @@ bool DataTableWriter::write()
       myOutStream << myColumnDelimiter << colInfo.getName();
     }
     myOutStream << ::std::endl;
+
+    // Now print any table notes
+    BOOST_FOREACH(const ::std::string & note, myTable.myTableNotes)
+    {
+      myOutStream << "# " << note << ::std::endl;
+    }
 
     BOOST_FOREACH(const DataTable::RowMap::value_type & rowPair, myTable.myRows)
     {

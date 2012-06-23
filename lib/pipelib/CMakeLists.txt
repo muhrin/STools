@@ -16,6 +16,7 @@ set(pipelib_Header_Files__
   include/pipelib/IFinishNotifiable.h
   include/pipelib/ILink.h
   include/pipelib/IPipeline.h
+  include/pipelib/PipelineState.h
   include/pipelib/PipeBlock.h
   include/pipelib/Pipeline.h
   include/pipelib/SimpleEndBlock.h

@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/PotentialParamSweep.h"
 
+#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
 // From SSTbx
@@ -28,6 +29,9 @@ namespace spipe
 namespace blocks
 {
 
+namespace fs = ::boost::filesystem;
+namespace common = ::spipe::common;
+
 PotentialParamSweep::PotentialParamSweep(
 	const ::arma::vec	&		from,
 	const ::arma::vec	&		step,
@@ -38,7 +42,8 @@ myFrom(from),
 myStep(step),
 myNSteps(nSteps),
 mySweepPipeline(sweepPipeline),
-myStepExtents(nSteps.n_rows)
+myStepExtents(nSteps.n_rows),
+myTableSupport(fs::path("param_sweep.dat"))
 {
 	SP_ASSERT((myFrom.n_rows == myStep.n_rows) && (myFrom.n_rows == myNSteps.n_rows));
 
@@ -56,6 +61,8 @@ void PotentialParamSweep::pipelineInitialising()
 	sharedDat.potSweepFrom.reset(myFrom);
 	sharedDat.potSweepStep.reset(myStep);
 	sharedDat.potSweepNSteps.reset(myNSteps);
+
+  myTableSupport.registerPipeline(*myPipeline);
 }
 
 void PotentialParamSweep::pipelineInitialised()
@@ -66,9 +73,10 @@ void PotentialParamSweep::pipelineInitialised()
 
 void PotentialParamSweep::start()
 {
-  namespace common = ::spipe::common;
 	using ::sstbx::utility::Loops;
 
+  ::std::string sweepPipeOutputPath;
+  ::spipe::SharedDataTyp & sweepPipeSharedData = mySweepPipeline.getSharedData();
 	for(Loops<size_t> loops(myStepExtents); !loops.isAtEnd(); ++loops)
 	{
 		// Load the current potential parameters into the pipeline data
@@ -81,18 +89,16 @@ void PotentialParamSweep::start()
     myPipeline->getGlobalData().objectsStore.insert(::spipe::common::GlobalKeys::POTENTIAL_PARAMS, params);
 
     // Set a directory for this set of parameters
-    mySweepPipeline.getSharedData().appendToOutputDirName(common::generateUniqueName());
+    sweepPipeSharedData.appendToOutputDirName(common::generateUniqueName());
+
+    // Get the relative path to where the pipeline write the structures to
+    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath().string();
 
 		// Start the sweep pipeline
 		mySweepPipeline.start();
 
-
 		// Send any finished structure data down my pipe
-		BOOST_FOREACH(StructureDataTyp * const sweepPipeData, myBuffer)
-		{
-			myOutput->in(*sweepPipeData);
-		}
-		myBuffer.clear();
+		releaseBufferedStructures(sweepPipeOutputPath);
 	}
 }
 
@@ -114,24 +120,63 @@ void  PotentialParamSweep::in(StructureDataTyp * const data)
 	// Register the data with our pipeline to transfer ownership
 	myPipeline->registerNewData(data);
 
-  saveTableData(*data);
-
 	// Save it in the buffer for sending down the pipe
 	myBuffer.push_back(data);
 }
 
-void PotentialParamSweep::saveTableData(const StructureDataTyp & strData)
+void PotentialParamSweep::releaseBufferedStructures(
+  const ::spipe::utility::DataTable::Key & key
+)
 {
-  using ::spipe::common::GlobalKeys;
+	// Send any finished structure data down my pipe
+	BOOST_FOREACH(StructureDataTyp * const sweepStrData, myBuffer)
+	{
+    updateTable(key, *sweepStrData);
 
-  ::spipe::common::DataTable & table = myPipeline->getSharedData().dataTable;
+		myOutput->in(*sweepStrData);
+	}
+	myBuffer.clear();
+}
 
-  const ::arma::vec * const params = strData.objectsStore.find(GlobalKeys::POTENTIAL_PARAMS);
+void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const StructureDataTyp & sweepStrData)
+{
+  utility::DataTable & table = myTableSupport.getTable();
+
+  const ::arma::vec * const params = sweepStrData.objectsStore.find(common::GlobalKeys::POTENTIAL_PARAMS);
   if(params)
   {
-    ::std::stringstream paramStream;
-    paramStream << *params;
-    table.insert(*strData.name, "pot_params", paramStream.str());
+    // Update the table with the current parameters
+    for(size_t i = 0; i < params->size(); ++i)
+    {
+      table.insert(
+        key,
+        "param" + ::boost::lexical_cast< ::std::string>(i),
+        ::boost::lexical_cast< ::std::string>(params->operator [](i)));
+    }
+  }
+
+  if(sweepStrData.enthalpy)
+  {
+    table.insert(
+      key,
+      "energy",
+      ::boost::lexical_cast< ::std::string>(*sweepStrData.enthalpy));
+  }
+
+  const fs::path savePath = sweepStrData.getRelativeSavePath(*myPipeline);
+  if(!savePath.empty())
+  {
+    table.insert(
+      key,
+      "path",
+      savePath.string()
+    );
+  }
+
+  const unsigned int * const spacegroup = sweepStrData.objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
+  if(spacegroup)
+  {
+    table.insert(key, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
   }
 }
 

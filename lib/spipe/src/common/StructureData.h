@@ -10,6 +10,8 @@
 #define STRUCTURE_DATA_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "StructurePipe.h"
+
 
 #include <boost/optional.hpp>
 
@@ -36,6 +38,7 @@ struct StructureObjectKeys
 {
   // The absolute path to the last place that a structure was saved to disk
   static const ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_SAVE_PATH;
+  static const ::sstbx::utility::Key<unsigned int>                SPACEGROUP_NUMBER;
 
 
 };
@@ -48,6 +51,12 @@ public:
 
 	sstbx::common::Structure * getStructure() const;
 	void setStructure(sstbx::common::Structure * const structure);
+
+  /**
+  /* Get the path to where this structure was last saved relative to the output path
+  /* of a given structure pipe.
+  /**/
+  ::boost::filesystem::path getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const;
 
 	::boost::optional<double>				enthalpy;
 	::boost::optional<std::string>		name;

@@ -2,6 +2,7 @@
 ## spipe/blocks/
 
 set(spipe_Header_Files__blocks
+  blocks/DetermineSpaceGroup.h
   blocks/EdgeDetect.h
   blocks/LoadPotStructures.h
   blocks/LowestFreeEnergy.h
@@ -18,6 +19,7 @@ set(spipe_Header_Files__blocks
 source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 
 set(spipe_Source_Files__blocks
+  blocks/DetermineSpaceGroup.cpp
   blocks/LoadPotStructures.cpp
   blocks/LowestFreeEnergy.cpp
   blocks/MakeMap.cpp
@@ -35,10 +37,6 @@ source_group("Source Files\\blocks" FILES ${spipe_Source_Files__blocks})
 ## spipe/common/
 
 set(spipe_Header_Files__common
-  common/DataTable.h
-  common/DataTableValueChanged.h
-  common/DataTableWriter.h
-  common/IDataTableChangeListener.h
   common/PipeBuilder.h
   common/PipeFactoryYaml.h
   common/PipeFunctions.h
@@ -52,9 +50,6 @@ set(spipe_Header_Files__common
 source_group("Header Files\\common" FILES ${spipe_Header_Files__common})
 
 set(spipe_Source_Files__common
-  common/DataTable.cpp
-  common/DataTableValueChanged.cpp
-  common/DataTableWriter.cpp
   common/PipeBuilder.cpp
   common/PipeFactoryYaml.cpp
   common/PipeFunctions.cpp
@@ -66,6 +61,25 @@ set(spipe_Source_Files__common
   common/YamlInputObjectIteratorAdapter.cpp
 )
 source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
+
+## spipe/utility/
+
+set(spipe_Header_Files__utility
+  utility/DataTable.h
+  utility/DataTableSupport.h
+  utility/DataTableValueChanged.h
+  utility/DataTableWriter.h
+  utility/IDataTableChangeListener.h
+)
+source_group("Header Files\\utility" FILES ${spipe_Header_Files__utility})
+
+set(spipe_Source_Files__utility
+  utility/DataTable.cpp
+  utility/DataTableSupport.cpp
+  utility/DataTableValueChanged.cpp
+  utility/DataTableWriter.cpp
+)
+source_group("Source Files\\utility" FILES ${spipe_Source_Files__utility})
 
 ## spipe/
 
@@ -82,12 +96,14 @@ source_group("Source Files" FILES ${spipe_Source_Files__})
 set(spipe_Header_Files
   ${spipe_Header_Files__blocks}
   ${spipe_Header_Files__common}
+  ${spipe_Header_Files__utility}
   ${spipe_Header_Files__}
 )
 
 set(spipe_Source_Files
   ${spipe_Source_Files__blocks}
   ${spipe_Source_Files__common}
+  ${spipe_Source_Files__utility}
   ${spipe_Source_Files__}
 )
 
@@ -106,10 +122,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/lib/sslib/include
   ${CMAKE_SOURCE_DIR}/lib/sslib/src # TODO: Remove this and move sslib/src/SSLib* to include
   ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include
+  ${CMAKE_SOURCE_DIR}/lib/spglib/include
 )
 
 
 include_directories(.)
+
 
 ###################
 ## StructurePipe ##
@@ -119,7 +137,7 @@ add_library(spipe
   StructurePipe.cpp
 )
 
-add_dependencies(spipe sslib yaml_cpp)
+add_dependencies(spipe sslib yaml_cpp spglib)
 
 # Libraries we need to link to
   target_link_libraries(spipe
@@ -128,4 +146,5 @@ add_dependencies(spipe sslib yaml_cpp)
     ${ARMADILLO_LIBRARIES}
     sslib
     yaml-cpp
+    spglib
   )
