@@ -1,5 +1,8 @@
 
-
 // Version number from CMake
 #define SP_VERSION_MAJOR @SP_VERSION_MAJOR@
 #define SP_VERSION_MINOR @SP_VERSION_MINOR@
+
+// Build settings
+#cmakedefine SP_USE_QHULL
+#cmakedefine SP_USE_YAML

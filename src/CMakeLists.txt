@@ -11,20 +11,20 @@ set(stools_Files
   ${stools_Header_Files__}
 )
 
-## stoich
+## ssweep
 
-set(stools_Header_Files__stoich
+set(stools_Header_Files__ssweep
 )
-source_group("Header Files\\stoich" FILES ${stools_Header_Files__stoich})
+source_group("Header Files\\ssweep" FILES ${stools_Header_Files__ssweep})
 
-set(stools_Source_Files__stoich
-  stoich/stoich.cpp
+set(stools_Source_Files__ssweep
+  ssweep/ssweep.cpp
 )
-source_group("Source Files\\stoich" FILES ${stools_Source_Files__stoich})
+source_group("Source Files\\ssweep" FILES ${stools_Source_Files__ssweep})
 
-set(stools_Files__stoich
-  ${stools_Header_Files__stoich}
-  ${stools_Source_Files__stoich}
+set(stools_Files__ssweep
+  ${stools_Header_Files__ssweep}
+  ${stools_Source_Files__ssweep}
 )
 
 #########################
@@ -43,18 +43,18 @@ include_directories(
 include_directories(.)
 
 
-##########################
-## Stoichiometry search ##
-##########################
-add_executable(stoich
+#######################################
+## Potential and stoichiometry sweep ##
+#######################################
+add_executable(ssweep
   ${stools_Files}
-  ${stools_Files__stoich}
+  ${stools_Files__ssweep}
 )
 
-add_dependencies(stoich yaml_cpp sslib  pipelib StructurePipe)
+add_dependencies(ssweep yaml_cpp sslib  pipelib StructurePipe)
 
 # Libraries we need to link to
-  target_link_libraries(stoich
+  target_link_libraries(ssweep
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
     ${ARMADILLO_LIBRARIES}
@@ -63,3 +63,42 @@ add_dependencies(stoich yaml_cpp sslib  pipelib StructurePipe)
     pipelib
     spipe
   )
+
+
+##################
+## StructureMap ##
+##################
+#add_executable(smap
+#  ${spipe_Files}
+#  MakeMap.cpp
+#)
+
+#add_dependencies(smap sslib)
+
+# Libraries we need to link to
+#  target_link_libraries(smap
+#    ${Boost_FILESYSTEM_LIBRARY}
+#    ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+#    ${ARMADILLO_LIBRARIES}
+#    sslib
+#  )
+  
+
+###################
+## StructureDiff ##
+###################
+#add_executable(sdiff
+#  ${spipe_Files}
+#  StructureDiff.cpp
+#)
+
+#add_dependencies(sdiff sslib)
+
+# Libraries we need to link to
+#  target_link_libraries(sdiff
+#    ${Boost_FILESYSTEM_LIBRARY}
+#    ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+#    ${ARMADILLO_LIBRARIES}
+#    sslib
+#  )
+  

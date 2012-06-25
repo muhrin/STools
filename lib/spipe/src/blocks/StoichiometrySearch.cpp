@@ -189,9 +189,9 @@ void StoichiometrySearch::releaseBufferedStructures(
   fs::path lastSavedRelative;
 
   unsigned int * spacegroup;
-	BOOST_FOREACH(StructureDataTyp * const sweepPipeData, myBuffer)
+	BOOST_FOREACH(StructureDataTyp * const strData, myBuffer)
 	{
-    lastSavedRelative = sweepPipeData->getRelativeSavePath(*myPipeline);
+    lastSavedRelative = strData->getRelativeSavePath(*myPipeline);
 
     if(!lastSavedRelative.empty())
     {
@@ -199,14 +199,26 @@ void StoichiometrySearch::releaseBufferedStructures(
       table.insert(tableKey, "lowest", lastSavedRelative.string());
     }
 
-    spacegroup = sweepPipeData->objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
+    spacegroup = strData->objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
     if(spacegroup)
     {
       table.insert(tableKey, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
     }
 
+    // Try to calculate the energy/atom
+    if(strData->enthalpy && strData->getStructure())
+    {
+      const size_t numAtoms = strData->getStructure()->getNumAtomsDescendent();
+      if(numAtoms != 0)
+      {
+        const double energyPerAtom = *strData->enthalpy / numAtoms;
+        table.insert(tableKey, "energy/atom", ::boost::lexical_cast< ::std::string>(energyPerAtom));
+      }
+    }
+    
+
     // Pass the structure on
-		myOutput->in(*sweepPipeData);
+		myOutput->in(*strData);
 	}
 	myBuffer.clear();
 }

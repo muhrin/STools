@@ -87,6 +87,10 @@ bool HeterogeneousMap::insert(const Key<T> & key, T value)
 	//	value :
 	//	*::boost::any_cast<T>(&result.first->second);
 
+  // Overriding default map behaviour and forcing value in even though
+  // a value may already exist TOOD: FIX THIS!
+  result.first->second = value;
+
 	return result.second;
 }
 

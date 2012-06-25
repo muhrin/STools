@@ -65,9 +65,9 @@ int main(const int argc, const char * const argv[])
   using ::std::endl;
 
   // Get command line parameters
-  if(argc != 7)
+  if(argc != 9)
   {
-    cout << "Usage: " << argv[0] << " [6 x params, format from+delta*nsteps]" << endl;
+    cout << "Usage: " << argv[0] << " [6 x params, format from+delta*nsteps] [+/-1] [max_atoms]" << endl;
     return 0;
   }
 
@@ -98,6 +98,10 @@ int main(const int argc, const char * const argv[])
   {
     return 0;
   }
+
+  const double betaDiagonal = ::boost::lexical_cast<double>(argv[7]);
+
+  const size_t maxNumAtoms = ::boost::lexical_cast<size_t>(argv[8]);
 
 
   // Generate the pipelines that we need
@@ -131,8 +135,8 @@ int main(const int argc, const char * const argv[])
 
 	Mat<double> beta;
 	beta.set_size(2, 2);
-	beta << -1 << 1 << endr
-			<< 1 << -1 << endr;
+	beta << betaDiagonal << 1 << endr
+			<< 1 << betaDiagonal << endr;
 
   ssp::SimplePairPotential<double> pp(2, epsilon, sigma, 2.5, beta, 12, 6, ssp::SimplePairPotential<double>::CUSTOM);
   ssp::TpsdGeomOptimiser<double> optimiser(pp);
@@ -173,7 +177,7 @@ int main(const int argc, const char * const argv[])
   randomSearchPipe.connect(write2, lowestE);
 
   // Configure stoichiometry sweep pipeline
-  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, 10, 0.75, randomSearchPipe);
+  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, maxNumAtoms, 0.75, randomSearchPipe);
   sp::blocks::LowestFreeEnergy lowestEStoich;
 
   stoichSweepPipe.setStartBlock(stoichSearch);

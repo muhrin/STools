@@ -20,7 +20,6 @@
 
 namespace spipe { namespace common {
 
-
 ProcessId getProcessId()
 {
 	return NS_BOOST_IPC_DETAIL::get_current_process_id();
@@ -63,6 +62,12 @@ void generateIoDataFromStructure(
 	{
 		ioData.timesFound.reset(*strData.timesFound);
 	}
+  const ::std::string * const spacegroup = strData.objectsStore.find(
+    StructureObjectKeys::SPACEGROUP_SYMBOL);
+  if(spacegroup)
+  {
+    ioData.spaceGroup.reset(*spacegroup);
+  }
 }
 
 void generateStructureDataFromIo(

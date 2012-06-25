@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <armadillo>
@@ -88,6 +89,13 @@ void DetermineSpaceGroup::in(StructureDataTyp & data)
     data.objectsStore.insert(
       common::StructureObjectKeys::SPACEGROUP_NUMBER,
       (unsigned int)spgData->spacegroup_number);
+
+    ::std::string spacegroupSymbol(spgData->international_symbol);
+    ::boost::algorithm::trim(spacegroupSymbol);
+
+    data.objectsStore.insert(
+      common::StructureObjectKeys::SPACEGROUP_SYMBOL,
+      spacegroupSymbol);
 
     // Clean up
     spg_free_dataset(spgData);

@@ -19,9 +19,6 @@
 // Include the configuration header file
 #include "StructurePipeConfig.h"
 
-// Comment this out if YAML should not be used
-#define SP_USE_YAML
-
 #if !DEBUG
 	#define SP_ASSERT(x)
 #else

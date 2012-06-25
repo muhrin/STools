@@ -6,6 +6,7 @@ set(spipe_Header_Files__blocks
   blocks/EdgeDetect.h
   blocks/LoadPotStructures.h
   blocks/LowestFreeEnergy.h
+  blocks/MakeConvexHull.h
   blocks/MakeMap.h
   blocks/NiggliReduction.h
   blocks/ParamPotentialGo.h
@@ -22,6 +23,7 @@ set(spipe_Source_Files__blocks
   blocks/DetermineSpaceGroup.cpp
   blocks/LoadPotStructures.cpp
   blocks/LowestFreeEnergy.cpp
+  blocks/MakeConvexHull.cpp
   blocks/MakeMap.cpp
   blocks/NiggliReduction.cpp
   blocks/ParamPotentialGo.cpp
@@ -127,6 +129,7 @@ include_directories(
 
 
 include_directories(.)
+
 
 
 ###################
