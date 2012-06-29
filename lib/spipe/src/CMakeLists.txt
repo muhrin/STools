@@ -128,40 +128,42 @@ include_directories(
   ${SPIPE_INCLUDE_DIRS}
 )
 
-
-###################
-## StructurePipe ##
-###################
-add_executable(spipe
+###########################
+## StructurePipe Library ##
+###########################
+add_library(spipe
   ${spipe_Files}
-  StructurePipe.cpp
 )
 
 add_dependencies(spipe sslib yaml_cpp spglib)
 
+
+###################
+## StructurePipe ##
+###################
+add_executable(spipe-bin
+  ${spipe_Files}
+  StructurePipe.cpp
+)
+
+# Force the spipe-bin executable to be called just spipe
+set_target_properties(spipe-bin
+  PROPERTIES OUTPUT_NAME spipe)
+
+add_dependencies(spipe-bin sslib yaml_cpp spglib spipe)
+
 # Libraries we need to link to
-target_link_libraries(spipe
+target_link_libraries(spipe-bin
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${ARMADILLO_LIBRARIES}
   sslib
   yaml-cpp
   spglib
+  spipe
 )
 if(SP_USE_QHULL)
-  target_link_libraries(spipe
+  target_link_libraries(spipe-bin
     ${QHULL_LIBRARIES}
   )
 endif(SP_USE_QHULL)
-
-
-###########################
-## StructurePipe Library ##
-###########################
-add_library(libspipe
-  ${spipe_Files}
-)
-
-add_dependencies(libspipe sslib yaml_cpp spglib)
-
-
