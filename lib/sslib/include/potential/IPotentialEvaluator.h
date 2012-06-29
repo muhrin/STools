@@ -30,7 +30,7 @@ class IPotentialEvaluator
 {
 public:
 
-  virtual ::boost::shared_ptr<StandardData<double> > getData() = 0;
+  virtual ::boost::shared_ptr< StandardData< double > > getData() = 0;
 
 	virtual void evalPotential() = 0;
 

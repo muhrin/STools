@@ -147,7 +147,7 @@ void StoichiometrySearch::start()
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
 
     // Add a minsep constraint
-    sweepPipeData.structureDescription->addAtomConstraint(new ::sstbx::build_cell::Minsep(1.5));
+    sweepPipeData.structureDescription->addAtomConstraint(new ::sstbx::build_cell::Minsep(1.0 * myAtomsRadius));
 
     // Generate the unit cell
     sweepPipeData.cellDescription = CellDescPtr(new ::sstbx::build_cell::RandomCellDescription<double>());

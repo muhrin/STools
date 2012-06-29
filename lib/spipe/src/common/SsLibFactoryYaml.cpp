@@ -318,8 +318,12 @@ ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
       throw FactoryError() << ErrorType(MALFORMED_VALUE);
     }
 
+    // TODO: HACK!! Fix this to read in the real values
+    const ::std::vector<ssc::AtomSpeciesId> species;
+
     pot = new ssp::SimplePairPotential<double>(
       numSpecies,
+      species,
       epsilon.mat,
       sigma.mat,
       cutoff,

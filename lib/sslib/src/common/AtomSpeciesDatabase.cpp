@@ -66,7 +66,7 @@ const AtomSpeciesId::Value AtomSpeciesDatabase::getIdFromSymbol(const std::strin
 }
 
 void AtomSpeciesDatabase::setAll(
-  const AtomSpeciesId::Value id,
+  AtomSpeciesId::Value id,
 	const ::std::string & symbol,
 	const ::std::string & name)
 {

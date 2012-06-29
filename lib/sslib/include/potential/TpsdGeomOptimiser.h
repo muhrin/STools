@@ -1,6 +1,9 @@
 /*
  * TpsdGeomOptimiser.h
  *
+ * Two-point Step Size Gradient Methods - Barzilai and Borwein
+ * IMA Journal of Numerical Analysis (1988) 8, 141-148
+ *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
@@ -45,18 +48,22 @@ public:
 
 	virtual const IPotential & getPotential() const;
 
-	virtual bool optimise(::sstbx::common::Structure & structure) const;
+	virtual bool optimise(
+    ::sstbx::common::Structure &  structure,
+    const ::arma::mat * const     externalPressure = NULL) const;
 
 	virtual bool optimise(
-		::sstbx::common::Structure & structure,
-    ::boost::shared_ptr<StandardData<FloatType> > & data) const;
+		::sstbx::common::Structure &  structure,
+    ::boost::shared_ptr< StandardData<FloatType> > & data,
+    const ::arma::mat * const     externalPressure = NULL) const;
 
 	// End IGeomOptimiser interface
 
 	bool optimise(
-    IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
-		const FloatType       eTol) const;
+    IPotentialEvaluator &     evaluator,
+		const size_t              maxSteps,
+		const FloatType           eTol,
+    const ::arma::mat * const externalPressure) const;
 
 	static const size_t		DEFAULT_MAX_STEPS;
 	static const FloatType	DEFAULT_TOLERANCE;
@@ -112,11 +119,17 @@ const IPotential & TPSD_GEOM_OPTIMISER_TTYPE::getPotential() const
 
 template TPSD_GEOM_OPTIMISER_TPARAMS
 bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
-	::sstbx::common::Structure & structure) const
+	::sstbx::common::Structure &  structure,
+  const ::arma::mat * const     externalPressure) const
 {
   ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential.createEvaluator(structure);
 
-	const bool outcome = optimise(*evaluator, DEFAULT_MAX_STEPS, DEFAULT_TOLERANCE);
+	const bool outcome = optimise(
+    *evaluator,
+    DEFAULT_MAX_STEPS,
+    DEFAULT_TOLERANCE,
+    externalPressure
+  );
 
   ::boost::shared_ptr<StandardData<FloatType> > data = evaluator->getData();
 
@@ -131,12 +144,18 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 
 template TPSD_GEOM_OPTIMISER_TPARAMS
 bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
-	::sstbx::common::Structure & structure,
-	::boost::shared_ptr<StandardData<FloatType> > & data) const
+	::sstbx::common::Structure &                    structure,
+	::boost::shared_ptr<StandardData<FloatType> > & data,
+  const ::arma::mat * const                       externalPressure) const
 {
-  ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential.createEvaluator(structure);
+  ::boost::shared_ptr< IPotentialEvaluator > evaluator = myPotential.createEvaluator(structure);
 
-	const bool outcome = optimise(*evaluator, DEFAULT_MAX_STEPS, DEFAULT_TOLERANCE);
+	const bool outcome = optimise(
+    *evaluator,
+    DEFAULT_MAX_STEPS,
+    DEFAULT_TOLERANCE,
+    externalPressure
+  );
 
   data = evaluator->getData();
 
@@ -151,15 +170,23 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 
 template TPSD_GEOM_OPTIMISER_TPARAMS
 bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
-    IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
-		const FloatType       eTol) const
+  IPotentialEvaluator &     evaluator,
+	const size_t              maxSteps,
+	const FloatType           eTol,
+  const ::arma::mat * const externalPressure) const
 {
-	using namespace arma;
-
 	typedef typename arma::Col<FloatType>::template fixed<3>	Vec3;
 	typedef typename arma::Mat<FloatType>						Mat3;
 	typedef typename arma::Mat<FloatType>::template fixed<3, 3>	Mat33;
+
+  // Set up the external pressure
+  Mat33 pressure;
+  pressure.fill(0.0);
+  if(externalPressure)
+  {
+    pressure = *externalPressure;
+  }
+  const double pressureMean = arma::trace(pressure) / 3.0;
 
   // Get data about the structure to be optimised
   StandardData<FloatType> & data = *evaluator.getData();
@@ -225,8 +252,7 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 
 		s = data.stressMtx * latticeCar;
 
-		// TODO: ADD BACK IN EXTERNAL PRESSURE!
-		h = data.totalEnthalpy /*+ trace(data.myExternalPressure) / 3.0 * volume*/;
+		h = data.totalEnthalpy + pressureMean * volume;
 
 		deltaF	= data.forces - f0;
 		// The accu function will do the sum of all elements
@@ -253,8 +279,7 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 		data.pos		-= arma::floor(data.pos);
 
 		// Move on cell vectors to relax strain
-		// TODO: ADD BACK EXTERNAL PRESSURE
-		deltaLatticeCar = step * (s /*- data.myExternalPressure * latticeCar*/);
+		deltaLatticeCar = step * (s - pressure * latticeCar);
 		latticeCar		+= deltaLatticeCar;
 		uc.setOrthoMtx(latticeCar);
 

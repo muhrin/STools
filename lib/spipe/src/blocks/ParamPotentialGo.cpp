@@ -38,12 +38,22 @@ namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
 	::sstbx::potential::IParameterisable & paramPotential,
-	::sstbx::potential::IGeomOptimiser & optimiser):
+	::sstbx::potential::IGeomOptimiser & optimiser,
+  const ::arma::mat33 * const externalPressure):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
 myParamPotential(paramPotential),
 myOptimiser(optimiser),
 myTableSupport(fs::path("param_pot.dat"))
-{}
+{
+  if(externalPressure)
+  {
+    myExternalPressure = *externalPressure;
+  }
+  else
+  {
+    myExternalPressure.fill(0.0);
+  }
+}
 
 void ParamPotentialGo::pipelineInitialising()
 {
@@ -78,7 +88,7 @@ void ParamPotentialGo::pipelineStarting()
 void ParamPotentialGo::in(spipe::common::StructureData & data)
 {
   ::boost::shared_ptr<sstbx::potential::StandardData<> > optData;
-	if(myOptimiser.optimise(*data.getStructure(), optData))
+	if(myOptimiser.optimise(*data.getStructure(), optData, &myExternalPressure))
   {
 	  // Copy over information from the optimisation results
 	  data.enthalpy.reset(optData->totalEnthalpy);

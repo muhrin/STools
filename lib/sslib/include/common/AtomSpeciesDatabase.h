@@ -28,7 +28,7 @@ public:
 	AtomSpeciesDatabase();
 
 	virtual void setAll(
-    const AtomSpeciesId::Value id,
+    AtomSpeciesId::Value id,
 		const ::std::string & symbol,
 		const ::std::string & name);
 

@@ -9,24 +9,24 @@ message(STATUS "Configuring STools ${ST_VERSION_MAJOR}.${ST_VERSION_MINOR}")
 
 project(STools)
 
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeLocal.txt)
-  message(STATUS "Generating local configuration file, CMakeLocal.txt, for this build.  Try changing settings here if there are any problems building.")
-  configure_file(
-    "${PROJECT_SOURCE_DIR}/CMakeLocal.txt.in"
-    "${CMAKE_BINARY_DIR}/CMakeLocal.txt"
-  )
-endif()
+## Configuration options ###############################
 
-# Include local settings
-include("${CMAKE_BINARY_DIR}/CMakeLocal.txt")
+# Custom paths to libraries #########
+set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
+set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
+set(QHULL_ROOT "" CACHE FILEPATH "Path to qhull library")
+
+
+## End configuration options ###########################
+
 
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
 
-configure_file (
+configure_file(
   "${PROJECT_SOURCE_DIR}/src/SToolsConfig.h.in"
   "${PROJECT_BINARY_DIR}/src/SToolsConfig.h"
-  )
+)
 
 
 
@@ -49,17 +49,21 @@ endif()
 
 ## END FIND PACKAGES ####################################
 
-# Include directories with header files
-  include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-  )
-
 add_subdirectory(lib/pipelib)   # Pipeline library
 add_subdirectory(lib/sslib)     # Structure searching library
 add_subdirectory(lib/yaml-cpp)  # YAML library
 add_subdirectory(lib/spglib)    # Space group finder
 add_subdirectory(lib/spipe)	# StructurePipe
+
+message(STATUS "Dir: ${SPIPE_INCLUDE_DIRS}")
+
+# Include directories with header files
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${ARMADILLO_INCLUDE_DIRS}
+  ${SPIPE_INCLUDE_DIRS}
+)
+
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "STools")

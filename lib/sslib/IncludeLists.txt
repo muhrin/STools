@@ -66,6 +66,7 @@ set(sslib_Header_Files__io
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
 
 set(sslib_Header_Files__potential
+  include/potential/GenericPotentialEvaluator.h
   include/potential/IGeomOptimiser.h
   include/potential/IParameterisable.h
   include/potential/IPotential.h

@@ -47,7 +47,8 @@ class ParamPotentialGo : public pipelib::AbstractSimpleBlock<StructureDataTyp, S
 public:
 	ParamPotentialGo(
 		::sstbx::potential::IParameterisable & paramPotential,
-		::sstbx::potential::IGeomOptimiser & optimiser);
+		::sstbx::potential::IGeomOptimiser & optimiser,
+    const ::arma::mat33 * const externalPressure = NULL);
 
   // From Block /////////////////////////
   virtual void pipelineInitialising();
@@ -67,6 +68,7 @@ private:
 	::sstbx::potential::IParameterisable &      myParamPotential;
 	const sstbx::potential::IGeomOptimiser &    myOptimiser;
   ::arma::vec                                 myCurrentParams;
+  ::arma::mat33                               myExternalPressure;
 
   ::spipe::utility::DataTableSupport          myTableSupport;
 };

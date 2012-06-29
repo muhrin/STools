@@ -18,8 +18,8 @@
 
 #include <libqhullcpp/Coordinates.h>
 #include <libqhullcpp/PointCoordinates.h>
-#include <libqhullcpp/QHull.h>
-#include <libqhullcpp/UsingLibQhull.h>
+#include <libqhullcpp/Qhull.h>
+//#include <libqhullcpp/UsingLibQhull.h>
 
 #include <common/Structure.h>
 
@@ -36,7 +36,7 @@ namespace blocks
 namespace ssc = ::sstbx::common;
 
 MakeConvexHull::MakeConvexHull():
-Block<::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Make convex hull")
+::pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Make convex hull")
 {}
 
 void MakeConvexHull::pipelineFinishing()

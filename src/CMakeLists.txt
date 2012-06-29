@@ -51,7 +51,7 @@ add_executable(ssweep
   ${stools_Files__ssweep}
 )
 
-add_dependencies(ssweep yaml_cpp sslib  pipelib StructurePipe)
+add_dependencies(ssweep yaml_cpp sslib  pipelib libspipe)
 
 # Libraries we need to link to
   target_link_libraries(ssweep
@@ -59,9 +59,10 @@ add_dependencies(ssweep yaml_cpp sslib  pipelib StructurePipe)
     ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
     ${ARMADILLO_LIBRARIES}
     yaml-cpp
+    spglib
     sslib
     pipelib
-    spipe
+    libspipe
   )
 
 

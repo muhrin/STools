@@ -9,8 +9,6 @@ message(STATUS "Configuring StructurePipe ${SP_VERSION_MAJOR}.${SP_VERSION_MINOR
 
 project(StructurePipe)
 
-set(QHULL_USE_STATIC TRUE)
-
 ## Configuration options ###############################
 
 # Custom paths to libraries #########
@@ -49,8 +47,11 @@ if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
 endif()
 
 ## QHull ##
+if(WIN32)
+  set(QHULL_USE_STATIC ON)
+endif(WIN32)
 find_package(Qhull COMPONENTS QhullCpp)
-set(SP_USE_QHULL ${QHULL_FOUND})
+set(SP_USE_QHULL ${QHULL_QHULLCPP_FOUND})
 
 ## END FIND PACKAGES ####################################
 
@@ -58,15 +59,28 @@ configure_file (
   "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
   "${PROJECT_BINARY_DIR}/src/StructurePipeConfig.h"
 )
+
+if(SP_USE_QHULL)
+include_directories(
+  ${QHULL_INCLUDE_DIRS}
+)
+endif(SP_USE_QHULL)
+
+set(SPIPE_INCLUDE_DIRS
+  ${PROJECT_BINARY_DIR}/src  # So that we find StructurePipeConfig.h
+  ${PROJECT_SOURCE_DIR}/src
+  CACHE FILEPATH INTERNAL FORCE
+)
+
 # Include directories with header files
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
-  ${QHULL_INCLUDE_DIRS}
-  "${PROJECT_BINARY_DIR}/src"  # So that we find StructurePipeConfig.h
+  ${SPIPE_INCLUDE_DIRS}
 )
 
-message(STATUS "${PROJECT_BINARY_DIR}")
+
+## Subdirectories/libraries #############################
 
 add_subdirectory(src)
 

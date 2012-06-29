@@ -125,17 +125,14 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/lib/sslib/src # TODO: Remove this and move sslib/src/SSLib* to include
   ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include
   ${CMAKE_SOURCE_DIR}/lib/spglib/include
+  ${SPIPE_INCLUDE_DIRS}
 )
-
-
-include_directories(.)
-
 
 
 ###################
 ## StructurePipe ##
 ###################
-add_library(spipe
+add_executable(spipe
   ${spipe_Files}
   StructurePipe.cpp
 )
@@ -143,11 +140,28 @@ add_library(spipe
 add_dependencies(spipe sslib yaml_cpp spglib)
 
 # Libraries we need to link to
+target_link_libraries(spipe
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${ARMADILLO_LIBRARIES}
+  sslib
+  yaml-cpp
+  spglib
+)
+if(SP_USE_QHULL)
   target_link_libraries(spipe
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-    ${ARMADILLO_LIBRARIES}
-    sslib
-    yaml-cpp
-    spglib
+    ${QHULL_LIBRARIES}
   )
+endif(SP_USE_QHULL)
+
+
+###########################
+## StructurePipe Library ##
+###########################
+add_library(libspipe
+  ${spipe_Files}
+)
+
+add_dependencies(libspipe sslib yaml_cpp spglib)
+
+

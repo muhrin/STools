@@ -13,8 +13,10 @@
 
 // INCLUDES ///////////////////////////////////////////////
 
+#include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -36,7 +38,10 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx { namespace potential {
+namespace sstbx
+{
+namespace potential
+{
 
 template<typename FloatType = double>
 class SimplePairPotential :
@@ -44,6 +49,16 @@ class SimplePairPotential :
 	public IParameterisable
 {
 public:
+
+  /**
+  /* A list from 0 to N of the species that each row (and column) of the parameter
+  /* matrices corresponds to.  The entries should be unique.
+  /*                      Na Cl
+  /* epsilon_{ij} = Na (  1  0.5 )
+  /*                CL ( 0.5  1  )
+  /* speciesMap(0 => Na, 1 => Cl)
+  /**/
+  typedef typename SimplePairPotentialData<FloatType>::SpeciesList  SpeciesList;
 
   /**
   /* Combining rules for setting off-diagonal length/energy scale terms. See
@@ -65,7 +80,8 @@ public:
 	typedef typename arma::Col<FloatType>::template fixed<3>	Vec3;
 
 	SimplePairPotential(
-		const size_t &				   numSpecies,
+		const size_t &				  numSpecies,
+    const SpeciesList &     speciesList,
 		const SPP_TYPE::Mat &		epsilon,
 		const SPP_TYPE::Mat &		sigma,
 		const FloatType &			  cutoffFactor,
@@ -89,14 +105,16 @@ public:
 
 
   // From IPotential /////////////
-  virtual ::boost::shared_ptr<IPotentialEvaluator> createEvaluator(const sstbx::common::Structure & structure) const;
-  // End from IPotential
+  virtual ::boost::shared_ptr< IPotentialEvaluator > createEvaluator(const sstbx::common::Structure & structure) const;
+  // End from IPotential /////////
 
   void evaluate(SimplePairPotentialData<FloatType> & data) const;
 
 private:
 
-  typedef GenericPotentialEvaluator<SimplePairPotential<FloatType>, SimplePairPotentialData<FloatType> >
+  typedef SimplePairPotentialData<FloatType> DataType;
+
+  typedef GenericPotentialEvaluator< SimplePairPotential< FloatType >, SimplePairPotentialData< FloatType > >
     EvaluatorTyp;
 
 	void initCutoff(const FloatType cutoff);
@@ -111,6 +129,7 @@ private:
 
 	/** Potential parameters */
 	size_t					  myNumSpecies;
+  SpeciesList       mySpeciesList;
 	SPP_TYPE::Mat			myEpsilon;
 	SPP_TYPE::Mat			mySigma;
 	SPP_TYPE::Mat			myBeta;
@@ -132,6 +151,7 @@ private:
 template <typename FloatType>
 SimplePairPotential<FloatType>::SimplePairPotential(
 	const size_t &				  numSpecies,
+  const SpeciesList &     speciesList,
 	const SPP_TYPE::Mat &		epsilon,
 	const SPP_TYPE::Mat &		sigma,
 	const FloatType &			  cutoffFactor,
@@ -141,6 +161,7 @@ SimplePairPotential<FloatType>::SimplePairPotential(
   const CombiningRule     combiningRule):
 	myName("Simple pair potential"),
 	myNumSpecies(numSpecies),
+  mySpeciesList(speciesList),
 	myEpsilon(epsilon),
 	mySigma(sigma),
 	myBeta(beta),
@@ -234,14 +255,14 @@ template <typename FloatType>
 size_t SimplePairPotential<FloatType>::getNumParams() const
 {
   const float fNumSpecies = myNumSpecies;
-  return (size_t)(fNumSpecies * (fNumSpecies + 1.0));
+  // 2 (eps/sig) * n * (n + 1) / 2 + n(species) = n( n + 3)
+  return (size_t)(fNumSpecies * (fNumSpecies + 2.0));
 }
 
 template <typename FloatType>
 ::arma::Col<FloatType> SimplePairPotential<FloatType>::getParams() const
 {
 	::arma::Col<FloatType> params(getNumParams());
-  const unsigned int paramsEach = getNumParams() / 2.0;
 
   size_t idx = 0;
 
@@ -261,6 +282,10 @@ template <typename FloatType>
 			params(idx) = mySigma(i, j);
 		}
 	}
+  for(size_t i = 0; i < myNumSpecies; ++i, ++idx)
+  {
+    params(idx) = mySpeciesList[i].ordinal();
+  }
 
 	return params;
 }
@@ -299,6 +324,12 @@ void SimplePairPotential<FloatType>::setParams(const ::arma::Col<FloatType> & pa
 
   // Initialise the cutoff matrices
   initCutoff(myCutoffFactor);
+
+  // Set the species list
+  for(size_t i = 0; i < myNumSpecies; ++i, ++idx)
+  {
+    mySpeciesList[i] = *::sstbx::common::AtomSpeciesId::values().operator[]((int)params[idx]);
+  }
 
 	// Reset the parameter string
 	myParamString.clear();
@@ -458,12 +489,18 @@ void SimplePairPotential<FloatType>::evaluate(
 	// Loop over all particle pairs (including self-interaction)
 	for(size_t i = 0; i < data.numParticles; ++i)
 	{
-		posI = data.pos.col(i);
 		speciesI = data.species[i];
+    if(speciesI == DataType::IGNORE_ATOM)
+      continue;
+
+		posI = data.pos.col(i);
 
 		for(size_t j = i; j < data.numParticles; ++j)
 		{
 			speciesJ = data.species[j];
+      if(speciesJ == DataType::IGNORE_ATOM)
+        continue;
+
 			posJ = data.pos.col(j);
 
 			// TODO: Configure atom species and corresponding cutoffs
@@ -538,7 +575,9 @@ template <typename FloatType>
   SimplePairPotential<FloatType>::createEvaluator(const sstbx::common::Structure & structure) const
 {
   // Build the data from the structure
-  ::boost::shared_ptr<SimplePairPotentialData<FloatType> > data(new SimplePairPotentialData<FloatType>(structure));
+  ::boost::shared_ptr< SimplePairPotentialData< FloatType > > data(
+    new SimplePairPotentialData<FloatType>(structure, mySpeciesList)
+  );
 
   // Create the evaluator
   return ::boost::shared_ptr<IPotentialEvaluator>(new EvaluatorTyp(*this, data));
@@ -556,3 +595,4 @@ void SimplePairPotential<FloatType>::resetAccumulators(SimplePairPotentialData<F
 }}
 
 #endif /* SIMPLE_PAIR_POTENTIAL_H */
+

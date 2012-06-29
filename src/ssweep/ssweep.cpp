@@ -35,6 +35,7 @@
 #include <blocks/LowestFreeEnergy.h>
 #include <blocks/NiggliReduction.h>
 #include <blocks/ParamPotentialGo.h>
+#include <blocks/PotentialGo.h>
 #include <blocks/PotentialParamSweep.h>
 #include <blocks/RandomStructure.h>
 #include <blocks/RemoveDuplicates.h>
@@ -72,8 +73,12 @@ int main(const int argc, const char * const argv[])
   }
 
   // Param sweep
-  vec from(6), step(6);
-  Col<unsigned int> steps(6);
+  vec from(8), step(8);
+  Col<unsigned int> steps(8);
+
+  from.fill(0);
+  step.fill(0);
+  step.fill(0);
 
   double lFrom, lStep;
   unsigned int lNSteps;
@@ -98,6 +103,12 @@ int main(const int argc, const char * const argv[])
   {
     return 0;
   }
+
+  ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
+  potentialSpecies[0] = ssc::AtomSpeciesId::NA;
+  potentialSpecies[1] = ssc::AtomSpeciesId::CL;
+  from(6) = potentialSpecies[0].ordinal();
+  from(7) = potentialSpecies[1].ordinal();
 
   const double betaDiagonal = ::boost::lexical_cast<double>(argv[7]);
 
@@ -138,9 +149,26 @@ int main(const int argc, const char * const argv[])
 	beta << betaDiagonal << 1 << endr
 			<< 1 << betaDiagonal << endr;
 
-  ssp::SimplePairPotential<double> pp(2, epsilon, sigma, 2.5, beta, 12, 6, ssp::SimplePairPotential<double>::CUSTOM);
+  ssp::SimplePairPotential<double> pp(
+    2,
+    potentialSpecies,
+    epsilon,
+    sigma,
+    2.5,
+    beta,
+    12,
+    6,
+    ssp::SimplePairPotential<double>::CUSTOM
+  );
   ssp::TpsdGeomOptimiser<double> optimiser(pp);
-  sp::blocks::ParamPotentialGo go(pp, optimiser);
+
+  ::arma::mat33 externalPressure;
+  externalPressure.fill(0.0);
+  externalPressure.diag().fill(0.1);
+
+  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &externalPressure);
+
+  sp::blocks::PotentialGo go(optimiser);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;
@@ -168,7 +196,8 @@ int main(const int argc, const char * const argv[])
   // Put it all together
   randomSearchPipe.setStartBlock(randStr);
   randomSearchPipe.connect(randStr, niggli);
-  randomSearchPipe.connect(niggli, go);
+  randomSearchPipe.connect(niggli, goPressure);
+  randomSearchPipe.connect(goPressure, go);
   randomSearchPipe.connect(go, remDuplicates);
   randomSearchPipe.connect(remDuplicates, sg);
   randomSearchPipe.connect(sg, write1);

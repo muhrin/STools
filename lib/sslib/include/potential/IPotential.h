@@ -39,7 +39,7 @@ public:
 
 	virtual ~IPotential() {}
 
-  virtual ::boost::shared_ptr<IPotentialEvaluator>
+  virtual ::boost::shared_ptr< IPotentialEvaluator >
     createEvaluator(const sstbx::common::Structure & structure) const = 0;
 };
 

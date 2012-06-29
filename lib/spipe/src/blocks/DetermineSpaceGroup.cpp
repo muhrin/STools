@@ -79,7 +79,7 @@ void DetermineSpaceGroup::in(StructureDataTyp & data)
     ::boost::scoped_array<int> species(new int[speciesVec.size()]);
     for(size_t i = 0; i < speciesVec.size(); ++i)
     {
-      species[i] = speciesVec[i];
+      species[i] = speciesVec[i].ordinal();
     }
 
     // Get the space group

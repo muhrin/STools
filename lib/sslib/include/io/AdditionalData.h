@@ -10,6 +10,7 @@
 #define ADDITIONAL_DATA_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <string>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
@@ -23,11 +24,11 @@ struct AdditionalData
 {
 public:
 
-	::boost::optional<double>       enthalpy;
-	::boost::optional<std::string>  name;
-	::boost::optional<double>       pressure;
-	::boost::optional<std::string>  spaceGroup;
-	::boost::optional<size_t>       timesFound;
+  ::boost::optional<double>           enthalpy;
+  ::boost::optional<std::string>      name;
+  ::boost::optional<double>           pressure;
+  ::boost::optional< ::std::string>   spaceGroup;
+  ::boost::optional<size_t>           timesFound;
 
 };
 
