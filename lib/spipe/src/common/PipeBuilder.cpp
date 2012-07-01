@@ -10,16 +10,13 @@
 
 #include <boost/foreach.hpp>
 
-
 #include <pipelib/IPipeline.h>
 
 // Local includes
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 
-#ifdef SP_USE_YAML
-  #include <yaml-cpp/yaml.h>
-#endif
+#include <yaml-cpp/yaml.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -30,8 +27,6 @@ namespace common
 
 namespace kw = ::spipe::common::yaml_keywords;
 
-
-#ifdef SP_USE_YAML
 
 SpPipelineTyp * PipeBuilder::buildPipeFromYaml(const YAML::Node & node)
 {
@@ -137,8 +132,6 @@ SpPipelineTyp * PipeBuilder::buildPipeFromYaml(const YAML::Node & node)
 
   return pipe;
 }
-
-#endif // SP_USE_YAML
 
 }
 }

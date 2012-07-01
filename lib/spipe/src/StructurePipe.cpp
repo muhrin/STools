@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "StructurePipe.h"
+#include <StructurePipe.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -14,15 +14,17 @@
 #include <pipelib/IPipeline.h>
 
 // Local includes
-#include "common/PipeBuilder.h"
-#include "common/PipeFactoryYaml.h"
+#include <common/SharedData.h>
+#include <common/StructureData.h>
+#include <common/PipeBuilder.h>
+#include <common/PipeFactoryYaml.h>
 
 // TODO: TEMPORARY!!
 #include <factory/ISchemaElementInstance.h>
 #include <factory/SslibElements.h>
 #include <factory/SchemaDoc.h>
 #include <factory/SchemaMap.h>
-#include "common/YamlInputObjectAdapter.h"
+#include <common/YamlInputObjectAdapter.h>
 
 // MACROS ////////////////////////////////////
 

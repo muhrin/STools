@@ -135,35 +135,39 @@ add_library(spipe
   ${spipe_Files}
 )
 
-add_dependencies(spipe sslib yaml_cpp spglib)
+# Libraries we need to link to
+target_link_libraries(spipe
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${ARMADILLO_LIBRARIES}
+  yaml-cpp
+  spglib
+  pipelib
+  sslib
+)
 
+# Qhull
+if(SP_USE_QHULL)
+  target_link_libraries(spipe
+    ${QHULL_LIBRARIES}
+  )
+endif(SP_USE_QHULL)
 
 ###################
 ## StructurePipe ##
 ###################
 add_executable(spipe-bin
-  ${spipe_Files}
   StructurePipe.cpp
 )
 
 # Force the spipe-bin executable to be called just spipe
-set_target_properties(spipe-bin
-  PROPERTIES OUTPUT_NAME spipe)
+#set_target_properties(spipe-bin
+#  PROPERTIES OUTPUT_NAME spipe)
 
-add_dependencies(spipe-bin sslib yaml_cpp spglib spipe)
+add_dependencies(spipe-bin spipe)
 
 # Libraries we need to link to
 target_link_libraries(spipe-bin
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${ARMADILLO_LIBRARIES}
-  sslib
-  yaml-cpp
-  spglib
   spipe
 )
-if(SP_USE_QHULL)
-  target_link_libraries(spipe-bin
-    ${QHULL_LIBRARIES}
-  )
-endif(SP_USE_QHULL)
+

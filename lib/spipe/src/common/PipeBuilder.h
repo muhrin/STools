@@ -33,21 +33,16 @@ class PipeBuilder
 {
 public:
 
-#ifdef SP_USE_YAML
   SpPipelineTyp * buildPipeFromYaml(const YAML::Node & node);
-#endif // SP_USE_YAML
-  
 
 private:
 
-#ifdef SP_USE_YAML
   /** A mapping from block ids to the instances */
   typedef ::std::map<
     ::spipe::common::yaml_keywords::IdTyp,
     SpPipeBlockTyp *>   BlocksMapYaml;
 
   PipeFactoryYaml     myFactoryYaml;
-#endif // SP_USE_YAML
 
 };
 
