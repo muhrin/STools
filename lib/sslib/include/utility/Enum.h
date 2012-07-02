@@ -89,7 +89,7 @@ public:
 
   static const EnumeratorsList & values()
   {
-    return Enumerator::enumerators;
+    return Enumerator::enumerators();
   }
 
   inline int ordinal() const
@@ -128,14 +128,14 @@ protected:
     Enumerator():
       myOrdinal(++lastOrdinal)
     {
-      enumerators.insert(this);
+      enumerators().insert(this);
     }
 
     Enumerator(const int ordinal):
       myOrdinal(ordinal)
     {
       lastOrdinal = ordinal;
-      enumerators.insert(this);
+      enumerators().insert(this);
     }
 
     inline int ordinal() const { return myOrdinal; }
@@ -153,8 +153,13 @@ protected:
 
   private:
 
+    static EnumeratorsList & enumerators()
+    {
+      static EnumeratorsList enumerators;
+      return enumerators;
+    }
+
     static int             lastOrdinal;
-    static EnumeratorsList enumerators;
 
     const int myOrdinal;
 
@@ -200,8 +205,8 @@ private:
 template <class Derived>
 int Enum<Derived>::Enumerator::lastOrdinal = 0;
 
-template <class Derived>
-typename Enum<Derived>::EnumeratorsList Enum<Derived>::Enumerator::enumerators;
+//template <class Derived>
+//typename Enum<Derived>::EnumeratorsList Enum<Derived>::Enumerator::enumerators;
 
 }
 }

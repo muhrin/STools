@@ -2,20 +2,25 @@ cmake_minimum_required(VERSION 2.6)
 
 project(SSLib)
 
-# Include local settings
-include(CMakeLocal.txt)
-
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
 
 set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MAJOR 1)
+set(SSLIB_VERSION_PATCH 0)
 
-configure_file (
+configure_file(
   "${PROJECT_SOURCE_DIR}/src/SSLibConfig.h.in"
   "${PROJECT_BINARY_DIR}/src/SSLibConfig.h"
-  )
+)
 
+## CONFIGURATION SETTINGS ##############################
+
+# Custom paths to libraries #########
+set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
+set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
+
+## END CONFIGURATION SETTINGS ##########################
 
 
 ## FIND PACKAGES ########################################

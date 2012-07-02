@@ -82,6 +82,7 @@ source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 set(sslib_Header_Files__utility
   include/utility/BoostFilesystem.h
   include/utility/EdgeMap.h
+  include/utility/Enum.h
   include/utility/GenericBufferedComparator.h
   include/utility/HeterogeneousMap.h
   include/utility/IBufferedComparator.h
