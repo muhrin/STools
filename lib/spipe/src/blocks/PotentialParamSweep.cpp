@@ -61,7 +61,7 @@ void PotentialParamSweep::pipelineInitialising()
 	sharedDat.potSweepStep.reset(myStep);
 	sharedDat.potSweepNSteps.reset(myNSteps);
 
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string + ".potparams");
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".potparams");
   myTableSupport.registerPipeline(*myPipeline);
 }
 
