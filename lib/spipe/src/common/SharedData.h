@@ -64,7 +64,7 @@ class SharedData : public ::pipelib::event::IPipeListener< ::spipe::SpPipelineTy
 {
 public:
 
-  static const ::std::string DIR_SUBSTRING_DELIMITER;
+  static const char * DIR_SUBSTRING_DELIMITER;
 
   SharedData();
   ~SharedData();
@@ -80,6 +80,7 @@ public:
   bool appendToOutputDirName(const ::std::string & toAppend);
 
   ::boost::filesystem::path getOutputPath() const;
+  const ::boost::filesystem::path & getOutputFileStem() const;
 
   const ::boost::filesystem::path & getRelativeOutputPath() const;
 
@@ -92,10 +93,13 @@ public:
 	/** Potential sweep deltas */
 	::boost::optional< ::arma::vec>			potSweepStep;
 	/** Potential sweep number of steps to make */
-	::boost::optional< ::arma::Col<unsigned int> >	potSweepNSteps;
+	::boost::optional< ::arma::Col< unsigned int > >	potSweepNSteps;
 
-  ::boost::shared_ptr<sstbx::build_cell::StructureDescription>            structureDescription;
-  ::boost::shared_ptr<sstbx::build_cell::RandomCellDescription<double> >  cellDescription;
+  ::boost::shared_ptr< sstbx::build_cell::StructureDescription>            structureDescription;
+  ::boost::shared_ptr< sstbx::build_cell::RandomCellDescription< double > >  cellDescription;
+
+
+  ::std::string                       outputFilename;
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
@@ -110,6 +114,7 @@ private:
   ::spipe::SpPipelineTyp *            myPipe;
 
   ::boost::filesystem::path           myOutputDir;
+  ::boost::filesystem::path           myOutputFileStem;
 
 };
 

@@ -12,6 +12,8 @@
 #include <pipelib/PipelineState.h>
 #include <pipelib/event/PipeStateChanged.h>
 
+#include "common/UtilityFunctions.h"
+
 // NAMESPACES ////////////////////////////////
 
 namespace spipe
@@ -22,10 +24,11 @@ namespace common
 // Objects keys ////////////////
 const ::sstbx::utility::Key< ::arma::vec> GlobalKeys::POTENTIAL_PARAMS;
 
-const ::std::string SharedData::DIR_SUBSTRING_DELIMITER = "_";
+const char * SharedData::DIR_SUBSTRING_DELIMITER = "_";
 
 SharedData::SharedData():
-myPipe(NULL)
+myPipe(NULL),
+myOutputFileStem(generateUniqueName())
 {}
 
 SharedData::~SharedData()
@@ -72,6 +75,11 @@ bool SharedData::appendToOutputDirName(const std::string & toAppend)
   return outPath;
 }
 
+const ::boost::filesystem::path & SharedData::getOutputFileStem() const
+{
+  return myOutputFileStem;
+}
+
 const ::boost::filesystem::path & SharedData::getRelativeOutputPath() const
 {
   return myOutputDir;
@@ -102,6 +110,8 @@ void SharedData::reset()
   dataTable.clear();
 
   myOutputDir.clear();
+
+  myOutputFileStem = generateUniqueName();
 }
 
 void SharedData::buildOutputPathRecursive(::boost::filesystem::path & path, const ::spipe::SpPipelineTyp & pipe) const

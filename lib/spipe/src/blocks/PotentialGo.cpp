@@ -57,7 +57,6 @@ void PotentialGo::in(spipe::common::StructureData & data)
   {
 	  // Copy over information from the optimisation results
 	  data.enthalpy.reset(optData->totalEnthalpy);
-	  data.stressMtx.reset(optData->stressMtx);
 
 	  myOutput->in(data);
   }

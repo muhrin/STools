@@ -55,8 +55,6 @@ add_subdirectory(lib/yaml-cpp)  # YAML library
 add_subdirectory(lib/spglib)    # Space group finder
 add_subdirectory(lib/spipe)	# StructurePipe
 
-message(STATUS "Dir: ${SPIPE_INCLUDE_DIRS}")
-
 # Include directories with header files
 include_directories(
   ${Boost_INCLUDE_DIRS}

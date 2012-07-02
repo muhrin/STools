@@ -39,7 +39,8 @@ struct StructureObjectKeys
   // The absolute path to the last place that a structure was saved to disk
   static const ::sstbx::utility::Key< ::boost::filesystem::path>  LAST_ABS_SAVE_PATH;
   static const ::sstbx::utility::Key<unsigned int>                SPACEGROUP_NUMBER;
-  static const ::sstbx::utility::Key< ::std::string>              SPACEGROUP_SYMBOL;
+  static const ::sstbx::utility::Key< ::std::string >             SPACEGROUP_SYMBOL;
+  static const ::sstbx::utility::Key< double >                    PRESSURE_INTERNAL;
 
 
 };
@@ -63,7 +64,6 @@ public:
 	::boost::optional<std::string>		name;
 	::boost::optional<double>				pressure;
 	::boost::optional<std::string>		spaceGroup;
-	::boost::optional<arma::Mat<double> > stressMtx;
 	::boost::optional<size_t>				timesFound;
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;

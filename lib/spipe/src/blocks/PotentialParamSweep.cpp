@@ -42,8 +42,7 @@ myFrom(from),
 myStep(step),
 myNSteps(nSteps),
 mySweepPipeline(sweepPipeline),
-myStepExtents(nSteps.n_rows),
-myTableSupport(fs::path("param_sweep.dat"))
+myStepExtents(nSteps.n_rows)
 {
 	SP_ASSERT((myFrom.n_rows == myStep.n_rows) && (myFrom.n_rows == myNSteps.n_rows));
 
@@ -62,6 +61,7 @@ void PotentialParamSweep::pipelineInitialising()
 	sharedDat.potSweepStep.reset(myStep);
 	sharedDat.potSweepNSteps.reset(myNSteps);
 
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem() / fs::path(".potparams"));
   myTableSupport.registerPipeline(*myPipeline);
 }
 

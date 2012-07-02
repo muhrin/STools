@@ -42,8 +42,7 @@ ParamPotentialGo::ParamPotentialGo(
   const ::arma::mat33 * const externalPressure):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
 myParamPotential(paramPotential),
-myOptimiser(optimiser),
-myTableSupport(fs::path("param_pot.dat"))
+myOptimiser(optimiser)
 {
   if(externalPressure)
   {
@@ -57,6 +56,7 @@ myTableSupport(fs::path("param_pot.dat"))
 
 void ParamPotentialGo::pipelineInitialising()
 {
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem() / fs::path(".geomopt"));
   myTableSupport.registerPipeline(*myPipeline);
 }
 
@@ -87,14 +87,16 @@ void ParamPotentialGo::pipelineStarting()
 
 void ParamPotentialGo::in(spipe::common::StructureData & data)
 {
-  ::boost::shared_ptr<sstbx::potential::StandardData<> > optData;
+  ::boost::shared_ptr< sstbx::potential::StandardData<> > optData;
 	if(myOptimiser.optimise(*data.getStructure(), optData, &myExternalPressure))
   {
 	  // Copy over information from the optimisation results
+    const double pressure = ::arma::trace(optData->stressMtx) / 3.0;
 	  data.enthalpy.reset(optData->totalEnthalpy);
-	  data.stressMtx.reset(optData->stressMtx);
+    data.pressure.reset(pressure);
 
     data.objectsStore.insert(common::GlobalKeys::POTENTIAL_PARAMS, myCurrentParams);
+    data.objectsStore.insert(common::StructureObjectKeys::PRESSURE_INTERNAL, pressure);
 
     // Update our data table with the structure data
     updateTable(data);

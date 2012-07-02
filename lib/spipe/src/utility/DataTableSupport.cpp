@@ -24,6 +24,11 @@ namespace utility
 {
 namespace fs = ::boost::filesystem;
 
+DataTableSupport::DataTableSupport(const bool clearTableOnPipeFinish):
+myPipeline(NULL),
+myClearTableOnPipeFinish(clearTableOnPipeFinish)
+{}
+
 DataTableSupport::DataTableSupport(
   const ::boost::filesystem::path & filename,
   const bool clearTableOnPipeFinish):
@@ -60,23 +65,51 @@ DataTable & DataTableSupport::getTable()
   return myTable;
 }
 
+void DataTableSupport::setFilename(const fs::path & filename)
+{
+  myFilename = filename;
+
+  if(myPipeline && myPipeline->getState() == ::pipelib::PipelineState::RUNNING)
+  {
+    if(myWriter.get())
+    {
+      // Write the final state of the old filename
+      myWriter->write();
+    }
+
+    // Start the new writer
+    createWriter();
+  }
+}
+
 void DataTableSupport::notify(const ::pipelib::event::PipeStateChanged<SpPipelineTyp> & evt)
 {
   SP_ASSERT(myPipeline == &evt.getPipeline());
 
   if(evt.getNewState() == ::pipelib::PipelineState::RUNNING)
   {
-    fs::path outputPath = myPipeline->getSharedData().getOutputPath() / myFilename;
-    myWriter.reset(new DataTableWriter(myTable, outputPath));
+    createWriter();
   }
   else if(evt.getNewState() == ::pipelib::PipelineState::FINISHED)
   {
     // Write out the final state of the data table
-    myWriter->write();
+    if(myWriter.get())
+      myWriter->write();
 
     if(myClearTableOnPipeFinish)
       myTable.clear();
   }
+}
+
+bool DataTableSupport::createWriter()
+{
+  if(myFilename.empty())
+    return false;
+
+  const fs::path outputPath(myPipeline->getSharedData().getOutputPath() / myFilename);
+  myWriter.reset(new DataTableWriter(myTable, outputPath)); 
+
+  return true;
 }
 
 }

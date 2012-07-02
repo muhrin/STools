@@ -28,6 +28,7 @@ namespace ssu = ::sstbx::utility;
 const ::sstbx::utility::Key< ::boost::filesystem::path> StructureObjectKeys::LAST_ABS_SAVE_PATH;
 const ::sstbx::utility::Key<unsigned int> StructureObjectKeys::SPACEGROUP_NUMBER;
 const ::sstbx::utility::Key< ::std::string> StructureObjectKeys::SPACEGROUP_SYMBOL;
+const ::sstbx::utility::Key< double > StructureObjectKeys::PRESSURE_INTERNAL;
 
 StructureData::StructureData():
 myStructure(NULL)

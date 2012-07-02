@@ -44,6 +44,8 @@ class DataTableSupport : public ::pipelib::event::IPipeListener< ::spipe::SpPipe
 {
 public:
 
+  DataTableSupport(const bool clearTableOnPipeFinish = true);
+
   DataTableSupport(
     const ::boost::filesystem::path & filename,
     const bool clearTableOnPipeFinish = true);
@@ -54,6 +56,8 @@ public:
 
   DataTable & getTable();
 
+  void setFilename(const ::boost::filesystem::path & filename);
+
   // From IPipeListener /////////////////////
   virtual void notify(const ::pipelib::event::PipeStateChanged<SpPipelineTyp> & evt);
   // End from IPipeListener /////////////////
@@ -62,8 +66,10 @@ private:
 
   typedef ::boost::scoped_ptr<DataTableWriter> DataTableWriterPtr;
 
+  bool createWriter();
+
   ::spipe::SpPipelineTyp *          myPipeline;
-  const ::boost::filesystem::path   myFilename;
+  ::boost::filesystem::path         myFilename;
   DataTable                         myTable;
   DataTableWriterPtr                myWriter;
   const bool                        myClearTableOnPipeFinish;

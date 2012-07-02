@@ -51,8 +51,7 @@ pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoich
 myMaxAtoms(maxAtoms),
 myAtomsRadius(atomsRadius),
 mySubpipe(subpipe),
-myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst()),
-myTableSupport(fs::path("stoich.dat"))
+myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst())
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
@@ -81,6 +80,7 @@ void StoichiometrySearch::pipelineInitialising()
 	// Set outselves to collect any finished data from the sweep pipeline
   mySubpipe.setFinishedDataSink(*this);
 
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem() / fs::path(".stoich"));
   myTableSupport.registerPipeline(*myPipeline);
 }
 
