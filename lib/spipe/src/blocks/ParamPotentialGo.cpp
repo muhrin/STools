@@ -56,7 +56,7 @@ myOptimiser(optimiser)
 
 void ParamPotentialGo::pipelineInitialising()
 {
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem() / fs::path(".geomopt"));
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".geomopt");
   myTableSupport.registerPipeline(*myPipeline);
 }
 

@@ -80,7 +80,7 @@ void StoichiometrySearch::pipelineInitialising()
 	// Set outselves to collect any finished data from the sweep pipeline
   mySubpipe.setFinishedDataSink(*this);
 
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem() / fs::path(".stoich"));
+  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string + ".stoich");
   myTableSupport.registerPipeline(*myPipeline);
 }
 
