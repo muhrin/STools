@@ -38,27 +38,13 @@ namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
 	::sstbx::potential::IParameterisable & paramPotential,
-	::sstbx::potential::IGeomOptimiser & optimiser,
-  const ::arma::mat33 * const externalPressure):
+	const ::sstbx::potential::IGeomOptimiser & optimiser,
+  const ::arma::mat33 * const externalPressure,
+  const bool                  writeOutput):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
-myParamPotential(paramPotential),
-myOptimiser(optimiser)
-{
-  if(externalPressure)
-  {
-    myExternalPressure = *externalPressure;
-  }
-  else
-  {
-    myExternalPressure.fill(0.0);
-  }
-}
-
-void ParamPotentialGo::pipelineInitialising()
-{
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".geomopt");
-  myTableSupport.registerPipeline(*myPipeline);
-}
+PotentialGo(optimiser, externalPressure, writeOutput),
+myParamPotential(paramPotential)
+{}
 
 void ParamPotentialGo::pipelineStarting()
 {
@@ -85,29 +71,15 @@ void ParamPotentialGo::pipelineStarting()
   }
 }
 
-void ParamPotentialGo::in(spipe::common::StructureData & data)
+void ParamPotentialGo::copyOptimisationResults(
+  const sstbx::potential::StandardData<> & optData,
+  spipe::common::StructureData & strData)
 {
-  ::boost::shared_ptr< sstbx::potential::StandardData<> > optData;
-	if(myOptimiser.optimise(*data.getStructure(), optData, &myExternalPressure))
-  {
-	  // Copy over information from the optimisation results
-    const double pressure = ::arma::trace(optData->stressMtx) / 3.0;
-	  data.enthalpy.reset(optData->totalEnthalpy);
-    data.pressure.reset(pressure);
+  // Copy over information from the optimisation results
+  PotentialGo::copyOptimisationResults(optData, strData);
 
-    data.objectsStore.insert(common::GlobalKeys::POTENTIAL_PARAMS, myCurrentParams);
-    data.objectsStore.insert(common::StructureObjectKeys::PRESSURE_INTERNAL, pressure);
-
-    // Update our data table with the structure data
-    updateTable(data);
-
-	  myOutput->in(data);
-  }
-  else
-  {
-    // The structure failed to geometry optimise properly so drop it
-    myPipeline->dropData(data);
-  }
+  // Add the potential parameters to its data
+  strData.objectsStore.insert(common::GlobalKeys::POTENTIAL_PARAMS, myCurrentParams);
 }
 
 arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
@@ -119,15 +91,6 @@ arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
   const arma::vec actualParams = myParamPotential.getParams();
 
   return actualParams;
-}
-
-void ParamPotentialGo::updateTable(const ::spipe::StructureDataTyp & strData)
-{
-  utility::DataTable & table = myTableSupport.getTable();
-  const ::std::string & strName = *strData.name;
-
-  if(strData.enthalpy)
-    table.insert(strName, "energy", ::boost::lexical_cast< ::std::string>(*strData.enthalpy));
 }
 
 

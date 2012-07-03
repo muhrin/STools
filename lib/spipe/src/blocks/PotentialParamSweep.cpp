@@ -12,6 +12,7 @@
 #include <boost/foreach.hpp>
 
 // From SSTbx
+#include <common/Structure.h>
 #include <utility/Loops.h>
 
 // From PipelineLib
@@ -157,10 +158,20 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
 
   if(sweepStrData.enthalpy)
   {
+    const double energy = *sweepStrData.enthalpy;
     table.insert(
       key,
       "energy",
-      ::boost::lexical_cast< ::std::string>(*sweepStrData.enthalpy));
+      ::boost::lexical_cast< ::std::string>(energy));
+
+    if(sweepStrData.getStructure())
+    {
+      const size_t numAtoms = sweepStrData.getStructure()->getNumAtomsDescendent();
+      table.insert(
+        key,
+        "energy/atom",
+        ::boost::lexical_cast< ::std::string>(energy / numAtoms));
+    }
   }
 
   const fs::path savePath = sweepStrData.getRelativeSavePath(*myPipeline);

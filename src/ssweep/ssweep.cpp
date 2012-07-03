@@ -166,9 +166,9 @@ int main(const int argc, const char * const argv[])
   externalPressure.fill(0.0);
   externalPressure.diag().fill(0.1);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &externalPressure);
+  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &externalPressure, false);
 
-  sp::blocks::PotentialGo go(optimiser);
+  sp::blocks::PotentialGo go(optimiser, NULL, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;

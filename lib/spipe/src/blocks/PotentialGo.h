@@ -14,7 +14,12 @@
 
 #include <armadillo>
 
-#include "pipelib/AbstractSimpleBlock.h"
+#include <pipelib/AbstractSimpleBlock.h>
+
+#include <potential/StandardData.h>
+
+#include "utility/DataTable.h"
+#include "utility/DataTableSupport.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -34,14 +39,35 @@ class PotentialGo : public pipelib::AbstractSimpleBlock<StructureDataTyp, Shared
 public:
 	PotentialGo(
     const ::sstbx::potential::IGeomOptimiser &  optimiser,
-    const ::arma::mat33 * const                 externalPressure = NULL
+    const ::arma::mat33 * const                 externalPressure = NULL,
+    const bool                                  writeOutput = true
   );
 
-	virtual void in(spipe::common::StructureData & data);
+  // From Block ///////////////////////////////
+  virtual void pipelineInitialising();
+  // End from Block //////////////////////////
 
-private:
+  // From PipeBlock ///////////////////////////
+	virtual void in(spipe::common::StructureData & data);
+  // End from PipeBlock ///////////////////////
+
+protected:
+
+  virtual void copyOptimisationResults(
+    const sstbx::potential::StandardData<> & optData,
+    spipe::common::StructureData & strData);
+
+  void updateTable(const ::spipe::StructureDataTyp & strData);
+
+  // Should we write information about structures being optimised
+  // to file.
+  const bool                               myWriteOutput;
+
 	const sstbx::potential::IGeomOptimiser & myOptimiser;
   ::arma::mat33                            myExternalPressure;
+
+  // Use a table to store data about structure that are being optimised
+  ::spipe::utility::DataTableSupport       myTableSupport;
 };
 
 }}

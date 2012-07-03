@@ -20,7 +20,7 @@
 
 #include <pipelib/AbstractSimpleBlock.h>
 
-
+#include "blocks/PotentialGo.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -42,35 +42,29 @@ namespace spipe
 namespace blocks
 {
 
-class ParamPotentialGo : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+class ParamPotentialGo : public PotentialGo
 {
 public:
 	ParamPotentialGo(
 		::sstbx::potential::IParameterisable & paramPotential,
-		::sstbx::potential::IGeomOptimiser & optimiser,
-    const ::arma::mat33 * const externalPressure = NULL);
+		const ::sstbx::potential::IGeomOptimiser & optimiser,
+    const ::arma::mat33 * const externalPressure = NULL,
+    const bool                  writeOutput = true);
 
   // From Block /////////////////////////
-  virtual void pipelineInitialising();
 	virtual void pipelineStarting();
   // End from Block ////////////////////
 
-	virtual void in(spipe::common::StructureData & data);
-
 private:
 
-	typedef ::std::map<std::string, ::std::string> PotDbTyp;
+  virtual void copyOptimisationResults(
+    const sstbx::potential::StandardData<> & optData,
+    spipe::common::StructureData & strData);
 
   arma::vec setPotentialParams(const ::arma::vec & params);
 
-  void updateTable(const ::spipe::StructureDataTyp & strData);
-
 	::sstbx::potential::IParameterisable &      myParamPotential;
-	const sstbx::potential::IGeomOptimiser &    myOptimiser;
   ::arma::vec                                 myCurrentParams;
-  ::arma::mat33                               myExternalPressure;
-
-  ::spipe::utility::DataTableSupport          myTableSupport;
 };
 
 }}
