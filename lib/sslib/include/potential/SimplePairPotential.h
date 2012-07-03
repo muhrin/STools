@@ -79,7 +79,7 @@ public:
 	typedef typename arma::Mat<FloatType>						          Mat;
 	typedef typename arma::Col<FloatType>::template fixed<3>	Vec3;
 
-  static const unsigned int MAX_INTERACTION_VECTORS = 1000000;
+  static const unsigned int MAX_INTERACTION_VECTORS = 100000;
 
 	SimplePairPotential(
 		const size_t &				  numSpecies,
