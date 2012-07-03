@@ -79,7 +79,7 @@ public:
 	typedef typename arma::Mat<FloatType>						          Mat;
 	typedef typename arma::Col<FloatType>::template fixed<3>	Vec3;
 
-  static const unsigned int MAX_INTERACTION_VECTORS = 10000;
+  static const unsigned int MAX_INTERACTION_VECTORS = 1000000;
 
 	SimplePairPotential(
 		const size_t &				  numSpecies,
@@ -575,6 +575,9 @@ bool SimplePairPotential<FloatType>::evaluate(
 	// And convert to absoloute values
 	const FloatType invVolume = 1.0 / uc.getVolume();
 	data.stressMtx *= invVolume;
+
+  // Completed successfully
+  return true;
 }
 
 template <typename FloatType>
