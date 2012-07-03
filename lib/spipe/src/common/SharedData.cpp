@@ -24,7 +24,7 @@ namespace common
 // Objects keys ////////////////
 const ::sstbx::utility::Key< ::arma::vec> GlobalKeys::POTENTIAL_PARAMS;
 
-const char * SharedData::DIR_SUBSTRING_DELIMITER = "_";
+const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 SharedData::SharedData():
 myPipe(NULL),

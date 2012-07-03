@@ -36,7 +36,6 @@ template <typename Type>
 struct Key : public KeySupertype
 {
 public:
-
   typedef Type ValueType;
 
   Key() {}

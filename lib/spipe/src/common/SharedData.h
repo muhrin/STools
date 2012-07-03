@@ -64,7 +64,7 @@ class SharedData : public ::pipelib::event::IPipeListener< ::spipe::SpPipelineTy
 {
 public:
 
-  static const char * DIR_SUBSTRING_DELIMITER;
+  static const char DIR_SUBSTRING_DELIMITER[];
 
   SharedData();
   ~SharedData();

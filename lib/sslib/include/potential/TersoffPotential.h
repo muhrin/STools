@@ -53,7 +53,7 @@ public:
   virtual TersoffPotentialData<FloatType> *
     generatePotentialData(const sstbx::common::Structure & structure) const;
 
-	virtual void evalPotential(
+	virtual bool evalPotential(
 		const sstbx::common::Structure & structure,
 		TersoffPotentialData<FloatType> & potentialData) const;
 
@@ -122,7 +122,7 @@ TersoffPotential<FloatType>::generatePotentialData(const sstbx::common::Structur
 }
 
 template <typename FloatType>
-void TersoffPotential<FloatType>::evalPotential(
+bool TersoffPotential<FloatType>::evalPotential(
 		const sstbx::common::Structure & structure,
 		TersoffPotentialData<FloatType> & data) const
 {

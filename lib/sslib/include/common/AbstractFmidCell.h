@@ -42,6 +42,8 @@ public:
 	typedef typename arma::Mat<FloatType>::template fixed<3, 3>	Mat33;
 	typedef typename arma::Col<FloatType>::template fixed<3>		Vec3;
 
+  static const unsigned int MAX_OUT_VECTORS = 100000;
+
 	// Copy constructor
 	AbstractFmidCell(const AbstractFmidCell<FloatType> & toCopy);
 
@@ -73,7 +75,8 @@ public:
 		const typename AbstractFmidCell<FloatType>::Vec3 & cart1,
 		const typename AbstractFmidCell<FloatType>::Vec3 & cart2,
 		const FloatType cutoff,
-		std::vector<typename AbstractFmidCell<FloatType>::Vec3> & outVectors) const;
+		std::vector<typename AbstractFmidCell<FloatType>::Vec3> & outVectors,
+    const size_t    maxVectors = MAX_OUT_VECTORS) const;
 
 	virtual void getAllDistancesWithinCutoff(
 		const typename AbstractFmidCell<FloatType>::Vec3 & cart1,
@@ -124,11 +127,6 @@ public:
 
 	virtual void setOrthoMtx(const typename AbstractFmidCell<FloatType>::Mat33 & orthoMtx);
 	const Mat33 getFracMtx() const;
-	/**
-	/* To do fast minimum image calculations a change of basis may have been performed,
-	/* in which case this call will return the change of basis transformation matrix.
-	/* */
-	virtual const Mat33 & getTransformationMtx() const;
 
 	// TODO: RENAME THESE!
 	FloatType getLongestVector() const;
@@ -162,8 +160,6 @@ protected:
 	/** The inverse of the orthogonalisation matrix */
 	typename AbstractFmidCell<FloatType>::Mat33 myFracMtx;
 
-	typename AbstractFmidCell<FloatType>::Mat33 myChangeOfBasisMtx;
-
 	FloatType	myLatticeParams[6];
 
 	FloatType	myVolume;
@@ -175,9 +171,6 @@ template <typename FloatType>
 AbstractFmidCell<FloatType>::AbstractFmidCell(const AbstractFmidCell<FloatType> & toCopy)
 {
 	init(toCopy.getOrthoMtx());
-
-	// Identity change of basis matrix
-	myChangeOfBasisMtx.eye();
 }
 
 
@@ -187,9 +180,6 @@ AbstractFmidCell<FloatType>::AbstractFmidCell(
 	const FloatType alpha, const FloatType beta, const FloatType gamma)
 {
 	init(a, b, c, alpha, beta, gamma);
-
-	// Identity change of basis matrix
-	myChangeOfBasisMtx.eye();
 }
 
 template <typename FloatType>
@@ -198,9 +188,6 @@ AbstractFmidCell<FloatType>::AbstractFmidCell(const FloatType (&latticeParams)[6
 	// TODO: Tidy this up a bit
 	init(latticeParams[0], latticeParams[1], latticeParams[2],
 		latticeParams[3], latticeParams[4], latticeParams[5]);
-
-	// Identity change of basis matrix
-	myChangeOfBasisMtx.eye();
 }
 
 template <typename FloatType>
@@ -283,7 +270,8 @@ void AbstractFmidCell<FloatType>::getAllVectorsWithinCutoff(
 	const typename AbstractFmidCell<FloatType>::Vec3 & cart1,
 	const typename AbstractFmidCell<FloatType>::Vec3 & cart2,
 	const FloatType cutoff,
-	std::vector<typename AbstractFmidCell<FloatType>::Vec3> & outVectors) const
+	std::vector<typename AbstractFmidCell<FloatType>::Vec3> & outVectors,
+  const size_t maxVectors) const
 {
 	using namespace arma;
 
@@ -301,10 +289,11 @@ void AbstractFmidCell<FloatType>::getAllVectorsWithinCutoff(
 	int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, cutoff));
 	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff));
 
-	const typename AbstractFmidCell<FloatType>::Vec3		dR			= cart2Unit - cart1Unit;
+	const typename AbstractFmidCell<FloatType>::Vec3 dR = cart2Unit - cart1Unit;
 	const FloatType	cutoffSq	= cutoff * cutoff;
 
 	typename AbstractFmidCell<FloatType>::Vec3 dFrac, dRImg;
+  size_t numVectors = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
 		for(int b = -maxB; b <= maxB; ++b)
@@ -318,12 +307,19 @@ void AbstractFmidCell<FloatType>::getAllVectorsWithinCutoff(
 
 				dRImg = myOrthoMtx * dFrac + dR;
 
-				
 				if(dot(dRImg, dRImg) < cutoffSq)
 				{
 					outVectors.push_back(dRImg);
+          ++numVectors;
 				}
 			}
+      if(numVectors > maxVectors)
+      {
+#ifdef SSLIB_DEBUG
+        ::std::cerr << "Maximum vectors reached" << std::endl;
+#endif
+        return;
+      }
 		}
 	}
 }
@@ -397,12 +393,6 @@ template <typename FloatType>
 const typename AbstractFmidCell<FloatType>::Mat33 AbstractFmidCell<FloatType>::getFracMtx() const
 {
 	return myFracMtx;
-}
-
-template <typename FloatType>
-const typename AbstractFmidCell<FloatType>::Mat33 & AbstractFmidCell<FloatType>::getTransformationMtx() const
-{
-	return myChangeOfBasisMtx;
 }
 
 template <typename FloatType>
@@ -1038,43 +1028,6 @@ bool AbstractFmidCell<FloatType>::niggliReduce()
   //orientStandard();
   return true;
 }
-
-//template <typename FloatType>
-//typename AbstractFmidCell<FloatType>::Mat33 AbstractFmidCell<FloatType>::compactNiggli()
-//{
-//	using namespace cctbx::uctbx;
-//
-//	unit_cell * cell = asCctbxUnitCell();
-//
-//	// Transform this into a reduced cell
-//	fast_minimum_reduction<FloatType, int> minReduction(*cell);
-//
-//	// Copy over the reduction to make this a reduced cell
-//	const scitbx::mat3<int> & reductionMtx = minReduction.r_inv();
-//
-//	// TODO: Make this work!!
-//
-//	typename AbstractFmidCell<FloatType>::Mat33 changeOfBasisMtx;
-//	// Account for:
-//	// Armadillo	- column-major
-//	// Cctbx		- row-major
-//	for(size_t row = 0; row < 3; ++row)
-//	{
-//		for(size_t col = 0; col < 3; ++col)
-//		{
-//			changeOfBasisMtx.at(row, col) = reductionMtx(row, col);
-//		}
-//	}
-//
-//	delete cell;
-//	cell = NULL;
-//
-//	// Finally set the new orthogonalisation matrix
-//	myOrthoMtx *= changeOfBasisMtx;
-//	init(myOrthoMtx);
-//
-//	return changeOfBasisMtx;
-//}
 
 template <typename FloatType>
 FloatType AbstractFmidCell<FloatType>::getLongestVector() const

@@ -233,7 +233,12 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 		volumeSq	= volume * volume;
 
 		// Evaluate the potential
-		evaluator.evalPotential();
+		if(!evaluator.evalPotential())
+    {
+      // Couldn't evaluate potential for some reason.  Probably the unit cell
+      // has collapsed and there are too many r12 vectors to evaluate.  Bail.
+      break;
+    }
 
 		// Now balance forces
 		// (do sum of values for each component and divide by number of particles)

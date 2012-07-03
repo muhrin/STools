@@ -31,7 +31,7 @@ namespace spipe
 namespace common
 {
 
-static const ::std::string NAME_DELIMITER("_");
+static const char NAME_DELIMITER[]("_");
 
 // TODO: Make this better! Don't want to have ObjectData<T> makes user facing code ugly!
 

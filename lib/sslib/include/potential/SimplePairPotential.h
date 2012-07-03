@@ -79,6 +79,8 @@ public:
 	typedef typename arma::Mat<FloatType>						          Mat;
 	typedef typename arma::Col<FloatType>::template fixed<3>	Vec3;
 
+  static const unsigned int MAX_INTERACTION_VECTORS = 10000;
+
 	SimplePairPotential(
 		const size_t &				  numSpecies,
     const SpeciesList &     speciesList,
@@ -108,7 +110,7 @@ public:
   virtual ::boost::shared_ptr< IPotentialEvaluator > createEvaluator(const sstbx::common::Structure & structure) const;
   // End from IPotential /////////
 
-  void evaluate(SimplePairPotentialData<FloatType> & data) const;
+  bool evaluate(SimplePairPotentialData<FloatType> & data) const;
 
 private:
 
@@ -467,7 +469,7 @@ const ::std::string & SimplePairPotential<FloatType>::getParamString() const
 }
 
 template<typename FloatType>
-void SimplePairPotential<FloatType>::evaluate(
+bool SimplePairPotential<FloatType>::evaluate(
 	SimplePairPotentialData<FloatType> & data) const
 {
 	using namespace arma;
@@ -503,10 +505,15 @@ void SimplePairPotential<FloatType>::evaluate(
 
 			posJ = data.pos.col(j);
 
-			// TODO: Configure atom species and corresponding cutoffs
       // TODO: Buffer rSqs as getAllVectorsWithinCutoff needs to calculate it anyway!
 			imageVectors.clear();
-			uc.getAllVectorsWithinCutoff(posI, posJ, rCutoff(speciesI, speciesJ), imageVectors);
+			uc.getAllVectorsWithinCutoff(posI, posJ, rCutoff(speciesI, speciesJ), imageVectors, MAX_INTERACTION_VECTORS);
+
+      // Check that there aren't too many interaction vectors
+      if(imageVectors.size() > MAX_INTERACTION_VECTORS)
+      {
+        return false;
+      }
 
       BOOST_FOREACH(r, imageVectors)
 			{			
@@ -571,7 +578,7 @@ void SimplePairPotential<FloatType>::evaluate(
 }
 
 template <typename FloatType>
-::boost::shared_ptr<IPotentialEvaluator>
+::boost::shared_ptr< IPotentialEvaluator >
   SimplePairPotential<FloatType>::createEvaluator(const sstbx::common::Structure & structure) const
 {
   // Build the data from the structure

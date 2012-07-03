@@ -37,7 +37,7 @@ public:
 
   virtual ::boost::shared_ptr<StandardData<double> > getData();
 
-	virtual void evalPotential();
+	virtual bool evalPotential();
 
 private:
 
@@ -61,9 +61,9 @@ template <class PotTyp, class DataTyp>
 }
 
 template <class PotTyp, class DataTyp>
-void GenericPotentialEvaluator<PotTyp, DataTyp>::evalPotential()
+bool GenericPotentialEvaluator<PotTyp, DataTyp>::evalPotential()
 {
-  myPotential.evaluate(*myData);
+  return myPotential.evaluate(*myData);
 }
 
 }

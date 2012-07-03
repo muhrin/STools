@@ -31,7 +31,7 @@ class AbstractInputObject : public IInputObject
 {
 public:
 
-  static const ::std::string EMPTY_VALUE;
+  static const char * EMPTY_VALUE;
 
   virtual Type                    getType() const = 0;
 

@@ -13,12 +13,12 @@
 
 // DEFINES ///////////////////////////////////////////////
 #ifndef NULL
-    #define NULL 0
+  #define NULL 0
 #endif
 
-#define DEBUG 1
+#define SSLIB_DEBUG
 
-#if !DEBUG
+#ifndef SSLIB_DEBUG
 	#define SSE_ASSERT(x)
 #else
 	#include <iostream>
