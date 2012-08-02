@@ -98,7 +98,7 @@ SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure 
 	typedef arma::vec3	Vec3;
 	typedef arma::mat33 Mat33;
 
-  const sstbx::common::AbstractFmidCell<> * const uc = str.getUnitCell();
+  const sstbx::common::AbstractFmidCell * const uc = str.getUnitCell();
 
 	// Copy over the unit cell so we can do distance calculations
 	SortedDistanceComparisonData * data =
@@ -131,7 +131,7 @@ void SortedDistanceComparator::populateDistanceVector(
 
 	Mat pos;
 	str.getAtomPositionsDescendent(pos);
-	const ::sstbx::common::AbstractFmidCell<> & cell = *str.getUnitCell();
+	const ::sstbx::common::AbstractFmidCell & cell = *str.getUnitCell();
 
 	std::vector<double> distances;
 	const size_t numParticles = pos.n_cols;

@@ -35,7 +35,7 @@ class DataTableWriter : public IDataTableChangeListener
 {
 public:
 
-  static const int DEFAULT_WRITE_DEALY = 100;
+  static const int DEFAULT_WRITE_DEALY = 50;
 
   DataTableWriter(
     DataTable &           table,

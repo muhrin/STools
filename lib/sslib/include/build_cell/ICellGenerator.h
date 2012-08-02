@@ -11,29 +11,26 @@
 // INCLUDES ////////////
 
 // FORWARD DECLARATIONS ///////
-namespace sstbx
-{
-namespace build_cell
-{
-template <typename FloatType>
+namespace sstbx {
+namespace build_cell {
 class RandomCellDescription;
 }
-namespace common
-{
-template <typename FloatType>
+namespace common {
 class AbstractFmidCell;
 }
 }
 
-namespace sstbx { namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 
-template <typename FloatType>
 class ICellGenerator
 {
 public:
 
-	virtual ::sstbx::common::AbstractFmidCell<FloatType> *
-    generateCell(const RandomCellDescription<FloatType> & cellDesc) const = 0;
+	virtual ::sstbx::common::AbstractFmidCell *
+    generateCell(const RandomCellDescription & cellDesc) const = 0;
 };
 
 }}

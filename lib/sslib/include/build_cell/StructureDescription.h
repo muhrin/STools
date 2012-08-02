@@ -17,26 +17,34 @@
 
 // FORWARD DECLARES ///////////
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
 class StructureDescription : public AtomGroupDescription
 {
 public:
   typedef boost::ptr_vector<StructureConstraintDescription> ConstraintsContainer;
 
-	virtual ~StructureDescription();
-
 	void addStructureConstraint(StructureConstraintDescription * const structureConstraint);	
 
 	ConstraintsContainer const & getStructureConstraints();
 
-protected:
+  // From AtomGroupDescription /////////////////////
+  // Visit each atom group first and then child groups
+  virtual bool traversePreorder(StructureDescriptionVisitor & visitor);
+  virtual bool traversePreorder(ConstStructureDescriptionVisitor & visitor) const;
+  // Visit child groups before visiting this group
+  virtual bool traversePostorder(StructureDescriptionVisitor & visitor);
+  virtual bool traversePostorder(ConstStructureDescriptionVisitor & visitor) const;
+  // End from AtomGroupDescription ///////////////
 
+protected:
 
   ConstraintsContainer    myStructureConstraints;
 
 };
 
-}}
+}
+}
 
 #endif /* STRUCTURE_DESCRIPTION_H */

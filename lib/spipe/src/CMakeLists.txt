@@ -122,7 +122,7 @@ set(spipe_Files
 include_directories(
   ${CMAKE_SOURCE_DIR}/lib/pipelib/include
   ${CMAKE_SOURCE_DIR}/lib/sslib/include
-  ${CMAKE_SOURCE_DIR}/lib/sslib/src # TODO: Remove this and move sslib/src/SSLib* to include
+  ${SSLIB_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include
   ${CMAKE_SOURCE_DIR}/lib/spglib/include
   ${SPIPE_INCLUDE_DIRS}

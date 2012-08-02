@@ -13,10 +13,13 @@
 // INCLUDES /////////////////////////////////////////////
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx { namespace common {
-	template<typename FloatType>
-	class AbstractFmidCell;
-}}
+namespace sstbx
+{
+namespace common
+{
+class AbstractFmidCell;
+}
+}
 
 namespace sstbx { namespace common {
 
@@ -24,7 +27,7 @@ class UnitCellFactory
 {
 public:
 	
-	AbstractFmidCell<double> * createCell(
+	AbstractFmidCell * createCell(
 		const double a, const double b, const double c,
 		const double alpha, const double beta, const double gamma) const;
 

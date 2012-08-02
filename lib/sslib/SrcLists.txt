@@ -5,15 +5,21 @@ set(sslib_Source_Files__build_cell
   src/build_cell/AtomGroupDescription.cpp
   src/build_cell/AtomsDescription.cpp
   src/build_cell/CellConstraintDescription.cpp
+  src/build_cell/ConstVisitorGroup.cpp
   src/build_cell/DefaultCrystalGenerator.cpp
-  src/build_cell/Minsep.cpp
+  src/build_cell/DistanceConstraintChecker.cpp
+  src/build_cell/RandomAtomPositioner.cpp
+  src/build_cell/RandomCellDescription.cpp
   src/build_cell/StructureBuilder.cpp
   src/build_cell/StructureConstraintDescription.cpp
   src/build_cell/StructureDescription.cpp
+  src/build_cell/StructureDescriptionMap.cpp
+  src/build_cell/VisitorGroup.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 
 set(sslib_Source_Files__common
+  src/common/AbstractFmidCell.cpp
   src/common/Atom.cpp
   src/common/AtomGroup.cpp
   src/common/AtomSpeciesDatabase.cpp
@@ -68,8 +74,6 @@ set(sslib_Source_Files__utility
 source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
 
 set(sslib_Source_Files__
-  src/SSLibConfig.h
-  src/SSLib.h
 )
 source_group("Header Files" FILES ${sslib_Source_Files__})
 

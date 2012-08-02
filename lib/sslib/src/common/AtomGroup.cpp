@@ -18,23 +18,14 @@
 #include "common/StructureTreeEvent.h"
 
 
-namespace sstbx { namespace common {
+namespace sstbx
+{
+namespace common
+{
 
 AtomGroup::AtomGroup():
 myParent(NULL)
 {}
-
-AtomGroup::~AtomGroup()
-{
-	using ::std::vector;
-
-	for(vector<Atom *>::const_iterator it = atoms.begin(), end = atoms.end();
-		it != end; ++it)
-	{
-		delete (*it);
-	}
-	atoms.clear();
-}
 
 const AtomGroup::Vec3 & AtomGroup::getPosition() const
 {
@@ -48,7 +39,7 @@ void AtomGroup::setPosition(const AtomGroup::Vec3 & pos)
 
 void AtomGroup::getAtomPositions(Mat & posMtx, const size_t startCol) const
 {
-	const size_t numAtoms = atoms.size();
+	const size_t numAtoms = myAtoms.size();
 
 	// Make sure the matrix of the right size
 	if(posMtx.n_rows != 3 || posMtx.n_cols < numAtoms)
@@ -56,20 +47,20 @@ void AtomGroup::getAtomPositions(Mat & posMtx, const size_t startCol) const
 	
 	for(size_t i = startCol; i < startCol + numAtoms; ++i)
 	{
-		posMtx.col(i) = atoms[i]->getPosition();
+		posMtx.col(i) = myAtoms[i]->getPosition();
 	}
 }
 
 void AtomGroup::setAtomPositions(const Mat & posMtx, const size_t startCol)
 {
-	const size_t numAtoms = atoms.size();
+	const size_t numAtoms = myAtoms.size();
 
 	// Make sure the matrix has the correct proportions
 	SSE_ASSERT(posMtx.n_rows == 3 && posMtx.n_cols >= (numAtoms + startCol));
 
 	for(size_t i = startCol; i < numAtoms + startCol; ++i)
 	{
-		atoms[i]->setPosition(posMtx.col(i));
+		myAtoms[i]->setPosition(posMtx.col(i));
 	}
 }
 
@@ -78,6 +69,7 @@ void AtomGroup::getAtomPositionsDescendent(Mat & posMtx, const size_t startCol) 
 	using namespace std;
 
 	const size_t numAtoms		= getNumAtomsDescendent();
+
 	// Make sure the matrix is big enough
 	if(posMtx.n_rows != 3 || posMtx.n_cols < startCol + numAtoms)
 		posMtx.set_size(3, startCol + numAtoms);
@@ -88,16 +80,19 @@ void AtomGroup::getAtomPositionsDescendent(Mat & posMtx, const size_t startCol) 
 
 	size_t currentCol = startCol + numGroupAtoms;
 	// Now all the atoms of my child groups
+  const AtomGroup * childGroup;
+  size_t numChildGroupAtoms;
+  AtomGroup::Vec3 groupPos;
 	for(vector<AtomGroup *>::const_iterator it = groups.begin(), end = groups.end();
 		it != end; ++it)
 	{
-		const AtomGroup * const childGroup = *it;
-		const size_t numChildGroupAtoms = childGroup->getNumAtomsDescendent();
+		childGroup = *it;
+		numChildGroupAtoms = childGroup->getNumAtomsDescendent();
 
 		childGroup->getAtomPositionsDescendent(posMtx, currentCol);
 
 		// Now displace them by the current group position
-		const AtomGroup::Vec3 groupPos = childGroup->getPosition();
+		groupPos = childGroup->getPosition();
 		for(size_t i = currentCol; i < currentCol + numChildGroupAtoms; ++i)
 		{
 			posMtx.col(i) += groupPos;
@@ -111,7 +106,7 @@ void AtomGroup::setAtomPositionsDescendent(const Mat & posMtx, const size_t star
 	using ::std::vector;
 
 	const size_t numPositions	= posMtx.n_cols - startCol;
-	const size_t myNumAtoms		= atoms.size();
+	const size_t myNumAtoms		= myAtoms.size();
 
 	// First set my atoms
 	setAtomPositions(posMtx, startCol);
@@ -143,7 +138,7 @@ void AtomGroup::setAtomPositionsDescendent(const Mat & posMtx, const size_t star
 
 size_t AtomGroup::getNumAtoms() const
 {
-	return atoms.size();
+	return myAtoms.size();
 }
 
 size_t AtomGroup::getNumAtomsDescendent() const
@@ -164,9 +159,10 @@ size_t AtomGroup::getNumAtomsDescendent() const
 size_t AtomGroup::getNumAtomSpecies() const
 {
   ::std::set<AtomSpeciesId::Value> speciesSet;
-	for(size_t i = 0; i < atoms.size(); ++i)
+  ConstAtomPtr atom;
+	BOOST_FOREACH(atom, myAtoms)
 	{
-		speciesSet.insert(atoms[i]->getSpecies());
+		speciesSet.insert(atom->getSpecies());
 	}
 	return speciesSet.size();
 }
@@ -185,9 +181,10 @@ size_t AtomGroup::getNumAtomSpeciesDescendent() const
 size_t AtomGroup::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 {
   size_t numAtoms = 0;
-  BOOST_FOREACH(const Atom * const a, atoms)
+  ConstAtomPtr atom;
+  BOOST_FOREACH(atom, myAtoms)
   {
-    if(a->getSpecies() == species)
+    if(atom->getSpecies() == species)
       ++numAtoms;
   }
   return numAtoms;
@@ -208,9 +205,10 @@ size_t AtomGroup::getNumAtomsOfSpeciesDescendent(const AtomSpeciesId::Value spec
 
 void AtomGroup::getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const
 {
-	for(size_t i = 0; i < atoms.size(); ++i)
+  ConstAtomPtr atom;
+	BOOST_FOREACH(atom, myAtoms)
 	{
-		species.push_back(atoms[i]->getSpecies());
+		species.push_back(atom->getSpecies());
 	}
 }
 
@@ -226,14 +224,14 @@ void AtomGroup::getAtomSpeciesDescendent(::std::vector<AtomSpeciesId::Value> & s
 	}
 }
 
-const std::vector<Atom *> & AtomGroup::getAtoms() const
+const std::vector<AtomPtr> & AtomGroup::getAtoms() const
 {
-	return atoms;
+	return myAtoms;
 }
 
 void AtomGroup::insertAtom(Atom * const atom)
 {
-	atoms.push_back(atom);
+	myAtoms.push_back(AtomPtr(atom));
 
 	atom->setParent(this);
 
@@ -241,19 +239,87 @@ void AtomGroup::insertAtom(Atom * const atom)
 	eventFired(evt);
 }
 
-bool AtomGroup::removeAtom(Atom * const atom)
+bool AtomGroup::removeAtom(const AtomPtr atom)
 {
-	::std::vector<Atom *>::iterator it = ::std::find(atoms.begin(), atoms.end(), atom);
+	::std::vector<AtomPtr>::iterator it = ::std::find(myAtoms.begin(), myAtoms.end(), atom);
 
-	if(it == atoms.end()) return false;
+	if(it == myAtoms.end()) return false;
 
 	atom->setParent(NULL);
-	atoms.erase(it);
+	myAtoms.erase(it);
 
 	StructureTreeEvent evt(StructureTreeEvent::ATOM_REMOVED, *atom);
 	eventFired(evt);
 
 	return true;
+}
+
+Atom & AtomGroup::getAtom(const size_t idx)
+{
+  SSE_ASSERT(idx < getNumAtoms());
+
+  return *myAtoms[idx].get();
+}
+
+const Atom & AtomGroup::getAtom(const size_t idx) const
+{
+  SSE_ASSERT(idx < getNumAtoms());
+
+  return *myAtoms[idx].get();
+}
+
+Atom & AtomGroup::getAtomDescendent(const size_t idx)
+{
+  SSE_ASSERT(idx < getNumAtomsDescendent());
+
+  // Is it in our set of atoms?
+  size_t runningTotal = getNumAtoms();
+  if(idx < runningTotal)
+  {
+    return *myAtoms[idx].get();
+  }
+  
+  AtomGroup * group;
+  Atom * atom;
+  size_t numAtomsInGroup;
+  for(size_t i = 0; i < groups.size(); ++i)
+  {
+    group = groups[i];
+    numAtomsInGroup = group->getNumAtomsDescendent();
+
+    if(idx < runningTotal + numAtomsInGroup)
+    {
+      atom = &group->getAtomDescendent(idx - runningTotal);
+    }
+  }
+  return *atom;
+}
+
+const Atom & AtomGroup::getAtomDescendent(const size_t idx) const
+{
+  SSE_ASSERT(idx < getNumAtomsDescendent());
+
+  // Is it in our set of atoms?
+  size_t runningTotal = getNumAtoms();
+  if(idx < runningTotal)
+  {
+    return *myAtoms[idx].get();
+  }
+  
+  AtomGroup * group;
+  Atom * atom;
+  size_t numAtomsInGroup;
+  for(size_t i = 0; i < groups.size(); ++i)
+  {
+    group = groups[i];
+    numAtomsInGroup = group->getNumAtomsDescendent();
+
+    if(idx < runningTotal + numAtomsInGroup)
+    {
+      atom = &group->getAtomDescendent(idx - runningTotal);
+    }
+  }
+  return *atom;
 }
 
 const std::vector<AtomGroup *> & AtomGroup::getGroups() const

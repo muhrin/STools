@@ -35,13 +35,13 @@ myStructureSet(structureSet)
 
 void RemoveDuplicates::in(::spipe::common::StructureData & data)
 {
-	const std::pair<sstbx::common::Structure *, bool> result = myStructureSet.insert(data.getStructure());
+	const std::pair<sstbx::common::Structure *, bool> result = myStructureSet.insert(data.getStructure().get());
 
 	if(result.second)
 	{
 		// Flag the data to say that we will want to use it again
 		myPipeline->flagData(*this, data);
-    myStructureDataMap.insert(StructureDataMap::value_type(data.getStructure(), &data));
+    myStructureDataMap.insert(StructureDataMap::value_type(data.getStructure().get(), &data));
 		data.timesFound.reset(1);
 
 		myOutput->in(data);

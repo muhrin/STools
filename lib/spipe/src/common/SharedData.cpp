@@ -21,10 +21,14 @@ namespace spipe
 namespace common
 {
 
+namespace ssbc = ::sstbx::build_cell;
+namespace ssc = ::sstbx::common;
+
 // Objects keys ////////////////
 const ::sstbx::utility::Key< ::arma::vec> GlobalKeys::POTENTIAL_PARAMS;
 
 const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
+
 
 SharedData::SharedData():
 myPipe(NULL),
@@ -83,6 +87,16 @@ const ::boost::filesystem::path & SharedData::getOutputFileStem() const
 const ::boost::filesystem::path & SharedData::getRelativeOutputPath() const
 {
   return myOutputDir;
+}
+
+ssbc::StructureDescription * SharedData::getStructureDescription()
+{
+  return structureDescription.get();
+}
+
+ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
+{
+  return mySpeciesDatabase;
 }
 
 void SharedData::notify(const ::pipelib::event::PipeStateChanged< ::spipe::SpPipelineTyp> & evt)

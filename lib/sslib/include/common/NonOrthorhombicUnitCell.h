@@ -23,7 +23,7 @@
 namespace sstbx { namespace common {
 
 template<typename FloatType = double>
-class NonOrthorhombicUnitCell : public AbstractFmidCell<FloatType>
+class NonOrthorhombicUnitCell : public AbstractFmidCell
 {
 public:
 
@@ -32,7 +32,7 @@ public:
 	explicit NonOrthorhombicUnitCell(
 		const FloatType a, const FloatType b, const FloatType c,
 		const FloatType alpha, const FloatType beta, const FloatType gamma):
-	AbstractFmidCell<FloatType>(a, b, c, alpha, beta, gamma)
+	AbstractFmidCell(a, b, c, alpha, beta, gamma)
 	{
 		/*using namespace cctbx::uctbx;
 

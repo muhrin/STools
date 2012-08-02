@@ -5,8 +5,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef DEFAULTCRYSTALGENERATOR_H
-#define DEFAULTCRYSTALGENERATOR_H
+#ifndef DEFAULT_CRYSTAL_GENERATOR_H
+#define DEFAULT_CRYSTAL_GENERATOR_H
 
 // INCLUDES /////////////////////////////////////////////////////
 #include "ICrystalStructureGenerator.h"
@@ -14,79 +14,68 @@
 // FORWARD DECLARES /////////////////////////////////////////////
 namespace sstbx
 {
-	namespace common
-	{
-		template<typename FloatType>
-		class AbstractFmidCell;
-		class AtomGroup;
-		class Structure;
-	}
-	namespace build_cell
-	{
+namespace common
+{
+class AbstractFmidCell;
+class AtomGroup;
+class Structure;
+}
+namespace build_cell {
 
-		class AbstractConstraintDescription;
-		class AtomGroupDescription;
-		template <typename FloatType>
-		class ICellGenerator;
-    template <typename FloatType>
-    class RandomCellDescription;
-		class StructureBuilder;
-		class StructureDescription;
-	}
+class AbstractConstraintDescription;
+class AtomGroupDescription;
+class ICellGenerator;
+class RandomCellDescription;
+class StructureBuilder;
+class StructureDescription;
+class StructureDescriptionMap;
+}
 }
 
-namespace sstbx { namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 
 class DefaultCrystalGenerator : public ICrystalStructureGenerator
 {
 public:
 
-  enum GenerationStatus { SUCCESS, FAILED_MAX_ATTEMPTS, NOT_STARTED };
+  typedef ICrystalStructureGenerator::Result Result;
 
-	DefaultCrystalGenerator(const ICellGenerator<double> &	cellGenerator);
-
-	virtual ~DefaultCrystalGenerator();
+	DefaultCrystalGenerator(const ICellGenerator &	cellGenerator);
+  virtual ~DefaultCrystalGenerator() {}
 
 	/**
 	 * Generate a cell based on the current set of constraints.
 	 *
 	 */
-	virtual ::sstbx::common::Structure * const generateStructure(
-    const StructureDescription & strDesc,
-    const RandomCellDescription<double> & cellDesc) const;
+  virtual Result generateStructure(
+    const StructureDescription &  strDesc,
+    const RandomCellDescription & cellDesc) const;
 
 private:
 
 	/**
 	/* The maximum number of times to attempt to create a structure before giving up.
 	/**/
-	int maxAttempts;
+	const u32               myMaxAttempts;
 
 	/**
 	 * The generator used the create the cell for the crystal.
 	 */
-	const ICellGenerator<double> & myCellGenerator;
+	const ICellGenerator & myCellGenerator;
 
-	::sstbx::common::Structure * const generateStructure(const ::sstbx::common::AbstractFmidCell<double> * const cell) const;
+	::sstbx::common::Structure * const generateStructure(const ::sstbx::common::AbstractFmidCell * const cell) const;
 
+  bool generateUnitCell(
+    const RandomCellDescription & cellDesc,
+    ::sstbx::common::Structure &  structure) const;
 
-	GenerationStatus generateAtomGroupPositions(
-		const StructureBuilder & builder,
-		::sstbx::common::AtomGroup & atomGroup)
-		const;
-
-	 bool positionGroupsAndAtoms(
-		const StructureBuilder & builder,
-		::sstbx::common::AtomGroup & atomGroup)
-		const;
-
-	bool checkConstraints(
-		const StructureBuilder & builder,
-		const ::sstbx::common::AtomGroup & atomGroup)
-		const;
-
+  StructureGenerationOutcome::Value DefaultCrystalGenerator::generateAtomPositions(
+	  StructureDescriptionMap & descriptionMap) const;
 };
 
 }}
 
-#endif /* DEFAULTCRYSTALGENERATOR_H */
+#endif /* DEFAULT_CRYSTAL_GENERATOR_H */

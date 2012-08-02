@@ -65,6 +65,19 @@ const AtomSpeciesId::Value AtomSpeciesDatabase::getIdFromSymbol(const std::strin
   return id;
 }
 
+const double * AtomSpeciesDatabase::getRadius(const AtomSpeciesId::Value id) const
+{
+	SpeciesDouble::const_iterator it = myRadii.find(id);
+	if(it == myRadii.end())
+		return NULL;
+	return &it->second;
+}
+
+void AtomSpeciesDatabase::setRadius(const AtomSpeciesId::Value id, const double radius)
+{
+  myRadii[id] = radius;
+}
+
 void AtomSpeciesDatabase::setAll(
   AtomSpeciesId::Value id,
 	const ::std::string & symbol,

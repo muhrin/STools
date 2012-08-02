@@ -18,7 +18,6 @@
 #include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/ICellGenerator.h"
 #include "build_cell/DefaultCrystalGenerator.h"
-#include "build_cell/Minsep.h"
 #include "build_cell/RandomCellGenerator.h"
 #include "build_cell/StructureConstraintDescription.h"
 #include "common/AtomSpeciesDatabase.h"
@@ -55,7 +54,7 @@ SsLibFactoryYaml::SsLibFactoryYaml()
 {
 }
 
-::sstbx::build_cell::RandomCellDescription<double> *
+::sstbx::build_cell::RandomCellDescription *
 SsLibFactoryYaml::createCellDescription(const YAML::Node & node)
 {
   //// Make sure we have a cell description node
@@ -64,7 +63,7 @@ SsLibFactoryYaml::createCellDescription(const YAML::Node & node)
   //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar()) << Keyword(kw::CELL_DESC);
   //}
 
-  ssbc::RandomCellDescription<double> * const desc = new ssbc::RandomCellDescription<double>();
+  ssbc::RandomCellDescription * const desc = new ssbc::RandomCellDescription();
   myCellDescriptions.push_back(desc);
 
   double dValue;
@@ -205,7 +204,7 @@ ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const 
   return strPtr;
 }
 
-::sstbx::build_cell::ICellGenerator<double> *
+::sstbx::build_cell::ICellGenerator *
 SsLibFactoryYaml::createCellGenerator(const YAML::Node & node)
 {
   //// Make sure we have a cell generator node
@@ -214,7 +213,7 @@ SsLibFactoryYaml::createCellGenerator(const YAML::Node & node)
   //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
   //}
 
-  ssbc::ICellGenerator<double> * generator = NULL;
+  ssbc::ICellGenerator * generator = NULL;
 
   if(node[kw::TYPE])
   {
@@ -245,7 +244,7 @@ SsLibFactoryYaml::createCrystalStructureGenerator(const YAML::Node & node)
 
   // First try to create the unit cell generator
 
-  ssbc::ICellGenerator<double> * cellGenerator = NULL;
+  ssbc::ICellGenerator * cellGenerator = NULL;
 
   if(node[kw::CELL_GENERATOR])
   {
@@ -519,18 +518,18 @@ SsLibFactoryYaml::createAtomConstraintDescription(
     double dValue;
     const ::std::string type = descNode[kw::TYPE].as< ::std::string>();
 
-    if(type == kw::STR_DESC__CONSTRAINTS__TYPE___MINSEP)
-    {
-      if(descNode[kw::VALUE])
-      {
-        dValue = descNode[kw::VALUE].as<double>();
-        constraint.reset(new ssbc::Minsep(dValue));
-      }
-    }
-    else
-    {
+    //if(type == kw::STR_DESC__CONSTRAINTS__TYPE___MINSEP)
+    //{
+    //  if(descNode[kw::VALUE])
+    //  {
+    //    dValue = descNode[kw::VALUE].as<double>();
+    //    constraint.reset(new ssbc::Minsep(dValue));
+    //  }
+    //}
+    //else
+    //{
       throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD);
-    }
+    //}
   
   }
   else

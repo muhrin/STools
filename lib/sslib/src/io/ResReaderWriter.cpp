@@ -25,6 +25,7 @@
 #include "common/AtomSpeciesId.h"
 #include "common/AtomSpeciesInfo.h"
 #include "common/Structure.h"
+#include "common/Types.h"
 #include "utility/BoostFilesystem.h"
 
 // DEFINES /////////////////////////////////
@@ -33,7 +34,10 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
+
+namespace common = ::sstbx::common;
 
 void ResReaderWriter::writeStructure(
 	const sstbx::common::Structure &str,
@@ -155,7 +159,7 @@ void ResReaderWriter::writeStructure(
 	}
 
 	// Now write out the atom positions along with the spcies
-	const sstbx::common::AbstractFmidCell<double> * cell = str.getUnitCell();
+	const sstbx::common::AbstractFmidCell * cell = str.getUnitCell();
 	sstbx::common::Atom::Vec3 fracPos;
 	for(size_t i = 0; i < positions.n_cols; ++i)
 	{
@@ -342,7 +346,7 @@ void ResReaderWriter::readStructure(
           // Check if we found all six values
           foundParams = foundParams && i == 6;
 
-          str.setUnitCell(new AbstractFmidCell<double>(params));
+          str.setUnitCell(common::UnitCellPtr(new AbstractFmidCell(params)));
         } // end if(hasMore)
       } // end if(*tokIt == "CELL")
     } // while !foundCell
@@ -395,7 +399,7 @@ void ResReaderWriter::readStructure(
             {
               // Try to get the coordinates
               bool readCoordinates = true;
-              arma::vec pos(3);
+              arma::vec3 pos;
               unsigned int coord = 0;
               for(++atomTokIt;
                 coord < 3 && atomTokIt != atomToker.end();
@@ -415,7 +419,7 @@ void ResReaderWriter::readStructure(
 
               if(readCoordinates)
               {
-                const AbstractFmidCell<double> * const cell = str.getUnitCell();
+                const AbstractFmidCell * const cell = str.getUnitCell();
                 // Try to orthoginalise the position
                 if(cell)
                 {

@@ -27,7 +27,7 @@ struct StandardData
 {
 	explicit StandardData(const sstbx::common::Structure & structure);
 
-	sstbx::common::AbstractFmidCell<FloatType>  unitCell;
+	sstbx::common::AbstractFmidCell  unitCell;
   ::std::size_t							                  numParticles;
 	FloatType							                      totalEnthalpy;
 	typename arma::Mat<FloatType>		            pos;

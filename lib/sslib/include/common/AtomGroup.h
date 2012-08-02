@@ -9,23 +9,33 @@
 #define ATOM_GROUP_H_
 
 // INCLUDES ///////////////////////////////////
+
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
+
+#include <armadillo>
+
 #include "common/AtomSpeciesId.h"
+#include "common/Types.h"
 #include "common/event/AtomGroupEvent.h"
 #include "common/event/GenericEventSupport.h"
 #include "common/event/IGenericEventListener.h"
 
-
-#include <vector>
-
-#include <armadillo>
-
 // FORWARD DECLARES ///////////////////////////
-namespace sstbx { namespace common {
+namespace sstbx
+{
+namespace common
+{
 	class Atom;
 	class StructureTreeEvent;
-}}
+}
+}
 
-namespace sstbx { namespace common {
+namespace sstbx
+{
+namespace common
+{
 
 class AtomGroup
 {
@@ -37,7 +47,6 @@ public:
 	friend class Atom;
 
 	AtomGroup();
-	virtual ~AtomGroup();
 
 	// GROUP POSITION //////////////////////////
 
@@ -49,12 +58,16 @@ public:
 
 	// ATOMS ///////////////////////////////////
 
-	const std::vector<Atom *> & getAtoms() const;
+	const std::vector<AtomPtr> & getAtoms() const;
 	void insertAtom(Atom * const atom);
-	bool removeAtom(Atom * const atom);
+	bool removeAtom(const AtomPtr atom);
+
+  Atom & getAtom(const size_t idx);
+  const Atom & getAtom(const size_t idx) const;
+  Atom & getAtomDescendent(const size_t idx);
+  const Atom & getAtomDescendent(const size_t idx) const;
 
 	// Positions
-
 	void getAtomPositions(Mat & posMtx, const size_t startCol = 0) const;
 	void setAtomPositions(const Mat & posMtx, const size_t startCol = 0);
 
@@ -62,7 +75,6 @@ public:
 	virtual void setAtomPositionsDescendent(const Mat & posMtx, const size_t startCol = 0);
 
 	// Species
-
 	virtual size_t getNumAtomSpecies() const;
 	virtual size_t getNumAtomSpeciesDescendent() const;
   virtual size_t getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
@@ -88,17 +100,19 @@ public:
 
 protected:
 
+  typedef ::std::vector<AtomPtr> AtomsContainer;
+
 	void setParent(AtomGroup * const parent);
 
 	virtual void eventFired(const StructureTreeEvent & evt);
 
-	AtomGroup * myParent;
+	AtomGroup *                     myParent;
 
 	/** The atoms contained in this group */
-	std::vector<Atom *> atoms;
+	AtomsContainer                  myAtoms;
 
 	/** The position of the atom group relative to its parent */
-	Vec3 position;
+	Vec3                            position;
 
 	/** The child atom groups */
 	::std::vector<AtomGroup *>			groups;

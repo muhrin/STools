@@ -59,7 +59,6 @@ public:
   MapPtr      strDescConstraintTyp;
   struct strDescConstraintTyps
   {
-    ScalarPtr   minsep;
   } strDescConstraintTyps;
 
   // Structure generator

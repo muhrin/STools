@@ -12,9 +12,10 @@
 
 #include <string>
 
+#include <boost/optional.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 
-#include "IAtomConstrainable.h"
+#include "build_cell/IAtomConstrainable.h"
 #include "build_cell/AtomGroupDescription.h"
 #include "common/AtomSpeciesId.h"
 
@@ -28,7 +29,10 @@ class AtomGroupDescription;
 }
 }
 
-namespace sstbx { namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 
 class AtomsDescription : public IAtomConstrainable
 {
@@ -37,23 +41,29 @@ public:
 	friend class AtomGroupDescription;
 
 	AtomsDescription();
-	AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  elementType, const size_t elementCount);
+	AtomsDescription(
+    const ::sstbx::common::AtomSpeciesId::Value elementType,
+    const size_t elementCount = 1);
 	virtual ~AtomsDescription() {}
 
-	const ::sstbx::common::AtomSpeciesId::Value  getSpecies() const;
+	const ::sstbx::common::AtomSpeciesId::Value & getSpecies() const;
 
-	void setElementType(const ::sstbx::common::AtomSpeciesId::Value  species);
+	void setElementType(const ::sstbx::common::AtomSpeciesId::Value species);
 
 	size_t getCount() const;
-
 	void setCount(const size_t newCount);
 
-	/** From IAtomConstrainable */
+  ::boost::optional<double> getRadius() const;
+  void setRadius(const double radius);
+
+  const AtomGroupDescription * getParent() const;
+
+	// From IAtomConstrainable /////////////////
 	virtual const AtomConstraintDescription *
     getAtomConstraint(const ConstraintDescriptionId id) const;
 	virtual void addAtomConstraint(AtomConstraintDescription * const atomConstraint);
 	virtual bool removeAtomConstraint(const AtomConstraintDescription * const atomConstraint);
-  // End from IAtomConstrainable
+  // End from IAtomConstrainable ////////////
 
 	template <class CType>
 	const CType * getAtomConstraint(const ConstraintDescriptionId id) const;
@@ -65,18 +75,18 @@ private:
 	void setParent(const AtomGroupDescription * const parent);
 
   ::sstbx::common::AtomSpeciesId::Value	mySpecies;
-
-	const AtomGroupDescription * myParent;
+	const AtomGroupDescription *          myParent;
+  ::boost::optional<double>             myRadius;
 
 	/**
 	/* The number of this type of atom represented.
 	*/
-	size_t count;
+	size_t                                myCount;
 
 	/**
 	/* The constraints applied to this/these atom(s).
 	*/
-	AtomCMap myAtomConstraints;
+	AtomCMap                              myAtomConstraints;
 
 };
 

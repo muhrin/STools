@@ -20,6 +20,7 @@
 
 #include <pipelib/event/IPipeListener.h>
 
+#include <common/AtomSpeciesDatabase.h>
 #include <utility/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
 
@@ -28,20 +29,15 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace pipelib
-{
-namespace event
-{
+namespace pipelib {
+namespace event {
 template <class Listener>
 class PipeStateChanged;
 }
 }
 
-namespace sstbx
-{
-namespace build_cell
-{
-template <typename FloatType>
+namespace sstbx {
+namespace build_cell {
 class RandomCellDescription;
 class StructureDescription;
 }
@@ -84,6 +80,10 @@ public:
 
   const ::boost::filesystem::path & getRelativeOutputPath() const;
 
+  ::sstbx::build_cell::StructureDescription * getStructureDescription();
+
+  ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
+
   // From IPipeListener ////////////////////////
   virtual void notify(const ::pipelib::event::PipeStateChanged< ::spipe::SpPipelineTyp> & evt);
   // End from IPipeListener ///////////////////
@@ -96,7 +96,7 @@ public:
 	::boost::optional< ::arma::Col< unsigned int > >	potSweepNSteps;
 
   ::boost::shared_ptr< sstbx::build_cell::StructureDescription>            structureDescription;
-  ::boost::shared_ptr< sstbx::build_cell::RandomCellDescription< double > >  cellDescription;
+  ::boost::shared_ptr< sstbx::build_cell::RandomCellDescription>           cellDescription;
 
 
   ::std::string                       outputFilename;
@@ -113,8 +113,9 @@ private:
 
   ::spipe::SpPipelineTyp *            myPipe;
 
-  ::boost::filesystem::path           myOutputDir;
-  ::boost::filesystem::path           myOutputFileStem;
+  ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
+  ::boost::filesystem::path             myOutputDir;
+  ::boost::filesystem::path             myOutputFileStem;
 
 };
 

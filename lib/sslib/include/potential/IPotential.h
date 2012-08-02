@@ -12,7 +12,10 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StandardData.h"
 
+#include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
+
+#include <common/AtomSpeciesId.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx
@@ -38,6 +41,8 @@ class IPotential
 public:
 
 	virtual ~IPotential() {}
+
+  virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const = 0;
 
   virtual ::boost::shared_ptr< IPotentialEvaluator >
     createEvaluator(const sstbx::common::Structure & structure) const = 0;

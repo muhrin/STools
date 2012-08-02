@@ -10,19 +10,19 @@
 
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
-#include "common/AtomGroup.h"
 
 #include <vector>
 #include <map>
+
+#include "common/AtomGroup.h"
+#include "common/Types.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx
 {
 namespace common
 {
-
-	template <typename FloatType>
-	class AbstractFmidCell;
+class AbstractFmidCell;
 }
 }
 
@@ -31,25 +31,26 @@ namespace sstbx
 namespace common
 {
 
-class Structure : public AtomGroup {
+class Structure : public AtomGroup
+{
 public:
 
-	Structure(AbstractFmidCell<double> * const cell = NULL);
-	virtual ~Structure();
+  typedef AtomGroup::AtomsContainer::iterator   AtomsIterator;
+
+	Structure(AbstractFmidCell * const cell = NULL);
 
 	const std::string & getName() const;
 	void setName(const std::string & name);
 
 	// UNIT CELL /////////////////////////////////////////
 
-	AbstractFmidCell<double> * getUnitCell();
-	const AbstractFmidCell<double> * getUnitCell() const;
+	AbstractFmidCell * getUnitCell();
+	const AbstractFmidCell * getUnitCell() const;
 
 	/**
-	/* Set the unit cell to be used by the structure.  The Structure takes ownership
-	/* and will delete the cell when necessary.
+	/* Set the unit cell to be used by the structure.
 	/**/
-	void setUnitCell(AbstractFmidCell<double> * const cell);
+	void setUnitCell(const UnitCellPtr cell);
 
 	// ATOMS ///////////////////////////////////////////////
 
@@ -73,13 +74,13 @@ private:
 	void atomRemoved(Atom & atom);
 
 	/** The unit cell for this crystal structure. */
-	AbstractFmidCell<double> * myCell;
+	UnitCellPtr     myCell;
 
 	/** The name of this structure, set by calling code */
-	std::string		myName;
+	std::string		  myName;
 
 	/** The total number of atoms in the structure */
-	size_t			myNumAtomsDescendent;
+	size_t			    myNumAtomsDescendent;
 
 	/**
 	/* Flag to indicate whether the structure has changed since

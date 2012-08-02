@@ -67,6 +67,9 @@ DataTable & DataTableSupport::getTable()
 
 void DataTableSupport::setFilename(const fs::path & filename)
 {
+  if(myFilename == filename)
+    return;
+
   myFilename = filename;
 
   if(myPipeline && myPipeline->getState() == ::pipelib::PipelineState::RUNNING)

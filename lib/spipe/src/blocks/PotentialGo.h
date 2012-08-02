@@ -25,18 +25,29 @@
 
 namespace sstbx
 {
+namespace build_cell
+{
+class StructureDescription;
+}
+namespace common
+{
+class AtomSpeciesDatabase;
+}
 namespace potential
 {
 class IGeomOptimiser;
+class IPotential;
 }
 }
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
 
 class PotentialGo : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
 {
 public:
+
 	PotentialGo(
     const ::sstbx::potential::IGeomOptimiser &  optimiser,
     const ::arma::mat33 * const                 externalPressure = NULL,
@@ -45,6 +56,7 @@ public:
 
   // From Block ///////////////////////////////
   virtual void pipelineInitialising();
+  virtual void pipelineStarting();
   // End from Block //////////////////////////
 
   // From PipeBlock ///////////////////////////
@@ -58,6 +70,11 @@ protected:
     spipe::common::StructureData & strData);
 
   void updateTable(const ::spipe::StructureDataTyp & strData);
+
+  void updateAtomRadiiFromPotential(
+    const ::sstbx::potential::IPotential &      potential,
+    ::sstbx::build_cell::StructureDescription & structureDescription,
+    ::sstbx::common::AtomSpeciesDatabase &      speciesDatabase) const;
 
   // Should we write information about structures being optimised
   // to file.

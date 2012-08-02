@@ -29,6 +29,7 @@ namespace potential
 {
 template <typename FloatType>
 struct StandardData;
+class IPotential;
 }
 }
 
@@ -42,6 +43,13 @@ class IGeomOptimiser
 public:
 
 	virtual ~IGeomOptimiser() {}
+
+  /**
+  /* Get the potential being used by the geometry optimiser.  Not all
+  /* geometry optimisers need to have a potential in which case NULL
+  /* will be returned.
+  /**/
+  virtual const IPotential * getPotential() const = 0;
 
   // TODO: Allow return value to give some indication of the reason for the failure!
 	virtual bool optimise(

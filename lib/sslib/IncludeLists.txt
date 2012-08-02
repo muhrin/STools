@@ -6,17 +6,24 @@ set(sslib_Header_Files__build_cell
   include/build_cell/AtomsDescription.h
   include/build_cell/CellConstraintDescription.h
   include/build_cell/ConstraintDescriptionId.h
+  include/build_cell/ConstStructureDescriptionVisitor.h
+  include/build_cell/ConstVisitorGroup.h
   include/build_cell/DefaultCrystalGenerator.h
+  include/build_cell/DistanceConstraintChecker.h
   include/build_cell/IAtomConstrainable.h
   include/build_cell/ICellGenerator.h
   include/build_cell/IConstraintDescription.h
   include/build_cell/ICrystalStructureGenerator.h
-  include/build_cell/Minsep.h
+  include/build_cell/RandomAtomPositioner.h
   include/build_cell/RandomCellDescription.h
   include/build_cell/RandomCellGenerator.h
   include/build_cell/StructureBuilder.h
   include/build_cell/StructureConstraintDescription.h
   include/build_cell/StructureDescription.h
+  include/build_cell/StructureDescriptionMap.h
+  include/build_cell/StructureDescriptionVisitor.h
+  include/build_cell/StructureGenerationOutcome.h
+  include/build_cell/VisitorGroup.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
@@ -100,6 +107,9 @@ set(sslib_Header_Files__utility
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 
 set(sslib_Header_Files__
+  include/SSLib.h
+  include/SSLibConfig.h
+  include/SSLibTypes.h
 )
 source_group("Header Files" FILES ${sslib_Header_Files__})
 

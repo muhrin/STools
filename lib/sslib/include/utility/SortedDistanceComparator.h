@@ -34,11 +34,11 @@ namespace utility
 struct SortedDistanceComparisonData
 {
 	SortedDistanceComparisonData(
-    const ::sstbx::common::AbstractFmidCell<> & _cell ,
+    const ::sstbx::common::AbstractFmidCell & _cell ,
     const double _maxDist):
 		cell(_cell), maxDist(_maxDist) {}
 
-	const ::sstbx::common::AbstractFmidCell<>	cell;
+	const ::sstbx::common::AbstractFmidCell	cell;
 	::std::vector<double>						sortedDistances;
   const double                    maxDist;
 };

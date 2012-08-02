@@ -16,11 +16,11 @@ namespace sstbx { namespace common {
 
 UnitCellFactory * UnitCellFactory::instance = 0;
 
-AbstractFmidCell<double> * UnitCellFactory::createCell(
+AbstractFmidCell * UnitCellFactory::createCell(
 	const double a, const double b, const double c,
 	const double alpha, const double beta, const double gamma) const
 {
-	AbstractFmidCell<double> * cell = 0;
+	AbstractFmidCell * cell = 0;
 	if(alpha == 90.0 && beta == 90.0 && gamma == 90.0)
 	{
 		cell = new OrthorhombicUnitCell<double>(a, b, c, alpha, beta, gamma);

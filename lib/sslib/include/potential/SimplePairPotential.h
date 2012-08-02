@@ -107,12 +107,15 @@ public:
 
 
   // From IPotential /////////////
+  virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const;
   virtual ::boost::shared_ptr< IPotentialEvaluator > createEvaluator(const sstbx::common::Structure & structure) const;
   // End from IPotential /////////
 
   bool evaluate(SimplePairPotentialData<FloatType> & data) const;
 
 private:
+
+  static const double RADIUS_FACTOR;
 
   typedef SimplePairPotentialData<FloatType> DataType;
 
@@ -149,6 +152,9 @@ private:
 };
 
 // IMPLEMENTATION /////////////////////////////////////
+
+template <typename FloatType>
+const double SimplePairPotential<FloatType>::RADIUS_FACTOR = ::std::pow(2, 1.0/6.0);
 
 template <typename FloatType>
 SimplePairPotential<FloatType>::SimplePairPotential(
@@ -486,7 +492,7 @@ bool SimplePairPotential<FloatType>::evaluate(
 
 	vector<SPP_TYPE::Vec3> imageVectors;
 
-	const sstbx::common::AbstractFmidCell<FloatType> & uc = data.unitCell;
+	const sstbx::common::AbstractFmidCell & uc = data.unitCell;
 	
 	// Loop over all particle pairs (including self-interaction)
 	for(size_t i = 0; i < data.numParticles; ++i)
@@ -581,8 +587,24 @@ bool SimplePairPotential<FloatType>::evaluate(
 }
 
 template <typename FloatType>
+::boost::optional<double>
+SimplePairPotential<FloatType>::getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const
+{
+  ::boost::optional<double> radius;
+  for(size_t i = 0; i < mySpeciesList.size(); ++i)
+  {
+    if(mySpeciesList[i] == id)
+    {
+      radius.reset(RADIUS_FACTOR * mySigma(i, i));
+      break;
+    }
+  }
+  return radius;
+}
+
+template <typename FloatType>
 ::boost::shared_ptr< IPotentialEvaluator >
-  SimplePairPotential<FloatType>::createEvaluator(const sstbx::common::Structure & structure) const
+SimplePairPotential<FloatType>::createEvaluator(const sstbx::common::Structure & structure) const
 {
   // Build the data from the structure
   ::boost::shared_ptr< SimplePairPotentialData< FloatType > > data(

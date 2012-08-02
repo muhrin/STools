@@ -69,6 +69,9 @@ void ParamPotentialGo::pipelineStarting()
     // Add a note to the table with the current parameter string
     myTableSupport.getTable().addTableNote("params: " + myParamPotential.getParamString());
   }
+
+  // Call the parent to let them deal with the starting event too
+  PotentialGo::pipelineStarting();
 }
 
 void ParamPotentialGo::copyOptimisationResults(

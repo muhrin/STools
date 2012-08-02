@@ -69,13 +69,6 @@ potentialTyp(new SchemaMap("potentialTyp", true, "sslib.potentialTyp", true))
 
   // Structure constraints
   strDescConstraintsList->insert(strDescConstraintTyp->newInstance());
-  strDescConstraintTyps.minsep = ScalarPtr(new SchemaMapSingle(
-    "minsep",
-    false,
-    "sslib.strDesc.constraint.minsep",
-    IInputObject::SharedPtrConstTyp(),
-    strDescConstraintTyp->getUid()
-  ));
 
   // Cell generator
   cellGenerator->insert(cellGeneratorTyp->newInstance());

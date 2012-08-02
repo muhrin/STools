@@ -15,74 +15,46 @@
 // DEFINES ///////////////////////////////////////////////
 
 // FORWARD DECLARES //////////////////////////////////////
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 	template <typename FloatType>
 	class RandomCellGenerator;
-}}
+}
+}
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
-template <typename FloatType = double>
 class RandomCellDescription
 {
 public:
 
-	friend class RandomCellGenerator<FloatType>;
+	friend class RandomCellGenerator<double>;
 
 	void setLatticeParams(
-		const FloatType a, const FloatType b, const FloatType c,
-		const FloatType alpha, const FloatType beta, const FloatType gamma);
+		const double a, const double b, const double c,
+		const double alpha, const double beta, const double gamma);
 
-	void setLatticeParams(const FloatType (&latticeParams)[6]);
+	void setLatticeParams(const double (&latticeParams)[6]);
 
-  ::boost::optional<FloatType> myVolume;
-  ::boost::optional<FloatType> myVolDelta;
-  ::boost::optional<FloatType> myMaxLengthRatio;
-  ::boost::optional<FloatType> myMinAngle;
-  ::boost::optional<FloatType> myMaxAngle;
+  ::boost::optional<double> myVolume;
+  ::boost::optional<double> myVolDelta;
+  ::boost::optional<double> myMaxLengthRatio;
+  ::boost::optional<double> myMinAngle;
+  ::boost::optional<double> myMaxAngle;
   /** Lattice lengths */
-  ::boost::optional<FloatType> myA;
-  ::boost::optional<FloatType> myB;
-  ::boost::optional<FloatType> myC;
+  ::boost::optional<double> myA;
+  ::boost::optional<double> myB;
+  ::boost::optional<double> myC;
   /** Lattice angles */
-  ::boost::optional<FloatType> myAlpha;
-  ::boost::optional<FloatType> myBeta;
-  ::boost::optional<FloatType> myGamma;
+  ::boost::optional<double> myAlpha;
+  ::boost::optional<double> myBeta;
+  ::boost::optional<double> myGamma;
 
 };
 
-}}
-
-// IMPLEMENTATION ///////////////////////////////////////////
-
-namespace sstbx { namespace build_cell {
-
-template <typename FloatType>
-void RandomCellDescription<FloatType>::setLatticeParams(
-	const FloatType a, const FloatType b, const FloatType c,
-	const FloatType alpha, const FloatType beta, const FloatType gamma)
-{
-  myA.reset(a);
-  myB.reset(b);
-  myC.reset(b);
-
-  myAlpha.reset(alpha);
-  myBeta.reset(beta);
-  myGamma.reset(gamma);
+}
 }
 
-template <typename FloatType>
-void RandomCellDescription<FloatType>::setLatticeParams(const FloatType (&latticeParams)[6])
-{
-  myA.reset(latticeParams[0]);
-	myB.reset(latticeParams[1]);
-	myC.reset(latticeParams[2]);
-	myAlpha.reset(latticeParams[3]);
-	myBeta.reset(latticeParams[4]);
-	myGamma.reset(latticeParams[5]);
-}
-
-
-}}
 
 #endif /* RANDOM_CELL_DESCRIPTION_H */

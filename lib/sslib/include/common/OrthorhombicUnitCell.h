@@ -18,19 +18,19 @@
 namespace sstbx { namespace common {
 
 template<typename FloatType = double>
-class OrthorhombicUnitCell : public AbstractFmidCell<FloatType>
+class OrthorhombicUnitCell : public AbstractFmidCell
 {
 public:
 	explicit OrthorhombicUnitCell(
 		const FloatType a, const FloatType b, const FloatType c,
 		const FloatType alpha, const FloatType beta, const FloatType gamma):
-	AbstractFmidCell<FloatType>(a, b, c, alpha, beta, gamma)
+	AbstractFmidCell(a, b, c, alpha, beta, gamma)
 	{}
 
 	virtual FloatType getDistanceSqMinimumImg(
-		ABSTRACT_FMID_CELL_TYPE::Vec3 const & a, ABSTRACT_FMID_CELL_TYPE::Vec3 const & b) const
+		AbstractFmidCell::Vec3 const & a, AbstractFmidCell::Vec3 const & b) const
 	{
-		ABSTRACT_FMID_CELL_TYPE::Vec3 r = b - a;
+		AbstractFmidCell::Vec3 r = b - a;
 		// Fractionalise and wrap to maximum 0.5 in any direction
 		fractionaliseInplace(r);
 		r(0) = fmod(r(0), 0.5);
@@ -42,10 +42,10 @@ public:
 		return arma::dot(r, r);
 	}
 
-	virtual ABSTRACT_FMID_CELL_TYPE::Vec3 getVecMinimumImg(
-		ABSTRACT_FMID_CELL_TYPE::Vec3 const & a, ABSTRACT_FMID_CELL_TYPE::Vec3 const & b) const
+	virtual AbstractFmidCell::Vec3 getVecMinimumImg(
+		AbstractFmidCell::Vec3 const & a, AbstractFmidCell::Vec3 const & b) const
 	{
-		ABSTRACT_FMID_CELL_TYPE::Vec3 r = b - a;
+		AbstractFmidCell::Vec3 r = b - a;
 		// Fractionalise and wrap to maximum 0.5 in any direction
 		fractionaliseInplace(r);
 		r(0) = fmod(r(0), 0.5);

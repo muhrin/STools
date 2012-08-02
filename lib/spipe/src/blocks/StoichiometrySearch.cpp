@@ -16,7 +16,6 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/Minsep.h> // TODO: TEMPORARY
 #include <build_cell/RandomCellDescription.h>
 #include <build_cell/StructureDescription.h>
 #include <common/Structure.h>
@@ -37,6 +36,7 @@ namespace blocks {
 // NAMESPACE ALIASES /////////////////////////
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
+namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
 
@@ -45,11 +45,9 @@ StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value  species1,
   const ::sstbx::common::AtomSpeciesId::Value  species2,
   const size_t maxAtoms,
-  const double atomsRadius,
   SpPipelineTyp &				subpipe):
 pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
-myAtomsRadius(atomsRadius),
 mySubpipe(subpipe),
 myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst())
 {
@@ -67,7 +65,6 @@ StoichiometrySearch::StoichiometrySearch(
 pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
-myAtomsRadius(atomsRadius),
 mySubpipe(sweepPipe),
 myAtomsDb(::sstbx::common::AtomSpeciesDatabase::inst()),
 myTableSupport(fs::path("stoich.dat"))
@@ -143,15 +140,11 @@ void StoichiometrySearch::start()
 
     } // End loop over atoms
 
-    // Append the species ratios so the output directory name
+    // Append the species ratios to the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
 
-    // Add a minsep constraint
-    sweepPipeData.structureDescription->addAtomConstraint(new ::sstbx::build_cell::Minsep(1.0 * myAtomsRadius));
-
     // Generate the unit cell
-    sweepPipeData.cellDescription = CellDescPtr(new ::sstbx::build_cell::RandomCellDescription<double>());
-    sweepPipeData.cellDescription->myVolume.reset(8.0 * totalAtoms * 1.333 * 3.1415 * myAtomsRadius * myAtomsRadius * myAtomsRadius);
+    sweepPipeData.cellDescription = CellDescPtr(new ::sstbx::build_cell::RandomCellDescription());
 
     // Find out where all the structures are going to be saved
     sweepPipeOutputPath = sweepPipeData.getRelativeOutputPath().string();

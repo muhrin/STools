@@ -45,8 +45,7 @@ public:
     const FloatType minNormVolume = DEFAULT_MIN_NORM_VOLUME);
 
 	// IGeomOptimiser interface //////////////////////////////
-
-	virtual const IPotential & getPotential() const;
+  virtual const IPotential * getPotential() const;
 
 	virtual bool optimise(
     ::sstbx::common::Structure &  structure,
@@ -111,10 +110,11 @@ myTolerance(tolerance),
 myMinNormVolume(minNormVolume)
 {}
 
+
 template TPSD_GEOM_OPTIMISER_TPARAMS
-const IPotential & TPSD_GEOM_OPTIMISER_TTYPE::getPotential() const
+const IPotential * TPSD_GEOM_OPTIMISER_TTYPE::getPotential() const
 {
-	return myPotential;
+	return &myPotential;
 }
 
 template TPSD_GEOM_OPTIMISER_TPARAMS
@@ -200,7 +200,7 @@ bool TPSD_GEOM_OPTIMISER_TTYPE::optimise(
 	// Forces, current are in data.myForces
 	Mat3	f0(3, data.numParticles), deltaF(3, data.numParticles);
 
-	sstbx::common::AbstractFmidCell<FloatType> & uc = data.unitCell;
+	sstbx::common::AbstractFmidCell & uc = data.unitCell;
 
 	Mat33 latticeCar;
 	FloatType gamma, volume, volumeSq, gammaNumIonsOVolume;

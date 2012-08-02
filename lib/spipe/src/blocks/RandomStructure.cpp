@@ -8,32 +8,41 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/RandomStructure.h"
 
-#include "common/StructureData.h"
-#include "common/UtilityFunctions.h"
+#include <boost/optional.hpp>
 
 // From SSTbx
+#include <build_cell/AtomsDescription.h>
+#include <build_cell/ConstStructureDescriptionVisitor.h>
 #include <build_cell/ICrystalStructureGenerator.h>
 #include <build_cell/RandomCellDescription.h>
 #include <build_cell/RandomCellGenerator.h>
 #include <common/AbstractFmidCell.h>
+#include <common/Constants.h>
 #include <common/Structure.h>
+#include <common/Types.h>
 
 // From PipelineLib
 #include <pipelib/IPipeline.h>
 
 // Local includes
 #include "common/SharedData.h"
+#include "common/StructureData.h"
+#include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
+
+namespace ssbc = ::sstbx::build_cell;
+namespace ssc = ::sstbx::common;
 
 RandomStructure::RandomStructure(
 	const size_t numToGenerate,
   const ::sstbx::build_cell::ICrystalStructureGenerator &   structureGenerator,
   const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription,
-  const ::boost::shared_ptr<const ::sstbx::build_cell::RandomCellDescription<double> > & cellDescription):
+  const CellDescPtr & cellDescription):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Random structures"),
 myNumToGenerate(numToGenerate),
 myStructureGenerator(structureGenerator),
@@ -42,6 +51,11 @@ myCellDescription(cellDescription),
 myUseSharedDataStructureDesc(!structureDescription.get()),
 myUseSharedDataCellDesc(!cellDescription.get())
 {
+}
+
+void RandomStructure::pipelineStarting()
+{
+  // TODO: Put structure description initialisation stuff here
 }
 
 void RandomStructure::start()
@@ -66,8 +80,8 @@ void RandomStructure::in(::spipe::common::StructureData & data)
   initDescriptions();
 
 	// Create the random structure
-	sstbx::common::Structure * const str =
-    myStructureGenerator.generateStructure(*myStructureDescription, *myCellDescription);
+	const sstbx::common::StructurePtr str =
+    myStructureGenerator.generateStructure(*myStructureDescription, *myCellDescription).second;
 
 	if(str)
 	{

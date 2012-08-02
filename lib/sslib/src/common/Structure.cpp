@@ -8,25 +8,21 @@
 // INCLUDES /////////////////////////////////////
 #include "common/Structure.h"
 
+#include <vector>
+
 #include "common/AbstractFmidCell.h"
 #include "common/Atom.h"
 #include "common/StructureTreeEvent.h"
+#include "common/Types.h"
 
-#include <vector>
+namespace sstbx {
+namespace common {
 
-namespace sstbx { namespace common {
-
-Structure::Structure(AbstractFmidCell<double> * const cell):
+Structure::Structure(AbstractFmidCell * const cell):
 myCell(cell),
 myNumAtomsDescendent(0),
 myAtomPositionsCurrent(false)
 {
-}
-
-Structure::~Structure()
-{
-	if(myCell)
-		delete myCell;
 }
 
 const std::string & Structure::getName() const
@@ -39,22 +35,18 @@ void Structure::setName(const std::string & name)
 	myName = name;
 }
 
-AbstractFmidCell<double> * Structure::getUnitCell()
+AbstractFmidCell * Structure::getUnitCell()
 {
-	return myCell;
+	return myCell.get();
 }
 
-const AbstractFmidCell<double> * Structure::getUnitCell() const
+const AbstractFmidCell * Structure::getUnitCell() const
 {
-	return myCell;
+	return myCell.get();
 }
 
-void Structure::setUnitCell(AbstractFmidCell<double> * const cell)
+void Structure::setUnitCell(const UnitCellPtr cell)
 {
-	if(myCell)
-	{
-		delete myCell;
-	}
 	myCell = cell;
 }
 
@@ -129,8 +121,8 @@ void Structure::childAdded(AtomGroup & childGroup)
 	}
 
 	// Now go through all atoms
-	const vector<Atom *> & atoms = childGroup.getAtoms();
-	for(vector<Atom *>::const_iterator it = atoms.begin(), end = atoms.end();
+	const vector<AtomPtr> & atoms = childGroup.getAtoms();
+	for(vector<AtomPtr>::const_iterator it = atoms.begin(), end = atoms.end();
 		it != end; ++it)
 	{
 		atomAdded(**it);
@@ -150,8 +142,8 @@ void Structure::childRemoved(AtomGroup & childGroup)
 	}
 
 	// Now go through all atoms
-	const vector<Atom *> & atoms = childGroup.getAtoms();
-	for(vector<Atom *>::const_iterator it = atoms.begin(), end = atoms.end();
+	const vector<AtomPtr> & atoms = childGroup.getAtoms();
+	for(vector<AtomPtr>::const_iterator it = atoms.begin(), end = atoms.end();
 		it != end; ++it)
 	{
 		atomRemoved(**it);

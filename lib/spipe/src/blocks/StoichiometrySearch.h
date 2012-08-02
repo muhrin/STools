@@ -69,7 +69,6 @@ public:
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
-    const double          atomsRadius,
     SpPipelineTyp &				subpipe);
 
   StoichiometrySearch(
@@ -93,10 +92,10 @@ public:
 
 private:
 
-  typedef ::spipe::StructureDataTyp                                      StructureDataTyp;
-  typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription> StrDescPtr;
-  typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription<double> > CellDescPtr;
-  typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>          TableWriterPtr;
+  typedef ::spipe::StructureDataTyp                                         StructureDataTyp;
+  typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription>   StrDescPtr;
+  typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription>  CellDescPtr;
+  typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>           TableWriterPtr;
 
   
   // Initialisation //////////////////////////////
@@ -118,7 +117,6 @@ private:
   ::spipe::utility::DataTableSupport    myTableSupport;
 
   const size_t                          myMaxAtoms;
-  const double                          myAtomsRadius;
 
   ::boost::filesystem::path             myOutputPath;
 

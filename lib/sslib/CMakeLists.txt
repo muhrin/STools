@@ -6,12 +6,14 @@ project(SSLib)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
 
 set(SSLIB_VERSION_MAJOR 0)
-set(SSLIB_VERSION_MAJOR 1)
+set(SSLIB_VERSION_MINOR 1)
 set(SSLIB_VERSION_PATCH 0)
 
+message(STATUS "Configuring SSLib ${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+
 configure_file(
-  "${PROJECT_SOURCE_DIR}/src/SSLibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/src/SSLibConfig.h"
+  "${PROJECT_SOURCE_DIR}/include/SSLibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/include/SSLibConfig.h"
 )
 
 ## CONFIGURATION SETTINGS ##############################
@@ -40,13 +42,18 @@ endif()
 
 ## END FIND PACKAGES ####################################
 
-# Include directories with header files
-  include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-  )
+set(SSLIB_INCLUDE_DIRS
+  ${PROJECT_BINARY_DIR}/include  # So that we find SSLibConfig.h
+  ${PROJECT_SOURCE_DIR}/include
+  CACHE FILEPATH INTERNAL FORCE
+)
 
-include_directories(include src)
+# Include directories with header files
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${ARMADILLO_INCLUDE_DIRS}
+  ${SSLIB_INCLUDE_DIRS}
+)
 
 # Process header and source files
 include(IncludeLists.txt)
@@ -54,7 +61,10 @@ include(SrcLists.txt)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "SSLib")
 
-add_library(sslib ${sslib_Header_Files} ${sslib_Source_Files})
+add_library(sslib
+  ${sslib_Header_Files}
+  ${sslib_Source_Files}
+)
 
 # Libraries we need to link to
 target_link_libraries(sslib

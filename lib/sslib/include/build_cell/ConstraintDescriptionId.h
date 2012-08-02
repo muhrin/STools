@@ -17,7 +17,6 @@ namespace sstbx { namespace build_cell {
 
 enum ConstraintDescriptionId
 {
-	MINSEP,
 	// Last element, do not change below this comment!!
 	NUM_CONSTRAINT
 };

@@ -12,11 +12,11 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-
 #include <boost/optional.hpp>
 
 #include <armadillo>
 
+#include <common/Types.h>
 #include <utility/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
 
@@ -48,11 +48,9 @@ struct StructureObjectKeys
 class StructureData
 {
 public:
-	StructureData();
-	~StructureData();
 
-	sstbx::common::Structure * getStructure() const;
-	void setStructure(sstbx::common::Structure * const structure);
+	sstbx::common::StructurePtr getStructure() const;
+	void setStructure(const sstbx::common::StructurePtr structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path
@@ -70,7 +68,7 @@ public:
 
 private:
 
-	::sstbx::common::Structure * myStructure;
+	::sstbx::common::StructurePtr   myStructure;
 };
 
 

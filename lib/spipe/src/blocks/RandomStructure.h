@@ -40,8 +40,8 @@ class RandomStructure :
 {
 public:
 
-  typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription >           StructureDescPtr;
-  typedef ::boost::shared_ptr<const ::sstbx::build_cell::RandomCellDescription<double> >  CellDescPtr;
+  typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription >      StructureDescPtr;
+  typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription >          CellDescPtr;
 
 	RandomStructure(
 		const size_t numToGenerate,
@@ -49,10 +49,14 @@ public:
     const StructureDescPtr & structureDescription = StructureDescPtr(),
     const CellDescPtr &      cellDescription      = CellDescPtr());
 
+
+  // From Block ////////
+  virtual void pipelineStarting();
+  // End from Block ////
+
   // From StartBlock ///
 	virtual void start();
   // End from StartBlock
-
 
   // From PipeBlock //
 	virtual void in(::spipe::common::StructureData & data);
@@ -62,6 +66,8 @@ private:
 
   virtual void initDescriptions();
 
+  double setRadii() const;
+
 	const size_t myNumToGenerate;
 
   /** Should the block use the structure description found in shared data */
@@ -70,8 +76,8 @@ private:
   /** Should the block use the cell description found in shared data */
   const bool  myUseSharedDataCellDesc;
 
-  ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription>            myStructureDescription;
-  ::boost::shared_ptr<const ::sstbx::build_cell::RandomCellDescription<double> >  myCellDescription;
+  StructureDescPtr       myStructureDescription;
+  CellDescPtr            myCellDescription;
 
 	const ::sstbx::build_cell::ICrystalStructureGenerator &	myStructureGenerator;
 

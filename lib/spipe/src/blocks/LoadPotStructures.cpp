@@ -16,6 +16,7 @@
 
 // From SSTbx
 #include <common/Structure.h>
+#include <common/Types.h>
 #include <io/AdditionalData.h>
 #include <io/ResReaderWriter.h>
 #include <potential/IParameterisable.h>
@@ -31,7 +32,10 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
+
+namespace ssc = ::sstbx::common;
 
 LoadPotStructures::LoadPotStructures(
   const sstbx::potential::IParameterisable &        pot,
@@ -128,7 +132,7 @@ size_t LoadPotStructures::loadStructures(
     if(dirEntry.extension() == ".res")
     {
       StructureDataTyp * const strDat = new StructureDataTyp();
-      strDat->setStructure(new sstbx::common::Structure());
+      strDat->setStructure(ssc::StructurePtr(new sstbx::common::Structure()));
       sstbx::io::AdditionalData data;
 
       //std::cout << "Got res file: " << dirEntry.string() << std::endl;

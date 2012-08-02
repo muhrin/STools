@@ -14,10 +14,12 @@
 #include <armadillo>
 
 // FORWARD DECLARES ///////////////////////////
-namespace sstbx { namespace common {
-	class AtomGroup;
-	class StructureTreeEvent;
-}}
+namespace sstbx {
+namespace common {
+class AtomGroup;
+class StructureTreeEvent;
+}
+}
 
 namespace sstbx { namespace common {
 

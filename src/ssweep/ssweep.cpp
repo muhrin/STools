@@ -168,7 +168,7 @@ int main(const int argc, const char * const argv[])
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &externalPressure, false);
 
-  sp::blocks::PotentialGo go(optimiser, NULL, true);
+  sp::blocks::ParamPotentialGo go(pp, optimiser, NULL /*no external pressure*/, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;
@@ -206,7 +206,7 @@ int main(const int argc, const char * const argv[])
   randomSearchPipe.connect(write2, lowestE);
 
   // Configure stoichiometry sweep pipeline
-  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, maxNumAtoms, 0.75, randomSearchPipe);
+  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, maxNumAtoms, randomSearchPipe);
   sp::blocks::LowestFreeEnergy lowestEStoich;
 
   stoichSweepPipe.setStartBlock(stoichSearch);

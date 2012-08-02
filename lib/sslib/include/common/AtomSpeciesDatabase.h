@@ -40,16 +40,19 @@ public:
 
   virtual const AtomSpeciesId::Value getIdFromSymbol(const std::string & symbol) const;
 
+  virtual const double * getRadius(const AtomSpeciesId::Value id) const;
+  virtual void setRadius(const AtomSpeciesId::Value id, const double radius);
+
 	static AtomSpeciesDatabase & inst();
 
 protected:
 
   typedef ::std::map<AtomSpeciesId::Value, ::std::string> SpeciesString;
-
-  typedef ::std::pair<AtomSpeciesId::Value, ::std::string> SpeciesStringPair;
+  typedef ::std::map<AtomSpeciesId::Value, double>        SpeciesDouble;
 
 	SpeciesString	myNames;
 	SpeciesString	mySymbols;
+  SpeciesDouble myRadii;
 
 private:
 
