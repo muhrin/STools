@@ -77,7 +77,7 @@ StructureDescriptionMap::getAtoms(const AtomGroupDescription * atomGroupDescript
 size_t StructureDescriptionMap::getDescriptionsAndAtoms(
   const AtomGroupDescription * groupDescription,
   DescriptionsAndAtoms &       descriptionsAndAtoms,
-  const size_t                 maxDepth)
+  const unsigned int           maxDepth)
 {
   size_t numFound = 0;
 
@@ -106,7 +106,7 @@ size_t StructureDescriptionMap::getDescriptionsAndAtoms(
 size_t StructureDescriptionMap::getDescriptionsAndAtoms(
   const AtomGroupDescription * groupDescription,
   ConstDescriptionsAndAtoms &  descriptionsAndAtoms,
-  const size_t                 maxDepth) const
+  const unsigned int           maxDepth) const
 {
   size_t numFound = 0;
 

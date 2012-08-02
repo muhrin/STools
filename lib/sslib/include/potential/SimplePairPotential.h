@@ -153,6 +153,8 @@ private:
 
 // IMPLEMENTATION /////////////////////////////////////
 
+// Using 0.5 prefactor as 2^(1/6) s is the equilibrium separation of the centres.
+// i.e. the diameter
 template <typename FloatType>
 const double SimplePairPotential<FloatType>::RADIUS_FACTOR = 0.5 * ::std::pow(2, 1.0/6.0);
 

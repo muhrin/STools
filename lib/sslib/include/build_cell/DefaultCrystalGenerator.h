@@ -72,7 +72,7 @@ private:
     const RandomCellDescription & cellDesc,
     ::sstbx::common::Structure &  structure) const;
 
-  StructureGenerationOutcome::Value DefaultCrystalGenerator::generateAtomPositions(
+  StructureGenerationOutcome::Value generateAtomPositions(
 	  StructureDescriptionMap & descriptionMap) const;
 };
 

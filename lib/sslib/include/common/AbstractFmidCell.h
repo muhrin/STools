@@ -38,8 +38,8 @@ public:
 	// TYPEDEFS ////////////////////////
 	// Need to use the typename keyword to make it clear that these are types
 	typedef arma::Mat<double>				Mat;
-	typedef arma::Mat<double>::template fixed<3, 3>	Mat33;
-	typedef arma::Col<double>::template fixed<3>		Vec3;
+	typedef arma::Mat<double>::fixed<3, 3>	Mat33;
+	typedef arma::Col<double>::fixed<3>		Vec3;
 
   static const unsigned int MAX_OUT_VECTORS = 100000;
 
