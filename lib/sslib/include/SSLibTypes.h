@@ -11,9 +11,16 @@
 
 // INCLUDES //////////////////////////////////////
 #include <complex>
+#include <climits>
 #include <limits>
 
 #include <boost/static_assert.hpp>
+
+#ifdef BOOST_STATIC_ASSERT_MSG
+#  define SSLIB_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT_MSG(B, Msg)
+#else
+#  define SSLIB_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
+#endif
 
 namespace sstbx
 {
@@ -71,25 +78,25 @@ namespace sstbx
 struct type_check
 {
 private:
-BOOST_STATIC_ASSERT_MSG(sizeof(u8) == 1, "Error, type u8 has unsupported size" );
-BOOST_STATIC_ASSERT_MSG(sizeof(s8) == 1, "Error, type s8 has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(u8) == 1, "Error, type u8 has unsupported size" );
+SSLIB_STATIC_ASSERT_MSG(sizeof(s8) == 1, "Error, type s8 has unsupported size");
 
-BOOST_STATIC_ASSERT_MSG(sizeof(u16) == 2, "Error, type u16 has unsupported size");
-BOOST_STATIC_ASSERT_MSG(sizeof(s16) == 2, "Error, type s16 has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(u16) == 2, "Error, type u16 has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(s16) == 2, "Error, type s16 has unsupported size");
 
-BOOST_STATIC_ASSERT_MSG(sizeof(u32) == 4, "Error, type u32 has unsupported size");
-BOOST_STATIC_ASSERT_MSG(sizeof(s32) == 4, "Error, type s32 has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(u32) == 4, "Error, type u32 has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(s32) == 4, "Error, type s32 has unsupported size");
 
 #if defined(SSLIB_64BIT_WORD)
 BOOST_STATIC_ASSERT_MSG(sizeof(u64) == 8, "Error, type u64 has unsupported size");
 BOOST_STATIC_ASSERT_MSG(sizeof(s64) == 8, "Error, type s64 has unsupported size");
 #endif
 
-BOOST_STATIC_ASSERT_MSG(sizeof(float)  == 4, "Error, type float has unsupported size");
-BOOST_STATIC_ASSERT_MSG(sizeof(double) == 8, "Error, type double has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(float)  == 4, "Error, type float has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(double) == 8, "Error, type double has unsupported size");
 
-BOOST_STATIC_ASSERT_MSG(sizeof(std::complex<float>)  == 8,  "Error, type complex float has unsupported size");
-BOOST_STATIC_ASSERT_MSG(sizeof(std::complex<double>) == 16, "Error, type complex double has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(std::complex<float>)  == 8,  "Error, type complex float has unsupported size");
+SSLIB_STATIC_ASSERT_MSG(sizeof(std::complex<double>) == 16, "Error, type complex double has unsupported size");
   
 };
 }
