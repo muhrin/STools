@@ -154,7 +154,7 @@ private:
 // IMPLEMENTATION /////////////////////////////////////
 
 template <typename FloatType>
-const double SimplePairPotential<FloatType>::RADIUS_FACTOR = ::std::pow(2, 1.0/6.0);
+const double SimplePairPotential<FloatType>::RADIUS_FACTOR = 0.5 * ::std::pow(2, 1.0/6.0);
 
 template <typename FloatType>
 SimplePairPotential<FloatType>::SimplePairPotential(
