@@ -13,7 +13,7 @@
 
 // From SSTbx
 #include <common/Structure.h>
-#include <utility/Loops.h>
+#include <utility/MultiIdxRange.h>
 
 // From PipelineLib
 #include <pipelib/IPipeline.h>
@@ -32,6 +32,7 @@ namespace blocks
 
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
+namespace ssu = ::sstbx::utility;
 
 PotentialParamSweep::PotentialParamSweep(
 	const ::arma::vec	&		from,
@@ -74,17 +75,18 @@ void PotentialParamSweep::pipelineInitialised()
 
 void PotentialParamSweep::start()
 {
-	using ::sstbx::utility::Loops;
-
   ::std::string sweepPipeOutputPath;
   ::spipe::SharedDataTyp & sweepPipeSharedData = mySweepPipeline.getSharedData();
-	for(Loops<size_t> loops(myStepExtents); !loops.isAtEnd(); ++loops)
+
+  const ssu::MultiIdxRange<unsigned int> stepsRange(ssu::MultiIdx<unsigned int>(myStepExtents.dims()), myStepExtents);
+
+  BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & stepsIdx, stepsRange)
 	{
 		// Load the current potential parameters into the pipeline data
 		::arma::vec params(myNumParams);
 		for(size_t i = 0; i < myNumParams; ++i)
 		{
-			params(i) = myFrom(i) + (*loops)[i] * myStep(i);
+			params(i) = myFrom(i) + stepsIdx[i] * myStep(i);
 		}
 		// Store the potential parameters in global memory
     myPipeline->getGlobalData().objectsStore.insert(::spipe::common::GlobalKeys::POTENTIAL_PARAMS, params);

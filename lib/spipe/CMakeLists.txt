@@ -4,8 +4,9 @@ cmake_minimum_required(VERSION 2.6)
 
 set(SP_VERSION_MAJOR 0)
 set(SP_VERSION_MINOR 3)
+set(SP_VERSION_PATCH 0)
 
-message(STATUS "Configuring StructurePipe ${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}")
+message(STATUS "Configuring StructurePipe ${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}.${SP_VERSION_PATCH}")
 
 project(StructurePipe)
 
@@ -80,9 +81,13 @@ include_directories(
   ${SPIPE_INCLUDE_DIRS}
 )
 
-
-## Subdirectories/libraries #############################
-
 add_subdirectory(src)
+
+# Suppress yaml-cpp warnings
+if(MSVC)
+  set_target_properties(yaml-cpp PROPERTIES COMPILE_FLAGS "/W0")
+elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+  set_target_properties(yaml-cpp PROPERTIES COMPILE_FLAGS "-w")
+endif()
 
 set_property(TARGET PROPERTY PROJECT_LABEL "StructurePipe")

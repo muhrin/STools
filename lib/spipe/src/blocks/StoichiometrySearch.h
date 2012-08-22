@@ -26,7 +26,7 @@
 #include <common/AtomSpeciesDatabase.h>
 #include <common/AtomSpeciesId.h>
 #include <utility/BoostFilesystem.h>
-#include <utility/MultiIdx.h>
+#include <utility/MultiIdxRange.h>
 
 // Local includes
 #include "utility/DataTable.h"
@@ -100,7 +100,8 @@ private:
   
   // Initialisation //////////////////////////////
   void init();
-  void initStoichExtents();
+
+  ::sstbx::utility::MultiIdxRange<unsigned int> getStoichRange();
 
   void releaseBufferedStructures(
     const utility::DataTable::Key &             key
@@ -108,7 +109,7 @@ private:
 
   void updateTable(
     const utility::DataTable::Key &             key,
-    const ::sstbx::utility::MultiIdx<size_t> & currentIdx
+    const ::sstbx::utility::MultiIdx<unsigned int> & currentIdx
   );
 
   SpPipelineTyp &                       mySubpipe;
@@ -124,7 +125,6 @@ private:
 	::std::vector<StructureDataTyp *>		  myBuffer;
 
   SpeciesParamters                      mySpeciesParameters;
-  ::sstbx::utility::MultiIdx<size_t>    myStoichExtents;
 
   const ::sstbx::common::AtomSpeciesDatabase  myAtomsDb;
 

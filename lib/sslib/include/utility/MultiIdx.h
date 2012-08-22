@@ -23,53 +23,53 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
-template <typename IdxTyp = size_t>
+template <typename Integer = unsigned int>
 class MultiIdx
 {
 public:
 
-  MultiIdx() {}
+  MultiIdx(): myDims(0) {}
 	explicit MultiIdx(const size_t _dims);
-	MultiIdx(const size_t _dims, const IdxTyp initialVal);
+	MultiIdx(const size_t _dims, const Integer initialVal);
 	// Copy constructor
-	MultiIdx(const MultiIdx<IdxTyp> & toCopy);
+	MultiIdx(const MultiIdx<Integer> & toCopy);
 
 	/** Reset back to the origin */
 	void reset();
 
-	void fill(IdxTyp value);
+	void fill(Integer value);
 
-	IdxTyp min() const;
-	IdxTyp max() const;
-  IdxTyp sum() const;
+	Integer min() const;
+	Integer max() const;
+  Integer sum() const;
+  Integer product() const;
 
 	// Operators ///
-	IdxTyp &		operator[](const size_t dim);
-	const IdxTyp &	operator[](const size_t dim) const;
+	Integer &		operator[](const size_t dim);
+	const Integer &	operator[](const size_t dim) const;
 
 	// Same index type
-	MultiIdx<IdxTyp> & operator =(const MultiIdx<IdxTyp> & rhs);
-	MultiIdx<IdxTyp> operator+(const MultiIdx<IdxTyp> & rhs) const;
-	MultiIdx<IdxTyp> operator-(const MultiIdx<IdxTyp> & rhs) const;
-	MultiIdx<IdxTyp> & operator+=(const MultiIdx<IdxTyp> & rhs);
-	MultiIdx<IdxTyp> & operator-=(const MultiIdx<IdxTyp> & rhs);
-	bool operator ==(const MultiIdx<IdxTyp> & rhs) const;
-	MultiIdx<int> operator<(const MultiIdx<IdxTyp> & rhs) const;
+	MultiIdx<Integer> & operator =(const MultiIdx<Integer> & rhs);
+	MultiIdx<Integer> operator +(const MultiIdx<Integer> & rhs) const;
+	MultiIdx<Integer> operator -(const MultiIdx<Integer> & rhs) const;
+	MultiIdx<Integer> & operator +=(const MultiIdx<Integer> & rhs);
+	MultiIdx<Integer> & operator -=(const MultiIdx<Integer> & rhs);
+	bool operator ==(const MultiIdx<Integer> & rhs) const;
+  bool operator <=(const MultiIdx<Integer> & rhs) const;
+	MultiIdx<int> operator<(const MultiIdx<Integer> & rhs) const;
 
 	// Different index type
 	template <typename RhsTyp>
-	MultiIdx<IdxTyp> & operator=(const MultiIdx<RhsTyp> & rhs);
+	MultiIdx<Integer> & operator=(const MultiIdx<RhsTyp> & rhs);
 	template <typename OutTyp, typename RhsTyp>
 	MultiIdx<OutTyp> operator-(const MultiIdx<RhsTyp> & rhs) const;
 	template <typename RhsTyp>
-	MultiIdx<IdxTyp> & operator+=(const MultiIdx<RhsTyp> & rhs);
+	MultiIdx<Integer> & operator+=(const MultiIdx<RhsTyp> & rhs);
 	template <typename RhsTyp>
-	MultiIdx<IdxTyp> & operator-=(const MultiIdx<RhsTyp> & rhs);
+	MultiIdx<Integer> & operator-=(const MultiIdx<RhsTyp> & rhs);
 	template <typename RhsTyp>
 	MultiIdx<int> operator<(const MultiIdx<RhsTyp> & rhs) const;
 
@@ -99,47 +99,48 @@ public:
 
 private:
 
-  typedef ::boost::scoped_array<IdxTyp> IdxPtr;
+  typedef ::boost::scoped_array<Integer> IdxPtr;
 
+  /** The current number of dimensions */
   size_t    myDims;
-	/** The current multidimensional index */
+	/** The current index */
 	IdxPtr	  myIdx;
 };
 
 // IMPLEMENTATION ///////////////////////
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp>::MultiIdx(const size_t dims):
+template <typename Integer>
+MultiIdx<Integer>::MultiIdx(const size_t dims):
 myDims(dims)
 {
-  myIdx.reset(new IdxTyp[myDims]);
+  myIdx.reset(new Integer[myDims]);
 	reset();
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp>::MultiIdx(const size_t dims, const IdxTyp initialVal):
+template <typename Integer>
+MultiIdx<Integer>::MultiIdx(const size_t dims, const Integer initialVal):
 myDims(dims)
 {
-	myIdx.reset(new IdxTyp[myDims]);
+	myIdx.reset(new Integer[myDims]);
 	fill(initialVal);
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp>::MultiIdx(const MultiIdx & toCopy):
+template <typename Integer>
+MultiIdx<Integer>::MultiIdx(const MultiIdx & toCopy):
 myDims(toCopy.myDims)
 {
-	myIdx.reset(new IdxTyp[myDims]);
-  memcpy(myIdx.get(), toCopy.myIdx.get(), sizeof(IdxTyp) * myDims);
+	myIdx.reset(new Integer[myDims]);
+  memcpy(myIdx.get(), toCopy.myIdx.get(), sizeof(Integer) * myDims);
 }
 
-template <typename IdxTyp>
-void MultiIdx<IdxTyp>::reset()
+template <typename Integer>
+void MultiIdx<Integer>::reset()
 {
-	memset(myIdx.get(), 0, sizeof(IdxTyp) * myDims);
+	memset(myIdx.get(), 0, sizeof(Integer) * myDims);
 }
 
-template <typename IdxTyp>
-void MultiIdx<IdxTyp>::fill(IdxTyp value)
+template <typename Integer>
+void MultiIdx<Integer>::fill(Integer value)
 {
 	for(size_t i = 0; i < myDims; ++i)
 	{
@@ -147,10 +148,10 @@ void MultiIdx<IdxTyp>::fill(IdxTyp value)
 	}
 }
 
-template <typename IdxTyp>
-IdxTyp MultiIdx<IdxTyp>::min() const
+template <typename Integer>
+Integer MultiIdx<Integer>::min() const
 {
-	IdxTyp min = ::std::numeric_limits<IdxTyp>::max();
+	Integer min = ::std::numeric_limits<Integer>::max();
 	for(size_t i = 0; i < myDims; ++i)
 	{
 		min = ::std::min(min, myIdx[i]);
@@ -158,10 +159,10 @@ IdxTyp MultiIdx<IdxTyp>::min() const
 	return min;
 }
 
-template <typename IdxTyp>
-IdxTyp MultiIdx<IdxTyp>::max() const
+template <typename Integer>
+Integer MultiIdx<Integer>::max() const
 {
-	IdxTyp max = ::std::numeric_limits<IdxTyp>::min();
+	Integer max = ::std::numeric_limits<Integer>::min();
 	for(size_t i = 0; i < myDims; ++i)
 	{
 		max = ::std::max(max, myIdx[i]);
@@ -169,10 +170,10 @@ IdxTyp MultiIdx<IdxTyp>::max() const
 	return max;
 }
 
-template <typename IdxTyp>
-IdxTyp MultiIdx<IdxTyp>::sum() const
+template <typename Integer>
+Integer MultiIdx<Integer>::sum() const
 {
-	IdxTyp sum = 0;
+	Integer sum = 0;
 	for(size_t i = 0; i < myDims; ++i)
 	{
 		sum += myIdx[i];
@@ -180,39 +181,50 @@ IdxTyp MultiIdx<IdxTyp>::sum() const
 	return sum;
 }
 
-template <typename IdxTyp>
-IdxTyp & MultiIdx<IdxTyp>::operator[](const size_t dim)
+template <typename Integer>
+Integer MultiIdx<Integer>::product() const
+{
+	Integer product = 1;
+	for(size_t i = 0; i < myDims; ++i)
+	{
+		product *= myIdx[i];
+	}
+	return product;
+}
+
+template <typename Integer>
+Integer & MultiIdx<Integer>::operator[](const size_t dim)
 {
 	SSE_ASSERT(dim < myDims);
 	return myIdx[dim];
 }
 
-template <typename IdxTyp>
-const IdxTyp & MultiIdx<IdxTyp>::operator [](const size_t dim) const
+template <typename Integer>
+const Integer & MultiIdx<Integer>::operator [](const size_t dim) const
 {
 	SSE_ASSERT(dim < myDims);
 	return myIdx[dim];
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator =(const MultiIdx<IdxTyp> & rhs)
+template <typename Integer>
+MultiIdx<Integer> & MultiIdx<Integer>::operator =(const MultiIdx<Integer> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
 		throw ::std::logic_error("Multi index dimension mismatch");
 	}
-	memcpy(myIdx, rhs.myIdx, sizeof(IdxTyp) * myDims);
+	memcpy(myIdx.get(), rhs.myIdx.get(), sizeof(Integer) * myDims);
 	return *this;
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp> MultiIdx<IdxTyp>::operator+(const MultiIdx<IdxTyp> & rhs) const
+template <typename Integer>
+MultiIdx<Integer> MultiIdx<Integer>::operator+(const MultiIdx<Integer> & rhs) const
 {
 	if(myDims != rhs.myDims)
 	{
 		throw ::std::logic_error("Multi index dimension mismatch");
 	}
-	MultiIdx<IdxTyp> result(myDims);
+	MultiIdx<Integer> result(myDims);
 	for(size_t i = 0; i < myDims; ++i)
 	{
 		result[i] = myIdx[i] + rhs.myIdx[i];
@@ -220,14 +232,14 @@ MultiIdx<IdxTyp> MultiIdx<IdxTyp>::operator+(const MultiIdx<IdxTyp> & rhs) const
 	return result;
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp> MultiIdx<IdxTyp>::operator-(const MultiIdx<IdxTyp> & rhs) const
+template <typename Integer>
+MultiIdx<Integer> MultiIdx<Integer>::operator-(const MultiIdx<Integer> & rhs) const
 {
 	if(myDims != rhs.myDims)
 	{
 		throw ::std::logic_error("Multi index dimension mismatch");
 	}
-	MultiIdx<IdxTyp> result(myDims);
+	MultiIdx<Integer> result(myDims);
 	for(size_t i = 0; i < myDims; ++i)
 	{
 		result[i] = myIdx[i] - rhs.myIdx[i];
@@ -235,8 +247,8 @@ MultiIdx<IdxTyp> MultiIdx<IdxTyp>::operator-(const MultiIdx<IdxTyp> & rhs) const
 	return result;
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator+=(const MultiIdx<IdxTyp> & rhs)
+template <typename Integer>
+MultiIdx<Integer> & MultiIdx<Integer>::operator+=(const MultiIdx<Integer> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
@@ -249,8 +261,8 @@ MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator+=(const MultiIdx<IdxTyp> & rhs)
 	return *this;
 }
 
-template <typename IdxTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator-=(const MultiIdx<IdxTyp> & rhs)
+template <typename Integer>
+MultiIdx<Integer> & MultiIdx<Integer>::operator -=(const MultiIdx<Integer> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
@@ -263,8 +275,8 @@ MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator-=(const MultiIdx<IdxTyp> & rhs)
 	return *this;
 }
 
-template <typename IdxTyp>
-bool MultiIdx<IdxTyp>::operator==(const MultiIdx<IdxTyp> & rhs) const
+template <typename Integer>
+bool MultiIdx<Integer>::operator ==(const MultiIdx<Integer> & rhs) const
 {
 	if(myDims != rhs.myDims)
 		return false;
@@ -281,8 +293,26 @@ bool MultiIdx<IdxTyp>::operator==(const MultiIdx<IdxTyp> & rhs) const
 	return result;
 }
 
-template <typename IdxTyp>
-MultiIdx<int>  MultiIdx<IdxTyp>::operator<(const MultiIdx<IdxTyp> & rhs) const
+template <typename Integer>
+bool MultiIdx<Integer>::operator <=(const MultiIdx<Integer> & rhs) const
+{
+	if(myDims != rhs.myDims)
+		return false;
+
+	bool result = true;
+	for(size_t i = 0; i < myDims; ++i)
+	{
+		if(myIdx[i] > rhs.myIdx[i])
+		{
+			result = false;
+			break;
+		}
+	}
+	return result;
+}
+
+template <typename Integer>
+MultiIdx<int>  MultiIdx<Integer>::operator<(const MultiIdx<Integer> & rhs) const
 {
 	if(myDims != rhs.myDims)
 	{
@@ -296,9 +326,9 @@ MultiIdx<int>  MultiIdx<IdxTyp>::operator<(const MultiIdx<IdxTyp> & rhs) const
 	return result;
 }
 
-template <typename IdxTyp>
+template <typename Integer>
 template <typename RhsTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator=(const MultiIdx<RhsTyp> & rhs)
+MultiIdx<Integer> & MultiIdx<Integer>::operator=(const MultiIdx<RhsTyp> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
@@ -311,9 +341,9 @@ MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator=(const MultiIdx<RhsTyp> & rhs)
 	return *this;
 }
 
-template <typename IdxTyp>
+template <typename Integer>
 template <typename RhsTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator+=(const MultiIdx<RhsTyp> & rhs)
+MultiIdx<Integer> & MultiIdx<Integer>::operator+=(const MultiIdx<RhsTyp> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
@@ -326,9 +356,9 @@ MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator+=(const MultiIdx<RhsTyp> & rhs)
 	return *this;
 }
 
-template <typename IdxTyp>
+template <typename Integer>
 template <typename RhsTyp>
-MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator-=(const MultiIdx<RhsTyp> & rhs)
+MultiIdx<Integer> & MultiIdx<Integer>::operator-=(const MultiIdx<RhsTyp> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
@@ -341,9 +371,9 @@ MultiIdx<IdxTyp> & MultiIdx<IdxTyp>::operator-=(const MultiIdx<RhsTyp> & rhs)
 	return *this;
 }
 
-template <typename IdxTyp>
+template <typename Integer>
 template <typename RhsTyp>
-MultiIdx<int> MultiIdx<IdxTyp>::operator<(const MultiIdx<RhsTyp> & rhs) const
+MultiIdx<int> MultiIdx<Integer>::operator<(const MultiIdx<RhsTyp> & rhs) const
 {
 	if(myDims != rhs.myDims)
 	{
@@ -357,9 +387,9 @@ MultiIdx<int> MultiIdx<IdxTyp>::operator<(const MultiIdx<RhsTyp> & rhs) const
 	return result;
 }
 
-template <typename IdxTyp>
+template <typename Integer>
 template <typename OutTyp, typename RhsTyp>
-MultiIdx<OutTyp>  MultiIdx<IdxTyp>::operator-(const MultiIdx<RhsTyp> & rhs) const
+MultiIdx<OutTyp>  MultiIdx<Integer>::operator-(const MultiIdx<RhsTyp> & rhs) const
 {
 	if(myDims != rhs.myDims)
 	{
@@ -374,19 +404,19 @@ MultiIdx<OutTyp>  MultiIdx<IdxTyp>::operator-(const MultiIdx<RhsTyp> & rhs) cons
 }
 
 
-template <typename IdxTyp>
-size_t MultiIdx<IdxTyp>::dims() const
+template <typename Integer>
+size_t MultiIdx<Integer>::dims() const
 {
   return myDims;
 }
 
-template <typename IdxTyp>
-void MultiIdx<IdxTyp>::setSize(const size_t newSize)
+template <typename Integer>
+void MultiIdx<Integer>::setSize(const size_t newSize)
 {
   if(newSize != myDims)
   {
     myDims = newSize;
-    myIdx.reset(new IdxTyp[myDims]);
+    myIdx.reset(new Integer[myDims]);
   }
 }
 
@@ -458,7 +488,8 @@ inline ::std::ostream & operator <<(
 }
 
 
-}}
+}
+}
 
 #endif /* MULTI_IDX_H */
 

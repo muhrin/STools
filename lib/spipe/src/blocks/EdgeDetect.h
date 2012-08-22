@@ -20,7 +20,6 @@
 // From SSTbx
 #include <utility/EdgeMap.h>
 #include <utility/IStructureComparator.h>
-#include <utility/Loops.h>
 #include <utility/MultiArray.h>
 #include <utility/MultiIdx.h>
 

@@ -20,7 +20,7 @@
 #include <build_cell/StructureDescription.h>
 #include <common/Structure.h>
 #include <utility/BoostFilesystem.h>
-#include <utility/Loops.h>
+#include <utility/MultiIdx.h>
 
 // Local includes
 #include "common/StructureData.h"
@@ -98,10 +98,11 @@ void StoichiometrySearch::start()
   // Start looping over the possible stoichiometries
   size_t totalAtoms = 0;
   ::std::string sweepPipeOutputPath;
-  for(ssu::Loops<size_t> loops(myStoichExtents); !loops.isAtEnd(); ++loops)
-  {
-    const ssu::MultiIdx<size_t> & currentIdx = *loops;
 
+  ssu::MultiIdx<unsigned int> currentIdx;
+  ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
+  BOOST_FOREACH(currentIdx, stoichRange)
+  {
     totalAtoms = currentIdx.sum();
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;
@@ -218,23 +219,26 @@ void StoichiometrySearch::releaseBufferedStructures(
 
 void StoichiometrySearch::init()
 {
-  initStoichExtents();
 }
 
-void StoichiometrySearch::initStoichExtents()
+ssu::MultiIdxRange<unsigned int> StoichiometrySearch::getStoichRange()
 {
-  myStoichExtents.setSize(mySpeciesParameters.size());
+  const size_t numSpecies = mySpeciesParameters.size();
 
-  for(size_t i = 0; i < mySpeciesParameters.size(); ++i)
+  ssu::MultiIdx<unsigned int> maxSpecies(numSpecies);
+
+  for(size_t i = 0; i < numSpecies; ++i)
   {
     // Need to add one as the extents is a half-open interval i.e. [x0, x1)
-    myStoichExtents[i] = mySpeciesParameters[i].maxNum + 1;
+    maxSpecies[i] = mySpeciesParameters[i].maxNum + 1;
   }
+
+  return ssu::MultiIdxRange<unsigned int>(ssu::MultiIdx<unsigned int>(numSpecies), maxSpecies);
 }
 
 void StoichiometrySearch::updateTable(
   const utility::DataTable::Key &             key,
-  const ::sstbx::utility::MultiIdx<size_t> & currentIdx)
+  const ::sstbx::utility::MultiIdx<unsigned int> & currentIdx)
 {
   using ::boost::lexical_cast;
   using ::std::string;

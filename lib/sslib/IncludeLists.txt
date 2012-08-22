@@ -95,10 +95,10 @@ set(sslib_Header_Files__utility
   include/utility/IBufferedComparator.h
   include/utility/IStructureComparator.h
   include/utility/IStructureSet.h
-  include/utility/Loops.h
   include/utility/MetaProgramming.h
   include/utility/MultiArray.h
   include/utility/MultiIdx.h
+  include/utility/MultiIdxRange.h
   include/utility/PromotableType.h
   include/utility/SortedDistanceComparator.h
   include/utility/StableComparison.h

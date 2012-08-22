@@ -21,6 +21,7 @@ configure_file(
 # Custom paths to libraries #########
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
+set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
 
 ## END CONFIGURATION SETTINGS ##########################
 
@@ -33,7 +34,13 @@ set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
 if(WIN32)
   set(Boost_USE_STATIC_LIBS ON)
 endif(WIN32)
-find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
+
+if(SSLIB_ENABLE_TESTING)
+  find_package(Boost 1.36.0 COMPONENTS system filesystem unit_test_framework REQUIRED)
+else()
+  find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
+endif(SSLIB_ENABLE_TESTING)
+
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
@@ -71,3 +78,12 @@ target_link_libraries(sslib
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
 )
+
+
+###########
+## Tests ##
+###########
+
+if(SSLIB_ENABLE_TESTING)
+  add_subdirectory(tests)
+endif(SSLIB_ENABLE_TESTING)

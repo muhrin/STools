@@ -15,9 +15,9 @@
 
 #include "utility/IBufferedComparator.h"
 #include "utility/IStructureComparator.h"
-#include "utility/Loops.h"
 #include "utility/MultiArray.h"
 #include "utility/MultiIdx.h"
+#include "utility/MultiIdxRange.h"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -30,7 +30,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx { namespace utility {
+namespace sstbx {
+namespace utility {
 
 typedef ::std::pair<sstbx::utility::MultiIdx<size_t>, double> FinishedEdgePair;
 
@@ -185,18 +186,19 @@ myFilterLength(3)
 
 	myEdgeData.reset(new MultiArray<EdgeData>(reducedExtents));
 
-	// Set the initial values for the edge data
-	for(Loops<size_t> loops(reducedExtents); !loops.isAtEnd(); ++loops)
-	{
-		// Get the curent position in the sequence of loops
-		const MultiIdx<size_t> & pos = *loops;
+  const MultiIdxRange<size_t> extentsRange(MultiIdx<size_t>(reducedExtents.dims()), reducedExtents);
 
+	// Set the initial values for the edge data
+  BOOST_FOREACH(const MultiIdx<size_t> & pos, extentsRange)
+	{
 		// Get the edge
 		EdgeData & edge = (*myEdgeData)[pos];
 		edge.init(myNDims);
 
 		// Now loop over the convolution mask
-		for(Loops<size_t> convPos(myMask->getExtents()); !convPos.isAtEnd(); ++convPos)
+    const MultiIdxRange<size_t> maskRange(MultiIdx<size_t>(reducedExtents.dims()), myMask->getExtents());
+
+    BOOST_FOREACH(const MultiIdx<size_t> & cPos, maskRange)
 		{
 			const MultiIdx<size_t> & cPos = *convPos;
 			const MultiIdx<int> relativePos = cPos - *myMaskOrigin;
@@ -320,8 +322,6 @@ bool EdgeMap::update(
 
 void EdgeMap::generateMask()
 {
-	using ::sstbx::utility::Loops;
-
 	myMaskOrigin.reset(
     new MultiIdx<int>(myNDims, 1 /*This needs to be the center of filter*/)
   );
@@ -334,9 +334,10 @@ void EdgeMap::generateMask()
 	myMask->fill(1);	// Fill with 1 so multiplication works
 
   double maskVal = 0.0;
-	for(Loops<size_t> loops(maskExtents); !loops.isAtEnd(); ++loops)
+  const MultiIdxRange maskRange(MultiIdx<size_t>(maskExtents.dims()), maskExtents);
+
+  BOOST_FOREACH(const MultiIdx<size_t> & pos, maskRange)
 	{
-		const MultiIdx<size_t> & pos = *loops;
     maskVal = 1.0;    // Make 
 		// Do 0th direction
     maskVal *= myDerivative(pos[0]);

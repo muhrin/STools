@@ -71,11 +71,11 @@ private:
     const StructureDataTyp & sweepStrData
   );
 
-	size_t								              myNumParams;
-	const ::arma::vec					          myFrom;
-	const ::arma::vec					          myStep;
-	const ::arma::Col<unsigned int>			myNSteps;
-	::sstbx::utility::MultiIdx<size_t>	myStepExtents;
+	size_t								                    myNumParams;
+	const ::arma::vec					                myFrom;
+	const ::arma::vec					                myStep;
+	const ::arma::Col<unsigned int>			      myNSteps;
+	::sstbx::utility::MultiIdx<unsigned int>	myStepExtents;
 
   ::spipe::utility::DataTableSupport  myTableSupport;
 
