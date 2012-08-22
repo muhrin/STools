@@ -101,6 +101,8 @@ private:
 
   typedef ::boost::scoped_array<Integer> IdxPtr;
 
+  bool resize(const size_t dims);
+
   /** The current number of dimensions */
   size_t    myDims;
 	/** The current index */
@@ -211,8 +213,9 @@ MultiIdx<Integer> & MultiIdx<Integer>::operator =(const MultiIdx<Integer> & rhs)
 {
 	if(myDims != rhs.myDims)
 	{
-		throw ::std::logic_error("Multi index dimension mismatch");
+    resize(rhs.dims());
 	}
+
 	memcpy(myIdx.get(), rhs.myIdx.get(), sizeof(Integer) * myDims);
 	return *this;
 }
@@ -487,6 +490,17 @@ inline ::std::ostream & operator <<(
 	return os;
 }
 
+template <typename Integer>
+bool MultiIdx<Integer>::resize(const size_t dims)
+{
+  if(myDims == dims)
+    return false;
+
+  myIdx.reset(new Integer[dims]);
+  myDims = dims;
+
+  return true;
+}
 
 }
 }
