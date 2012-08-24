@@ -76,9 +76,9 @@ int main(const int argc, const char * const argv[])
   vec from(8), step(8);
   Col<unsigned int> steps(8);
 
-  from.fill(0);
-  step.fill(0);
-  step.fill(0);
+  from.fill(0.0);
+  step.fill(0.0);
+  steps.fill(0);
 
   double lFrom, lStep;
   unsigned int lNSteps;
