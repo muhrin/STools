@@ -58,7 +58,9 @@ public:
 	MultiIdx<Integer> & operator +=(const MultiIdx<Integer> & rhs);
 	MultiIdx<Integer> & operator -=(const MultiIdx<Integer> & rhs);
 	bool operator ==(const MultiIdx<Integer> & rhs) const;
+  bool operator !=(const MultiIdx<Integer> & rhs) const;
   bool operator <=(const MultiIdx<Integer> & rhs) const;
+  bool operator >(const MultiIdx<Integer> & rhs) const;
 	MultiIdx<int> operator<(const MultiIdx<Integer> & rhs) const;
 
 	// Different index type
@@ -297,6 +299,12 @@ bool MultiIdx<Integer>::operator ==(const MultiIdx<Integer> & rhs) const
 }
 
 template <typename Integer>
+bool MultiIdx<Integer>::operator !=(const MultiIdx<Integer> & rhs) const
+{
+	return !(*this == rhs);
+}
+
+template <typename Integer>
 bool MultiIdx<Integer>::operator <=(const MultiIdx<Integer> & rhs) const
 {
 	if(myDims != rhs.myDims)
@@ -312,6 +320,12 @@ bool MultiIdx<Integer>::operator <=(const MultiIdx<Integer> & rhs) const
 		}
 	}
 	return result;
+}
+
+template <typename Integer>
+bool MultiIdx<Integer>::operator >(const MultiIdx<Integer> & rhs) const
+{
+	return !(*this <= rhs);
 }
 
 template <typename Integer>

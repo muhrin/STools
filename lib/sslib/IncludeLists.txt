@@ -3,6 +3,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/AbstractConstraintDescription.h
   include/build_cell/AtomConstraintDescription.h
   include/build_cell/AtomGroupDescription.h
+  include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
   include/build_cell/CellConstraintDescription.h
   include/build_cell/ConstraintDescriptionId.h

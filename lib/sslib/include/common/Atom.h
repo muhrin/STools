@@ -23,7 +23,8 @@ class StructureTreeEvent;
 
 namespace sstbx { namespace common {
 
-class Atom {
+class Atom
+{
 public:
 
 	typedef arma::Col<double>::fixed<3> Vec3;
@@ -31,10 +32,12 @@ public:
 
 	friend class AtomGroup;
 
-  Atom(const AtomSpeciesId::Value species);
+  Atom(const AtomSpeciesId::Value species, const double radius = 0.0);
 
 	const Vec3 & getPosition() const;
 	void setPosition(const Vec3 & pos);
+
+  double getRadius() const;
 
 	const AtomSpeciesId::Value  getSpecies() const;
 

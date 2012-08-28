@@ -19,6 +19,7 @@ set(tests_Header_Files__utility
 source_group("Header Files\\utility" FILES ${tests_Header_Files__utility})
 
 set(tests_Source_Files__utility
+  utility/MultiIdxTest.cpp
   utility/MultiIdxRangeTest.cpp
 )
 source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})

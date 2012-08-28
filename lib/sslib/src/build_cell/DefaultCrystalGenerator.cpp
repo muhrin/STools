@@ -17,6 +17,7 @@
 #include "SSLibTypes.h"
 #include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomGroupDescription.h"
+#include "build_cell/AtomExtruder.h"
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/DistanceConstraintChecker.h"
 #include "build_cell/ICellGenerator.h"
@@ -40,8 +41,10 @@ namespace build_cell
 namespace common = ::sstbx::common;
 
 DefaultCrystalGenerator::DefaultCrystalGenerator(
-		const ICellGenerator &	cellGenerator):
+		const ICellGenerator &	cellGenerator,
+    const bool useExtrudeMethod):
 myCellGenerator(cellGenerator),
+myUseExtrudeMethod(useExtrudeMethod),
 myMaxAttempts(10000)
 {
 }
@@ -123,22 +126,35 @@ bool DefaultCrystalGenerator::generateUnitCell(
 StructureGenerationOutcome::Value DefaultCrystalGenerator::generateAtomPositions(
   StructureDescriptionMap & descriptionMap) const
 {
-  StructureGenerationOutcome::Value outcome;
-
-  ConstVisitorGroup visitorGroup;
+  StructureGenerationOutcome::Value outcome = StructureGenerationOutcome::SUCCESS;
 
   RandomAtomPositioner randomAtoms(descriptionMap);
-  DistanceConstraintChecker distanceConstraintsChecker(descriptionMap);
-
-  visitorGroup.pushBack(randomAtoms);
-  visitorGroup.pushBack(distanceConstraintsChecker);
-
-
-  outcome = StructureGenerationOutcome::SUCCESS;
-  // Descent down the atom groups building everything and checking constraints
-  if(!descriptionMap.getStructureDescription().traversePostorder(visitorGroup))
+  if(myUseExtrudeMethod)
   {
-    outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
+    descriptionMap.getStructureDescription().traversePostorder(randomAtoms);
+
+    AtomExtruder extruder;
+
+    if(!extruder.extrudeAtoms(descriptionMap.getStructure()))
+    {
+      outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
+    }
+  }
+  else
+  {
+
+    ConstVisitorGroup visitorGroup;
+
+    DistanceConstraintChecker distanceConstraintsChecker(descriptionMap);
+
+    visitorGroup.pushBack(randomAtoms);
+    visitorGroup.pushBack(distanceConstraintsChecker);
+
+    // Descent down the atom groups building everything and checking constraints
+    if(!descriptionMap.getStructureDescription().traversePostorder(visitorGroup))
+    {
+      outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
+    }
   }
 
   return outcome;

@@ -11,10 +11,12 @@
 #include "common/AtomGroup.h"
 #include "common/StructureTreeEvent.h"
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
-Atom::Atom(const AtomSpeciesId::Value species):
+Atom::Atom(const AtomSpeciesId::Value species, const double radius):
 mySpecies(species),
+myRadius(radius),
 myParent(NULL)
 {}
 
@@ -29,6 +31,11 @@ void Atom::setPosition(const Atom::Vec3 & pos)
 
 	StructureTreeEvent evt(StructureTreeEvent::ATOM_CHANGED, *this);
 	eventFired(evt);
+}
+
+double Atom::getRadius() const
+{
+  return myRadius;
 }
 
 const AtomSpeciesId::Value  Atom::getSpecies() const

@@ -101,6 +101,8 @@ public:
   GroupAtomsRange getAtoms(const AtomGroupDescription * groupDescription);
   GroupAtomsRangeConst getAtoms(const AtomGroupDescription * groupDescription) const;
 
+
+
   /**
   /* Get all the atom descriptions along with the corresponding atoms
   /* within this group and all child groups up to the maximum depth.

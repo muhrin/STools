@@ -127,7 +127,7 @@ int main(const int argc, const char * const argv[])
 
   // Random structure
   ssbc::RandomCellGenerator<double> cellGen;
-  ssbc::DefaultCrystalGenerator strGen(cellGen);
+  ssbc::DefaultCrystalGenerator strGen(cellGen, true);
   sp::blocks::RandomStructure randStr(100, strGen);
 
   // Niggli reduction

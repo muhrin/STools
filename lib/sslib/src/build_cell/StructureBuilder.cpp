@@ -39,15 +39,24 @@ bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
 {
   common::Atom * atom;
   const size_t numAtoms = atomDescription.getCount();
+  ::boost::optional<double> radius;
   for(size_t i = 0; i < atomDescription.getCount(); ++i)
   {
-    atom = new common::Atom(atomDescription.getSpecies());
+    radius = atomDescription.getRadius();
+    if(radius)
+    {
+      atom = new common::Atom(atomDescription.getSpecies(), *radius);
+    }
+    else
+    {
+      atom = new common::Atom(atomDescription.getSpecies());
+    }
     myCurrentPair->first->insertAtom(atom);
     myCurrentPair->second->insert(atomDescription.getParent(), &atomDescription, atom);
   }
 
   // Try to determine the volume of the atoms
-  ::boost::optional<double> radius = atomDescription.getRadius();
+  radius = atomDescription.getRadius();
   if(radius)
   {
     const double radDouble = *radius;

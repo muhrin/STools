@@ -31,7 +31,7 @@ myStructure(descriptionMap.getStructure())
 bool DistanceConstraintChecker::visitAtomGroup(const AtomGroupDescription & groupDescription)
 {
 
-  // First get all the atom and desription pairs for this group
+  // First get all the atom and description pairs for this group
   StructureDescriptionMap::ConstDescriptionsAndAtoms groupAtoms;
   myDescriptionMap.getDescriptionsAndAtoms(&groupDescription, groupAtoms);
   const size_t numGroupAtoms = groupAtoms.size();

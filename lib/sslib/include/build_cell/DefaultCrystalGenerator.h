@@ -43,7 +43,7 @@ public:
 
   typedef ICrystalStructureGenerator::Result Result;
 
-	DefaultCrystalGenerator(const ICellGenerator &	cellGenerator);
+	DefaultCrystalGenerator(const ICellGenerator &	cellGenerator, const bool useExtrudeMethod = false);
   virtual ~DefaultCrystalGenerator() {}
 
 	/**
@@ -60,6 +60,14 @@ private:
 	/* The maximum number of times to attempt to create a structure before giving up.
 	/**/
 	const u32               myMaxAttempts;
+
+  /**
+  /* This option turns on using a method that extrudes any overlapping atoms after an initial
+  /* random configuration has been generated.  Otherwise random configuration will be generated
+  /* and checked for overlap, if an overlap is detected the configuration is thrown away and
+  /* a new one generated.
+  /**/
+  const bool              myUseExtrudeMethod;
 
 	/**
 	 * The generator used the create the cell for the crystal.
