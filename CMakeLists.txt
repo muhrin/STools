@@ -3,9 +3,10 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(ST_VERSION_MAJOR 0)
-set(ST_VERSION_MINOR 1)
+set(ST_VERSION_MINOR 2)
+set(ST_VERSION_PATCH 0)
 
-message(STATUS "Configuring STools ${ST_VERSION_MAJOR}.${ST_VERSION_MINOR}")
+message(STATUS "Configuring STools ${ST_VERSION_MAJOR}.${ST_VERSION_MINOR}.${ST_VERSION_PATCH}")
 
 project(STools)
 

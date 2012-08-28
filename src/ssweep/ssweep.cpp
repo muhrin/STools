@@ -68,7 +68,7 @@ int main(const int argc, const char * const argv[])
   // Get command line parameters
   if(argc != 9)
   {
-    cout << "Usage: " << argv[0] << " [6 x params, format from+delta*nsteps] [+/-1] [max_atoms]" << endl;
+    cout << "Usage: " << argv[0] << " eAA eAB eBB sAA sAB sBB [format from+delta*nsteps] beta [+/-1] max_atoms" << endl;
     return 0;
   }
 
