@@ -72,21 +72,21 @@ bool SharedData::appendToOutputDirName(const std::string & toAppend)
 {
   SP_ASSERT(myPipe);
 
-  ::boost::filesystem::path outPath = myPipe->getGlobalData().getRelativeOutputPath();
+  ::boost::filesystem::path outPath = myPipe->getGlobalData().getPipeRelativeOutputPath();
   // Now build up the from the topmost parent down to this pipeline
   buildOutputPathRecursive(outPath, *myPipe);
 
   return outPath;
 }
 
+const ::boost::filesystem::path & SharedData::getPipeRelativeOutputPath() const
+{
+  return myOutputDir;
+}
+
 const ::boost::filesystem::path & SharedData::getOutputFileStem() const
 {
   return myOutputFileStem;
-}
-
-const ::boost::filesystem::path & SharedData::getRelativeOutputPath() const
-{
-  return myOutputDir;
 }
 
 ssbc::StructureDescription * SharedData::getStructureDescription()
@@ -117,7 +117,6 @@ void SharedData::reset()
   potSweepNSteps.reset();
 
   structureDescription.reset();
-  cellDescription.reset();
 
   objectsStore.clear();
 
@@ -135,7 +134,7 @@ void SharedData::buildOutputPathRecursive(::boost::filesystem::path & path, cons
   {
     buildOutputPathRecursive(path, *parent);
   }
-  path /= pipe.getSharedData().getRelativeOutputPath();
+  path /= pipe.getSharedData().getPipeRelativeOutputPath();
 }
 
 }

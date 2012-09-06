@@ -13,10 +13,12 @@
 #include "build_cell/StructureConstraintDescription.h"
 #include "build_cell/StructureDescriptionVisitor.h"
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
+
+StructureDescription::StructureDescription(const ConstUnitCellBlueprintPtr unitCell):
+myUnitCell(unitCell)
+{}
 
 void StructureDescription::addStructureConstraint(
   StructureConstraintDescription * const structureConstraint)
@@ -72,6 +74,16 @@ bool StructureDescription::traversePostorder(ConstStructureDescriptionVisitor & 
   visitor.leavingStructure(*this);
 
   return outcome;
+}
+
+void StructureDescription::setUnitCell(const ConstUnitCellBlueprintPtr unitCell)
+{
+  myUnitCell = unitCell;
+}
+
+ConstUnitCellBlueprintPtr StructureDescription::getUnitCell() const
+{
+  return myUnitCell;
 }
 
 }

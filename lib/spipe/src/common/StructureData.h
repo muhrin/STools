@@ -21,10 +21,8 @@
 #include <utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 class Structure;
 }
 }

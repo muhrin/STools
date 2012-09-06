@@ -14,41 +14,34 @@
 #include <limits>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx{
+namespace common {
 class Structure;
 }
-namespace utility
-{
+namespace utility {
 class IStructureComparator;
 }
 }
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 class IBufferedComparator
 {
 public:
-  typedef unsigned int DataHandle;
-  static const DataHandle UNINITIALISED;
 
   virtual ~IBufferedComparator() {}
 
 	virtual double compareStructures(
-		const DataHandle & str1Data,
-		const DataHandle & str2Data) const = 0;
+		const sstbx::common::Structure & str1,
+		const sstbx::common::Structure & str2) = 0;
 
 	virtual bool areSimilar(
-		const DataHandle & str1Data,
-		const DataHandle & str2Data) const = 0;
+		const sstbx::common::Structure & str1,
+		const sstbx::common::Structure & str2) = 0;
 
-  virtual const DataHandle generateComparisonData(const ::sstbx::common::Structure & str) = 0;
-  virtual void releaseComparisonData(DataHandle & handle) = 0;
+  virtual bool hasComparisonDataFor(const ::sstbx::common::Structure & str) = 0;
+  virtual bool releaseComparisonDataFor(const ::sstbx::common::Structure & str) = 0;
 
   virtual const IStructureComparator & getComparator() const = 0;
 };

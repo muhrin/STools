@@ -27,8 +27,6 @@ class IParameterisable
 public:
 	virtual ~IParameterisable() {}
 
-	virtual const ::std::string & getName() const = 0;
-
   /**
   /* Returns the number of parameters that this potential has.
   /*/

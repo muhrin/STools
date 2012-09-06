@@ -16,9 +16,7 @@
 // From SSTbx
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/AtomConstraintDescription.h"
-#include "build_cell/ICellGenerator.h"
 #include "build_cell/DefaultCrystalGenerator.h"
-#include "build_cell/RandomCellGenerator.h"
 #include "build_cell/StructureConstraintDescription.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
@@ -54,59 +52,59 @@ SsLibFactoryYaml::SsLibFactoryYaml()
 {
 }
 
-::sstbx::build_cell::RandomCellDescription *
-SsLibFactoryYaml::createCellDescription(const YAML::Node & node)
-{
-  //// Make sure we have a cell description node
-  //if(node.Scalar() != kw::CELL_DESC)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar()) << Keyword(kw::CELL_DESC);
-  //}
-
-  ssbc::RandomCellDescription * const desc = new ssbc::RandomCellDescription();
-  myCellDescriptions.push_back(desc);
-
-  double dValue;
-
-  if(node[kw::CELL_DESC__PARAMS])
-  {
-    const YAML::Node & paramsNode = node[kw::CELL_DESC__PARAMS];
-
-    if(paramsNode.IsSequence() && paramsNode.size() == 6)
-    {
-      double params[6];
-      for(size_t i = 0; i < 6; ++i)
-      {
-        params[i] = paramsNode[i].as<double>();
-      }
-      desc->setLatticeParams(params);
-    }
-    else
-    {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
-    }
-  }
-
-  if(node[kw::CELL_DESC__VOL])
-  {
-    dValue = node[kw::CELL_DESC__VOL].as<double>();
-    desc->myVolume.reset(dValue);
-  }
-
-  if(node[kw::CELL_DESC__MIN_ANGLE])
-  {
-    dValue = node[kw::CELL_DESC__MIN_ANGLE].as<double>();
-    desc->myMinAngle.reset(dValue);
-  }
-
-  if(node[kw::CELL_DESC__MAX_ANGLE])
-  {
-    dValue = node[kw::CELL_DESC__MAX_ANGLE].as<double>();
-    desc->myMaxAngle.reset(dValue);
-  }
-
-  return desc;
-}
+//::sstbx::build_cell::RandomCellDescription *
+//SsLibFactoryYaml::createCellDescription(const YAML::Node & node)
+//{
+//  //// Make sure we have a cell description node
+//  //if(node.Scalar() != kw::CELL_DESC)
+//  //{
+//  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar()) << Keyword(kw::CELL_DESC);
+//  //}
+//
+//  ssbc::RandomCellDescription * const desc = new ssbc::RandomCellDescription();
+//  myCellDescriptions.push_back(desc);
+//
+//  double dValue;
+//
+//  if(node[kw::CELL_DESC__PARAMS])
+//  {
+//    const YAML::Node & paramsNode = node[kw::CELL_DESC__PARAMS];
+//
+//    if(paramsNode.IsSequence() && paramsNode.size() == 6)
+//    {
+//      double params[6];
+//      for(size_t i = 0; i < 6; ++i)
+//      {
+//        params[i] = paramsNode[i].as<double>();
+//      }
+//      desc->setLatticeParams(params);
+//    }
+//    else
+//    {
+//      throw FactoryError() << ErrorType(MALFORMED_VALUE);
+//    }
+//  }
+//
+//  if(node[kw::CELL_DESC__VOL])
+//  {
+//    dValue = node[kw::CELL_DESC__VOL].as<double>();
+//    desc->myVolume.reset(dValue);
+//  }
+//
+//  if(node[kw::CELL_DESC__MIN_ANGLE])
+//  {
+//    dValue = node[kw::CELL_DESC__MIN_ANGLE].as<double>();
+//    desc->myMinAngle.reset(dValue);
+//  }
+//
+//  if(node[kw::CELL_DESC__MAX_ANGLE])
+//  {
+//    dValue = node[kw::CELL_DESC__MAX_ANGLE].as<double>();
+//    desc->myMaxAngle.reset(dValue);
+//  }
+//
+//  return desc;
+//}
 
 
 ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
@@ -204,36 +202,7 @@ ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const 
   return strPtr;
 }
 
-::sstbx::build_cell::ICellGenerator *
-SsLibFactoryYaml::createCellGenerator(const YAML::Node & node)
-{
-  //// Make sure we have a cell generator node
-  //if(node.Scalar() != kw::CELL_GENERATOR)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  ssbc::ICellGenerator * generator = NULL;
-
-  if(node[kw::TYPE])
-  {
-    const ::std::string generatorType = node[kw::TYPE].as< ::std::string>();
-
-    if(generatorType == kw::CELL_GENERATOR__TYPE___DEFAULT)
-    {
-      generator = new ssbc::RandomCellGenerator<double>();
-      myCellGenerators.push_back(generator);
-    }
-  }
-  else
-  {
-    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << Keyword(kw::TYPE);
-  }
-
-  return generator;
-}
-
-ssbc::ICrystalStructureGenerator *
+ssbc::IStructureGenerator *
 SsLibFactoryYaml::createCrystalStructureGenerator(const YAML::Node & node)
 {
   //// Make sure we have a structure generator node
@@ -242,20 +211,7 @@ SsLibFactoryYaml::createCrystalStructureGenerator(const YAML::Node & node)
   //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
   //}
 
-  // First try to create the unit cell generator
-
-  ssbc::ICellGenerator * cellGenerator = NULL;
-
-  if(node[kw::CELL_GENERATOR])
-  {
-    cellGenerator = createCellGenerator(node[kw::CELL_GENERATOR]);
-  }
-  else
-  {
-    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << Keyword(kw::CELL_GENERATOR);
-  }
-
-  ssbc::ICrystalStructureGenerator * generator = NULL;
+  ssbc::IStructureGenerator * generator = NULL;
 
   if(node[kw::TYPE])
   {
@@ -263,7 +219,7 @@ SsLibFactoryYaml::createCrystalStructureGenerator(const YAML::Node & node)
 
     if(generatorType == kw::STR_GENERATOR__TYPE___DEFAULT)
     {
-      generator = new ssbc::DefaultCrystalGenerator(*cellGenerator);
+      generator = new ssbc::DefaultCrystalGenerator();
       myCrystalStructureGenerators.push_back(generator);
     }
   }
@@ -307,8 +263,8 @@ ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
     double                  cutoff   = node[kw::POTENTIAL__PAIR_POT__CUT].as<double>();
     const ArmaTriangularMat beta     = node[kw::POTENTIAL__PAIR_POT__B].as<ArmaTriangularMat>();
     const ::arma::vec       pow      = node[kw::POTENTIAL__PAIR_POT__POW].as< ::arma::vec>();
-    const ssp::SimplePairPotential<double>::CombiningRule comb =
-      node[kw::POTENTIAL__PAIR_POT__COMB].as<ssp::SimplePairPotential<double>::CombiningRule>();
+    const ssp::SimplePairPotential::CombiningRule comb =
+      node[kw::POTENTIAL__PAIR_POT__COMB].as<ssp::SimplePairPotential::CombiningRule>();
 
     const size_t numSpecies = epsilon.mat.n_rows;
 
@@ -320,7 +276,7 @@ ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
     // TODO: HACK!! Fix this to read in the real values
     const ::std::vector<ssc::AtomSpeciesId> species;
 
-    pot = new ssp::SimplePairPotential<double>(
+    pot = new ssp::SimplePairPotential(
       numSpecies,
       species,
       epsilon.mat,
@@ -363,7 +319,7 @@ ssp::IGeomOptimiser * SsLibFactoryYaml::createGeometryOptimiser(const YAML::Node
 
     if(pp)
     {
-      opt = new ssp::TpsdGeomOptimiser<double>(*pp);
+      opt = new ssp::TpsdGeomOptimiser(*pp);
     }
   }
 

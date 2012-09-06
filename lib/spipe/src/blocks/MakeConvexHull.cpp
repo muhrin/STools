@@ -67,10 +67,10 @@ void MakeConvexHull::StoichData::addStoichiometry(
 
   if(structure)
   {
-    const double energyPerAtom = *strData.enthalpy / structure->getNumAtomsDescendent();
+    const double energyPerAtom = *strData.enthalpy / structure->getNumAtoms();
 
     ::std::vector<ssc::AtomSpeciesId::Value> species;
-    structure->getAtomSpeciesDescendent(species);
+    structure->getAtomSpecies(species);
 
     size_t maxSpeciesIndex = 0;
     bool found;

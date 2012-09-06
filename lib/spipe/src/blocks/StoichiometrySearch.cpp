@@ -16,8 +16,8 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/RandomCellDescription.h>
 #include <build_cell/StructureDescription.h>
+#include <build_cell/Types.h>
 #include <common/Structure.h>
 #include <utility/BoostFilesystem.h>
 #include <utility/MultiIdx.h>
@@ -99,16 +99,17 @@ void StoichiometrySearch::start()
   size_t totalAtoms = 0;
   ::std::string sweepPipeOutputPath;
 
-  ssu::MultiIdx<unsigned int> currentIdx;
   ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
-  BOOST_FOREACH(currentIdx, stoichRange)
+  BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
   {
     totalAtoms = currentIdx.sum();
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;
 
     // Set the current structure description in our subpipline
-    sweepPipeData.structureDescription = StrDescPtr(new ::sstbx::build_cell::StructureDescription());
+    sweepPipeData.structureDescription = StrDescPtr(
+      new ::sstbx::build_cell::StructureDescription(ssbc::ConstUnitCellBlueprintPtr(new ssbc::RandomUnitCell()))
+    );
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
@@ -144,11 +145,8 @@ void StoichiometrySearch::start()
     // Append the species ratios to the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
 
-    // Generate the unit cell
-    sweepPipeData.cellDescription = CellDescPtr(new ::sstbx::build_cell::RandomCellDescription());
-
-    // Find out where all the structures are going to be saved
-    sweepPipeOutputPath = sweepPipeData.getRelativeOutputPath().string();
+    // Find out the pipeline relative path to where all the structures are going to be saved
+    sweepPipeOutputPath = sweepPipeData.getPipeRelativeOutputPath().string();
 
     // Start the sweep pipeline
     mySubpipe.start();
@@ -202,7 +200,7 @@ void StoichiometrySearch::releaseBufferedStructures(
     // Try to calculate the energy/atom
     if(strData->enthalpy && strData->getStructure())
     {
-      const size_t numAtoms = strData->getStructure()->getNumAtomsDescendent();
+      const size_t numAtoms = strData->getStructure()->getNumAtoms();
       if(numAtoms != 0)
       {
         const double energyPerAtom = *strData->enthalpy / numAtoms;

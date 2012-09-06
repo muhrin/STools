@@ -11,32 +11,25 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <armadillo>
 
+#include "common/Types.h"
+
 // DEFINES //////////////////////////////////////////////
 
 
+namespace sstbx {
+
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace common {
 class Structure;
 }
-namespace potential
-{
-template <typename FloatType>
-struct StandardData;
+namespace potential {
+struct PotentialData;
 class IPotential;
-}
-}
-
-namespace sstbx
-{
-namespace potential
-{
 
 class IGeomOptimiser
 {
@@ -53,13 +46,13 @@ public:
 
   // TODO: Allow return value to give some indication of the reason for the failure!
 	virtual bool optimise(
-    ::sstbx::common::Structure & structure,
-    const ::arma::mat * const externalPressure = NULL) const = 0;
+    common::Structure & structure,
+    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const = 0;
 
 	virtual bool optimise(
-		::sstbx::common::Structure & structure,
-    ::boost::shared_ptr<StandardData<double> > & data,
-    const ::arma::mat * const externalPressure = NULL) const = 0;
+		common::Structure & structure,
+    PotentialData & data,
+    const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const = 0;
 };
 
 }

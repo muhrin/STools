@@ -15,8 +15,6 @@
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/DefaultCrystalGenerator.h>
-#include <build_cell/RandomCellDescription.h>
-#include <build_cell/RandomCellGenerator.h>
 #include <build_cell/StructureDescription.h>
 #include <io/ResReaderWriter.h>
 #include <io/StructureWriterManager.h>
@@ -126,30 +124,29 @@ int main(const int argc, const char * const argv[])
   randomSearchPipe.getSharedData().setPipe(randomSearchPipe);
 
   // Random structure
-  ssbc::RandomCellGenerator<double> cellGen;
-  ssbc::DefaultCrystalGenerator strGen(cellGen, true);
+  ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
   sp::blocks::RandomStructure randStr(100, strGen);
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
 
   // Geometry optimise
-	Mat<double> epsilon;
+  ::arma::mat epsilon;
 	epsilon.set_size(2, 2);
 	epsilon << 1 << 2 << endr
 			<< 2 << 2 << endr;
 
-	Mat<double> sigma;
+	::arma::mat sigma;
 	sigma.set_size(2, 2);
 	sigma << 2 << 2 << endr
 			<< 2 << 2 << endr;
 
-	Mat<double> beta;
+	::arma::mat beta;
 	beta.set_size(2, 2);
 	beta << betaDiagonal << 1 << endr
 			<< 1 << betaDiagonal << endr;
 
-  ssp::SimplePairPotential<double> pp(
+  ssp::SimplePairPotential pp(
     2,
     potentialSpecies,
     epsilon,
@@ -158,9 +155,9 @@ int main(const int argc, const char * const argv[])
     beta,
     12,
     6,
-    ssp::SimplePairPotential<double>::CUSTOM
+    ssp::SimplePairPotential::CUSTOM
   );
-  ssp::TpsdGeomOptimiser<double> optimiser(pp);
+  ssp::TpsdGeomOptimiser optimiser(pp);
 
   ::arma::mat33 externalPressure;
   externalPressure.fill(0.0);

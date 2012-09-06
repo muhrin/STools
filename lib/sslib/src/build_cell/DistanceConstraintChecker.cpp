@@ -14,14 +14,13 @@
 #include "build_cell/AtomGroupDescription.h"
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/StructureDescriptionMap.h"
-#include "common/AbstractFmidCell.h"
 #include "common/Atom.h"
+#include "common/DistanceCalculator.h"
 #include "common/Structure.h"
 
-namespace sstbx
-{
-namespace build_cell
-{
+
+namespace sstbx {
+namespace build_cell {
 
 DistanceConstraintChecker::DistanceConstraintChecker(const StructureDescriptionMap & descriptionMap):
 myDescriptionMap(descriptionMap),
@@ -43,7 +42,7 @@ bool DistanceConstraintChecker::visitAtomGroup(const AtomGroupDescription & grou
   ::arma::mat minDistancesSq(groupAtoms.size(), groupAtomsAndBelow.size());
 
   ::boost::optional<double> radius;
-  const common::AbstractFmidCell * const cell = myStructure.getUnitCell();
+  const common::DistanceCalculator & distCalc = myStructure.getDistanceCalculator();
   double iRadius, minDistSq;
   ::arma::vec3 iPos;
   for(size_t i = 0; i < numGroupAtoms; ++i)
@@ -67,7 +66,7 @@ bool DistanceConstraintChecker::visitAtomGroup(const AtomGroupDescription & grou
       {
         // Square the minimum distance
         minDistSq *= minDistSq;
-        if(cell->getDistanceSqMinimumImg(
+        if(distCalc.getDistSqMinImg(
           iPos,
           groupAtoms[j].second->getPosition()) <
           minDistSq)
@@ -92,7 +91,7 @@ bool DistanceConstraintChecker::visitAtomGroup(const AtomGroupDescription & grou
       {
         // Square the minimum distance
         minDistSq *= minDistSq;
-        if(cell->getDistanceSqMinimumImg(
+        if(distCalc.getDistSqMinImg(
           iPos,
           groupAtoms[j].second->getPosition()) <
           minDistSq)

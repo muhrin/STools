@@ -13,9 +13,7 @@
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/ConstStructureDescriptionVisitor.h>
-#include <build_cell/ICrystalStructureGenerator.h>
-#include <build_cell/RandomCellDescription.h>
-#include <build_cell/RandomCellGenerator.h>
+#include <build_cell/IStructureGenerator.h>
 #include <common/AbstractFmidCell.h>
 #include <common/Constants.h>
 #include <common/Structure.h>
@@ -40,16 +38,13 @@ namespace ssc = ::sstbx::common;
 
 RandomStructure::RandomStructure(
 	const size_t numToGenerate,
-  const ::sstbx::build_cell::ICrystalStructureGenerator &   structureGenerator,
-  const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription,
-  const CellDescPtr & cellDescription):
+  const ::sstbx::build_cell::IStructureGenerator &   structureGenerator,
+  const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Random structures"),
 myNumToGenerate(numToGenerate),
 myStructureGenerator(structureGenerator),
 myStructureDescription(structureDescription),
-myCellDescription(cellDescription),
-myUseSharedDataStructureDesc(!structureDescription.get()),
-myUseSharedDataCellDesc(!cellDescription.get())
+myUseSharedDataStructureDesc(!structureDescription.get())
 {
 }
 
@@ -80,8 +75,7 @@ void RandomStructure::in(::spipe::common::StructureData & data)
   initDescriptions();
 
 	// Create the random structure
-	const sstbx::common::StructurePtr str =
-    myStructureGenerator.generateStructure(*myStructureDescription, *myCellDescription).second;
+	const sstbx::common::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription).second;
 
 	if(str)
 	{
@@ -112,18 +106,6 @@ void RandomStructure::initDescriptions()
     if(sharedDat.structureDescription.get())
     {
       myStructureDescription = sharedDat.structureDescription;
-    }
-    else
-    {
-      // TODO: Throw some kind of exception, or emit error
-    }
-  }
-
-  if(myUseSharedDataCellDesc)
-  {
-    if(sharedDat.cellDescription.get())
-    {
-      myCellDescription = sharedDat.cellDescription;
     }
     else
     {

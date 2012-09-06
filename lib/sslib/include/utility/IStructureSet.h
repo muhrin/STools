@@ -13,18 +13,14 @@
 #include <map>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 	class Structure;
 }
 }
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 class IStructureSet
 {

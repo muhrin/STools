@@ -26,7 +26,7 @@
 #include <build_cell/StructureDescription.h>
 #include <build_cell/StructureDescriptionVisitor.h>
 #include <common/Structure.h>
-#include <potential/StandardData.h>
+#include <potential/PotentialData.h>
 #include <potential/IGeomOptimiser.h>
 #include <potential/IPotential.h>
 
@@ -136,11 +136,11 @@ void PotentialGo::pipelineStarting()
 
 void PotentialGo::in(spipe::common::StructureData & data)
 {
-  ::boost::shared_ptr< sstbx::potential::StandardData<> > optData;
-	if(myOptimiser.optimise(*data.getStructure(), optData, &myExternalPressure))
+  ssp::PotentialData optData;
+	if(myOptimiser.optimise(*data.getStructure(), optData, myExternalPressure))
   {
     // Copy over information from the optimisation results
-    copyOptimisationResults(*optData.get(), data);
+    copyOptimisationResults(optData, data);
 
     // Update our data table with the structure data
     updateTable(data);
@@ -155,13 +155,13 @@ void PotentialGo::in(spipe::common::StructureData & data)
 }
 
 void PotentialGo::copyOptimisationResults(
-  const sstbx::potential::StandardData<> & optData,
+  const sstbx::potential::PotentialData & optData,
   spipe::common::StructureData & strData)
 {
   // Copy over information from the optimisation results
 
   // Enthaly
-  strData.enthalpy.reset(optData.totalEnthalpy);
+  strData.enthalpy.reset(optData.internalEnergy);
 
   // Pressure
   const double pressure = ::arma::trace(optData.stressMtx) / 3.0;

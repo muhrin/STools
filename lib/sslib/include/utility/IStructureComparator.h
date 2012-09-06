@@ -14,14 +14,11 @@
 #include <boost/shared_ptr.hpp>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 class Structure;
 }
-namespace utility
-{
+namespace utility {
 class IBufferedComparator;
 }
 }

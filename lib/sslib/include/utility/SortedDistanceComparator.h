@@ -14,33 +14,25 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "common/AbstractFmidCell.h"
 #include "utility/IStructureComparator.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 class Structure;
 }
 }
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 struct SortedDistanceComparisonData
 {
-	SortedDistanceComparisonData(
-    const ::sstbx::common::AbstractFmidCell & _cell ,
-    const double _maxDist):
-		cell(_cell), maxDist(_maxDist) {}
+	SortedDistanceComparisonData(const double _maxDist):
+		maxDist(_maxDist) {}
 
-	const ::sstbx::common::AbstractFmidCell	cell;
-	::std::vector<double>						sortedDistances;
-  const double                    maxDist;
+	::std::vector<double>						            sortedDistances;
+  const double                                maxDist;
 };
 
 class SortedDistanceComparator : public IStructureComparator
@@ -48,9 +40,6 @@ class SortedDistanceComparator : public IStructureComparator
 public:
 
 	typedef SortedDistanceComparisonData DataTyp;
-  /*typedef GenericBufferedComparator<
-    SortedDistanceComparator,
-    SortedDistanceComparator::DataTyp> BufferedTyp*/
   typedef IBufferedComparator   BufferedTyp;
 
 	SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE);
@@ -71,15 +60,21 @@ public:
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
+    const common::Structure & str1,
 		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
 		const SortedDistanceComparisonData & dist2) const;
 
 	bool areSimilar(
+    const common::Structure & str1,
 		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
 		const SortedDistanceComparisonData & dist2) const;
-  // End conformation methods //////////////
 
-	virtual const DataTyp * generateComparisonData(const ::sstbx::common::Structure & str) const;
+  ::std::auto_ptr<SortedDistanceComparisonData>
+    generateComparisonData(const ::sstbx::common::Structure & str) const;
+  // End conformation methods //////////////
+	
 
 private:
 

@@ -16,7 +16,7 @@
 
 #include <pipelib/AbstractSimpleBlock.h>
 
-#include <potential/StandardData.h>
+#include <potential/PotentialData.h>
 
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
@@ -66,7 +66,7 @@ public:
 protected:
 
   virtual void copyOptimisationResults(
-    const sstbx::potential::StandardData<> & optData,
+    const sstbx::potential::PotentialData & optData,
     spipe::common::StructureData & strData);
 
   void updateTable(const ::spipe::StructureDataTyp & strData);

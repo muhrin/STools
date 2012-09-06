@@ -19,13 +19,13 @@
 #include <armadillo>
 
 #include "io/AdditionalData.h"
-#include "common/AbstractFmidCell.h"
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
 #include "common/AtomSpeciesInfo.h"
 #include "common/Structure.h"
 #include "common/Types.h"
+#include "common/UnitCell.h"
 #include "utility/BoostFilesystem.h"
 
 // DEFINES /////////////////////////////////
@@ -87,7 +87,12 @@ void ResReaderWriter::writeStructure(
 		strFile << "n/a";
 
 	// Volume
-	strFile << " " << str.getUnitCell()->getVolume();
+	strFile << " ";
+  const common::UnitCell * const cell = str.getUnitCell();
+  if(cell)
+    strFile << cell->getVolume();
+  else
+    strFile << "n/a";
 
 	// Enthalpy
 	strFile << " ";
@@ -136,11 +141,11 @@ void ResReaderWriter::writeStructure(
 	using std::vector;
 	using std::set;
 
-	arma::Mat<double> positions;
-	str.getAtomPositionsDescendent(positions);
+  ::arma::mat positions;
+	str.getAtomPositions(positions);
 
   vector<AtomSpeciesId::Value> species;
-	str.getAtomSpeciesDescendent(species);
+	str.getAtomSpecies(species);
 
   set<AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
 
@@ -159,12 +164,11 @@ void ResReaderWriter::writeStructure(
 	}
 
 	// Now write out the atom positions along with the spcies
-	const sstbx::common::AbstractFmidCell * cell = str.getUnitCell();
-	sstbx::common::Atom::Vec3 fracPos;
+	::arma::vec3 fracPos;
 	for(size_t i = 0; i < positions.n_cols; ++i)
 	{
     const AtomSpeciesId::Value id = species[i];
-		fracPos = cell->fractionalise(positions.col(i));
+		fracPos = cell->cartToFrac(positions.col(i));
 		strFile << endl << ::std::setprecision(32) << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
 			fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
 	}
@@ -193,7 +197,6 @@ void ResReaderWriter::readStructure(
 	AdditionalData * const              data) const
 {
   namespace utility = ::sstbx::utility;
-  using sstbx::common::AbstractFmidCell;
   using sstbx::common::Atom;
 	using sstbx::common::AtomSpeciesId;
 	using std::endl;
@@ -346,7 +349,7 @@ void ResReaderWriter::readStructure(
           // Check if we found all six values
           foundParams = foundParams && i == 6;
 
-          str.setUnitCell(common::UnitCellPtr(new AbstractFmidCell(params)));
+          str.setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
         } // end if(hasMore)
       } // end if(*tokIt == "CELL")
     } // while !foundCell
@@ -390,7 +393,6 @@ void ResReaderWriter::readStructure(
           if(id != sstbx::common::AtomSpeciesId::DUMMY)
           {
             bool hasMore = true;
-            Atom * atom = new Atom(id);
 
             // Skip over first value
             hasMore = (++atomTokIt != atomToker.end());
@@ -419,20 +421,15 @@ void ResReaderWriter::readStructure(
 
               if(readCoordinates)
               {
-                const AbstractFmidCell * const cell = str.getUnitCell();
+                const common::UnitCell * const cell = str.getUnitCell();
+                Atom & atom = str.newAtom(id);
                 // Try to orthoginalise the position
                 if(cell)
                 {
-                  atom->setPosition(cell->orthogonaliseInplace(pos));
+                  cell->fracToCartInplace(pos);
                 }
-                str.insertAtom(atom);
+                atom.setPosition(pos);
               }
-              else
-              {
-                // Didn't succeed
-                delete atom;
-                atom = NULL;
-              } // end if(readCoordinates)
             } // end if(hasMore)
           }
 

@@ -6,8 +6,9 @@
  */
 
 // INCLUDES ///////////////
-#include "common/AbstractFmidCell.h"
 
+#include "SSLibAssert.h"
+#include "common/AbstractFmidCell.h"
 #include "utility/StableComparison.h"
 
 namespace sstbx
@@ -477,6 +478,12 @@ double AbstractFmidCell::setVolume(const double volume)
 {
 	const double scale = pow(volume / getVolume(), 1.0 / 3.0);
 
+  // TEST;
+  if(scale != scale)
+  {
+    ::std::cout << "GOT HERE";
+  }
+
 	init(scale * myOrthoMtx);
 
   return scale;
@@ -487,6 +494,11 @@ void AbstractFmidCell::init(
 	const double a, const double b, const double c,
 	const double alpha, const double beta, const double gamma)
 {
+  // Sanity checks on parameters
+  SSLIB_ASSERT_MSG(alpha+beta+gamma <= 360.0, "Non-physical lattice parameters supplied - required that alpha+beta+gamma <= 360.0");
+  SSLIB_ASSERT_MSG(abs(alpha-beta) <= gamma, "Non-physical lattice parameters supplied - require that abs(alpha-beta) < gamma");
+  SSLIB_ASSERT_MSG(abs(beta-gamma) <= alpha, "Non-physical lattice parameters supplied - require that abs(beta-gamma) < alpha");
+  SSLIB_ASSERT_MSG(abs(gamma-alpha) <= beta, "Non-physical lattice parameters supplied - require that abs(gamma-alpha) < beta");
 
 	myLatticeParams[0] = a;
 	myLatticeParams[1] = b;
@@ -512,21 +524,24 @@ void AbstractFmidCell::init(const AbstractFmidCell::Mat33 & orthoMtx)
 
 void AbstractFmidCell::initOrthoAndFracMatrices()
 {
-	// A - col 0
+  const double alphaRad = Constants::DEG_TO_RAD * myLatticeParams[3];
+  const double betaRad = Constants::DEG_TO_RAD * myLatticeParams[4];
+  const double gammaRad = Constants::DEG_TO_RAD * myLatticeParams[5];
+
 	myOrthoMtx.fill(0);
+	// A - col 0
 	myOrthoMtx.at(0, 0) = myLatticeParams[0];
 	// B - col 1
-	myOrthoMtx.at(0, 1) = myLatticeParams[1] * cos(Constants::DEG_TO_RAD * myLatticeParams[5]);
-	myOrthoMtx.at(1, 1) = myLatticeParams[1] * sin(Constants::DEG_TO_RAD * myLatticeParams[5]);
+	myOrthoMtx.at(0, 1) = myLatticeParams[1] * cos(gammaRad);
+	myOrthoMtx.at(1, 1) = myLatticeParams[1] * sin(gammaRad);
 	// C - col 2
-	myOrthoMtx.at(0, 2) = myLatticeParams[2] * cos(Constants::DEG_TO_RAD * myLatticeParams[4]);
-  // TODO: CHECK THIS THOUROUGHLY!!
-	myOrthoMtx.at(1, 2) = myLatticeParams[2] * (cos(Constants::DEG_TO_RAD * myLatticeParams[3]) -
-    cos(Constants::DEG_TO_RAD * myLatticeParams[4]) * cos(Constants::DEG_TO_RAD * myLatticeParams[5]))
-    / sin(Constants::DEG_TO_RAD * myLatticeParams[5]);
-	myOrthoMtx.at(2, 2) = sqrt(myLatticeParams[2] * myLatticeParams[2] -
+	myOrthoMtx.at(0, 2) = myLatticeParams[2] * cos(betaRad);
+	myOrthoMtx.at(1, 2) = myLatticeParams[2] * (cos(alphaRad) - cos(betaRad) * cos(gammaRad)) / sin(gammaRad);
+	myOrthoMtx.at(2, 2) = sqrt(
+    myLatticeParams[2] * myLatticeParams[2] -
 		myOrthoMtx(0, 2) * myOrthoMtx(0, 2) -
-		myOrthoMtx(1, 2) * myOrthoMtx(1, 2));
+		myOrthoMtx(1, 2) * myOrthoMtx(1, 2)
+  );
 
 	myFracMtx = inv(myOrthoMtx);
 }

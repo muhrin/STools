@@ -13,10 +13,8 @@
 
 // FORWARD DECLARATIONS ///////
 
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 
 struct AtomSpeciesId : public ::sstbx::utility::Enum<AtomSpeciesId>
 {

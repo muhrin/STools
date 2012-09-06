@@ -172,8 +172,7 @@ PipeFactoryYaml::createBlockRandomCrystal(const YAML::Node & blockNode)
   return new ::spipe::blocks::RandomStructure(
     nStrs,
     *mySsLibFactory.createCrystalStructureGenerator(blockNode[sslibkw::STR_GENERATOR]),
-    blocks::RandomStructure::StructureDescPtr(mySsLibFactory.createStructureDescription(blockNode[sslibkw::STR_DESC])),
-    blocks::RandomStructure::CellDescPtr(mySsLibFactory.createCellDescription(blockNode[sslibkw::CELL_DESC]))
+    blocks::RandomStructure::StructureDescPtr(mySsLibFactory.createStructureDescription(blockNode[sslibkw::STR_DESC]))
   );
 }
 

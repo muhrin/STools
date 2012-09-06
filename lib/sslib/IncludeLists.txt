@@ -1,49 +1,66 @@
 
+## build_cell
+
 set(sslib_Header_Files__build_cell
   include/build_cell/AbstractConstraintDescription.h
   include/build_cell/AtomConstraintDescription.h
   include/build_cell/AtomGroupDescription.h
   include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
-  include/build_cell/CellConstraintDescription.h
   include/build_cell/ConstraintDescriptionId.h
   include/build_cell/ConstStructureDescriptionVisitor.h
   include/build_cell/ConstVisitorGroup.h
   include/build_cell/DefaultCrystalGenerator.h
   include/build_cell/DistanceConstraintChecker.h
   include/build_cell/IAtomConstrainable.h
-  include/build_cell/ICellGenerator.h
   include/build_cell/IConstraintDescription.h
-  include/build_cell/ICrystalStructureGenerator.h
+  include/build_cell/IStructureGenerator.h
+  include/build_cell/IUnitCellBlueprint.h
   include/build_cell/RandomAtomPositioner.h
-  include/build_cell/RandomCellDescription.h
-  include/build_cell/RandomCellGenerator.h
+  include/build_cell/RandomUnitCell.h
   include/build_cell/StructureBuilder.h
   include/build_cell/StructureConstraintDescription.h
   include/build_cell/StructureDescription.h
   include/build_cell/StructureDescriptionMap.h
   include/build_cell/StructureDescriptionVisitor.h
   include/build_cell/StructureGenerationOutcome.h
+  include/build_cell/Types.h
   include/build_cell/VisitorGroup.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
+## common
+
 set(sslib_Header_Files__common
   include/common/AbstractFmidCell.h
   include/common/Atom.h
-  include/common/AtomGroup.h
   include/common/AtomSpeciesDatabase.h
   include/common/AtomSpeciesId.h
   include/common/AtomSpeciesInfo.h
+  include/common/ClusterDistanceCalculator.h
   include/common/Constants.h
+  include/common/DistanceCalculator.h
+  include/common/DistanceCalculatorDelegator.h
   include/common/NonOrthorhombicUnitCell.h
+  include/common/OrthoCellDistanceCalculator.h
   include/common/OrthorhombicUnitCell.h
   include/common/Structure.h
-  include/common/StructureTreeEvent.h
+  include/common/Types.h
+  include/common/UnitCell.h
   include/common/UnitCellFactory.h
+  include/common/UniversalCrystalDistanceCalculator.h
   include/common/Utils.h
 )
 source_group("Header Files\\common" FILES ${sslib_Header_Files__common})
+
+## common/event
+
+set(sslib_Header_Files__common__event
+  include/common/event/EventSupport.h
+)
+source_group("Header Files\\common\\event" FILES ${sslib_Header_Files__common__event})
+
+## factory
 
 set(sslib_Header_Files__factory
   include/factory/AbstractInputObject.h
@@ -78,9 +95,10 @@ set(sslib_Header_Files__potential
   include/potential/IGeomOptimiser.h
   include/potential/IParameterisable.h
   include/potential/IPotential.h
+  include/potential/IPotentialEvaluator.h
+  include/potential/PotentialData.h
   include/potential/SimplePairPotential.h
   include/potential/SimplePairPotentialData.h
-  include/potential/StandardData.h
   include/potential/TersoffPotential.h
   include/potential/TersoffPotentialData.h
   include/potential/TpsdGeomOptimiser.h
@@ -108,6 +126,7 @@ set(sslib_Header_Files__utility
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 
 set(sslib_Header_Files__
+  include/SSLibAssert.h
   include/SSLib.h
   include/SSLibConfig.h
   include/SSLibTypes.h
@@ -117,6 +136,7 @@ source_group("Header Files" FILES ${sslib_Header_Files__})
 set(sslib_Header_Files
   ${sslib_Header_Files__build_cell}
   ${sslib_Header_Files__common}
+  ${sslib_Header_Files__common__event}
   ${sslib_Header_Files__factory}
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__potential}

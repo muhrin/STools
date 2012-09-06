@@ -21,7 +21,7 @@
 #include <pipelib/IDataSink.h>
 
 // From SSTbx
-#include <build_cell/RandomCellDescription.h>
+#include <build_cell/RandomUnitCell.h>
 #include <build_cell/StructureDescription.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/AtomSpeciesId.h>
@@ -94,7 +94,6 @@ private:
 
   typedef ::spipe::StructureDataTyp                                         StructureDataTyp;
   typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription>   StrDescPtr;
-  typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription>  CellDescPtr;
   typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>           TableWriterPtr;
 
   

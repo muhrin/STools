@@ -15,7 +15,7 @@
 
 // From SSTbx
 #include <common/Structure.h>
-#include <potential/StandardData.h>
+#include <potential/PotentialData.h>
 #include <potential/IGeomOptimiser.h>
 #include <potential/IParameterisable.h>
 
@@ -75,7 +75,7 @@ void ParamPotentialGo::pipelineStarting()
 }
 
 void ParamPotentialGo::copyOptimisationResults(
-  const sstbx::potential::StandardData<> & optData,
+  const sstbx::potential::PotentialData & optData,
   spipe::common::StructureData & strData)
 {
   // Copy over information from the optimisation results

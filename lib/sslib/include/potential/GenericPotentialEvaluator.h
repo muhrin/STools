@@ -10,60 +10,78 @@
 #define GENERIC_POTENTIAL_EVALUATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "IPotentialEvaluator.h"
+#include <memory>
 
-#include <boost/shared_ptr.hpp>
+#include "potential/IPotential.h"
+#include "potential/IPotentialEvaluator.h"
+
+namespace sstbx {
+namespace potential {
+
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace potential
-{
-template <typename FloatTyp>
-struct StandardData;
-}
-}
-namespace sstbx
-{
-namespace potential
-{
+class IPotential;
+struct PotentialData;
+class Structure;
 
-template <class PotTyp, class DataTyp>
+template <class Potential>
 class GenericPotentialEvaluator : public IPotentialEvaluator
 {
 public:
 
-  GenericPotentialEvaluator(const PotTyp & potential, ::boost::shared_ptr<DataTyp> & data);
+  typedef typename Potential::DataType DataTyp;
+  typedef IPotentialEvaluator::EvalResult EvalResult;
 
-  virtual ::boost::shared_ptr<StandardData<double> > getData();
+  GenericPotentialEvaluator(
+    const Potential & potential,
+    const common::Structure & structure,
+    ::std::auto_ptr<DataTyp> & data);
 
-	virtual bool evalPotential();
+  // From IPotentialEvaluator
+  virtual PotentialData & getData();
+
+	virtual EvalResult evalPotential();
+
+  virtual const IPotential & getPotential() const;
+  // End from IPotentialEvaluator
 
 private:
 
-  ::boost::shared_ptr<DataTyp>  myData;
-  const PotTyp &                myPotential;
+  const common::Structure &     myStructure;
+  const Potential &             myPotential;
+  ::std::auto_ptr<DataTyp>      myData;
 
 };
 
 // IMPLEMENTATION //////////////////
 
-template <class PotTyp, class DataTyp>
-GenericPotentialEvaluator<PotTyp, DataTyp>::GenericPotentialEvaluator(const PotTyp & potential, ::boost::shared_ptr<DataTyp> & data):
+template <class Potential>
+GenericPotentialEvaluator<Potential>::GenericPotentialEvaluator(
+  const Potential & potential,
+  const common::Structure & structure,
+  ::std::auto_ptr<DataTyp> & data):
+myStructure(structure),
 myPotential(potential),
 myData(data)
 {}
 
-template <class PotTyp, class DataTyp>
-::boost::shared_ptr<StandardData<double> > GenericPotentialEvaluator<PotTyp, DataTyp>::getData()
+template <class Potential>
+PotentialData & GenericPotentialEvaluator<Potential>::getData()
 {
-  return myData;
+  return *myData;
 }
 
-template <class PotTyp, class DataTyp>
-bool GenericPotentialEvaluator<PotTyp, DataTyp>::evalPotential()
+template <class Potential>
+typename GenericPotentialEvaluator<Potential>::EvalResult
+GenericPotentialEvaluator<Potential>::evalPotential()
 {
-  return myPotential.evaluate(*myData);
+  return EvalResult(myData.get(), myPotential.evaluate(myStructure, *myData));
+}
+
+template <class Potential>
+const IPotential & GenericPotentialEvaluator<Potential>::getPotential() const
+{
+  return myPotential;
 }
 
 }

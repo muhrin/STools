@@ -10,20 +10,25 @@
 
 #include <vector>
 
-#include "common/AbstractFmidCell.h"
+#include "SSLibAssert.h"
 #include "common/Atom.h"
-#include "common/StructureTreeEvent.h"
 #include "common/Types.h"
+#include "common/UnitCell.h"
+
+#ifdef _MSC_VER
+// Disable warning about passing this pointer to DistanceCalculator in initialisation list
+#pragma warning( disable : 4355 )
+#endif
 
 namespace sstbx {
 namespace common {
 
-Structure::Structure(AbstractFmidCell * const cell):
+Structure::Structure(UnitCellPtr cell):
 myCell(cell),
-myNumAtomsDescendent(0),
-myAtomPositionsCurrent(false)
-{
-}
+myAtomPositionsCurrent(false),
+myNumAtoms(0),
+myDistanceCalculator(*this)
+{}
 
 const std::string & Structure::getName() const
 {
@@ -35,131 +40,152 @@ void Structure::setName(const std::string & name)
 	myName = name;
 }
 
-AbstractFmidCell * Structure::getUnitCell()
+UnitCell * Structure::getUnitCell()
 {
 	return myCell.get();
 }
 
-const AbstractFmidCell * Structure::getUnitCell() const
+const UnitCell * Structure::getUnitCell() const
 {
 	return myCell.get();
 }
 
 void Structure::setUnitCell(const UnitCellPtr cell)
 {
+  if(myCell)
+    myCell->setStructure(NULL);
+
 	myCell = cell;
+  myCell->setStructure(this);
+  myDistanceCalculator.unitCellChanged();
 }
 
-size_t Structure::getNumAtomsDescendent() const
+size_t Structure::getNumAtoms() const
 {
-	return myNumAtomsDescendent;
+  return myAtoms.size();
 }
 
-void Structure::getAtomPositionsDescendent(Mat & posMtx, const size_t i) const
+Atom & Structure::getAtom(const size_t idx)
+{
+  SSE_ASSERT(idx < getNumAtoms());
+
+  return myAtoms[idx];
+}
+
+const Atom & Structure::getAtom(const size_t idx) const
+{
+  SSE_ASSERT(idx < getNumAtoms());
+
+  return myAtoms[idx];
+}
+
+Atom & Structure::newAtom(const AtomSpeciesId::Value species)
+{
+  Atom * const atom = new Atom(species, *this, myNumAtoms++);
+  myAtoms.push_back(atom);
+  return *atom;
+}
+
+Atom & Structure::newAtom(const Atom & toCopy)
+{
+  Atom * const atom = new Atom(toCopy, *this, ++myNumAtoms);
+  myAtoms.push_back(atom);
+  return *atom;
+}
+
+bool Structure::removeAtom(const Atom & atom)
+{
+  if(&atom.getStructure() != this)
+    return false;
+
+  const size_t index = atom.getIndex();
+
+  myAtoms.erase(myAtoms.begin() + index);
+  --myNumAtoms;
+
+  for(size_t i = index; i < myNumAtoms; ++i)
+  {
+    myAtoms[i].setIndex(i);
+  }
+
+  return true;
+}
+
+void Structure::getAtomPositions(::arma::mat & posMtx) const
 {
 	// Do we need to update the buffer?
 	if(!myAtomPositionsCurrent)
 	{
 		myAtomPositionsBuffer.reset();
-		AtomGroup::getAtomPositionsDescendent(myAtomPositionsBuffer);
+    myAtomPositionsBuffer.set_size(3, getNumAtoms());
+		for(size_t i = 0; i < getNumAtoms(); ++i)
+    {
+      myAtomPositionsBuffer.col(i) = myAtoms[i].getPosition();
+    }
 		myAtomPositionsCurrent = true;
 	}
 
-	// TODO: FIX THIS, THIS WON'T WORK FOR ATOM GROUPS
-	// Insert the columns at the desired location
-	//posMtx.insert_cols(i, myAtomPositionsBuffer);
 	posMtx = myAtomPositionsBuffer;
 }
 
-void Structure::setAtomPositionsDescendent(const Mat & posMtx)
+void Structure::setAtomPositions(const ::arma::mat & posMtx)
 {
-	// Set the atom positions
-	AtomGroup::setAtomPositionsDescendent(posMtx);
+  const size_t numAtoms = getNumAtoms();
+  SSLIB_ASSERT(posMtx.n_rows == 3 && posMtx.n_cols == numAtoms);
+
+  for(size_t i = 0; i < numAtoms; ++i)
+  {
+    myAtoms[i].setPosition(posMtx.col(i));
+  }
+
 	// Save the new positions in the buffer
 	myAtomPositionsBuffer	= posMtx;
 	myAtomPositionsCurrent	= true;
 }
 
-void Structure::eventFired(const StructureTreeEvent & evt)
+void Structure::getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const
 {
-	if(evt.getEventType() == StructureTreeEvent::GROUP_INSERTED)
-	{
-		myAtomPositionsCurrent = false;
-		childAdded(evt.getGroup());
-	}
-	else if(evt.getEventType() == StructureTreeEvent::GROUP_REMOVED)
-	{
-		myAtomPositionsCurrent = false;
-		childRemoved(evt.getGroup());
-	}
-	else if(evt.getEventType() == StructureTreeEvent::ATOM_INSERTED)
-	{
-		myAtomPositionsCurrent = false;
-		atomAdded(evt.getAtom());
-	}
-	else if(evt.getEventType() == StructureTreeEvent::ATOM_REMOVED)
-	{
-		myAtomPositionsCurrent = false;
-		atomRemoved(evt.getAtom());
-	}
-	else if(evt.getEventType() == StructureTreeEvent::ATOM_CHANGED)
-	{
-		myAtomPositionsCurrent = false;
-	}
+  const size_t numAtoms = getNumAtoms();
+  species.resize(numAtoms);
+
+  for(size_t i = 0; i < numAtoms; ++i)
+  {
+    species[i] = myAtoms[i].getSpecies();
+  }
 }
 
-void Structure::childAdded(AtomGroup & childGroup)
+size_t Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 {
-	using ::std::vector;
-
-	// First go through adding all groups
-	const vector<AtomGroup *> & subGroups = childGroup.getGroups();
-	for(vector<AtomGroup * >::const_iterator it = subGroups.begin(), end = subGroups.end();
-		it != end; ++it)
-	{
-		childAdded(**it);
-	}
-
-	// Now go through all atoms
-	const vector<AtomPtr> & atoms = childGroup.getAtoms();
-	for(vector<AtomPtr>::const_iterator it = atoms.begin(), end = atoms.end();
-		it != end; ++it)
-	{
-		atomAdded(**it);
-	}
+  const size_t numAtoms = getNumAtoms();
+  size_t num = 0;
+  for(size_t i = 0; i < numAtoms; ++i)
+  {
+    if(myAtoms[i].getSpecies() == species)
+      ++num;
+  }
+  return num;
 }
 
-void Structure::childRemoved(AtomGroup & childGroup)
+const DistanceCalculator & Structure::getDistanceCalculator() const
 {
-	using ::std::vector;
-
-	// First go through adding all groups
-	const vector<AtomGroup *> & subGroups = childGroup.getGroups();
-	for(vector<AtomGroup * >::const_iterator it = subGroups.begin(), end = subGroups.end();
-		it != end; ++it)
-	{
-		childRemoved(**it);
-	}
-
-	// Now go through all atoms
-	const vector<AtomPtr> & atoms = childGroup.getAtoms();
-	for(vector<AtomPtr>::const_iterator it = atoms.begin(), end = atoms.end();
-		it != end; ++it)
-	{
-		atomRemoved(**it);
-	}
+  return myDistanceCalculator;
 }
 
-void Structure::atomAdded(Atom & atom)
+::sstbx::utility::HeterogeneousMap & Structure::getProperties()
 {
-	++myNumAtomsDescendent;
+  return myProperties;
 }
 
-void Structure::atomRemoved(Atom & atom)
+const ::sstbx::utility::HeterogeneousMap & Structure::getProperties() const
 {
-	--myNumAtomsDescendent;
-
-	SSE_ASSERT(myNumAtomsDescendent > 0);
+  return myProperties;
 }
 
-}}
+void Structure::atomMoved(const Atom & atom) const
+{
+  // Atom has moved so the buffer is not longer current
+  myAtomPositionsCurrent = false;
+}
+
+}
+}

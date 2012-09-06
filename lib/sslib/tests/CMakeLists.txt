@@ -12,6 +12,21 @@ configure_file(
   "${PROJECT_BINARY_DIR}/tests/sslibtest.h"
 )
 
+# tests/build_cell
+
+set(tests_Source_Files__build_cell
+  build_cell/AtomExtruderTest.cpp
+)
+source_group("Source Files\\build_cell" FILES ${tests_Source_Files__build_cell})
+
+# tests/common
+
+set(tests_Source_Files__common
+  common/DistanceCalculatorsTest.cpp
+  common/UnitCellTest.cpp
+)
+source_group("Source Files\\common" FILES ${tests_Source_Files__common})
+
 ## tests/utility
 
 set(tests_Header_Files__utility
@@ -41,6 +56,8 @@ set(tests_Header_Files
 )
 
 set(tests_Source_Files
+  ${tests_Source_Files__build_cell}
+  ${tests_Source_Files__common}
   ${tests_Source_Files__utility}
   ${tests_Source_Files__}
 )
@@ -75,6 +92,7 @@ add_dependencies(sslibtest sslib)
 # Libraries we need to link to
 target_link_libraries(sslibtest
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+  ${ARMADILLO_LIBRARIES}
   sslib
 )
 

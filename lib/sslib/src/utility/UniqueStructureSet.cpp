@@ -13,18 +13,14 @@
 #include "utility/IStructureComparator.h"
 
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 
 // StructureMetadata implementation ///////
 
-UniqueStructureSet::StructureMetadata::StructureMetadata(
-	const IBufferedComparator::DataHandle & _compHandle):
-compHandle(_compHandle),
-timesFound(0)
+UniqueStructureSet::StructureMetadata::StructureMetadata():
+timesFound(1)
 {}
 
 // UniqueStructureSet implementation
@@ -33,25 +29,14 @@ UniqueStructureSet::UniqueStructureSet(const IStructureComparator & comparator):
 myComparator(comparator.generateBuffered())
 {}
 
-UniqueStructureSet::~UniqueStructureSet()
-{
-  BOOST_FOREACH(StructureSet::value_type & strDat, myStructures)
-	{
-		myComparator->releaseComparisonData(strDat.second.compHandle);
-	}
-}
-
 const std::pair<sstbx::common::Structure *, bool>
 UniqueStructureSet::insert(sstbx::common::Structure * const str)
 {
-	// First creat the comparison data instance for this structure
-	IBufferedComparator::DataHandle compHandle = myComparator->generateComparisonData(*str);
-
 	sstbx::common::Structure * similarTo = NULL;
 	bool unique = true;
   BOOST_FOREACH(StructureSet::value_type strDat, myStructures)
 	{
-		if(myComparator->areSimilar(compHandle, strDat.second.compHandle))
+		if(myComparator->areSimilar(*str, *strDat.first))
 		{
       ++strDat.second.timesFound;
 			similarTo = strDat.first;
@@ -64,16 +49,14 @@ UniqueStructureSet::insert(sstbx::common::Structure * const str)
 	if(unique)
 	{
 		myStructures.insert(
-      StructureSet::value_type(
-			str,
-			StructureMetadata(compHandle)
-			)
+      StructureSet::value_type(str, StructureMetadata())
 		);
 	}
   else
   {
-    // Tell the comparator the remove the comparison data
-    myComparator->releaseComparisonData(compHandle);
+    // Tell the comparator the remove the comparison data for this structure as we
+    // are not storing it.
+    myComparator->releaseComparisonDataFor(*str);
   }
 
 	return ReturnPair(unique ? str : similarTo, unique);
@@ -83,7 +66,7 @@ void UniqueStructureSet::clear()
 {
   BOOST_FOREACH(StructureSet::value_type & strDat, myStructures)
 	{
-		myComparator->releaseComparisonData(strDat.second.compHandle);
+		myComparator->releaseComparisonDataFor(*strDat.first);
 	}
 	myStructures.clear();
 }

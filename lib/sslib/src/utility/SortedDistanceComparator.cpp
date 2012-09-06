@@ -9,18 +9,20 @@
 
 #include "utility/SortedDistanceComparator.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
+
+#include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
 
-#include "common/AbstractFmidCell.h"
+#include "common/DistanceCalculator.h"
 #include "common/Structure.h"
+#include "common/UnitCell.h"
 #include "utility/GenericBufferedComparator.h"
 
-namespace sstbx
-{
-namespace utility
-{
+
+namespace sstbx {
+namespace utility {
 
 const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
 const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 1e-3;
@@ -33,31 +35,31 @@ double SortedDistanceComparator::compareStructures(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::boost::shared_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
-  ::boost::shared_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
+  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
+  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
 
-  return compareStructures(*comp1, *comp2);
+  return compareStructures(str1, *comp1, str2, *comp2);
 }
 
 bool SortedDistanceComparator::areSimilar(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::boost::shared_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
-  ::boost::shared_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
+  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
+  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
 
-  return areSimilar(*comp1, *comp2);
+  return areSimilar(str1, *comp1, str2, *comp2);
 }
 
 double SortedDistanceComparator::compareStructures(
-	const SortedDistanceComparator::DataTyp & dist1,
-	const SortedDistanceComparator::DataTyp & dist2) const
+    const common::Structure & str1,
+		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
+		const SortedDistanceComparisonData & dist2) const
 {
 	using std::vector;
 
-	const size_t maxI = std::min(
-		dist1.sortedDistances.size(),
-		dist2.sortedDistances.size());
+	const size_t maxI = std::min(dist1.sortedDistances.size(), dist2.sortedDistances.size());
   const double maxDist = std::max(dist1.maxDist, dist2.maxDist);
 
   double delta = 0.0;
@@ -84,27 +86,31 @@ double SortedDistanceComparator::compareStructures(
 }
 
 bool SortedDistanceComparator::areSimilar(
-	const SortedDistanceComparator::DataTyp & dist1,
-	const SortedDistanceComparator::DataTyp & dist2) const
+    const common::Structure & str1,
+		const SortedDistanceComparisonData & dist1,
+    const common::Structure & str2,
+		const SortedDistanceComparisonData & dist2) const
 {
-	return compareStructures(dist1, dist2) < myTolerance;
+	return compareStructures(str1, dist1, str2, dist2) < myTolerance;
 }
 
-const SortedDistanceComparisonData *
+::std::auto_ptr<SortedDistanceComparisonData>
 SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure & str) const
 {
-	using std::vector;
+  const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
 
-	typedef arma::vec3	Vec3;
-	typedef arma::mat33 Mat33;
+  const common::UnitCell * const unitCell = str.getUnitCell();
 
-  const sstbx::common::AbstractFmidCell * const uc = str.getUnitCell();
+  double maxDist = 0.0;
+  if(unitCell)
+  {
+    ::arma::vec3 diag = unitCell->getLongestDiagonal();
+    double longestDiag = sqrt(::arma::dot(diag, diag));
+    maxDist = 1.75 * longestDiag;
+  }
 
 	// Copy over the unit cell so we can do distance calculations
-	SortedDistanceComparisonData * data =
-    new SortedDistanceComparisonData(
-    *uc,
-    1.75 * uc->getLongestVector());
+	::std::auto_ptr<SortedDistanceComparisonData> data(new SortedDistanceComparisonData(maxDist));
 
 	// Calculate the distances ...
   populateDistanceVector(str, data->sortedDistances, data->maxDist);
@@ -116,9 +122,8 @@ SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure 
 
 ::boost::shared_ptr<SortedDistanceComparator::BufferedTyp> SortedDistanceComparator::generateBuffered() const
 {
-  //return ::boost::shared_ptr<IBufferedComparator>(new BufferedTyp(*this));
   return ::boost::shared_ptr<IBufferedComparator>(
-    new GenericBufferedComparator<SortedDistanceComparator, SortedDistanceComparator::DataTyp>(*this)
+    new GenericBufferedComparator<SortedDistanceComparator>(*this)
   );
 }
 
@@ -127,26 +132,21 @@ void SortedDistanceComparator::populateDistanceVector(
 	std::vector<double> & distVec,
 	const double cutoff) const
 {
-	typedef arma::Mat<double> Mat;
+  ::arma::mat pos;
+	str.getAtomPositions(pos);
+  const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
 
-	Mat pos;
-	str.getAtomPositionsDescendent(pos);
-	const ::sstbx::common::AbstractFmidCell & cell = *str.getUnitCell();
-
+  // Have to do all i, j pairs including i = j and ij/ji to get all the possible distances.
+  // TODO: Figure out why I have to do the above!!
 	std::vector<double> distances;
 	const size_t numParticles = pos.n_cols;
-
-  /*/
-  /* Have to do all i, j pairs including i = j and ij/ji to get all the possible distances.
-  /*
-  /**/
 	for(size_t i = 0; i < numParticles; ++i)
 	{
 		for(size_t j = 0; j < numParticles; ++j)
 		{
 			distances.clear();
 
-			cell.getAllDistancesWithinCutoff(pos.col(i), pos.col(j), cutoff, distances, MAX_CELL_MULTIPLES);
+			distCalc.getDistsBetween(pos.col(i), pos.col(j), cutoff, distances);
 
 			distVec.insert(distVec.end(), distances.begin(), distances.end());
 		}

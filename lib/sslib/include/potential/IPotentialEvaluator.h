@@ -10,29 +10,25 @@
 #define I_POTENTIAL_EVALUATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "StandardData.h"
+#include "PotentialData.h"
+
+namespace sstbx {
+namespace potential {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace potential
-{
-template <typename FloatTyp>
-struct StandardData;
-}
-}
-namespace sstbx
-{
-namespace potential
-{
+class IPotential;
+struct PotentialData;
 
-class IPotentialEvaluator
-{
+class IPotentialEvaluator {
 public:
 
-  virtual ::boost::shared_ptr< StandardData< double > > getData() = 0;
+  typedef ::std::pair<PotentialData *, bool> EvalResult;
 
-	virtual bool evalPotential() = 0;
+  virtual PotentialData & getData() = 0;
+
+	virtual EvalResult evalPotential() = 0;
+
+  virtual const IPotential & getPotential() const = 0;
 
 };
 

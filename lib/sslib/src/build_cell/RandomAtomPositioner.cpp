@@ -17,10 +17,10 @@
 #include "build_cell/AtomGroupDescription.h"
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/StructureDescriptionMap.h"
-#include "common/AbstractFmidCell.h"
 #include "common/Atom.h"
 #include "common/Structure.h"
 #include "common/Types.h"
+#include "common/UnitCell.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -28,11 +28,13 @@ namespace build_cell {
 RandomAtomPositioner::RandomAtomPositioner(StructureDescriptionMap & descriptionMap):
 myDescriptionMap(descriptionMap),
 myStructure(descriptionMap.getStructure())
-{}
+{
+  myCurrentPosition.fill(0.0);
+}
 
 void RandomAtomPositioner::enteringAtomGroup(const AtomGroupDescription & atomGroup)
 {
-  const common::AbstractFmidCell * const cell = myStructure.getUnitCell();
+  const common::UnitCell * const cell = myStructure.getUnitCell();
   pushDisplacement(cell->randomPoint());
 }
 
@@ -43,7 +45,7 @@ void RandomAtomPositioner::leavingAtomGroup(const AtomGroupDescription & atomGro
 
 bool RandomAtomPositioner::visitAtomGroup(const AtomGroupDescription & atomGroup)
 {
-  const common::AbstractFmidCell * const cell = myStructure.getUnitCell();
+  const common::UnitCell * const cell = myStructure.getUnitCell();
 
   // Place the atoms in this group
   common::Atom * atom;
@@ -52,8 +54,9 @@ bool RandomAtomPositioner::visitAtomGroup(const AtomGroupDescription & atomGroup
   
   BOOST_FOREACH(atom, range)
   {
-    pos = cell->wrapVec(myCurrentPosition + cell->randomPoint());
-    atom->setPosition(cell->randomPoint());
+    pos = myCurrentPosition + cell->randomPoint();
+    cell->wrapVecInplace(pos);
+    atom->setPosition(pos);
   }
 
   return true;

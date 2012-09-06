@@ -13,48 +13,47 @@
 
 #include <armadillo>
 
-// FORWARD DECLARES ///////////////////////////
 namespace sstbx {
 namespace common {
-class AtomGroup;
-class StructureTreeEvent;
-}
-}
 
-namespace sstbx { namespace common {
+// FORWARD DECLARES ///////////////////////////
+class Structure;
 
 class Atom
 {
 public:
 
-	typedef arma::Col<double>::fixed<3> Vec3;
-	typedef arma::Mat<double>			Mat;
+  Structure & getStructure();
+  const Structure & getStructure() const;
 
-	friend class AtomGroup;
-
-  Atom(const AtomSpeciesId::Value species, const double radius = 0.0);
-
-	const Vec3 & getPosition() const;
-	void setPosition(const Vec3 & pos);
+  const ::arma::vec3 & getPosition() const;
+  void setPosition(const ::arma::vec3 & pos);
 
   double getRadius() const;
+  void setRadius(const double radius);
 
-	const AtomSpeciesId::Value  getSpecies() const;
+	const AtomSpeciesId::Value getSpecies() const;
+
+  size_t getIndex() const;
 
 private:
 
-	AtomGroup * getParent() const;
-	void setParent(AtomGroup * const parent);
+  Atom(const AtomSpeciesId::Value species, Structure & structure, const size_t index);
 
-	void eventFired(const StructureTreeEvent & evt);
+  Atom(const Atom & toCopy, Structure & structure, const size_t index);
 
-	AtomGroup * myParent;
+  void setIndex(const size_t index);
+
+  Structure &           myStructure;
+
+  /** The index of this atom in the structure. */
+  size_t                myIndex;
 
   AtomSpeciesId::Value	mySpecies;
+  ::arma::vec3          myPosition;
+	double                myRadius;
 
-	Vec3 position;
-
-	double myRadius;
+  friend class Structure;
 };
 
 }} // Close the namespace

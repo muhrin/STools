@@ -20,10 +20,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 struct KeySupertype : ::boost::noncopyable
 {
@@ -69,7 +67,6 @@ public:
   void clear();
 
 private:
-
 
 	AnyMap myAnyMap;
 };

@@ -23,10 +23,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace boost
-{
-namespace filesystem3
-{
+namespace boost {
+namespace filesystem3 {
 
 #ifndef SSLIB_USE_BOOSTFS_V2
 template < >
@@ -41,15 +39,13 @@ boost::filesystem::path make_relative(
   boost::filesystem::path a_From,
   boost::filesystem::path a_To );
 
-}
-}
+} // namespace filesystem3
+} // namespace boost
 
 namespace boost { namespace filesystem { using filesystem3::make_relative; } }
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 ::std::string stemString(const ::boost::filesystem::path & path);
 

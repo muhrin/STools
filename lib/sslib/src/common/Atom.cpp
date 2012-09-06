@@ -8,29 +8,30 @@
 // INCLUDES ///////////////
 #include "common/Atom.h"
 
-#include "common/AtomGroup.h"
-#include "common/StructureTreeEvent.h"
+#include "common/Structure.h"
 
 namespace sstbx {
 namespace common {
 
-Atom::Atom(const AtomSpeciesId::Value species, const double radius):
-mySpecies(species),
-myRadius(radius),
-myParent(NULL)
-{}
-
-const Atom::Vec3 & Atom::getPosition() const
+const Structure & Atom::getStructure() const
 {
-	return position;
+  return myStructure;
 }
 
-void Atom::setPosition(const Atom::Vec3 & pos)
+Structure & Atom::getStructure()
 {
-	position = pos;
+  return myStructure;
+}
 
-	StructureTreeEvent evt(StructureTreeEvent::ATOM_CHANGED, *this);
-	eventFired(evt);
+const ::arma::vec3 & Atom::getPosition() const
+{
+	return myPosition;
+}
+
+void Atom::setPosition(const ::arma::vec3 & pos)
+{
+	myPosition = pos;
+  myStructure.atomMoved(*this);
 }
 
 double Atom::getRadius() const
@@ -38,28 +39,40 @@ double Atom::getRadius() const
   return myRadius;
 }
 
+void Atom::setRadius(const double radius)
+{
+  myRadius = radius;
+}
+
 const AtomSpeciesId::Value  Atom::getSpecies() const
 {
 	return mySpecies;
 }
 
-AtomGroup * Atom::getParent() const
+size_t Atom::getIndex() const
 {
-	return myParent;
+  return myIndex;
 }
 
-void Atom::setParent(sstbx::common::AtomGroup *const parent)
+Atom::Atom(const AtomSpeciesId::Value species, Structure & structure, const size_t index):
+mySpecies(species),
+myStructure(structure),
+myIndex(index),
+myRadius(-1.0)
+{}
+
+Atom::Atom(const Atom & toCopy, Structure & structure, const size_t index):
+mySpecies(toCopy.getSpecies()),
+myRadius(toCopy.getRadius()),
+myPosition(toCopy.getPosition()),
+myStructure(structure),
+myIndex(index)
+{}
+
+void Atom::setIndex(const size_t index)
 {
-	myParent = parent;
+  myIndex = index;
 }
 
-void Atom::eventFired(const StructureTreeEvent & evt)
-{
-	// Propagate this to my parent
-	if(myParent)
-	{
-		myParent->eventFired(evt);
-	}
 }
-
-}}
+}

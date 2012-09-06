@@ -154,7 +154,7 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
       table.insert(
         key,
         "param" + ::boost::lexical_cast< ::std::string>(i),
-        ::boost::lexical_cast< ::std::string>(params->operator [](i)));
+        ::boost::lexical_cast< ::std::string>((*params)[i]));
     }
   }
 
@@ -168,7 +168,7 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
 
     if(sweepStrData.getStructure())
     {
-      const size_t numAtoms = sweepStrData.getStructure()->getNumAtomsDescendent();
+      const size_t numAtoms = sweepStrData.getStructure()->getNumAtoms();
       table.insert(
         key,
         "energy/atom",

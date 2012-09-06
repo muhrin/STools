@@ -13,7 +13,9 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "build_cell/AtomGroupDescription.h"
+#include "build_cell/IUnitCellBlueprint.h"
 #include "build_cell/StructureConstraintDescription.h"
+#include "build_cell/Types.h"
 
 // FORWARD DECLARES ///////////
 
@@ -24,6 +26,8 @@ class StructureDescription : public AtomGroupDescription
 {
 public:
   typedef boost::ptr_vector<StructureConstraintDescription> ConstraintsContainer;
+
+  explicit StructureDescription(const ConstUnitCellBlueprintPtr unitCell = ConstUnitCellBlueprintPtr());
 
 	void addStructureConstraint(StructureConstraintDescription * const structureConstraint);	
 
@@ -38,9 +42,13 @@ public:
   virtual bool traversePostorder(ConstStructureDescriptionVisitor & visitor) const;
   // End from AtomGroupDescription ///////////////
 
+  void setUnitCell(const ConstUnitCellBlueprintPtr unitCell);
+  ConstUnitCellBlueprintPtr getUnitCell() const;
+
 protected:
 
-  ConstraintsContainer    myStructureConstraints;
+  ConstraintsContainer      myStructureConstraints;
+  ConstUnitCellBlueprintPtr myUnitCell;
 
 };
 

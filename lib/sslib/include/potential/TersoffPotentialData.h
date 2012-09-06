@@ -10,7 +10,7 @@
 #define TERSOFF_POTENTIAL_DATA_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "StandardData.h"
+#include "PotentialData.h"
 
 #include "common/Structure.h"
 
@@ -22,7 +22,7 @@
 namespace sstbx { namespace potential {
 
 template <typename FloatType = double>
-struct TersoffPotentialData : public StandardData<FloatType>
+struct TersoffPotentialData : public PotentialData<FloatType>
 {
 	TersoffPotentialData(const sstbx::common::Structure & structure);
 
@@ -31,7 +31,7 @@ struct TersoffPotentialData : public StandardData<FloatType>
 // IMPLEMENTATION //////////////////////////////////////////
 template <typename FloatType>
 TersoffPotentialData<FloatType>::TersoffPotentialData(const sstbx::common::Structure & structure):
-StandardData<FloatType>(structure)
+PotentialData(structure)
 {
 }
 

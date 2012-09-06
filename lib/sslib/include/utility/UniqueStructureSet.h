@@ -22,16 +22,15 @@
 
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 class IStructureComparator;
 }
 }
 
 
-namespace sstbx { namespace utility {
+namespace sstbx {
+namespace utility {
 
 class UniqueStructureSet : public IStructureSet
 {
@@ -39,11 +38,10 @@ private:
 
 	struct StructureMetadata
 	{
-    StructureMetadata(const IBufferedComparator::DataHandle & compHandle);
+    StructureMetadata();
 
 		/** The number of times this structure has been found */
 		size_t				                  timesFound;
-		IBufferedComparator::DataHandle compHandle;
 	};
 
 public:
@@ -51,7 +49,6 @@ public:
 	typedef std::pair<sstbx::common::Structure *, bool> ReturnPair;
 
 	UniqueStructureSet(const IStructureComparator & comparator);
-	virtual ~UniqueStructureSet();
 
 	// From IStructureSet //
 

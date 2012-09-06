@@ -20,9 +20,9 @@ extern "C"
 #include <spglib/spglib.h>
 }
 
-#include <common/AbstractFmidCell.h>
 #include <common/AtomSpeciesId.h>
 #include <common/Structure.h>
+#include <common/UnitCell.h>
 
 // Local includes
 #include "common/StructureData.h"
@@ -49,22 +49,22 @@ void DetermineSpaceGroup::in(StructureDataTyp & data)
   if(structure.get())
   {
     double lattice[3][3];
-    const::arma::mat33 & orthoMtx = structure->getUnitCell()->getOrthoMtx();
+    const ssc::UnitCell * const cell = structure->getUnitCell();
+    const::arma::mat33 & orthoMtx = cell->getOrthoMtx();
     for(size_t i = 0; i < 3; ++i)
     {
       for(size_t j = 0; j < 3; ++j)
       {
         // Row-major = column-major
-        lattice[i][j] =
-          orthoMtx(i, j);
+        lattice[i][j] = orthoMtx(i, j);
       }
     }
 
     const size_t numAtoms = structure->getNumAtoms();
     double (*positions)[3] = new double[numAtoms][3];
     ::arma::mat posMtx;
-    structure->getAtomPositionsDescendent(posMtx);
-    structure->getUnitCell()->fractionaliseInplace(posMtx);
+    structure->getAtomPositions(posMtx);
+    cell->cartsToFracInplace(posMtx);
     for(size_t i = 0; i < numAtoms; ++i)
     {
       for(size_t j = 0; j < 3; ++j)
@@ -75,7 +75,7 @@ void DetermineSpaceGroup::in(StructureDataTyp & data)
     }
 
     ::std::vector<ssc::AtomSpeciesId::Value> speciesVec;
-    structure->getAtomSpeciesDescendent(speciesVec);
+    structure->getAtomSpecies(speciesVec);
     ::boost::scoped_array<int> species(new int[speciesVec.size()]);
     for(size_t i = 0; i < speciesVec.size(); ++i)
     {

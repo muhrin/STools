@@ -13,20 +13,17 @@
 
 #include "common/AtomSpeciesId.h"
 #include "common/Structure.h"
-#include "potential/StandardData.h"
+#include "potential/PotentialData.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
 // DEFINITION //////////////////////////////////////////////
 
-namespace sstbx
-{
-namespace potential
-{
+namespace sstbx {
+namespace potential {
 
-template <typename FloatType = double>
-struct SimplePairPotentialData : public StandardData<FloatType>
+struct SimplePairPotentialData : public PotentialData
 {
   /**
   /* A list from 0 to N of the species that each row (and column) of the parameter
@@ -36,7 +33,7 @@ struct SimplePairPotentialData : public StandardData<FloatType>
   /*                CL ( 0.5  1  )
   /* speciesMap(0 => Na, 1 => Cl)
   /**/
-  typedef ::std::vector< typename ::sstbx::common::AtomSpeciesId::Value>  SpeciesList;
+  typedef ::std::vector< ::sstbx::common::AtomSpeciesId::Value>  SpeciesList;
 
   /**
   /* Any atoms that are not being considered by the potential will be labelled with this.
@@ -51,47 +48,6 @@ struct SimplePairPotentialData : public StandardData<FloatType>
 
 };
 
-// IMPLEMENTATION //////////////////////////////////////////
-
-template <typename FloatType>
-SimplePairPotentialData<FloatType>::SimplePairPotentialData(
-  const sstbx::common::Structure & structure,
-  const typename SimplePairPotentialData<FloatType>::SpeciesList & speciesList):
-StandardData<FloatType>(structure)
-{
-  using sstbx::common::AtomSpeciesId;
-
-	// Get the atom species
-  std::vector<AtomSpeciesId::Value> strSpecies;
-	structure.getAtomSpeciesDescendent(strSpecies);
-
-	// Now populate our species vector
-  const size_t numAtoms = strSpecies.size();
-	species.resize(numAtoms);
-
-  bool found;
-  const size_t numSpecies = speciesList.size();
-  AtomSpeciesId::Value currentSpecies;
-  for(size_t i = 0; i < numAtoms; ++i)
-  {
-    currentSpecies = strSpecies[i];
-    found = false;
-    for(size_t j = 0; j < numSpecies; ++j)
-    {
-      if(currentSpecies == speciesList[j])
-      {
-        found = true;
-        species[i] = j;
-        break;
-      }
-    }
-    if(!found)
-    {
-      species[i] = IGNORE_ATOM;
-    }
-  }
-
-}
 
 }
 }

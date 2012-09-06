@@ -20,9 +20,7 @@
 #include <yaml-cpp/yaml.h>
 
 // From SSTbx
-#include "build_cell/ICrystalStructureGenerator.h"
-#include "build_cell/RandomCellDescription.h"
-#include "build_cell/ICellGenerator.h"
+#include "build_cell/IStructureGenerator.h"
 #include "build_cell/StructureDescription.h"
 #include "common/SsLibYamlKeywords.h"
 #include "io/IStructureWriter.h"
@@ -67,10 +65,9 @@ public:
 
   SsLibFactoryYaml();
 
-  ::sstbx::build_cell::RandomCellDescription *            createCellDescription(const YAML::Node & desc);
+  //::sstbx::build_cell::RandomCellDescription *            createCellDescription(const YAML::Node & desc);
   ::sstbx::build_cell::StructureDescription *             createStructureDescription(const YAML::Node & desc);
-  ::sstbx::build_cell::ICellGenerator *                   createCellGenerator(const YAML::Node & desc);
-  ::sstbx::build_cell::ICrystalStructureGenerator *       createCrystalStructureGenerator(const YAML::Node & desc);
+  ::sstbx::build_cell::IStructureGenerator *       createCrystalStructureGenerator(const YAML::Node & desc);
   ::sstbx::potential::IPotential *                        createPotential(const YAML::Node & desc);
   ::sstbx::potential::IGeomOptimiser *                    createGeometryOptimiser(const YAML::Node & desc);
   ::sstbx::utility::IStructureComparator *                createStructureComparator(const YAML::Node & node);
@@ -92,9 +89,8 @@ private:
   /* The factory retains ownership and will cleanly release these under the
   /* RAII idiom when the factory is destroyed.
   /**/
-  ::boost::ptr_vector< ::sstbx::build_cell::RandomCellDescription>             myCellDescriptions;
-  ::boost::ptr_vector< ::sstbx::build_cell::ICellGenerator>                    myCellGenerators;
-  ::boost::ptr_vector< ::sstbx::build_cell::ICrystalStructureGenerator>        myCrystalStructureGenerators;
+  //::boost::ptr_vector< ::sstbx::build_cell::RandomCellDescription>             myCellDescriptions;
+  ::boost::ptr_vector< ::sstbx::build_cell::IStructureGenerator>        myCrystalStructureGenerators;
   ::boost::ptr_vector< ::sstbx::io::IStructureWriter>                          myStructureWriters;
   ::boost::ptr_vector< ::sstbx::potential::IGeomOptimiser>                     myOptimisers;
   ::boost::ptr_vector< ::sstbx::potential::IPotential>                         myPotentials;

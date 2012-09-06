@@ -15,7 +15,6 @@
 #include <boost/shared_ptr.hpp>
 
 // From SSTbx
-#include <build_cell/RandomCellDescription.h>
 #include <build_cell/StructureDescription.h>
 
 // From PipelineLib
@@ -27,7 +26,7 @@ namespace sstbx
 {
 namespace build_cell
 {
-class ICrystalStructureGenerator;
+class IStructureGenerator;
 }
 }
 
@@ -41,13 +40,11 @@ class RandomStructure :
 public:
 
   typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription >      StructureDescPtr;
-  typedef ::boost::shared_ptr< ::sstbx::build_cell::RandomCellDescription >          CellDescPtr;
 
 	RandomStructure(
 		const size_t numToGenerate,
-		const ::sstbx::build_cell::ICrystalStructureGenerator &           structureGenerator,
-    const StructureDescPtr & structureDescription = StructureDescPtr(),
-    const CellDescPtr &      cellDescription      = CellDescPtr());
+		const ::sstbx::build_cell::IStructureGenerator &           structureGenerator,
+    const StructureDescPtr & structureDescription = StructureDescPtr());
 
 
   // From Block ////////
@@ -73,13 +70,9 @@ private:
   /** Should the block use the structure description found in shared data */
   const bool  myUseSharedDataStructureDesc;
 
-  /** Should the block use the cell description found in shared data */
-  const bool  myUseSharedDataCellDesc;
-
   StructureDescPtr       myStructureDescription;
-  CellDescPtr            myCellDescription;
 
-	const ::sstbx::build_cell::ICrystalStructureGenerator &	myStructureGenerator;
+	const ::sstbx::build_cell::IStructureGenerator &	myStructureGenerator;
 
 };
 

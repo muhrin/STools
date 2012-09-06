@@ -27,10 +27,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace potential
-{
+namespace sstbx {
+namespace potential {
 class IParameterisable;
 class IGeomOptimiser;
 }
@@ -58,7 +56,7 @@ public:
 private:
 
   virtual void copyOptimisationResults(
-    const sstbx::potential::StandardData<> & optData,
+    const sstbx::potential::PotentialData & optData,
     spipe::common::StructureData & strData);
 
   arma::vec setPotentialParams(const ::arma::vec & params);

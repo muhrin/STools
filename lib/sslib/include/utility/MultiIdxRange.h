@@ -18,6 +18,12 @@
 
 #include "utility/MultiIdx.h"
 
+#ifdef _MSC_VER
+  // Disable warning about passing this pointer to this in initialiser list
+  #pragma warning( push )
+  #pragma warning( disable : 4355 )
+#endif
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace sstbx {
@@ -164,5 +170,9 @@ private:
 
 } // namespace utility
 } // namespace sslib
+
+#ifdef _MSC_VER
+  #pragma warning( pop )
+#endif
 
 #endif /* MULTI_IDX_RANGE_H */

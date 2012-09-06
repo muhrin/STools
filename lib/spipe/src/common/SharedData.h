@@ -38,7 +38,6 @@ class PipeStateChanged;
 
 namespace sstbx {
 namespace build_cell {
-class RandomCellDescription;
 class StructureDescription;
 }
 }
@@ -75,10 +74,25 @@ public:
 
   bool appendToOutputDirName(const ::std::string & toAppend);
 
+  /**
+  /* Get the output path for the pipeline that owns this shared data relative to
+  /* the working directory where the code was executed.
+  /**/
   ::boost::filesystem::path getOutputPath() const;
-  const ::boost::filesystem::path & getOutputFileStem() const;
 
-  const ::boost::filesystem::path & getRelativeOutputPath() const;
+  /**
+  /* Get the output path for the pipeline that owns this shared data relative to
+  /* the parent pipeline (or global data output path if there is not parent).
+  /**/
+  const ::boost::filesystem::path & getPipeRelativeOutputPath() const;
+
+  /**
+  /* Get a stem filename for output being made by blocks within the pipeline that
+  /* owns this shared data.
+  /* Using this as the stem output filename allows output from a particular run
+  /* through the pipeline to be easily identified.
+  /*/
+  const ::boost::filesystem::path & getOutputFileStem() const;
 
   ::sstbx::build_cell::StructureDescription * getStructureDescription();
 
@@ -96,8 +110,6 @@ public:
 	::boost::optional< ::arma::Col< unsigned int > >	potSweepNSteps;
 
   ::boost::shared_ptr< sstbx::build_cell::StructureDescription>            structureDescription;
-  ::boost::shared_ptr< sstbx::build_cell::RandomCellDescription>           cellDescription;
-
 
   ::std::string                       outputFilename;
 

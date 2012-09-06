@@ -12,13 +12,16 @@
 
 // From SSTbx
 
-#include <common/AbstractFmidCell.h>
 #include <common/Structure.h>
+#include <common/UnitCell.h>
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
+
+namespace ssc = ::sstbx::common;
 
 NiggliReduction::NiggliReduction():
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Niggli reduction")
@@ -26,7 +29,9 @@ pipelib::Block<StructureDataTyp, SharedDataTyp>("Niggli reduction")
 
 void NiggliReduction::in(spipe::common::StructureData & data)
 {
-	data.getStructure()->getUnitCell()->niggliReduce();
+  ssc::UnitCell * const cell = data.getStructure()->getUnitCell();
+  if(cell)
+    cell->niggliReduce();
 
 	myOutput->in(data);
 }

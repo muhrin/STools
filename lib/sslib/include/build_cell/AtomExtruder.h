@@ -18,9 +18,8 @@
 #include "common/Types.h"
 
 namespace sstbx {
-
 namespace common {
-  class AbstractFmidCell;
+  class DistanceCalculator;
   class Structure;
 }
   
@@ -30,15 +29,22 @@ class AtomExtruder
 {
 public:
 
-  bool extrudeAtoms(common::Structure & structure) const;
+  static const double DEFAULT_TOLERANCE;
+  static const size_t DEFAULT_MAX_ITERATIONS;
+
+  bool extrudeAtoms(
+    common::Structure & structure,
+    const double tolerance = DEFAULT_TOLERANCE,
+    const size_t maxIterations = DEFAULT_MAX_ITERATIONS) const;
 
 private:
 
   bool extrudeAtoms(
-    const common::AbstractFmidCell & cell,
-    ::std::vector<common::AtomPtr> & atoms,
+    const common::DistanceCalculator & distanceCalc,
+    ::std::vector<common::Atom *> & atoms,
     const ::arma::mat & sepSqMtx,
-    const size_t maxIterations = 10000) const;
+    const double tolerance,
+    const size_t maxIterations) const;
 
 };
 
