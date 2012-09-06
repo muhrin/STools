@@ -47,17 +47,17 @@ public:
 
   const double (&getLatticeParams() const)[6];
 
-  inline ::arma::vec3 UnitCell::getAVec() const
+  inline ::arma::vec3 getAVec() const
   {
     return myOrthoMtx.col(X);
   }
 
-  inline ::arma::vec3 UnitCell::getBVec() const
+  inline ::arma::vec3 getBVec() const
   {
     return myOrthoMtx.col(Y);
   }
 
-  inline ::arma::vec3 UnitCell::getCVec() const
+  inline ::arma::vec3 getCVec() const
   {
     return myOrthoMtx.col(Z);
   }

@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(DistanceCalculatorsComparison)
   structure.setUnitCell(cell);
 
   for(size_t i = 0; i < numAtoms; ++i)
-    structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(::arma::randu<::arma::vec>(3));
+    structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(::arma::randu< ::arma::vec>(3));
 
   ssc::OrthoCellDistanceCalculator orthoCalc(structure);
   ssc::UniversalCrystalDistanceCalculator univCalc(structure);
