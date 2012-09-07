@@ -34,20 +34,32 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
 
   // Maximum multiples of cell vectors we need to go to
   const int maxA = (int)ceil(cutoff / params[0]);
-  const int maxB = (int)ceil(cutoff / params[1]);
-  const int maxC = (int)ceil(cutoff / params[2]);
+  int maxB = (int)ceil(cutoff / params[1]);
+  int maxC = (int)ceil(cutoff / params[2]);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 dFrac, dRImg;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
   double dRDistSq;
   size_t numDistances = 0;
+
+
+  double rCutMinNA, tmpASq, tmpBSq;  // TEMPORARY
 	for(int a = -maxA; a <= maxA; ++a)
 	{
 		dFrac[0] = a;
+
+    tmpASq = (abs(a) - 1.0) * params[0];
+    tmpASq *= tmpASq;
+    rCutMinNA = cutoffSq - tmpASq;
+    maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
 		  dFrac[1] = b;
+
+      tmpBSq = (abs(b) - 1.0) * params[1];
+      tmpBSq *= tmpBSq;
+      maxC = (int)ceil(sqrt(rCutMinNA - tmpBSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
 				dFrac[2] = c;
@@ -99,20 +111,32 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
 
   // Maximum multiples of cell vectors we need to go to
   const int maxA = (int)ceil(cutoff / params[0]);
-  const int maxB = (int)ceil(cutoff / params[1]);
-  const int maxC = (int)ceil(cutoff / params[2]);
+  int maxB = (int)ceil(cutoff / params[1]);
+  int maxC = (int)ceil(cutoff / params[2]);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 dFrac, dRImg;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
   double dRDistSq;
   size_t numVectors = 0;
+
+
+  double rCutMinNA, tmpASq, tmpBSq;  // TEMPORARY
 	for(int a = -maxA; a <= maxA; ++a)
 	{
 		dFrac[0] = a;
+
+    tmpASq = (abs(a) - 1.0) * params[0];
+    tmpASq *= tmpASq;
+    rCutMinNA = cutoffSq - tmpASq;
+    maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
 		  dFrac[1] = b;
+
+      tmpBSq = (abs(b) - 1.0) * params[1];
+      tmpBSq *= tmpBSq;
+      maxC = (int)ceil(sqrt(rCutMinNA - tmpBSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
 				dFrac[2] = c;

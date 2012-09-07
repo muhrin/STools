@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(DistanceCalculatorsComparison)
   const double cutoffDist = 13.11 * cellDim;
 
   ssc::Structure structure;
-  ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, cellDim, 90.0, 90.0, 90.0));
+  ssc::UnitCellPtr cell(new ssc::UnitCell(0.25 * cellDim, cellDim, 1.75 * cellDim, 90.0, 90.0, 90.0));
 
   structure.setUnitCell(cell);
 
