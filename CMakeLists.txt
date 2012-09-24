@@ -41,7 +41,7 @@ set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
 if(WIN32)
   set(Boost_USE_STATIC_LIBS ON)
 endif(WIN32)
-find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
+find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
@@ -51,9 +51,9 @@ endif()
 ## END FIND PACKAGES ####################################
 
 add_subdirectory(lib/pipelib)   # Pipeline library
+add_subdirectory(lib/spglib)    # Space group finder
 add_subdirectory(lib/sslib)     # Structure searching library
 add_subdirectory(lib/yaml-cpp)  # YAML library
-add_subdirectory(lib/spglib)    # Space group finder
 add_subdirectory(lib/spipe)	# StructurePipe
 
 # Include directories with header files

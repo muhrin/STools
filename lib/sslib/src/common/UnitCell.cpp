@@ -22,6 +22,11 @@ UnitCell::UnitCell(const double a, const double b, const double c, const double 
   init(a, b, c, alpha, beta, gamma);
 }
 
+UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix)
+{
+  init(orthoMatrix);
+}
+
 UnitCell::UnitCell(const double (&latticeParams)[6])
 {
   init(latticeParams[A], latticeParams[B], latticeParams[C],

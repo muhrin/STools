@@ -17,7 +17,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx { namespace utility {
+namespace sstbx {
+namespace utility {
 
 template <typename Typ>
 class MultiArray

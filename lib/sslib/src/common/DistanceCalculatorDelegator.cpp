@@ -24,6 +24,13 @@ myDelegateType(CalculatorType::CLUSTER)
   // WARNING: Don't use structure here as it won't be initialised!!
 }
 
+DistanceCalculatorDelegator::DistanceCalculatorDelegator(const DistanceCalculatorDelegator & toCopy):
+DistanceCalculator(toCopy.myStructure),
+myDelegateType(CalculatorType::NONE)
+{
+  setDelegate(toCopy.myDelegateType);
+}
+
 void DistanceCalculatorDelegator::unitCellChanged()
 {
   updateDelegate();
@@ -35,11 +42,7 @@ void DistanceCalculatorDelegator::updateDelegate()
 
   if(unitCell == NULL)
   {
-    if(myDelegateType != CalculatorType::CLUSTER)
-    {
-      myDelegate.reset(new ClusterDistanceCalculator(myStructure));
-      myDelegateType = CalculatorType::CLUSTER;
-    }
+    setDelegate(CalculatorType::CLUSTER);
   }
   else
   {
@@ -48,21 +51,35 @@ void DistanceCalculatorDelegator::updateDelegate()
       latticeSystem == UnitCell::LatticeSystem::CUBIC ||
       latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
     {
-      if(myDelegateType != CalculatorType::ORTHO_CELL)
-      {
-        myDelegate.reset(new OrthoCellDistanceCalculator(myStructure));
-        myDelegateType = CalculatorType::ORTHO_CELL;
-      }
+      setDelegate(CalculatorType::ORTHO_CELL);
     }
     else
     {
-      if(myDelegateType != CalculatorType::UNIVERSAL_CRYSTAL)
-      {
-        myDelegate.reset(new UniversalCrystalDistanceCalculator(myStructure));
-        myDelegateType = CalculatorType::UNIVERSAL_CRYSTAL;
-      }
+      setDelegate(CalculatorType::UNIVERSAL_CRYSTAL);
     }
 
+  }
+}
+
+void DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
+{
+  if(myDelegateType != calcType)
+  {
+    if(myDelegateType == CalculatorType::CLUSTER)
+    {
+      myDelegate.reset(new ClusterDistanceCalculator(myStructure));
+      myDelegateType = CalculatorType::CLUSTER;
+    }
+    else if(myDelegateType != CalculatorType::UNIVERSAL_CRYSTAL)
+    {
+      myDelegate.reset(new UniversalCrystalDistanceCalculator(myStructure));
+      myDelegateType = CalculatorType::UNIVERSAL_CRYSTAL;
+    }
+    else if(myDelegateType != CalculatorType::ORTHO_CELL)
+    {
+      myDelegate.reset(new OrthoCellDistanceCalculator(myStructure));
+      myDelegateType = CalculatorType::ORTHO_CELL;
+    }
   }
 }
 

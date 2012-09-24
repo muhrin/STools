@@ -27,10 +27,8 @@ class Structure;
 }
 }
 
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
 struct StructureObjectKeys
 {
@@ -40,14 +38,13 @@ struct StructureObjectKeys
   static const ::sstbx::utility::Key< ::std::string >             SPACEGROUP_SYMBOL;
   static const ::sstbx::utility::Key< double >                    PRESSURE_INTERNAL;
 
-
 };
 
 class StructureData
 {
 public:
 
-	sstbx::common::StructurePtr getStructure() const;
+	sstbx::common::Structure * getStructure() const;
 	void setStructure(const sstbx::common::StructurePtr structure);
 
   /**

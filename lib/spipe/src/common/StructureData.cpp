@@ -30,9 +30,9 @@ const ::sstbx::utility::Key<unsigned int> StructureObjectKeys::SPACEGROUP_NUMBER
 const ::sstbx::utility::Key< ::std::string> StructureObjectKeys::SPACEGROUP_SYMBOL;
 const ::sstbx::utility::Key< double > StructureObjectKeys::PRESSURE_INTERNAL;
 
-sstbx::common::StructurePtr StructureData::getStructure() const
+sstbx::common::Structure * StructureData::getStructure() const
 {
-	return myStructure;
+  return myStructure.get();
 }
 
 void StructureData::setStructure(const sstbx::common::StructurePtr structure)

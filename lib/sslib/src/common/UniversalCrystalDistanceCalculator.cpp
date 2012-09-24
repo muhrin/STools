@@ -40,20 +40,23 @@ DistanceCalculator(structure)
 	int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, minModDR));
 	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
 
-  ::arma::vec3 dFrac, dRImg, minDR = dR;
+  ::arma::vec3 minDR = dR;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
 	double modDRSq;
+  ::arma::vec3
+      nA,
+      nAPlusNB,
+      dRImg;
+  size_t numDistances = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
-    dFrac[0] = a;
+		nA = a * A;
 		for(int b = -maxB; b <= maxB; ++b)
 		{
-		  dFrac[1] = b;
+		  nAPlusNB = nA + b * B;
 			for(int c = -maxC; c <= maxC; ++c)
 			{
-				dFrac[2] = c;
-
-        dRImg = orthoMtx * dFrac + dR;
+        dRImg = nAPlusNB + c * C + dR;
 				
 				modDRSq = dot(dRImg, dRImg);
 				if(modDRSq < minModDRSq)
@@ -93,21 +96,22 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
 	const int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff));
 
   const double cutoffSq = cutoff * cutoff;
-  ::arma::vec3 dFrac, dRImg;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
   double dRDistSq;
+  ::arma::vec3
+      nA,
+      nAPlusNB,
+      dRImg;
   size_t numDistances = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
-		dFrac[0] = a;
+		nA = a * A;
 		for(int b = -maxB; b <= maxB; ++b)
 		{
-		  dFrac[1] = b;
+		  nAPlusNB = nA + b * B;
 			for(int c = -maxC; c <= maxC; ++c)
 			{
-				dFrac[2] = c;
-
-        dRImg = orthoMtx * dFrac + dR;
+        dRImg = nAPlusNB + c * C + dR;
         dRDistSq = ::arma::dot(dRImg, dRImg);
 
 				if(dRDistSq < cutoffSq)
@@ -149,20 +153,20 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
 	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff));
 
 	const double cutoffSq = cutoff * cutoff;
-  ::arma::vec3 dFrac, dRImg;
-  const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
+  ::arma::vec3
+      nA,
+      nAPlusNB,
+      dRImg;
   size_t numVectors = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
-    dFrac[0] = a;
+		nA = a * A;
 		for(int b = -maxB; b <= maxB; ++b)
 		{
-      dFrac[1] = b;
+		  nAPlusNB = nA + b * B;
 			for(int c = -maxC; c <= maxC; ++c)
 			{
-				dFrac[2] = c;
-
-        dRImg = orthoMtx * dFrac + dR;
+        dRImg = nAPlusNB + c * C + dR;
 				
 				if(dot(dRImg, dRImg) < cutoffSq)
 				{

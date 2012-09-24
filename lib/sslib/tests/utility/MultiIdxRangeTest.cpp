@@ -19,10 +19,15 @@ namespace ssu = ::sstbx::utility;
 
 BOOST_AUTO_TEST_CASE(SimpleRange)
 {
-  ssu::MultiIdx<unsigned int> x0(2), x1(2);
+  // SETTINGS //////////////
+  const size_t dims = 2;
+  const size_t startNum = 0;
+  const size_t endNum = 3;
+
+  ssu::MultiIdx<unsigned int> x0(dims), x1(dims);
   
-  x0.fill(0); // Place start at 0,0
-  x1.fill(3); // Place end at 3,3
+  x0.fill(startNum); // Place start at 0,0
+  x1.fill(endNum); // Place end at 3,3
 
   ssu::MultiIdxRange<unsigned int> range(x0, x1);
 
@@ -34,18 +39,33 @@ BOOST_AUTO_TEST_CASE(SimpleRange)
     ++i;
   }
   BOOST_CHECK(i == (x1 - x0).product());
+
+  // Check in reverse, i should be at correct point
+  //++i;
+  //for(ssu::MultiIdxRange<unsigned int>::const_iterator it = range.end(), end = range.begin();
+  //  it != end; --it)
+  //{
+  //  BOOST_CHECK(i % 3 == (*it)[0]);
+  //  --i;
+  //}
 }
 
 BOOST_AUTO_TEST_CASE(OneDimensionalRange)
 {
+  // SETTINGS //////////////
+  const int startNum = 2;
+  const int endNum = 207;
+
   ssu::MultiIdx<unsigned int> x0(1), x1(1);
   
-  x0.fill(0); // Place start at 0
-  x1.fill(41); // Place end at 41
+  x0.fill(startNum); // Place start at 0
+  x1.fill(endNum); // Place end at 41
 
   const ssu::MultiIdxRange<unsigned int> range(x0, x1);
 
-  size_t i = 0;
+  BOOST_CHECK((endNum - startNum) == (x1 - x0).product());
+
+  size_t i = startNum;
   for(ssu::MultiIdxRange<unsigned int>::const_iterator it = range.begin(), end = range.end();
     it != end; ++it)
   {
@@ -53,5 +73,14 @@ BOOST_AUTO_TEST_CASE(OneDimensionalRange)
     BOOST_CHECK(i == (*it)[0]);
     ++i;
   }
-  BOOST_CHECK(i == (x1 - x0).product());
+
+  // Now try in reverse
+  //i = endNum;
+  //for(ssu::MultiIdxRange<unsigned int>::const_iterator it = range.end(), end = range.begin();
+  //  it != end; --it)
+  //{
+  //  // Make sure each entry is correct
+  //  BOOST_CHECK(i == (*it)[0]);
+  //  --i;
+  //}
 }

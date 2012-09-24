@@ -36,6 +36,7 @@ source_group("Header Files\\utility" FILES ${tests_Header_Files__utility})
 set(tests_Source_Files__utility
   utility/MultiIdxTest.cpp
   utility/MultiIdxRangeTest.cpp
+  utility/PermutationRangeTest.cpp
 )
 source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})
 
@@ -93,6 +94,7 @@ add_dependencies(sslibtest sslib)
 target_link_libraries(sslibtest
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   ${ARMADILLO_LIBRARIES}
+  spglib
   sslib
 )
 

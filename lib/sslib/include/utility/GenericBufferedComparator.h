@@ -1,6 +1,17 @@
 /*
  * GenericBufferedComparator.h
  *
+ * Can be used by any IStructureComparator that meets the following criteria:
+ * - has typedef DataTyp visible to GenericBufferedComparator that defines the
+ *   comparison data type
+ * - has methods with signatures:
+ *   ::std::auto_ptr<DataTyp> generateComparisonData(const Structure & structure) const;
+ *
+ *   bool areSimilar(const Structrue & str1, const DataTyp & str1Data,
+ *     const Structure & str2, const DataTyp & str2Data) const;
+ * 
+ *  double compareStructures(const Structrue & str1, const DataTyp & str1Data,
+ *     const Structure & str2, const DataTyp & str2Data) const;
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
@@ -20,14 +31,11 @@
 
 #include "utility/IBufferedComparator.h"
 
+namespace sstbx {
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
 namespace common {
-class Structure;
+  class Structure;
 }
-}
-
-namespace sstbx {
 namespace utility {
 
 template <class ComparatorTyp>

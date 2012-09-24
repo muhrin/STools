@@ -10,6 +10,7 @@
 
 // INCLUDES ///////////////////////////////////
 #include <boost/scoped_ptr.hpp>
+#include <boost/utility.hpp>
 
 #include <armadillo>
 
@@ -27,6 +28,8 @@ class DistanceCalculatorDelegator : public DistanceCalculator
 public:
 
   DistanceCalculatorDelegator(const Structure & structure);
+
+  DistanceCalculatorDelegator(const DistanceCalculatorDelegator & toCopy);
 
   // From DistanceCalculator /////////////////////
 
@@ -93,6 +96,7 @@ private:
   {
     enum Value
     {
+      NONE,
       CLUSTER,
       UNIVERSAL_CRYSTAL,
       ORTHO_CELL
@@ -102,6 +106,8 @@ private:
   typedef ::boost::scoped_ptr<DistanceCalculator> DistanceCalculatorPtr;
 
   void updateDelegate();
+
+  void setDelegate(const CalculatorType::Value calcType);
 
   DistanceCalculatorPtr   myDelegate;
   CalculatorType::Value   myDelegateType;

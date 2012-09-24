@@ -19,7 +19,6 @@ set(sslib_Source_Files__build_cell
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 
 set(sslib_Source_Files__common
-  src/common/AbstractFmidCell.cpp
   src/common/Atom.cpp
   src/common/AtomSpeciesDatabase.cpp
   src/common/AtomSpeciesId.cpp
@@ -30,7 +29,6 @@ set(sslib_Source_Files__common
   src/common/OrthoCellDistanceCalculator.cpp
   src/common/Structure.cpp
   src/common/UnitCell.cpp
-  src/common/UnitCellFactory.cpp
   src/common/UniversalCrystalDistanceCalculator.cpp
   src/common/Utils.cpp
 )
@@ -73,6 +71,7 @@ source_group("Source Files\\potential" FILES ${sslib_Source_Files__potential})
 
 set(sslib_Source_Files__utility
   src/utility/BoostFilesystem.cpp
+  src/utility/DistanceMatrixComparator.cpp
   src/utility/HeterogeneousMap.cpp
   src/utility/SortedDistanceComparator.cpp
   src/utility/StableComparison.cpp

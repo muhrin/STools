@@ -29,7 +29,6 @@ typedef ::boost::shared_ptr<Atom> AtomPtr;
 typedef ::boost::shared_ptr<const Atom> ConstAtomPtr;
 
 typedef ::boost::shared_ptr<Structure> StructurePtr;
-typedef ::boost::shared_ptr<const Structure> ConstStructurePtr;
 
 typedef ::boost::shared_ptr<UnitCell> UnitCellPtr;
 typedef ::boost::shared_ptr<const UnitCell> ConstUnitCellPtr;

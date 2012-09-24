@@ -20,10 +20,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 template <class Derived>
 class Enum

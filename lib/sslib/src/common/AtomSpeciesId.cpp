@@ -10,10 +10,8 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 
 const AtomSpeciesId::Enumerator AtomSpeciesId::DUMMY;
 const AtomSpeciesId::Enumerator AtomSpeciesId::H;

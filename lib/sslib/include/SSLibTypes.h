@@ -13,8 +13,30 @@
 #include <complex>
 #include <climits>
 #include <limits>
+#include <memory>
 
 #include <boost/static_assert.hpp>
+#include <boost/utility.hpp>
+
+namespace sstbx {
+
+// If C++11 is available then use std::unique_ptr, otherwise
+// std::auto_ptr is used.  This means that the user should taylor
+// their code using the define if they want to use any specific
+// behaviour
+template <typename T>
+struct UniquePtr : ::boost::noncopyable
+{
+#ifdef SSLIB_USE_CPP11
+  typedef ::std::unique_ptr<T> Type;
+#else
+  typedef ::std::auto_ptr<T> Type;
+#endif
+
+private:
+  UniquePtr() {}
+};
+
 
 #ifdef BOOST_STATIC_ASSERT_MSG
 #  define SSLIB_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT_MSG(B, Msg)
@@ -22,8 +44,7 @@
 #  define SSLIB_STATIC_ASSERT_MSG( B, Msg ) BOOST_STATIC_ASSERT( B )
 #endif
 
-namespace sstbx
-{
+// NUMERIC TYPES ///////////////////////////////////////
 
 #if UCHAR_MAX >= 0xff
   //! unsigned 8 bit type

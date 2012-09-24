@@ -14,7 +14,6 @@
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/ConstStructureDescriptionVisitor.h>
 #include <build_cell/IStructureGenerator.h>
-#include <common/AbstractFmidCell.h>
 #include <common/Constants.h>
 #include <common/Structure.h>
 #include <common/Types.h>

@@ -63,7 +63,7 @@ bool MakeConvexHull::hasData() const
 void MakeConvexHull::StoichData::addStoichiometry(
   const StructureDataTyp & strData)
 {
-  const ssc::Structure * const structure = strData.getStructure().get();
+  const ssc::Structure * const structure = strData.getStructure();
 
   if(structure)
   {

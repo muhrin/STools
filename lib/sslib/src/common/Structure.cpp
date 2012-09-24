@@ -10,6 +10,11 @@
 
 #include <vector>
 
+extern "C"
+{
+#  include <spglib/spglib.h>
+}
+
 #include "SSLibAssert.h"
 #include "common/Atom.h"
 #include "common/Types.h"
@@ -22,6 +27,18 @@
 
 namespace sstbx {
 namespace common {
+
+class MatchSpecies : public std::unary_function<const Atom &, bool>
+{
+public:
+  MatchSpecies(const AtomSpeciesId::Value toMatch):
+  mySpecies(toMatch) {}
+
+  bool operator() (const Atom & atom) {return atom.getSpecies() == mySpecies;}
+
+private:
+  const AtomSpeciesId::Value mySpecies;
+};
 
 Structure::Structure(UnitCellPtr cell):
 myCell(cell),
@@ -108,7 +125,19 @@ bool Structure::removeAtom(const Atom & atom)
     myAtoms[i].setIndex(i);
   }
 
+  myAtomPositionsCurrent = false;
   return true;
+}
+
+size_t Structure::clearAtoms()
+{
+  const size_t previousNumAtoms = myNumAtoms;
+
+  myAtoms.clear();
+
+  myNumAtoms = 0;
+  myAtomPositionsCurrent = false;
+  return previousNumAtoms;
 }
 
 void Structure::getAtomPositions(::arma::mat & posMtx) const
@@ -156,14 +185,7 @@ void Structure::getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) co
 
 size_t Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 {
-  const size_t numAtoms = getNumAtoms();
-  size_t num = 0;
-  for(size_t i = 0; i < numAtoms; ++i)
-  {
-    if(myAtoms[i].getSpecies() == species)
-      ++num;
-  }
-  return num;
+  return ::std::count_if(myAtoms.begin(), myAtoms.end(), MatchSpecies(species));
 }
 
 const DistanceCalculator & Structure::getDistanceCalculator() const
@@ -179,6 +201,161 @@ const DistanceCalculator & Structure::getDistanceCalculator() const
 const ::sstbx::utility::HeterogeneousMap & Structure::getProperties() const
 {
   return myProperties;
+}
+
+bool Structure::makePrimitive()
+{
+  if(myCell)
+  {
+    double lattice[3][3];
+    const::arma::mat33 & orthoMtx = myCell->getOrthoMtx();
+    for(size_t i = 0; i < 3; ++i)
+    {
+      for(size_t j = 0; j < 3; ++j)
+      {
+        // Row-major = column-major
+        lattice[i][j] = orthoMtx(i, j);
+      }
+    }
+
+    double (*positions)[3] = new double[myNumAtoms][3];
+    ::arma::mat posMtx;
+    getAtomPositions(posMtx);
+    myCell->cartsToFracInplace(posMtx);
+    for(size_t i = 0; i < myNumAtoms; ++i)
+    {
+      for(size_t j = 0; j < 3; ++j)
+      {
+        // Row-major = column-major
+        positions[i][j] = posMtx(j, i);
+      }
+    }
+
+    ::std::vector<AtomSpeciesId::Value> speciesVec;
+    getAtomSpecies(speciesVec);
+    ::boost::scoped_array<int> species(new int[speciesVec.size()]);
+    for(size_t i = 0; i < speciesVec.size(); ++i)
+    {
+      species[i] = speciesVec[i].ordinal();
+    }
+
+    // Try to find the primitive unit cell
+    const size_t newNumAtoms = (size_t)spg_find_primitive(lattice, positions, species.get(), myNumAtoms, 0.05);
+
+    if(newNumAtoms != 0 && newNumAtoms < myNumAtoms)
+    {
+      // First deal with lattice
+      ::arma::mat33 newLattice;
+      for(size_t i = 0; i < 3; ++i)
+      {
+        for(size_t j = 0; j < 3; ++j)
+        {
+          newLattice(i, j) = lattice[i][j];
+        }
+      }
+
+      myCell->setOrthoMtx(newLattice);
+
+      // Now deal with atoms
+      clearAtoms();
+
+      Atom * atom;
+      ::arma::vec3 pos;
+      for(size_t i = 0; i < newNumAtoms; ++i)
+      {
+        atom = &newAtom(*AtomSpeciesId::values()[species[i]]);
+        pos << positions[i][0] << ::arma::endr
+          << positions[i][1] << ::arma::endr
+          << positions[i][2] << ::arma::endr;
+        atom->setPosition(pos);
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
+UniquePtr<Structure>::Type Structure::getPrimitiveCopy() const
+{
+  UniquePtr<Structure>::Type structure;
+
+  if(myCell)
+  {
+    // Get the lattice
+    double lattice[3][3];
+    const::arma::mat33 & orthoMtx = myCell->getOrthoMtx();
+    for(size_t i = 0; i < 3; ++i)
+    {
+      for(size_t j = 0; j < 3; ++j)
+      {
+        // Row-major = column-major
+        lattice[i][j] = orthoMtx(i, j);
+      }
+    }
+
+    // Get the atom positions
+    double (*positions)[3] = new double[myNumAtoms][3];
+    ::arma::mat posMtx;
+    getAtomPositions(posMtx);
+    myCell->cartsToFracInplace(posMtx);
+    for(size_t i = 0; i < myNumAtoms; ++i)
+    {
+      for(size_t j = 0; j < 3; ++j)
+      {
+        // Row-major = column-major
+        positions[i][j] = posMtx(j, i);
+      }
+    }
+
+    // Get the atom species
+    ::std::vector<AtomSpeciesId::Value> speciesVec;
+    getAtomSpecies(speciesVec);
+    ::boost::scoped_array<int> species(new int[speciesVec.size()]);
+    for(size_t i = 0; i < speciesVec.size(); ++i)
+    {
+      species[i] = speciesVec[i].ordinal();
+    }
+
+    // Try to find the primitive unit cell
+    const size_t newNumAtoms = (size_t)spg_find_primitive(lattice, positions, species.get(), myNumAtoms, 0.05);
+
+    if(newNumAtoms != 0 && newNumAtoms < myNumAtoms)
+    {
+      structure.reset(new Structure());
+
+      // First deal with lattice
+      ::arma::mat33 newLattice;
+      for(size_t i = 0; i < 3; ++i)
+      {
+        for(size_t j = 0; j < 3; ++j)
+        {
+          newLattice(i, j) = lattice[i][j];
+        }
+      }
+
+      structure->setUnitCell(UnitCellPtr(new UnitCell(newLattice)));
+
+      Atom * atom;
+      ::arma::vec3 pos;
+      for(size_t i = 0; i < newNumAtoms; ++i)
+      {
+        atom = &structure->newAtom(*AtomSpeciesId::values()[species[i]]);
+        pos << positions[i][0] << ::arma::endr
+          << positions[i][1] << ::arma::endr
+          << positions[i][2] << ::arma::endr;
+        atom->setPosition(pos);
+      }
+
+    }
+    delete [] positions;
+  } // if(myCell)
+
+  if(!structure.get())
+    structure.reset(new Structure(*this));
+
+  return structure;
 }
 
 void Structure::atomMoved(const Atom & atom) const

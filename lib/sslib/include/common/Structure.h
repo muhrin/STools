@@ -11,6 +11,8 @@
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <memory>
+
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <armadillo>
@@ -58,6 +60,7 @@ public:
   Atom & newAtom(const AtomSpeciesId::Value species);
   Atom & newAtom(const Atom & toCopy);
 	bool removeAtom(const Atom & atom);
+  size_t clearAtoms();
 
   void getAtomPositions(::arma::mat & posMtx) const;
   void setAtomPositions(const ::arma::mat & posMtx);
@@ -69,6 +72,10 @@ public:
 
   utility::HeterogeneousMap & getProperties();
   const utility::HeterogeneousMap & getProperties() const;
+
+  bool makePrimitive();
+
+  UniquePtr<Structure>::Type getPrimitiveCopy() const;
 
 private:
 

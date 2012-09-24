@@ -28,10 +28,10 @@ namespace ssu = ::sstbx::utility;
 BOOST_AUTO_TEST_CASE(DistanceCalculatorsComparison)
 {
   // SETTINGS ////////////////
-  const size_t numAtoms = 100;
+  const size_t numAtoms = 50;
   const double cellDim = 10;
   const double tolerance = cellDim / 1e10;
-  const double cutoffDist = 13.11 * cellDim;
+  const double cutoffDist = 2.11 * cellDim;
 
   ssc::Structure structure;
   ssc::UnitCellPtr cell(new ssc::UnitCell(0.25 * cellDim, cellDim, 1.75 * cellDim, 90.0, 90.0, 90.0));

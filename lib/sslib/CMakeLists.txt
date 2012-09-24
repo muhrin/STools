@@ -60,6 +60,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${SSLIB_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/lib/spglib/include
 )
 
 # Process header and source files

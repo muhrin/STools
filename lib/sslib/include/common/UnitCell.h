@@ -44,6 +44,7 @@ public:
     const double alpha, const double beta, const double gamma);
 
   explicit UnitCell(const double (&latticeParams)[6]);
+  explicit UnitCell(const ::arma::mat33 & orthoMatrix);
 
   const double (&getLatticeParams() const)[6];
 

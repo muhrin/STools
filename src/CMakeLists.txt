@@ -11,6 +11,21 @@ set(stools_Files
   ${stools_Header_Files__}
 )
 
+## sdiff
+set(stools_Header_Files__sdiff
+)
+source_group("Header Files" FILES ${stools_Header_Files__sdiff})
+
+set(stools_Source_Files__sdiff
+  sdiff.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__sdiff})
+
+set(stools_Files__sdiff
+  ${stools_Header_Files__sdif}
+  ${stools_Source_Files__sdiff}
+)
+
 ## ssweep
 
 set(stools_Header_Files__ssweep
@@ -88,18 +103,23 @@ target_link_libraries(ssweep
 ###################
 ## StructureDiff ##
 ###################
-#add_executable(sdiff
-#  ${spipe_Files}
-#  StructureDiff.cpp
-#)
+add_executable(sdiff
+  ${stools_Files}
+  ${stools_Files__sdiff}
+)
 
-#add_dependencies(sdiff sslib)
+add_dependencies(sdiff spglib sslib pipelib spipe)
 
 # Libraries we need to link to
-#  target_link_libraries(sdiff
-#    ${Boost_FILESYSTEM_LIBRARY}
-#    ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-#    ${ARMADILLO_LIBRARIES}
-#    sslib
-#  )
+target_link_libraries(sdiff
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${ARMADILLO_LIBRARIES}
+  yaml-cpp
+  spglib
+  sslib
+  pipelib
+  spipe
+)
   

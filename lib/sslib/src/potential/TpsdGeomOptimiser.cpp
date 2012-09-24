@@ -242,7 +242,7 @@ bool TpsdGeomOptimiser::optimise(
   ::arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
 
   ::arma::mat33 latticeCar;
-	double gamma, volume, volumeSq, gammaNumIonsOVolume;
+	double gamma, volume, volumeSq/*, gammaNumIonsOVolume*/;
 	double xg, gg;
   ::arma::vec3 f;
 
@@ -294,10 +294,10 @@ bool TpsdGeomOptimiser::optimise(
 
 		// TODO: Check this gamma = 0 as it seems a little odd
 		gamma = 0.0;
-		data.internalEnergy += gamma * numIonsSq / volume;
+		//data.internalEnergy += gamma * numIonsSq / volume;
 
-		gammaNumIonsOVolume = gamma * numIonsSq / volumeSq;
-		data.stressMtx.diag() += gammaNumIonsOVolume;
+		//gammaNumIonsOVolume = gamma * numIonsSq / volumeSq;
+		//data.stressMtx.diag() += gammaNumIonsOVolume;
 
 		s = data.stressMtx * latticeCar;
 

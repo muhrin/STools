@@ -17,7 +17,7 @@
 
 extern "C"
 {
-#include <spglib/spglib.h>
+#  include <spglib/spglib.h>
 }
 
 #include <common/AtomSpeciesId.h>
@@ -44,9 +44,9 @@ DetermineSpaceGroup::DetermineSpaceGroup():
 void DetermineSpaceGroup::in(StructureDataTyp & data)
 {
   // Express structure data in form that spglib can work with
-  const ssc::ConstStructurePtr structure = data.getStructure();
+  const ssc::Structure * const structure = data.getStructure();
 
-  if(structure.get())
+  if(structure)
   {
     double lattice[3][3];
     const ssc::UnitCell * const cell = structure->getUnitCell();

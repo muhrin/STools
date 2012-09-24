@@ -56,7 +56,7 @@ public:
   typedef typename base_t::difference_type difference_type;
   typedef typename base_t::reference reference;
 
-  explicit ConstMultiIdxIterator(value_type x, const MultiIdxRange<Integer> & range) : myValue(x), myRange(range) {}
+  ConstMultiIdxIterator(value_type x, const MultiIdxRange<Integer> & range) : myValue(x), myRange(range) {}
 
 private:
 
@@ -66,44 +66,34 @@ private:
 	  for(size_t i = 0; increment && i < myRange.dims(); ++i)
 	  {
 		  // Increment the position vector and check it does not exceed
-		  // the max number of loops
-		  if(++myValue[i] >= myRange.myLast[i])
-		  {
-			  myValue[i] = 0;
-		  }
+		  // the max number for that index position
+		  if(++myValue[i] >= myRange.myEnd[i])
+			  myValue[i] = myRange.myBegin[i];
 		  else
-		  {
 			  // Successfully moved one position on in index space
 			  increment = false;
-		  }
 	  }
 
     // Do we still need to increment even though we have covered all digits?
     if(increment)
-    {
       // Then we have reached the end
-      myValue = myRange.myLast;
-    }
+      myValue = myRange.myEnd;
   }
 
   void decrement()
   {
-    // TODO:!!!
-	  //bool decrement = true;
-	  //for(size_t i = 0; decrement && i > myRange.dims(); ++i)
-	  //{
-		 // // Increment the position vector and check it does not exceed
-		 // // the max number of loops
-		 // if(++myValue[i] <= myRange.myLast[i])
-		 // {
-			//  myValue[i] = 0;
-		 // }
-		 // else
-		 // {
-			//  // Successfully moved one position on in index space
-			//  increment = false;
-		 // }
-	  //}
+    // TODO: Work on this more.  Need to deal with situation where it == end
+	  bool decrement = true;
+	  for(size_t i = 0; decrement && i > myRange.dims(); ++i)
+	  {
+		  // Decrement the position vector and check it does not go below
+		  // the minimum number for that index position
+		  if(--myValue[i] < myRange.myBegin[i])
+			  myValue[i] = myRange.myEnd[i] - 1; // have to do -1 as the range is closed
+		  else
+			  // Successfully moved one position on in index space
+			  decrement = false;
+	  }
   }
 
   void advance(difference_type & offset)
@@ -111,7 +101,7 @@ private:
     myValue += offset;
   }
 
-  difference_type distance_to(const ConstMultiIdxIterator & other) const
+  difference_type distance_to(const ConstMultiIdxIterator<Integer> & other) const
   {
     return other.myValue - myValue;
   }
@@ -136,30 +126,30 @@ private:
 } // namespace utility_details
 
 template <typename Integer>
-class MultiIdxRange : public ::boost::iterator_range< utility_detail::ConstMultiIdxIterator<Integer> >
+class MultiIdxRange : public ::boost::iterator_range<utility_detail::ConstMultiIdxIterator<Integer> >
 {
   typedef utility_detail::ConstMultiIdxIterator<Integer> iterator_t;
   typedef ::boost::iterator_range<iterator_t> base_t;
 
 public:
   MultiIdxRange(const MultiIdx<Integer> & first, const MultiIdx<Integer> & last):
-    myFirst(first),
-    myLast(last),
+    myBegin(first),
+    myEnd(last),
     base_t(iterator_t(first, *this), iterator_t(last, *this))
   {
-    SSE_ASSERT(myFirst <= myLast);
+    SSE_ASSERT(myBegin <= myEnd);
   }
 
   size_t dims() const
   {
-    return myFirst.dims();
+    return myBegin.dims();
   }
 
 private:
 
 
-  const MultiIdx<Integer> myFirst;
-  const MultiIdx<Integer> myLast;
+  const MultiIdx<Integer> myBegin;
+  const MultiIdx<Integer> myEnd;
 
   // Sadly can't use iterator_t typedef here as this behaviour is not supported
   // until C++11.
