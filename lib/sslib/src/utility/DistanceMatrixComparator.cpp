@@ -185,7 +185,7 @@ double DistanceMatrixComparator::compareStructuresFull(
   bool speciesMismatch;
   size_t i, j, iRem, permIRem;
 
-  BOOST_FOREACH(Range::iterator_t::value_type & perm, perms)
+  BOOST_FOREACH(const Range::iterator_t::value_type & perm, perms)
   {
     speciesMismatch = false;
     for(i = 0; i < leastCommonMultiple; ++i)

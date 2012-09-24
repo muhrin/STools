@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(VectorTest)
 
     totalPerms *= i;
     numPerms = 0;
-    BOOST_FOREACH(Range::iterator_t::value_type & permutation, permutations)
+    BOOST_FOREACH(const Range::iterator_t::value_type & permutation, permutations)
     {
       ++numPerms;
     }

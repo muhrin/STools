@@ -78,6 +78,7 @@ add_library(sslib
 target_link_libraries(sslib
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  spglib
 )
 
 
