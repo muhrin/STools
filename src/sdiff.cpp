@@ -38,7 +38,7 @@ namespace po = ::boost::program_options;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 
-int main(const int argc, const char * const argv[])
+int main(const int argc, char * argv[])
 {
   typedef ::std::pair<fs::path, ssc::StructurePtr> PathStructurePair;
 

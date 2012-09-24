@@ -90,6 +90,13 @@ Element & IndexRemappingView<Object, Element>::operator [](const size_t idx)
   return myObject[getMappedIndex(idx)];
 }
 
+template <typename Object, typename Element>
+const Element & IndexRemappingView<Object, Element>::operator [](const size_t idx) const
+{
+  return myObject[getMappedIndex(idx)];
+}
+
+
 }
 }
 
