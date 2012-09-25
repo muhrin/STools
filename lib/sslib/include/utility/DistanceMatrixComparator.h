@@ -46,6 +46,8 @@ public:
 
   typedef DistanceMatrixComparisonData DataTyp;
 
+  static const double STRUCTURES_INCOMPARABLE;
+
   /**
   /* fastComparisonAtomLimit - above this many atoms use fast comparison method as
   /* the number of permutations (N!) will be too large.

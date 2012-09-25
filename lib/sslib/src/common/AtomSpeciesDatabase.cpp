@@ -20,6 +20,10 @@ namespace sstbx { namespace common {
 AtomSpeciesDatabase::AtomSpeciesDatabase()
 {
   setAll(AtomSpeciesId::H, "H", "Hydrogen");
+  setAll(AtomSpeciesId::LI, "Li", "Lithium");
+  setAll(AtomSpeciesId::BE, "Be", "Beryllium");
+  setAll(AtomSpeciesId::B, "B", "Boron");
+  setAll(AtomSpeciesId::C, "C", "Carbon");
 	setAll(AtomSpeciesId::NA, "Na", "Sodium");
 	setAll(AtomSpeciesId::CL, "Cl", "Chlorine");
 }

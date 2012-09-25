@@ -26,6 +26,8 @@ namespace utility {
 
 typedef ::std::pair<size_t, double> IndexDoublePair;
 
+const double DistanceMatrixComparator::STRUCTURES_INCOMPARABLE = ::std::numeric_limits<double>::max();
+
 bool indexDoubleLessThan(const IndexDoublePair & p1, const IndexDoublePair & p2)
 { return p1.second < p2.second; }
 
@@ -148,9 +150,23 @@ double DistanceMatrixComparator::compareStructures(
   const common::Structure & str1, const DataTyp & str1Data,
   const common::Structure & str2, const DataTyp & str2Data) const
 {
-  const size_t numAtoms = str1Data.distancesMtx.n_cols;
+  size_t minAtoms, maxAtoms;
 
-  if(numAtoms < myFastComparisonAtomsLimit)
+  if(str1Data.distancesMtx.n_cols > str1Data.distancesMtx.n_cols)
+  {
+    minAtoms = str2Data.distancesMtx.n_cols;
+    maxAtoms = str1Data.distancesMtx.n_cols;
+  }
+  else
+  {
+    minAtoms = str1Data.distancesMtx.n_cols;
+    maxAtoms = str2Data.distancesMtx.n_cols;
+  }
+
+  if(minAtoms == 0)
+    return STRUCTURES_INCOMPARABLE;
+
+  if(maxAtoms < myFastComparisonAtomsLimit)
   {
     // Use more expensive, but more accurate method
     return compareStructuresFull(str1, str1Data, str2, str2Data);
@@ -255,7 +271,6 @@ double DistanceMatrixComparator::compareStructuresFast(
   }
   return sqrt(sqSum);
 }
-  
 
 }
 }
