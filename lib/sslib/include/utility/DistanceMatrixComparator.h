@@ -38,6 +38,7 @@ struct DistanceMatrixComparisonData
 
   ::arma::mat     distancesMtx;
   ::std::vector<common::AtomSpeciesId::Value> speciesList;
+  ::std::set<common::AtomSpeciesId::Value>    speciesSet;
 };
 
 class DistanceMatrixComparator : public IStructureComparator
@@ -82,6 +83,10 @@ public:
   // End conformation methods //////////////
 
 private:
+
+  bool areComparable(
+    const common::Structure & str1, const DataTyp & str1Data,
+    const common::Structure & str2, const DataTyp & str2Data) const;
 
   double compareStructuresFull(
     const common::Structure & str1, const DataTyp & str1Data,

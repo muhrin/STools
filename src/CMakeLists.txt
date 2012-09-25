@@ -30,12 +30,12 @@ set(stools_Files__sdiff
 
 set(stools_Header_Files__ssweep
 )
-source_group("Header Files\\ssweep" FILES ${stools_Header_Files__ssweep})
+source_group("Header Files" FILES ${stools_Header_Files__ssweep})
 
 set(stools_Source_Files__ssweep
-  ssweep/ssweep.cpp
+  ssweep.cpp
 )
-source_group("Source Files\\ssweep" FILES ${stools_Source_Files__ssweep})
+source_group("Source Files" FILES ${stools_Source_Files__ssweep})
 
 set(stools_Files__ssweep
   ${stools_Header_Files__ssweep}
@@ -72,6 +72,7 @@ add_dependencies(ssweep yaml_cpp spglib sslib pipelib spipe)
 target_link_libraries(ssweep
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
   yaml-cpp
   spglib

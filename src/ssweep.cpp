@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "STools.h"
 
+#include <boost/program_options.hpp>
 #include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
@@ -50,6 +51,7 @@
 
 int main(const int argc, const char * const argv[])
 {
+  namespace po    = ::boost::program_options;
   namespace sp    = ::spipe;
   namespace ssbc  = ::sstbx::build_cell;
   namespace ssc   = ::sstbx::common;
@@ -63,12 +65,44 @@ int main(const int argc, const char * const argv[])
   using ::std::cout;
   using ::std::endl;
 
-  // Get command line parameters
-  if(argc != 9)
+  const ::std::string exeName(argv[0]);
+
+  // Program options
+  ::std::vector< ::std::string> paramStrings;
+  unsigned int maxNumAtoms;
+  unsigned int numRandomStructures;
+
+  try
   {
-    cout << "Usage: " << argv[0] << " eAA eAB eBB sAA sAB sBB [format from+delta*nsteps] beta [+/-1] max_atoms" << endl;
-    return 0;
+    po::options_description desc("Usage: " + exeName + " [options] params...\nOptions");
+    desc.add_options()
+      ("help", "Show help message")
+      ("strs", po::value<unsigned int>(&numRandomStructures)->default_value(100), "Number of random starting structures")
+      ("max-atoms,m", po::value<unsigned int>(&maxNumAtoms)->required(), "Maximum number of atoms")
+      ("params", po::value< ::std::vector< ::std::string> >(&paramStrings)->required(), "potential parameters: eAA eAB eBB sAA sAB sBB [format from+delta*nsteps] beta [+/-1]")
+
+    ;
+
+    po::positional_options_description p;
+    p.add("params", 7);
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+
+    // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
+    if(vm.count("help"))
+    {
+      ::std::cout << desc << ::std::endl;
+      return 1;
+    }
+
+    po::notify(vm);
   }
+  catch(std::exception& e)
+  {
+    ::std::cout << e.what() << "\n";
+    return 1;
+  }   
 
   // Param sweep
   vec from(8), step(8);
@@ -83,7 +117,7 @@ int main(const int argc, const char * const argv[])
   bool parsedParams = true;
   for(size_t i = 0; i < 6; ++i)
   {
-    if(sp::common::parseParamString(argv[i + 1], lFrom, lStep, lNSteps))
+    if(sp::common::parseParamString(paramStrings[i], lFrom, lStep, lNSteps))
     {
       from(i) = lFrom;
       step(i) = lStep;
@@ -92,25 +126,18 @@ int main(const int argc, const char * const argv[])
     else
     {
       parsedParams = false;
-      cout << "Unable to parse parameter " << i << ": " << argv[i + 1] << endl;
-      break;
+      cout << "Unable to parse parameter " << i << ": " << paramStrings[i] << endl;
+      return 1;
     }
   }
 
-  if(!parsedParams)
-  {
-    return 0;
-  }
+  const double betaDiagonal = ::boost::lexical_cast<double>(paramStrings[6]);
 
   ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
   potentialSpecies[0] = ssc::AtomSpeciesId::NA;
   potentialSpecies[1] = ssc::AtomSpeciesId::CL;
   from(6) = potentialSpecies[0].ordinal();
   from(7) = potentialSpecies[1].ordinal();
-
-  const double betaDiagonal = ::boost::lexical_cast<double>(argv[7]);
-
-  const size_t maxNumAtoms = ::boost::lexical_cast<size_t>(argv[8]);
 
 
   // Generate the pipelines that we need
@@ -125,7 +152,7 @@ int main(const int argc, const char * const argv[])
 
   // Random structure
   ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(100, strGen);
+  sp::blocks::RandomStructure randStr(numRandomStructures, strGen);
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;

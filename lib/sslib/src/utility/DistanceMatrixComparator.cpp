@@ -63,7 +63,7 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
   ::arma::rowvec sums = ::arma::sum(unsortedDistnacesMatrix);
 
   // Get the set of species (i.e. each species only appearing once)
-  ::std::set<common::AtomSpeciesId::Value> speciesSet(speciesList.begin(), speciesList.end());
+  ::std::set<typename common::AtomSpeciesId::Value> speciesSet(speciesList.begin(), speciesList.end());
   
   ::std::vector<size_t> indexRemapping(numAtoms);
   ::std::vector<IndexDoublePair> indexLengthList;
@@ -150,21 +150,10 @@ double DistanceMatrixComparator::compareStructures(
   const common::Structure & str1, const DataTyp & str1Data,
   const common::Structure & str2, const DataTyp & str2Data) const
 {
-  size_t minAtoms, maxAtoms;
-
-  if(str1Data.distancesMtx.n_cols > str1Data.distancesMtx.n_cols)
-  {
-    minAtoms = str2Data.distancesMtx.n_cols;
-    maxAtoms = str1Data.distancesMtx.n_cols;
-  }
-  else
-  {
-    minAtoms = str1Data.distancesMtx.n_cols;
-    maxAtoms = str2Data.distancesMtx.n_cols;
-  }
-
-  if(minAtoms == 0)
+  if(!areComparable(str1, str1Data, str2, str2Data))
     return STRUCTURES_INCOMPARABLE;
+
+  const size_t maxAtoms = ::std::max(str1Data.distancesMtx.n_cols, str2Data.distancesMtx.n_cols);
 
   if(maxAtoms < myFastComparisonAtomsLimit)
   {
@@ -176,6 +165,30 @@ double DistanceMatrixComparator::compareStructures(
     // Use cheaper method
     return compareStructuresFast(str1, str1Data, str2, str2Data);
   }
+}
+
+bool DistanceMatrixComparator::areComparable(
+  const common::Structure & str1, const DataTyp & str1Data,
+  const common::Structure & str2, const DataTyp & str2Data) const
+{
+  size_t minAtoms, maxAtoms;
+
+  if(str1Data.distancesMtx.n_cols > str2Data.distancesMtx.n_cols)
+  {
+    minAtoms = str2Data.distancesMtx.n_cols;
+    maxAtoms = str1Data.distancesMtx.n_cols;
+  }
+  else
+  {
+    minAtoms = str1Data.distancesMtx.n_cols;
+    maxAtoms = str2Data.distancesMtx.n_cols;
+  }
+
+  if(minAtoms == 0)
+    return false;
+
+  return true;
+
 }
 
 
@@ -252,7 +265,6 @@ double DistanceMatrixComparator::compareStructuresFast(
   size_t i, j, iRem1, iRem2;
   double r_ij1, r_ij2, distDiff;
   double sqSum = 0.0;
-
   for(i = 0; i < leastCommonMultiple; ++i)
   {
     iRem1 = i % numAtoms1;

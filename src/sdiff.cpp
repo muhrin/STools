@@ -42,19 +42,23 @@ int main(const int argc, char * argv[])
 {
   typedef ::std::pair<fs::path, ssc::StructurePtr> PathStructurePair;
 
+  const ::std::string exeName(argv[0]);
+
   // Input options
   double tolerance;
   ::std::vector< ::std::string> inputFiles;
   bool printFull;
+  unsigned int maxAtoms;
 
   try
   {
-    po::options_description desc("Allowed options");
+    po::options_description desc("Usage: " + exeName + " [options] files...\nOptions:");
     desc.add_options()
       ("help", "Show help message")
       ("tol,t", po::value<double>(&tolerance)->default_value(0.01), "Set comparator tolerance")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&inputFiles), "input file(s)")
-      ("full", po::value<bool>(&printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just upper triangular")
+      ("input-file", po::value< ::std::vector< ::std::string> >(&inputFiles)->required(), "input file(s)")
+      ("full", po::value<bool>(&printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
+      ("maxatoms", po::value<unsigned int>(&maxAtoms)->default_value(12)->zero_tokens(), "The maximum number of atoms before switching to fast comparison method.")
     ;
 
     po::positional_options_description p;
@@ -62,19 +66,21 @@ int main(const int argc, char * argv[])
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-    po::notify(vm);
 
+    // Deal with help first, otherwise missing required parameters will cause exception
     if(vm.count("help"))
     {
       ::std::cout << desc << ::std::endl;
       return 1;
     }
+
+    po::notify(vm);
   }
   catch(std::exception& e)
   {
     ::std::cout << e.what() << "\n";
     return 1;
-  }   
+  }
 
 
   sstbx::io::ResReaderWriter resReader;
@@ -95,8 +101,14 @@ int main(const int argc, char * argv[])
     structures.push_back(pair);
   }
 
+  if(structures.size() < 2)
+  {
+    ::std::cout << "Not enough structures to compare." << ::std::endl;
+    return 1;
+  }
+
   const size_t numStructures = structures.size();
-  ssu::DistanceMatrixComparator comp(0);
+  ssu::DistanceMatrixComparator comp(maxAtoms);
   ::boost::shared_ptr<ssu::IBufferedComparator> comparator = comp.generateBuffered();
 
   ::arma::mat diffs(numStructures, numStructures);
@@ -113,11 +125,11 @@ int main(const int argc, char * argv[])
   }
   diffs = ::arma::symmatu(diffs);
 
-  size_t minJ;
+  size_t maxJ;
   for(size_t i = 0; i < numStructures; ++i)
   {
-    minJ = printFull ? 0 : i + 1;
-    for(size_t j = minJ; j < numStructures; ++j)
+    maxJ = printFull ? numStructures: i;
+    for(size_t j = 0; j < maxJ; ++j)
     {
       ::std::cout << diffs(i, j) << " ";
     }
