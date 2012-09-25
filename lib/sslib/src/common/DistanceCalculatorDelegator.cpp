@@ -65,21 +65,19 @@ void DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcTy
 {
   if(myDelegateType != calcType)
   {
-    if(myDelegateType == CalculatorType::CLUSTER)
+    if(calcType == CalculatorType::CLUSTER)
     {
       myDelegate.reset(new ClusterDistanceCalculator(myStructure));
-      myDelegateType = CalculatorType::CLUSTER;
     }
-    else if(myDelegateType != CalculatorType::UNIVERSAL_CRYSTAL)
+    else if(calcType != CalculatorType::UNIVERSAL_CRYSTAL)
     {
       myDelegate.reset(new UniversalCrystalDistanceCalculator(myStructure));
-      myDelegateType = CalculatorType::UNIVERSAL_CRYSTAL;
     }
-    else if(myDelegateType != CalculatorType::ORTHO_CELL)
+    else if(calcType != CalculatorType::ORTHO_CELL)
     {
       myDelegate.reset(new OrthoCellDistanceCalculator(myStructure));
-      myDelegateType = CalculatorType::ORTHO_CELL;
     }
+    myDelegateType = calcType;
   }
 }
 
