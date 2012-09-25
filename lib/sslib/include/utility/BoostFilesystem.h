@@ -13,6 +13,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/version.hpp>
 
 // DEFINES ///////////////////////////////////////////////
 

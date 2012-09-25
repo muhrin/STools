@@ -63,7 +63,7 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
   ::arma::rowvec sums = ::arma::sum(unsortedDistnacesMatrix);
 
   // Get the set of species (i.e. each species only appearing once)
-  ::std::set<typename common::AtomSpeciesId::Value> speciesSet(speciesList.begin(), speciesList.end());
+  ::std::set<common::AtomSpeciesId::Value> speciesSet(speciesList.begin(), speciesList.end());
   
   ::std::vector<size_t> indexRemapping(numAtoms);
   ::std::vector<IndexDoublePair> indexLengthList;
