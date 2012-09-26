@@ -38,13 +38,26 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   const ::arma::vec3 B = cell.getBVec();
   const ::arma::vec3 C = cell.getCVec();
 
-  // Maximum multiples of cell vectors we need to go to
-  const int maxA = (int)ceil(cutoff / params[0]);
-  int maxB, maxC; // These will be worked out as we go
+  const ::arma::vec3 ANorm = A / params[0];
+  const ::arma::vec3 BNorm = B / params[1];
+  const ::arma::vec3 CNorm = C / params[2];
 
   const double cutoffSq = cutoff * cutoff;
-  double safeCutoffSq = cutoff + sqrt(::arma::dot(r12, r12));
-  safeCutoffSq *= safeCutoffSq;
+
+  const double safeCutoffA = cutoff + abs(::arma::dot(r12, ANorm));
+  const double safeCutoffASq = safeCutoffA * safeCutoffA;
+
+  //const double safeCutoffB = cutoff + abs(::arma::dot(r12, BNorm));
+  const double safeCutoffB = cutoff + sqrt(::arma::dot(r12, r12));
+  const double safeCutoffBSq = safeCutoffB * safeCutoffB;
+
+  //const double safeCutoffC = cutoff + abs(::arma::dot(r12, CNorm));
+  const double safeCutoffC = safeCutoffB;
+  const double safeCutoffCSq = safeCutoffC * safeCutoffC;
+
+  // Maximum multiples of cell vectors we need to go to
+  const int maxA = (int)floor(safeCutoffA / params[0]);
+  int maxB, maxC; // These will be worked out as we go
 
   // Loop variables
   size_t numDistances = 0;
@@ -57,15 +70,15 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
 
     aSq = abs(a) * params[0];
     aSq *= aSq;
-    rCutMinNA = safeCutoffSq - aSq;
-    maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
+    rCutMinNA = safeCutoffBSq - aSq;
+    maxB = (int)floor(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
       nAPlusNB = nA + b * B;
 
       bSq = abs(b) * params[1];
       bSq *= bSq;
-      maxC = (int)ceil(sqrt(rCutMinNA - bSq) / params[2]);
+      maxC = (int)floor(sqrt(safeCutoffCSq - aSq - bSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
         dRImg = c * C + nAPlusNB + r12;
@@ -114,18 +127,17 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
 
+  const double cutoffSq = cutoff * cutoff;
+  const double safeCutoff = cutoff + sqrt(::arma::dot(r12, r12));
+  const double safeCutoffSq = safeCutoff * safeCutoff;
+
   const ::arma::vec3 A = cell.getAVec();
   const ::arma::vec3 B = cell.getBVec();
   const ::arma::vec3 C = cell.getCVec();
 
   // Maximum multiples of cell vectors we need to go to
-  const int maxA = (int)ceil(cutoff / params[0]);
+  const int maxA = (int)floor(safeCutoff / params[0]);
   int maxB, maxC; // These will be worked out as we go
-
-  const double cutoffSq = cutoff * cutoff;
-  double safeCutoffSq = cutoff + sqrt(::arma::dot(r12, r12));
-  safeCutoffSq *= safeCutoffSq;
-
 
   // Loop variables
   size_t numVectors = 0;
@@ -139,14 +151,14 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
     aSq = abs(a) * params[0];
     aSq *= aSq;
     rCutMinNA = safeCutoffSq - aSq;
-    maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
+    maxB = (int)floor(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
       nAPlusNB = nA + b * B;
 
       bSq = abs(b) * params[1];
       bSq *= bSq;
-      maxC = (int)ceil(sqrt(rCutMinNA - bSq) / params[2]);
+      maxC = (int)floor(sqrt(rCutMinNA - bSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
         dRImg = c * C + nAPlusNB + r12;

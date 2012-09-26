@@ -40,13 +40,11 @@ DistanceCalculator(structure)
 	int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, minModDR));
 	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
 
+  // Loop variables
   ::arma::vec3 minDR = dR;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
 	double modDRSq;
-  ::arma::vec3
-      nA,
-      nAPlusNB,
-      dRImg;
+  ::arma::vec3 nA, nAPlusNB, dRImg;
   size_t numDistances = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
@@ -90,18 +88,17 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
+  const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
+
 	// Maximum multiple of cell vectors we need to go to
-	const int maxA = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, cutoff));
-	const int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, cutoff));
-	const int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff));
+	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
   const double cutoffSq = cutoff * cutoff;
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
   double dRDistSq;
-  ::arma::vec3
-      nA,
-      nAPlusNB,
-      dRImg;
+  ::arma::vec3 nA, nAPlusNB, dRImg;
   size_t numDistances = 0;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
@@ -147,10 +144,12 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
+  const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
+
 	// Maximum multiple of cell vectors we need to go to
-	int maxA = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, cutoff));
-	int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, cutoff));
-	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff));
+	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
 	const double cutoffSq = cutoff * cutoff;
   ::arma::vec3
