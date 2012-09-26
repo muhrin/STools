@@ -208,6 +208,8 @@ double RandomUnitCell::generateParameter(const size_t param) const
 
 void RandomUnitCell::generateLengths(double (&params)[6]) const
 {
+  const size_t maxIters = 10;
+
   // Generate the lengths
   for(size_t i = A; i <= C; ++i)
   {
@@ -219,8 +221,9 @@ void RandomUnitCell::generateLengths(double (&params)[6]) const
   const bool overrideLengthRatio = myMaxLengthRatio;
   const double maxRatio = overrideLengthRatio ? *myMaxLengthRatio : DEFAULT_MAX_LENGTH_RATIO;
   double minLength, maxLength, ratio, cFactor;
-  bool canMoveMin, canMoveMax, madeStep;
-  do
+  bool canMoveMin, canMoveMax, madeStep = true;
+  size_t i;
+  for(i = 0; i < maxIters && madeStep; ++i)
   {
     madeStep = false;
     minMax = getMinMaxLengths(params);
@@ -241,35 +244,39 @@ void RandomUnitCell::generateLengths(double (&params)[6]) const
       if(canMoveMin && canMoveMax) // move both
       {
         cFactor = (ratio - maxRatio) / (ratio + maxRatio);
-        minLength *= (1 - cFactor);
-        maxLength *= (1 + cFactor);
+        minLength *= (1 + cFactor);
+        maxLength *= (1 - cFactor);
 
-        // Now constrain the lengths to not exceed user set min/max
-        if(myParameters[minMax.first].first)
-          minLength = ::std::max(minLength, *myParameters[minMax.first].first);
-        if(myParameters[minMax.second].second)
-          maxLength = ::std::min(maxLength, *myParameters[minMax.second].second);
+        // Now constrain the lengths to not exceed user set min/maxf
+        if(myParameters[minMax.first].second)
+          minLength = ::std::min(minLength, *myParameters[minMax.first].second);
+        if(myParameters[minMax.second].first)
+          maxLength = ::std::max(maxLength, *myParameters[minMax.second].first);
       }
       else if(canMoveMin) // move minimum
       {
         minLength *= ratio / maxRatio;
-        if(myParameters[minMax.first].first)
-          minLength = ::std::max(minLength, *myParameters[minMax.first].first);
+        if(myParameters[minMax.first].second)
+          minLength = ::std::min(minLength, *myParameters[minMax.first].second);
       }
       else if(canMoveMax) // move maximum
       {
         maxLength *= maxRatio / ratio;
-        if(myParameters[minMax.second].second)
-          maxLength = ::std::min(maxLength, *myParameters[minMax.second].second);
+        if(myParameters[minMax.second].first)
+          maxLength = ::std::max(maxLength, *myParameters[minMax.second].first);
       }
 
       // Have we made any changes?
       if(minLength != params[minMax.first] || maxLength != params[minMax.second])
+      {
+        params[minMax.first] = minLength;
+        params[minMax.second] = maxLength;
         madeStep = true;
+      }
     }
+  }
 
-  } while(madeStep);
-
+  SSLIB_ASSERT(i < maxIters);
 }
 
 double RandomUnitCell::generateVolume(const double overrideVolume) const
