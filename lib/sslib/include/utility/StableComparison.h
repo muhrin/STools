@@ -15,8 +15,8 @@
 
 namespace sstbx {
 namespace utility {
-namespace StableComp
-{
+namespace StableComp {
+
 static const double STABLE_COMP_TOL = 1e-5;
 
 bool lt(const double v1, const double v2, const double prec = STABLE_COMP_TOL);

@@ -135,6 +135,13 @@ void RandomUnitCell::setVolumeDelta(const OptionalDouble delta)
 void RandomUnitCell::setMaxLengthRatio(const OptionalDouble maxLengthRatio)
 {
   myMaxLengthRatio = maxLengthRatio;
+  if(myMaxLengthRatio)
+  {
+    const double ratio = *myMaxLengthRatio;
+    // It if is less than one than assume the user specified a reciprocal value
+    if(ratio < 1.0)
+      myMaxLengthRatio = 1 / ratio;
+  }
 }
 
 RandomUnitCell::ParamValue RandomUnitCell::getMaxLengthRatio() const

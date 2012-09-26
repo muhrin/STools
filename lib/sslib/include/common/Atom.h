@@ -28,6 +28,7 @@ public:
 
   const ::arma::vec3 & getPosition() const;
   void setPosition(const ::arma::vec3 & pos);
+  void setPosition(const double x, const double y, const double z);
 
   double getRadius() const;
   void setRadius(const double radius);

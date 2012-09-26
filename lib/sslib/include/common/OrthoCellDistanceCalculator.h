@@ -22,6 +22,8 @@ class OrthoCellDistanceCalculator : public DistanceCalculator
 {
 public:
 
+  static const double VALID_ANGLE_TOLERANCE;
+
   OrthoCellDistanceCalculator(const Structure & structure);
 
   using DistanceCalculator::getDistsBetween;

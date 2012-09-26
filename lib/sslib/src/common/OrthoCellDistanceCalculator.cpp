@@ -15,6 +15,8 @@
 namespace sstbx {
 namespace common {
 
+const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-5;
+
 OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(const sstbx::common::Structure &structure):
 DistanceCalculator(structure)
 {}
@@ -38,34 +40,32 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
 
   // Maximum multiples of cell vectors we need to go to
   const int maxA = (int)ceil(cutoff / params[0]);
-  int maxB = (int)ceil(cutoff / params[1]);
-  int maxC = (int)ceil(cutoff / params[2]);
+  int maxB, maxC; // These will be worked out as we go
 
   const double cutoffSq = cutoff * cutoff;
-  double dRDistSq;
+  double safeCutoffSq = cutoff + sqrt(::arma::dot(r12, r12));
+  safeCutoffSq *= safeCutoffSq;
+
+  // Loop variables
   size_t numDistances = 0;
-
-  ::arma::vec3
-    nA,
-    nAPlusNB,
-    dRImg;
-
-  double rCutMinNA, tmpASq, tmpBSq;  // TEMPORARY
+  double dRDistSq;
+  ::arma::vec3 nA, nAPlusNB, dRImg;
+  double rCutMinNA, aSq, bSq;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
     nA = a * A;
 
-    tmpASq = (abs(a) - 1.0) * params[0];
-    tmpASq *= tmpASq;
-    rCutMinNA = cutoffSq - tmpASq;
+    aSq = abs(a) * params[0];
+    aSq *= aSq;
+    rCutMinNA = safeCutoffSq - aSq;
     maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
       nAPlusNB = nA + b * B;
 
-      tmpBSq = (abs(b) - 1.0) * params[1];
-      tmpBSq *= tmpBSq;
-      maxC = (int)ceil(sqrt(rCutMinNA - tmpBSq) / params[2]);
+      bSq = abs(b) * params[1];
+      bSq *= bSq;
+      maxC = (int)ceil(sqrt(rCutMinNA - bSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
         dRImg = c * C + nAPlusNB + r12;
@@ -110,7 +110,8 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
-  const ::arma::vec3 r12 = getVecMinImg(r1, r2);
+  //const ::arma::vec3 r12 = getVecMinImg(r1, r2);
+  const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
 
   const ::arma::vec3 A = cell.getAVec();
@@ -119,34 +120,33 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
 
   // Maximum multiples of cell vectors we need to go to
   const int maxA = (int)ceil(cutoff / params[0]);
-  int maxB = (int)ceil(cutoff / params[1]);
-  int maxC = (int)ceil(cutoff / params[2]);
+  int maxB, maxC; // These will be worked out as we go
 
   const double cutoffSq = cutoff * cutoff;
-  double dRDistSq;
+  double safeCutoffSq = cutoff + sqrt(::arma::dot(r12, r12));
+  safeCutoffSq *= safeCutoffSq;
+
+
+  // Loop variables
   size_t numVectors = 0;
-
-  ::arma::vec3
-    nA,
-    nAPlusNB,
-    dRImg;
-
-  double rCutMinNA, tmpASq, tmpBSq;  // TEMPORARY
+  double dRDistSq;
+  ::arma::vec3 nA, nAPlusNB, dRImg;
+  double rCutMinNA, aSq, bSq;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
     nA = a * A;
 
-    tmpASq = (abs(a) - 1.0) * params[0];
-    tmpASq *= tmpASq;
-    rCutMinNA = cutoffSq - tmpASq;
+    aSq = abs(a) * params[0];
+    aSq *= aSq;
+    rCutMinNA = safeCutoffSq - aSq;
     maxB = (int)ceil(sqrt(rCutMinNA) / params[1]);
 		for(int b = -maxB; b <= maxB; ++b)
 		{
       nAPlusNB = nA + b * B;
 
-      tmpBSq = (abs(b) - 1.0) * params[1];
-      tmpBSq *= tmpBSq;
-      maxC = (int)ceil(sqrt(rCutMinNA - tmpBSq) / params[2]);
+      bSq = abs(b) * params[1];
+      bSq *= bSq;
+      maxC = (int)ceil(sqrt(rCutMinNA - bSq) / params[2]);
 			for(int c = -maxC; c <= maxC; ++c)
 			{
         dRImg = c * C + nAPlusNB + r12;
@@ -173,9 +173,9 @@ bool OrthoCellDistanceCalculator::isValid() const
 
   // All angles equal 90
   return
-    utility::StableComp::eq(params[3], 90.0) &&
-    utility::StableComp::eq(params[4], 90.0) &&
-    utility::StableComp::eq(params[5], 90.0);
+    utility::StableComp::eq(params[3], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::StableComp::eq(params[4], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::StableComp::eq(params[5], 90.0, VALID_ANGLE_TOLERANCE);
 }
 
 }

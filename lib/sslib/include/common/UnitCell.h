@@ -12,6 +12,7 @@
 #include <armadillo>
 
 #include "SSLibAssert.h"
+#include "utility/StableComparison.h"
 
 namespace sstbx {
 namespace common {
@@ -76,7 +77,7 @@ public:
 
   ::arma::vec3 getLongestDiagonal() const;
 
-  LatticeSystem::Value getLatticeSystem() const;
+  LatticeSystem::Value getLatticeSystem(const double tolerance = utility::StableComp::STABLE_COMP_TOL) const;
 
   inline ::arma::vec3 fracToCart(const ::arma::vec3 & frac) const
   {

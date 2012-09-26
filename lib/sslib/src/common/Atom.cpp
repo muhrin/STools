@@ -34,6 +34,14 @@ void Atom::setPosition(const ::arma::vec3 & pos)
   myStructure.atomMoved(*this);
 }
 
+void Atom::setPosition(const double x, const double y, const double z)
+{
+	myPosition(0) = x;
+  myPosition(1) = y;
+  myPosition(2) = z;
+  myStructure.atomMoved(*this);
+}
+
 double Atom::getRadius() const
 {
   return myRadius;

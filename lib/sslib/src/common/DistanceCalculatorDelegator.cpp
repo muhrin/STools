@@ -46,7 +46,7 @@ void DistanceCalculatorDelegator::updateDelegate()
   }
   else
   {
-    const UnitCell::LatticeSystem::Value latticeSystem = unitCell->getLatticeSystem();
+    const UnitCell::LatticeSystem::Value latticeSystem = unitCell->getLatticeSystem(OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE);
     if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL ||
       latticeSystem == UnitCell::LatticeSystem::CUBIC ||
       latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)

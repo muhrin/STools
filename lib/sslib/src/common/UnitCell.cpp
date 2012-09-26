@@ -13,7 +13,6 @@
 #include "SSLibAssert.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
-#include "utility/StableComparison.h"
 
 namespace sstbx {
 namespace common {
@@ -138,18 +137,18 @@ double UnitCell::getNormVolume() const
   return longest;
 }
 
-UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem() const
+UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance) const
 {
   namespace comp = utility::StableComp;
 
-  if(comp::eq(myLatticeParams[ALPHA], myLatticeParams[BETA]) &&
-    comp::eq(myLatticeParams[BETA], myLatticeParams[GAMMA]))
+  if(comp::eq(myLatticeParams[ALPHA], myLatticeParams[BETA], tolerance) &&
+    comp::eq(myLatticeParams[BETA], myLatticeParams[GAMMA], tolerance))
   {
-    if(comp::eq(myLatticeParams[ALPHA], 90.0))
+    if(comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[A], myLatticeParams[B]))
+      if(comp::eq(myLatticeParams[A], myLatticeParams[B], tolerance))
       {
-        if(comp::eq(myLatticeParams[A], myLatticeParams[C]))
+        if(comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
         {
           return LatticeSystem::CUBIC;
         }
@@ -158,7 +157,7 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem() const
           return LatticeSystem::TETRAGONAL;
         }
       } // if(a == b)
-      else if(comp::eq(myLatticeParams[A], myLatticeParams[C]))
+      else if(comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
       {
         return LatticeSystem::TETRAGONAL;
       } // if(a == c)
@@ -172,9 +171,9 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem() const
   } // if(alpha == beta == gamma)
   else
   {
-    if(comp::eq(myLatticeParams[ALPHA], 90.0))
+    if(comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[BETA], 90.0) || comp::eq(myLatticeParams[GAMMA], 90.0))
+      if(comp::eq(myLatticeParams[BETA], 90.0, tolerance) || comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
       {
         return LatticeSystem::MONOCLINIC;
       }
@@ -185,9 +184,9 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem() const
         return LatticeSystem::TRICLINIC;
       }
     } // if(alpha == 90)
-    else if(comp::eq(myLatticeParams[BETA], 90.0))
+    else if(comp::eq(myLatticeParams[BETA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[GAMMA], 90.0))
+      if(comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
       {
         return LatticeSystem::MONOCLINIC;
       }
@@ -198,7 +197,7 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem() const
         return LatticeSystem::TRICLINIC;
       }
     } // if(alpha == 90), else if(beta == 90.0)
-    else if(comp::eq(myLatticeParams[GAMMA], 90.0))
+    else if(comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
     {
       return LatticeSystem::MONOCLINIC;
     } // if(alpha == 90), else if(beta == 90), else if(gamma == 90)
