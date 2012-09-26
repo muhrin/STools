@@ -59,7 +59,7 @@ int main(const int argc, char * argv[])
       ("tol,t", po::value<double>(&tolerance)->default_value(0.01), "Set comparator tolerance")
       ("input-file", po::value< ::std::vector< ::std::string> >(&inputFiles)->required(), "input file(s)")
       ("full", po::value<bool>(&printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
-      ("maxatoms", po::value<unsigned int>(&maxAtoms)->default_value(12)->zero_tokens(), "The maximum number of atoms before switching to fast comparison method.")
+      ("maxatoms", po::value<unsigned int>(&maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
     ;
 
     po::positional_options_description p;
