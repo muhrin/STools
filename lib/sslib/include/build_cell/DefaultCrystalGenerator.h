@@ -36,8 +36,6 @@ class DefaultCrystalGenerator : public IStructureGenerator
 {
 public:
 
-  typedef IStructureGenerator::Result Result;
-
 	DefaultCrystalGenerator(const bool useExtrudeMethod = false);
   virtual ~DefaultCrystalGenerator() {}
 
@@ -45,7 +43,9 @@ public:
 	 * Generate a cell based on the current set of constraints.
 	 *
 	 */
-  virtual Result generateStructure(const StructureDescription &  strDesc) const;
+  virtual common::StructurePtr generateStructure(
+    const StructureDescription &  strDesc,
+    StructureGenerationOutcome::Value * outOutcome = NULL) const;
 
 private:
 

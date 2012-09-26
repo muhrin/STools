@@ -22,6 +22,7 @@ namespace spipe
 namespace common
 {
 namespace fs = ::boost::filesystem;
+namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
 
 
@@ -35,9 +36,13 @@ sstbx::common::Structure * StructureData::getStructure() const
   return myStructure.get();
 }
 
-void StructureData::setStructure(const sstbx::common::StructurePtr structure)
+void StructureData::setStructure(sstbx::UniquePtr<ssc::Structure>::Type structure)
 {
+#ifdef SSLIB_USE_CPP11
+  myStructure = ::std::move(structure);
+#else
 	myStructure = structure;
+#endif
 }
 
 ::boost::filesystem::path

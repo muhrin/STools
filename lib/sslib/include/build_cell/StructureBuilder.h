@@ -11,6 +11,7 @@
 // INCLUDES ////////////
 #include <boost/shared_ptr.hpp>
 
+#include "SSLib.h"
 #include "build_cell/ConstStructureDescriptionVisitor.h"
 #include "common/Types.h"
 
@@ -24,10 +25,9 @@ class StructureBuilder : public ConstStructureDescriptionVisitor
 {
 public:
 
-  typedef ::boost::shared_ptr<StructureDescriptionMap> DescriptionMapPtr;
-  typedef ::std::pair<common::StructurePtr, DescriptionMapPtr> StructurePair;
+  typedef UniquePtr<StructureDescriptionMap>::Type DescriptionMapPtr;
 
-  StructurePair buildStructure(const StructureDescription & description);
+  common::StructurePtr buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap);
 
   // From StructureDescriptionVisitor ///////////////////
   virtual bool visitAtom(const AtomsDescription & description);
@@ -37,7 +37,9 @@ public:
 
 private:
 
-  StructurePair *   myCurrentPair;
+  typedef ::std::pair<common::Structure *, StructureDescriptionMap *> StructurePair;
+
+  StructurePair     myCurrentPair;
   double            myAtomsVolume;
   
 };

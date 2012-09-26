@@ -6,10 +6,12 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef COMMON__TYPES_H
+#define COMMON__TYPES_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLibTypes.h"
+
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -28,7 +30,7 @@ class UnitCell;
 typedef ::boost::shared_ptr<Atom> AtomPtr;
 typedef ::boost::shared_ptr<const Atom> ConstAtomPtr;
 
-typedef ::boost::shared_ptr<Structure> StructurePtr;
+typedef UniquePtr<Structure>::Type StructurePtr;
 
 typedef ::boost::shared_ptr<UnitCell> UnitCellPtr;
 typedef ::boost::shared_ptr<const UnitCell> ConstUnitCellPtr;
@@ -38,4 +40,4 @@ typedef ::boost::optional<const ::arma::mat33> OptionalConstMat33;
 }
 }
 
-#endif /* TYPES_H */
+#endif /* COMMON__TYPES_H */

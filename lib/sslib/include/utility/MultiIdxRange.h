@@ -16,6 +16,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/range/iterator_range.hpp>
 
+#include "SSLibAssert.h"
 #include "utility/MultiIdx.h"
 
 #ifdef _MSC_VER
@@ -137,7 +138,7 @@ public:
     myEnd(last),
     base_t(iterator_t(first, *this), iterator_t(last, *this))
   {
-    SSE_ASSERT(myBegin <= myEnd);
+    SSLIB_ASSERT(myBegin <= myEnd);
   }
 
   size_t dims() const

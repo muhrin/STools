@@ -8,8 +8,10 @@
 // INCLUDES /////////////////////////////////////
 #include "utility/BoostFilesystem.h"
 
-namespace boost {
-namespace filesystem3 {
+namespace boost
+{
+namespace filesystem3
+{
 
 #ifndef SSLIB_USE_BOOSTFS_V2
 template < >
@@ -62,8 +64,10 @@ boost::filesystem::path make_relative(
 }
 }
 
-namespace sstbx {
-namespace utility {
+namespace sstbx
+{
+namespace utility
+{
 
 namespace fs = ::boost::filesystem;
 

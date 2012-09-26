@@ -182,16 +182,14 @@ void ResReaderWriter::writeStructure(
     strFile.close();
 }
 
-void ResReaderWriter::readStructure(
-	sstbx::common::Structure &        str,
+UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 	const boost::filesystem::path &   filepath,
 	AdditionalData * const            data) const
 {
-  readStructure(str, filepath, ::sstbx::common::AtomSpeciesDatabase::inst(), data);
+  return readStructure(filepath, ::sstbx::common::AtomSpeciesDatabase::inst(), data);
 }
 
-void ResReaderWriter::readStructure(
-	sstbx::common::Structure &          str,
+UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
 	const boost::filesystem::path &     filepath,
 	const sstbx::common::AtomSpeciesDatabase & speciesDb,
 	AdditionalData * const              data) const
@@ -208,8 +206,10 @@ void ResReaderWriter::readStructure(
 	if(!filepath.has_filename())
 		throw "Cannot write out structure without filepath";
 
+  UniquePtr<common::Structure>::Type str;
+
   if(!exists(filepath))
-    return;
+    return str;
 
 	ifstream strFile;
 	strFile.open(filepath);
@@ -220,6 +220,8 @@ void ResReaderWriter::readStructure(
 
   if(strFile.is_open())
   {
+    str.reset(new common::Structure());
+
     std::string line;
 
     // We're expecting the TITL line
@@ -235,15 +237,15 @@ void ResReaderWriter::readStructure(
       {
         foundTitle = true;
         if(++tokIt != toker.end())
-          str.setName(*tokIt);
+          str->setName(*tokIt);
         else
-          str.setName(utility::stemString(filepath));
+          str->setName(utility::stemString(filepath));
 
         // Does the user want additional data?
         if(data)
         {
           // First set the name
-          data->name.reset(str.getName());
+          data->name.reset(str->getName());
 
           bool hasMore = true;
           // Parse the rest of the tokens
@@ -349,7 +351,7 @@ void ResReaderWriter::readStructure(
           // Check if we found all six values
           foundParams = foundParams && i == 6;
 
-          str.setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
+          str->setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
         } // end if(hasMore)
       } // end if(*tokIt == "CELL")
     } // while !foundCell
@@ -421,8 +423,8 @@ void ResReaderWriter::readStructure(
 
               if(readCoordinates)
               {
-                const common::UnitCell * const cell = str.getUnitCell();
-                Atom & atom = str.newAtom(id);
+                const common::UnitCell * const cell = str->getUnitCell();
+                Atom & atom = str->newAtom(id);
                 // Try to orthoginalise the position
                 if(cell)
                 {
@@ -440,6 +442,8 @@ void ResReaderWriter::readStructure(
   
     strFile.close();
   } // end if(strFile.is_open())
+
+  return str;
 }
 
 std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const

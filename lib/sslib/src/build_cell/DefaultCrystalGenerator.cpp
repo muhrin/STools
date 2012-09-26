@@ -46,7 +46,9 @@ myMaxAttempts(10000)
 }
 
 
-IStructureGenerator::Result DefaultCrystalGenerator::generateStructure(const StructureDescription &  structureDescription) const
+common::StructurePtr DefaultCrystalGenerator::generateStructure(
+  const StructureDescription &  structureDescription,
+  StructureGenerationOutcome::Value * outOutcome) const
 {
 	using ::sstbx::common::Structure;
 
@@ -55,14 +57,15 @@ IStructureGenerator::Result DefaultCrystalGenerator::generateStructure(const Str
   // Create a builder that will populate the structure with the required atoms
   StructureBuilder builder;
   // and build
-  StructureBuilder::StructurePair pair = builder.buildStructure(structureDescription);
+  StructureBuilder::DescriptionMapPtr descriptionMap;
+  common::StructurePtr str = builder.buildStructure(structureDescription, descriptionMap);
 
   common::StructurePtr generatedStructure;
   StructureGenerationOutcome::Value outcome = StructureGenerationOutcome::SUCCESS;
 	for(u32 i = 0; i < myMaxAttempts; ++i)
 	{
     // Generate a unit cell for the structure
-    if(!generateUnitCell(structureDescription, *pair.first, builder))
+    if(!generateUnitCell(structureDescription, *str.get(), builder))
     {
       // That one failed, try again...
       outcome = StructureGenerationOutcome::FAILED_CREATING_UNIT_CELL;
@@ -70,15 +73,18 @@ IStructureGenerator::Result DefaultCrystalGenerator::generateStructure(const Str
     }
 
 		// Genetate atom positions
-    outcome = generateAtomPositions(*pair.second.get());
+    outcome = generateAtomPositions(*descriptionMap.get());
     if(outcome == StructureGenerationOutcome::SUCCESS)
 		{
-      generatedStructure = pair.first;
+      generatedStructure = str;
 			break;
 		}
 	}
 
-	return Result(outcome, generatedStructure);
+  if(outOutcome)
+    *outOutcome = outcome;
+
+	return generatedStructure;
 }
 
 bool DefaultCrystalGenerator::generateUnitCell(

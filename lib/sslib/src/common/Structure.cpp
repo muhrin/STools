@@ -84,14 +84,14 @@ size_t Structure::getNumAtoms() const
 
 Atom & Structure::getAtom(const size_t idx)
 {
-  SSE_ASSERT(idx < getNumAtoms());
+  SSLIB_ASSERT(idx < getNumAtoms());
 
   return myAtoms[idx];
 }
 
 const Atom & Structure::getAtom(const size_t idx) const
 {
-  SSE_ASSERT(idx < getNumAtoms());
+  SSLIB_ASSERT(idx < getNumAtoms());
 
   return myAtoms[idx];
 }

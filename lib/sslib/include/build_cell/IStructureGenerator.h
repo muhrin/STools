@@ -31,12 +31,7 @@ class IStructureGenerator
 {
 public:
 
-  typedef ::std::pair<StructureGenerationOutcome::Value, ::sstbx::common::StructurePtr> Result;
-
-  /** Generate a new structure */
-  //virtual Result generateStructure() = 0;
-
-  virtual Result generateStructure(const StructureDescription &  strDesc) const = 0;
+  virtual common::StructurePtr generateStructure(const StructureDescription &  strDesc, StructureGenerationOutcome::Value * outcome = NULL) const = 0;
 
   virtual ~IStructureGenerator() {}
 };

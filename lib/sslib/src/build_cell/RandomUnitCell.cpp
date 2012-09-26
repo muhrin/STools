@@ -22,6 +22,7 @@ const double RandomUnitCell::DEFAULT_MIN_LENGTH = 0.25;
 const double RandomUnitCell::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCell::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCell::DEFAULT_VOLUME_DELTA = 0.25;
+const double RandomUnitCell::DEFAULT_MAX_LENGTH_RATIO = 10.0;
 
 RandomUnitCell::ParamValue RandomUnitCell::getMin(const size_t param) const
 {
@@ -91,7 +92,7 @@ void RandomUnitCell::setMax(const size_t param, const OptionalDouble max)
 
 void RandomUnitCell::setMinLengths(const OptionalDouble length)
 {
-  for(size_t i = 0; i < 3; ++i)
+  for(size_t i = A; i <= C; ++i)
   {
     myParameters[i].first = length;
   }
@@ -99,7 +100,7 @@ void RandomUnitCell::setMinLengths(const OptionalDouble length)
 
 void RandomUnitCell::setMaxLengths(const OptionalDouble length)
 {
-  for(size_t i = 0; i < 3; ++i)
+  for(size_t i = A; i <= C; ++i)
   {
     myParameters[i].second = length;
   }
@@ -107,7 +108,7 @@ void RandomUnitCell::setMaxLengths(const OptionalDouble length)
 
 void RandomUnitCell::setMinAngles(const OptionalDouble angle)
 {
-  for(size_t i = 3; i < 6; ++i)
+  for(size_t i = ALPHA; i <= GAMMA; ++i)
   {
     myParameters[i].first = angle;
   }
@@ -115,7 +116,7 @@ void RandomUnitCell::setMinAngles(const OptionalDouble angle)
 
 void RandomUnitCell::setMaxAngles(const OptionalDouble angle)
 {
-  for(size_t i = 3; i < 6; ++i)
+  for(size_t i = ALPHA; i <= GAMMA; ++i)
   {
     myParameters[i].second = angle;
   }
@@ -131,21 +132,30 @@ void RandomUnitCell::setVolumeDelta(const OptionalDouble delta)
   myVolumeDelta = delta;
 }
 
+void RandomUnitCell::setMaxLengthRatio(const OptionalDouble maxLengthRatio)
+{
+  myMaxLengthRatio = maxLengthRatio;
+}
+
+RandomUnitCell::ParamValue RandomUnitCell::getMaxLengthRatio() const
+{
+  if(myMaxLengthRatio)
+    return ParamValue(*myMaxLengthRatio, true);
+  else
+    return ParamValue(DEFAULT_MAX_LENGTH_RATIO, false);
+}
+
 ::boost::shared_ptr<common::UnitCell> RandomUnitCell::generateCell(const RandomUnitCell::OptionalStructureInfo structureInfo) const
 {
   double params[6];
 
   size_t i;
-  // Generate the lengths
-  for(i = 0; i < 3; ++i)
-  {
-    params[i] = generateParameter(i);
-  }
+  generateLengths(params);
 
   bool anglesValid = false;
   for(size_t iters = 0; iters < 1000 && !anglesValid; ++iters)
   {
-    for(i = 3; i < 6; ++i)
+    for(i = ALPHA; i <= GAMMA; ++i)
     {
       params[i] = generateParameter(i);
     }
@@ -156,7 +166,7 @@ void RandomUnitCell::setVolumeDelta(const OptionalDouble delta)
   // minimum values for all of them
   if(!anglesValid)
   {
-    for(i = 3; i < 6; ++i)
+    for(i = ALPHA; i <= GAMMA; ++i)
     {
       params[i] = getMin(i).first;
     }
@@ -196,6 +206,72 @@ double RandomUnitCell::generateParameter(const size_t param) const
   }
 }
 
+void RandomUnitCell::generateLengths(double (&params)[6]) const
+{
+  // Generate the lengths
+  for(size_t i = A; i <= C; ++i)
+  {
+    params[i] = generateParameter(i);
+  }
+
+  MinMaxIndex minMax;
+
+  const bool overrideLengthRatio = myMaxLengthRatio;
+  const double maxRatio = overrideLengthRatio ? *myMaxLengthRatio : DEFAULT_MAX_LENGTH_RATIO;
+  double minLength, maxLength, ratio, cFactor;
+  bool canMoveMin, canMoveMax, madeStep;
+  do
+  {
+    madeStep = false;
+    minMax = getMinMaxLengths(params);
+
+    minLength = params[minMax.first];
+    maxLength = params[minMax.second];
+
+    ratio = maxLength / minLength;
+
+    if(ratio > maxRatio)
+    {
+      // Can move if the user hasn't set the parameter or if we are still within
+      // the user set range
+      canMoveMin = !myParameters[minMax.first].first || minLength > *myParameters[minMax.first].first;
+      canMoveMax = !myParameters[minMax.second].second || maxLength < *myParameters[minMax.second].second;
+
+      // Three possibilities for movement
+      if(canMoveMin && canMoveMax) // move both
+      {
+        cFactor = (ratio - maxRatio) / (ratio + maxRatio);
+        minLength *= (1 - cFactor);
+        maxLength *= (1 + cFactor);
+
+        // Now constrain the lengths to not exceed user set min/max
+        if(myParameters[minMax.first].first)
+          minLength = ::std::max(minLength, *myParameters[minMax.first].first);
+        if(myParameters[minMax.second].second)
+          maxLength = ::std::min(maxLength, *myParameters[minMax.second].second);
+      }
+      else if(canMoveMin) // move minimum
+      {
+        minLength *= ratio / maxRatio;
+        if(myParameters[minMax.first].first)
+          minLength = ::std::max(minLength, *myParameters[minMax.first].first);
+      }
+      else if(canMoveMax) // move maximum
+      {
+        maxLength *= maxRatio / ratio;
+        if(myParameters[minMax.second].second)
+          maxLength = ::std::min(maxLength, *myParameters[minMax.second].second);
+      }
+
+      // Have we made any changes?
+      if(minLength != params[minMax.first] || maxLength != params[minMax.second])
+        madeStep = true;
+    }
+
+  } while(madeStep);
+
+}
+
 double RandomUnitCell::generateVolume(const double overrideVolume) const
 {
   double target = overrideVolume;
@@ -209,9 +285,31 @@ double RandomUnitCell::generateVolume(const double overrideVolume) const
   return common::randDouble(target * (1.0 - delta), target * (1 + delta));
 }
 
+RandomUnitCell::MinMaxIndex RandomUnitCell::getMinMaxLengths(const double (&params)[6]) const
+{
+  MinMaxIndex minMax;
+  if(params[A] > params[B])
+  {
+    minMax.first  = B;
+    minMax.second = A;
+  }
+  else
+  {
+    minMax.first  = A;
+    minMax.second = B;
+  }
+
+  if(params[minMax.first] > params[C])
+    minMax.first = C;
+  else if(params[minMax.second] < params[C])
+    minMax.second = C;
+
+  return minMax;
+}
+
 bool RandomUnitCell::areParametersValid(const double (&params)[6]) const
 {
-  double anglesSum = params[ALPHA] + params[BETA] + params[GAMMA];
+  const double anglesSum = params[ALPHA] + params[BETA] + params[GAMMA];
 
   if(anglesSum >= 360.0) return false;
   if(abs(params[ALPHA]-params[BETA]) > params[GAMMA]) return false;

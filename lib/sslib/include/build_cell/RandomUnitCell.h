@@ -34,6 +34,7 @@ public:
   static const double DEFAULT_MAX_LENGTH;
   static const double DEFAULT_TARGET_VOLUME;
   static const double DEFAULT_VOLUME_DELTA; // Volume can be +/- this value as a percentage of the target
+  static const double DEFAULT_MAX_LENGTH_RATIO;
 
   ParamValue getMin(const size_t param) const;
   ParamValue getMax(const size_t param) const;
@@ -50,6 +51,9 @@ public:
   void setTargetVolume(const OptionalDouble volume = OptionalDouble());
   void setVolumeDelta(const OptionalDouble delta = OptionalDouble());
 
+  void setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
+  ParamValue getMaxLengthRatio() const;
+
 
   // From IUnitCellBlueprint ////
   virtual ::boost::shared_ptr<common::UnitCell> generateCell(const OptionalStructureInfo structureInfo = OptionalStructureInfo()) const;
@@ -58,14 +62,19 @@ public:
 private:
 
   typedef ::std::pair<OptionalDouble, OptionalDouble> MinMax;
+  typedef ::std::pair<size_t, size_t> MinMaxIndex;
 
   enum Param {A, B, C, ALPHA, BETA, GAMMA};
 
-  inline bool isLength(const size_t param) const { return param < 3; }
+  inline bool isLength(const size_t param) const { return param <= C; }
 
   double generateParameter(const size_t param) const;
 
+  void generateLengths(double (&latticeParams)[6]) const;
+
   double generateVolume(const double overrideVolume = 0.0) const;
+
+  MinMaxIndex getMinMaxLengths(const double (&latticeParams)[6]) const;
 
   bool areParametersValid(const double (&latticeParams)[6]) const;
 
@@ -74,6 +83,7 @@ private:
 
   OptionalDouble  myTargetVolume;
   OptionalDouble  myVolumeDelta;
+  OptionalDouble  myMaxLengthRatio;
 
 
 

@@ -16,6 +16,8 @@
 
 #include <armadillo>
 
+// From SSLib
+#include <SSLib.h>
 #include <common/Types.h>
 #include <utility/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
@@ -45,7 +47,7 @@ class StructureData
 public:
 
 	sstbx::common::Structure * getStructure() const;
-	void setStructure(const sstbx::common::StructurePtr structure);
+  void setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path
@@ -63,7 +65,7 @@ public:
 
 private:
 
-	::sstbx::common::StructurePtr   myStructure;
+  ::sstbx::UniquePtr< ::sstbx::common::Structure>::Type   myStructure;
 };
 
 

@@ -13,6 +13,7 @@
 #include <boost/foreach.hpp>
 
 // Local includes
+#include "SSLibAssert.h"
 #include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/ConstStructureDescriptionVisitor.h"
@@ -227,7 +228,7 @@ CType * AtomGroupDescription::getAtomConstraint(const ConstraintDescriptionId id
 
 void AtomGroupDescription::addAtomConstraint(AtomConstraintDescription * const atomConstraint)
 {
-  SSE_ASSERT(atomConstraint);
+  SSLIB_ASSERT(atomConstraint);
 
   myAtomConstraints.insert(atomConstraint->getType(), atomConstraint);
 }

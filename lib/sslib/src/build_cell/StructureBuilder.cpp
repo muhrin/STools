@@ -18,21 +18,25 @@
 namespace sstbx {
 namespace build_cell {
 
-StructureBuilder::StructurePair
-StructureBuilder::buildStructure(const StructureDescription & description)
+common::StructurePtr
+StructureBuilder::buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap)
 {
 	// Create a new blank structure
   common::StructurePtr structure(new common::Structure());
-  DescriptionMapPtr descriptionMap(new StructureDescriptionMap(description, *structure.get()));
+  outDescriptionMap.reset(new StructureDescriptionMap(description, *structure.get()));
 
   myAtomsVolume = 0.0;
 
-  StructurePair pair(structure, descriptionMap);
-  myCurrentPair = &pair;
+  myCurrentPair.first = structure.get();
+  myCurrentPair.second = outDescriptionMap.get();
 
   description.traversePreorder(*this);
 
-  return pair;
+  // Reset the current structure pair
+  myCurrentPair.first = NULL;
+  myCurrentPair.second = NULL;
+
+  return structure;
 }
 
 bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
@@ -41,13 +45,13 @@ bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
   ::boost::optional<double> radius;
   for(size_t i = 0; i < atomDescription.getCount(); ++i)
   {
-    common::Atom & atom = myCurrentPair->first->newAtom(atomDescription.getSpecies());
+    common::Atom & atom = myCurrentPair.first->newAtom(atomDescription.getSpecies());
     radius = atomDescription.getRadius();
     if(radius)
     {
       atom.setRadius(*radius);
     }
-    myCurrentPair->second->insert(atomDescription.getParent(), &atomDescription, &atom);
+    myCurrentPair.second->insert(atomDescription.getParent(), &atomDescription, &atom);
   }
 
   // Try to determine the volume of the atoms

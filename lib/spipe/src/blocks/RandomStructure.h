@@ -22,10 +22,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 class IStructureGenerator;
 }
 }

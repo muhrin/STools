@@ -40,7 +40,8 @@ namespace ssc = ::sstbx::common;
 
 int main(const int argc, char * argv[])
 {
-  typedef ::std::pair<fs::path, ssc::StructurePtr> PathStructurePair;
+  typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
+  typedef ::std::pair<fs::path, SharedStructurePtr> PathStructurePair;
 
   const ::std::string exeName(argv[0]);
 
@@ -85,6 +86,7 @@ int main(const int argc, char * argv[])
 
   sstbx::io::ResReaderWriter resReader;
   ::std::vector<PathStructurePair> structures;
+  ssc::StructurePtr str;
 
   BOOST_FOREACH(::std::string & pathString, inputFiles)
   {
@@ -95,10 +97,9 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    PathStructurePair pair(strPath, ssc::StructurePtr(new ssc::Structure()));
-    resReader.readStructure(*pair.second.get(), pair.first);
-
-    structures.push_back(pair);
+    str = resReader.readStructure(strPath);
+    if(str.get())
+      structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
   }
 
   if(structures.size() < 2)

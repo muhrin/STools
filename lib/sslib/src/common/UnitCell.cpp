@@ -10,6 +10,7 @@
 
 #include <boost/assert.hpp>
 
+#include "SSLibAssert.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
 #include "utility/StableComparison.h"
@@ -563,7 +564,7 @@ bool UnitCell::niggliReduce()
     return false;
   }
 
-  SSE_ASSERT(arma::det(cob) == 1);
+  SSLIB_ASSERT(arma::det(cob) == 1);
 
   //Q_ASSERT_X(cob.determinant() == 1, Q_FUNC_INFO,
   //           "Determinant of change of basis matrix must be 1.");

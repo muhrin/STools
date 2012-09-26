@@ -15,6 +15,7 @@
 #include <boost/tokenizer.hpp>
 
 // From SSTbx
+#include <SSLib.h>
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <io/AdditionalData.h>
@@ -132,13 +133,13 @@ size_t LoadPotStructures::loadStructures(
     if(dirEntry.extension() == ".res")
     {
       StructureDataTyp * const strDat = new StructureDataTyp();
-      strDat->setStructure(ssc::StructurePtr(new sstbx::common::Structure()));
       sstbx::io::AdditionalData data;
 
       //std::cout << "Got res file: " << dirEntry.string() << std::endl;
 
       // Try loading
-      resReader.readStructure(*strDat->getStructure(), dirEntry, &data);
+      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, &data);
+      strDat->setStructure(str);
 
       generateStructureDataFromIo(data, *strDat);
 

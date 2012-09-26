@@ -16,16 +16,15 @@
 #include <vector>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 class AtomSpeciesDatabase;
 }
 }
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
 class ResReaderWriter :
   public IStructureWriter,
@@ -58,13 +57,11 @@ public:
 
   // From IStructureReader //
 
-  virtual void readStructure(
-		sstbx::common::Structure &      str,
+  virtual UniquePtr<common::Structure>::Type readStructure(
 		const boost::filesystem::path & path,
 		AdditionalData * const          data = NULL) const;
 
-	virtual void readStructure(
-		sstbx::common::Structure &            str,
+  virtual UniquePtr<common::Structure>::Type readStructure(
 		const ::boost::filesystem::path &     filepath,
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
 		AdditionalData * const                data = NULL) const;

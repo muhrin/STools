@@ -107,8 +107,10 @@ void StoichiometrySearch::start()
       continue;
 
     // Set the current structure description in our subpipline
+    ::boost::shared_ptr<ssbc::RandomUnitCell> randomCell(new ssbc::RandomUnitCell());
+    randomCell->setMaxLengthRatio(2.0);
     sweepPipeData.structureDescription = StrDescPtr(
-      new ::sstbx::build_cell::StructureDescription(ssbc::ConstUnitCellBlueprintPtr(new ssbc::RandomUnitCell()))
+      new ::sstbx::build_cell::StructureDescription(randomCell)
     );
 
     // Insert all the atoms

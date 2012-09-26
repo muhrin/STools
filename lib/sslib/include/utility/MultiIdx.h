@@ -18,6 +18,7 @@
 
 #include <boost/scoped_array.hpp>
 
+#include "SSLibAssert.h"
 #include "utility/PromotableType.h"
 
 
@@ -199,14 +200,14 @@ Integer MultiIdx<Integer>::product() const
 template <typename Integer>
 Integer & MultiIdx<Integer>::operator[](const size_t dim)
 {
-	SSE_ASSERT(dim < myDims);
+	SSLIB_ASSERT(dim < myDims);
 	return myIdx[dim];
 }
 
 template <typename Integer>
 const Integer & MultiIdx<Integer>::operator [](const size_t dim) const
 {
-	SSE_ASSERT(dim < myDims);
+	SSLIB_ASSERT(dim < myDims);
 	return myIdx[dim];
 }
 

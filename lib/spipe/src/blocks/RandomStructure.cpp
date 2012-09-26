@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 
 // From SSTbx
+#include <SSLib.h>
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/ConstStructureDescriptionVisitor.h>
 #include <build_cell/IStructureGenerator.h>
@@ -74,9 +75,9 @@ void RandomStructure::in(::spipe::common::StructureData & data)
   initDescriptions();
 
 	// Create the random structure
-	const sstbx::common::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription).second;
+  ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription);
 
-	if(str)
+	if(str.get())
 	{
 		data.setStructure(str);
 
