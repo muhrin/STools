@@ -20,6 +20,7 @@
 #include <yaml-cpp/yaml.h>
 
 // From SSTbx
+#include "SSLibTypes.h"
 #include "build_cell/IStructureGenerator.h"
 #include "build_cell/StructureDescription.h"
 #include "common/SsLibYamlKeywords.h"
@@ -37,22 +38,20 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 class AtomsDescription;
 }
 }
 
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
 class SsLibFactoryYaml
 {
 public:
+
+  typedef ::sstbx::UniquePtr< ::sstbx::build_cell::StructureDescription>::Type StructureDescriptionPtr;
 
   enum ErrorCode
   {
@@ -66,7 +65,7 @@ public:
   SsLibFactoryYaml();
 
   //::sstbx::build_cell::RandomCellDescription *            createCellDescription(const YAML::Node & desc);
-  ::sstbx::build_cell::StructureDescription *             createStructureDescription(const YAML::Node & desc);
+  StructureDescriptionPtr                                 createStructureDescription(const YAML::Node & desc);
   ::sstbx::build_cell::IStructureGenerator *       createCrystalStructureGenerator(const YAML::Node & desc);
   ::sstbx::potential::IPotential *                        createPotential(const YAML::Node & desc);
   ::sstbx::potential::IGeomOptimiser *                    createGeometryOptimiser(const YAML::Node & desc);

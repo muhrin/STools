@@ -37,8 +37,8 @@ namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 
 RandomStructure::RandomStructure(
-	const size_t numToGenerate,
   const ::sstbx::build_cell::IStructureGenerator &   structureGenerator,
+  const OptionalUInt numToGenerate,
   const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Random structures"),
 myNumToGenerate(numToGenerate),
@@ -56,7 +56,8 @@ void RandomStructure::pipelineStarting()
 void RandomStructure::start()
 {
 	using ::spipe::common::StructureData;
-	for(size_t i = 0; i < myNumToGenerate; ++i)
+  const unsigned int numToGenerate = myNumToGenerate ? *myNumToGenerate : 100;
+	for(size_t i = 0; i < numToGenerate; ++i)
 	{
 		StructureData & data = myPipeline->newData();
 

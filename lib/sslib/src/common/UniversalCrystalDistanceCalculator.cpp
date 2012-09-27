@@ -73,15 +73,14 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
     const ::arma::vec3 & a,
     const ::arma::vec3 & b,
     const double cutoff,
-    ::std::vector<double> & outDistances,
-    const size_t maxDistances) const
+    ::std::vector<double> & outValues,
+    const size_t maxValues) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
+  const double (&params)[6] = cell.getLatticeParams();
 
-	// Make sure cart1 and 2 are in the unit cell at the origin
-  const ::arma::vec3 		aUnit	= cell.wrapVec(a);
-  const ::arma::vec3 		bUnit	= cell.wrapVec(b);
-  const ::arma::vec3		dR		= bUnit - aUnit;
+	// Make sure a and b are in the unit cell at the origin
+  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
 
 	// Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
@@ -90,35 +89,43 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
 
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
+  const double rDotA = ::arma::dot(dR, A / params[0]);
+  const double rDotB = ::arma::dot(dR, B / params[1]);
+  const double rDotC = ::arma::dot(dR, C / params[2]);
+
 	// Maximum multiple of cell vectors we need to go to
-	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, cutoff + abs(rDotA)));
+	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, cutoff + abs(rDotB)));
+	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff + abs(rDotC)));
 
   const double cutoffSq = cutoff * cutoff;
-  const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
-  double dRDistSq;
-  ::arma::vec3 nA, nAPlusNB, dRImg;
-  size_t numDistances = 0;
+  size_t numFound = 0;
+  double aSq, bSq, testDistSq;
+  double distA = -maxA * params[0] + rDotA, distB, distC;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
-		nA = a * A;
+    aSq = distA * distA; /* aSq = a * params[0] + rDotA; aSq *= aSq; */
+    distB = -maxB * params[1] + rDotB;
 		for(int b = -maxB; b <= maxB; ++b)
 		{
-		  nAPlusNB = nA + b * B;
+      bSq = distB * distB; /* bSq = b * params[1] + rDotB; bSq *= bSq;*/
+      distC = -maxC * params[2] + rDotC;
 			for(int c = -maxC; c <= maxC; ++c)
 			{
-        dRImg = nAPlusNB + c * C + dR;
-        dRDistSq = ::arma::dot(dRImg, dRImg);
+        testDistSq = distC * distC; /* testDistSq = c * params[2] + rDotC; testDistSq *= testDistSq; */
+        testDistSq += aSq + bSq;
 
-				if(dRDistSq < cutoffSq)
+				if(testDistSq < cutoffSq)
 				{
-          outDistances.push_back(sqrt(dRDistSq));
-          if(++numDistances >= maxDistances)
+          outValues.push_back(sqrt(testDistSq));
+          if(++numFound >= maxValues)
             return false;
 				}
-			}
+        distC += params[2];
+      }
+      distB += params[1];
 		}
+    distA += params[0];
 	}
 
   // Completed successfully
@@ -129,15 +136,14 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   const ::arma::vec3 & a,
   const ::arma::vec3 & b,
   const double cutoff,
-  ::std::vector< ::arma::vec3> & outVectors,
-  const size_t maxVectors) const
+  ::std::vector< ::arma::vec3> & outValues,
+  const size_t maxValues) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
+  const double (&params)[6] = cell.getLatticeParams();
 
-	// Make sure cart1 and 2 are in the unit cell at the origin
-  const ::arma::vec3 		aUnit	= cell.wrapVec(a);
-  const ::arma::vec3 		bUnit	= cell.wrapVec(b);
-  const ::arma::vec3		dR		= bUnit - aUnit;
+	// Make sure a and b are in the unit cell at the origin
+  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
 
 	// Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
@@ -146,36 +152,50 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
 
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
-	// Maximum multiple of cell vectors we need to go to
-	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+  const double rDotA = ::arma::dot(dR, A / params[0]);
+  const double rDotB = ::arma::dot(dR, B / params[1]);
+  const double rDotC = ::arma::dot(dR, C / params[2]);
 
-	const double cutoffSq = cutoff * cutoff;
-  ::arma::vec3
-      nA,
-      nAPlusNB,
-      dRImg;
-  size_t numVectors = 0;
+	// Maximum multiple of cell vectors we need to go to
+	const int maxA = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, cutoff + abs(rDotA)));
+	const int maxB = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, cutoff + abs(rDotB)));
+	const int maxC = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, cutoff + abs(rDotC)));
+
+  const double cutoffSq = cutoff * cutoff;
+  ::arma::vec3 outVec;
+  size_t numFound = 0;
+  double aSq, bSq, testDistSq;
+  double distA = -maxA * params[0] + rDotA, distB, distC;
 	for(int a = -maxA; a <= maxA; ++a)
 	{
-		nA = a * A;
+    aSq = distA * distA; /* aSq = a * params[0] + rDotA; aSq *= aSq; */
+    distB = -maxB * params[1] + rDotB;
 		for(int b = -maxB; b <= maxB; ++b)
 		{
-		  nAPlusNB = nA + b * B;
+      bSq = distB * distB; /* bSq = b * params[1] + rDotB; bSq *= bSq;*/
+      distC = -maxC * params[2] + rDotC;
 			for(int c = -maxC; c <= maxC; ++c)
 			{
-        dRImg = nAPlusNB + c * C + dR;
-				
-				if(dot(dRImg, dRImg) < cutoffSq)
+        testDistSq = distC * distC; /* testDistSq = c * params[2] + rDotC; testDistSq *= testDistSq; */
+        testDistSq += aSq + bSq;
+
+				if(testDistSq < cutoffSq)
 				{
-          outVectors.push_back(dRImg);
-          if(++numVectors >= maxVectors)
+          outVec(0) = distA;
+          outVec(1) = distB;
+          outVec(2) = distC;
+          outValues.push_back(outVec);
+          if(++numFound >= maxValues)
             return false;
 				}
-			}
+        distC += params[2];
+      }
+      distB += params[1];
 		}
+    distA += params[0];
 	}
+
+  // Completed successfully
   return true;
 }
 

@@ -86,9 +86,9 @@ public:
   bool isValid() const
   { return myDelegate->isValid(); }
 
-  // End from DistanceCalculator /////////////////
+  virtual void unitCellChanged();
 
-  void unitCellChanged();
+  // End from DistanceCalculator /////////////////
 
 private:
 
@@ -107,7 +107,7 @@ private:
 
   void updateDelegate();
 
-  void setDelegate(const CalculatorType::Value calcType);
+  bool setDelegate(const CalculatorType::Value calcType);
 
   DistanceCalculatorPtr   myDelegate;
   CalculatorType::Value   myDelegateType;

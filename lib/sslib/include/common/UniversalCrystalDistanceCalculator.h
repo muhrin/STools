@@ -41,6 +41,8 @@ public:
 
   virtual bool isValid() const;
 
+  virtual void unitCellChanged() {}
+
 
 private:
 

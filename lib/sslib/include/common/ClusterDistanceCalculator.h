@@ -63,6 +63,8 @@ public:
   virtual inline bool isValid() const
   { return myStructure.getUnitCell() == NULL; }
 
+  virtual void unitCellChanged() {}
+
 };
 
 }

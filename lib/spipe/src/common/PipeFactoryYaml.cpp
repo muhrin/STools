@@ -29,10 +29,8 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
 // Alias for accessing keywords namespace
 namespace kw = ::spipe::common::yaml_keywords;
@@ -146,7 +144,7 @@ PipeFactoryYaml::createBlockRandomCrystal(const YAML::Node & blockNode)
 
   // Things we need to construct a random crystal block
   int nStrs = 0;
-  ::std::auto_ptr<sslibbc::StructureDescription> strDesc(NULL);
+  SsLibFactoryYaml::StructureDescriptionPtr strDesc;
 
   if(blockNode[kw::BLOCKS__RANDOM_CRYSTAL__N_STRS])
   {
@@ -161,7 +159,7 @@ PipeFactoryYaml::createBlockRandomCrystal(const YAML::Node & blockNode)
   // Let's see if we can get the structure description
   if(blockNode[sslibkw::STR_DESC])
   {
-    strDesc.reset(mySsLibFactory.createStructureDescription(blockNode[sslibkw::STR_DESC]));
+    strDesc = mySsLibFactory.createStructureDescription(blockNode[sslibkw::STR_DESC]);
   }
   else
   {
@@ -170,8 +168,8 @@ PipeFactoryYaml::createBlockRandomCrystal(const YAML::Node & blockNode)
 
 
   return new ::spipe::blocks::RandomStructure(
-    nStrs,
     *mySsLibFactory.createCrystalStructureGenerator(blockNode[sslibkw::STR_GENERATOR]),
+    nStrs,
     blocks::RandomStructure::StructureDescPtr(mySsLibFactory.createStructureDescription(blockNode[sslibkw::STR_DESC]))
   );
 }

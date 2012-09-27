@@ -34,8 +34,8 @@ public:
 
   bool extrudeAtoms(
     common::Structure & structure,
-    const double tolerance = DEFAULT_TOLERANCE,
-    const size_t maxIterations = DEFAULT_MAX_ITERATIONS) const;
+    const size_t maxIterations = DEFAULT_MAX_ITERATIONS,
+    const double tolerance = DEFAULT_TOLERANCE) const;
 
 private:
 

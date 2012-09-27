@@ -107,7 +107,7 @@ SsLibFactoryYaml::SsLibFactoryYaml()
 //}
 
 
-ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
+SsLibFactoryYaml::StructureDescriptionPtr SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
 {
   //// Make sure we have a structure description node
   //if(node.Scalar() != kw::STR_DESC)
@@ -115,7 +115,7 @@ ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const 
   //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
   //}
 
-  ::std::auto_ptr<ssbc::StructureDescription> strDesc(new ssbc::StructureDescription());
+  StructureDescriptionPtr strDesc(new ssbc::StructureDescription());
 
   // Atoms //
   if(node[kw::STR_DESC__ATOMS])
@@ -195,11 +195,8 @@ ssbc::StructureDescription * SsLibFactoryYaml::createStructureDescription(const 
     }
   }
 
-  ssbc::StructureDescription * const strPtr = strDesc.release();
-  myStructureDescriptions.push_back(strPtr);
-
   // Assign the pointer so the caller gets the object
-  return strPtr;
+  return strDesc;
 }
 
 ssbc::IStructureGenerator *

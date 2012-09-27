@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
 // From SSTbx
@@ -37,11 +38,12 @@ class RandomStructure :
 {
 public:
 
+  typedef ::boost::optional<unsigned int> OptionalUInt;
   typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription >      StructureDescPtr;
 
 	RandomStructure(
-		const size_t numToGenerate,
-		const ::sstbx::build_cell::IStructureGenerator &           structureGenerator,
+		const ::sstbx::build_cell::IStructureGenerator & structureGenerator,
+    const OptionalUInt numToGenerate = OptionalUInt(),
     const StructureDescPtr & structureDescription = StructureDescPtr());
 
 
@@ -63,7 +65,7 @@ private:
 
   double setRadii() const;
 
-	const size_t myNumToGenerate;
+	const OptionalUInt myNumToGenerate;
 
   /** Should the block use the structure description found in shared data */
   const bool  myUseSharedDataStructureDesc;

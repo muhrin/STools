@@ -47,6 +47,27 @@ public:
 
   virtual bool isValid() const;
 
+  virtual void unitCellChanged();
+
+
+private:
+
+  void updateBufferedValues();
+
+  bool worthDoingAccurately(const int dA, const int dB, const int dC) const;
+
+  ::arma::vec3 myA;
+  ::arma::vec3 myB;
+  ::arma::vec3 myC;
+
+  ::arma::vec3 myANorm;
+  ::arma::vec3 myBNorm;
+  ::arma::vec3 myCNorm;
+
+  double myARecip;
+  double myBRecip;
+  double myCRecip;
+
 };
 
 } // namespace common

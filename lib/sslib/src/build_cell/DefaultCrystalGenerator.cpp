@@ -32,10 +32,8 @@
 #include "common/UnitCell.h"
 #include "common/Utils.h"
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 
 namespace common = ::sstbx::common;
 
@@ -127,7 +125,7 @@ StructureGenerationOutcome::Value DefaultCrystalGenerator::generateAtomPositions
 
     AtomExtruder extruder;
 
-    if(!extruder.extrudeAtoms(descriptionMap.getStructure()))
+    if(!extruder.extrudeAtoms(descriptionMap.getStructure(), 800))
     {
       outcome = StructureGenerationOutcome::FAILED_SATISFYING_CONSTRAINTS;
     }

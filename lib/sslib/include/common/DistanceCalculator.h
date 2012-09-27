@@ -81,6 +81,8 @@ public:
 
   virtual bool isValid() const = 0;
 
+  virtual void unitCellChanged() = 0;
+
 protected:
 
   const Structure & myStructure;

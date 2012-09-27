@@ -152,7 +152,7 @@ int main(const int argc, const char * const argv[])
 
   // Random structure
   ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(numRandomStructures, strGen);
+  sp::blocks::RandomStructure randStr(strGen, numRandomStructures);
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;

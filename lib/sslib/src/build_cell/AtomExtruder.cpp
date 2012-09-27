@@ -22,8 +22,8 @@ const double AtomExtruder::DEFAULT_TOLERANCE = 0.001;
 
 bool AtomExtruder::extrudeAtoms(
   common::Structure & structure,
-  const double tolerance,
-  const size_t maxIterations) const
+  const size_t maxIterations,
+  const double tolerance) const
 {
 
   const size_t numAtoms = structure.getNumAtoms();

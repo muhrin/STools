@@ -36,7 +36,7 @@ namespace sstbx
               const double prec)
       {
         return (!(lt(v1,v2,prec) ||
-                  gt(v1,v2,prec) ) );
+                  lt(v2,v1,prec) ) );
       }
 
       bool neq(const double v1,
