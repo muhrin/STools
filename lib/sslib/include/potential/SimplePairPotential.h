@@ -107,6 +107,7 @@ public:
 private:
 
   static const double RADIUS_FACTOR;
+  static const double MIN_SEPARATION_SQ;
 
   typedef GenericPotentialEvaluator<SimplePairPotential > Evaluator;
 

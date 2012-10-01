@@ -8,14 +8,18 @@
 // INCLUDES /////////////////////////////////////
 #include "common/OrthoCellDistanceCalculator.h"
 
+#include <iostream> // tmp
+
 #include "common/Structure.h"
 #include "common/UnitCell.h"
 #include "utility/StableComparison.h"
 
+#define SSLIB_ORTHO_DIST_CALC_DEBUG (SSLIB_DEBUG && 0)
+
 namespace sstbx {
 namespace common {
 
-const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-5;
+const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-10;
 
 OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(const sstbx::common::Structure &structure):
 DistanceCalculator(structure)
@@ -34,6 +38,11 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   cutoff = abs(cutoff);
   const UnitCell & cell = *myStructure.getUnitCell();
 
+	// Get the lattice vectors
+  const ::arma::vec3 A(cell.getAVec());
+  const ::arma::vec3 B(cell.getBVec());
+  const ::arma::vec3 C(cell.getCVec());
+
   const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
 
@@ -51,13 +60,13 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   int C_min = -(int)floor((cutoff + rDotC) * myCRecip);
   int C_max = (int)floor((cutoff - rDotC) * myCRecip);
 
-  const bool doFullDistanceCheck = worthDoingAccurately(A_max - A_min, B_max - B_min, C_max - C_min);
+  //const bool doFullDistanceCheck = worthDoingAccurately(A_max - A_min, B_max - B_min, C_max - C_min);
 
   // Loop variables
   size_t numDistances = 0;
-  double dRDistSq;
+  //double dRDistSq;
   ::arma::vec3 nA, nAPlusNB, dRImg;
-  double aSq, bSq;
+  double r_x, r_y, r_z, aSq, bSq, testDistSq;
 
   //if(doFullDistanceCheck)
   //{
@@ -94,36 +103,40 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   //}
   //else
   {
-    double distA = A_min * params[0] + rDotA, distB, distC, testDistSq;
-	  for(int a = A_min; a <= A_max; ++a)
-	  {
-      aSq = distA * distA; /* aSq = a * params[0] + rDotA; aSq *= aSq; */
-      distB = B_min * params[1] + rDotB;
-		  for(int b = B_min; b <= B_max; ++b)
+    for(int a = A_min; a <= A_max; ++a)
+    {
+      r_x = a * params[0] + rDotA;
+      aSq = r_x * r_x;
+	    for(int b = B_min; b <= B_max; ++b)
       {
-        bSq = distB * distB; /* bSq = b * params[1] + rDotB; bSq *= bSq;*/
+        r_y = b * params[1] + rDotB;
+        bSq = r_y * r_y;
         if(aSq + bSq < cutoffSq)
         {
-          distC = C_min * params[2] + rDotC;
-			    for(int c = C_min; c <= C_max; ++c)
-			    {
-            testDistSq = distC * distC; /* testDistSq = c * params[2] + rDotC; testDistSq *= testDistSq; */
-            testDistSq += aSq + bSq;
+		      for(int c = C_min; c <= C_max; ++c)
+		      {
+            r_z = c * params[2] + rDotC;
+            testDistSq = aSq + bSq + r_z * r_z;
+
+#if SSLIB_ORTHO_DIST_CALC_DEBUG
+            ::arma::vec3 testVec = a * A + b * B + c * C + r12;
+            const double vecLengthSq = ::arma::dot(testVec, testVec);
+            if(vecLengthSq != testDistSq)
+              ::std::cout << "Error: Distance vectors do not match\n";
+#endif
 
             if(testDistSq < cutoffSq)
-				    {
+			      {
               outDistances.push_back(sqrt(testDistSq));
               if(++numDistances >= maxDistances)
                 return false;
-				    }
-            distC += params[2];
+			      }
           }
         }
-        distB += params[1];
       }
-      distA += params[0];
-	  }
+    }
   }
+
   return true;
 }
 
@@ -176,42 +189,39 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   // Loop variables
   size_t numVectors = 0;
   ::arma::vec3 dR, outVec;
-  double dRDistSq;
-  double aSq, bSq;
-  double distA = A_min * params[0] + rDotA, distB, distC, testDistSq;
+  double r_x, r_y, r_z, aSq, bSq, testDistSq;
   for(int a = A_min; a <= A_max; ++a)
   {
-    aSq = distA * distA; /* aSq = a * params[0] + rDotA; aSq *= aSq; */
-    distB = B_min * params[1] + rDotB;
+    r_x = a * params[0] + rDotA;
+    aSq = r_x * r_x;
 	  for(int b = B_min; b <= B_max; ++b)
     {
-      bSq = distB * distB; /* bSq = b * params[1] + rDotB; bSq *= bSq;*/
+      r_y = b * params[1] + rDotB;
+      bSq = r_y * r_y;
       if(aSq + bSq < cutoffSq)
       {
-        distC = C_min * params[2] + rDotC;
 		    for(int c = C_min; c <= C_max; ++c)
 		    {
-          testDistSq = distC * distC; /* testDistSq = c * params[2] + rDotC; testDistSq *= testDistSq; */
-          testDistSq += aSq + bSq;
+          r_z = c * params[2] + rDotC;
+          testDistSq = aSq + bSq + r_z * r_z;
 
           if(testDistSq < cutoffSq)
 			    {
-            outVec(0) = distA;
-            outVec(1) = distB;
-            outVec(2) = distC;
+            outVec[0] = r_x;
+            outVec[1] = r_y;
+            outVec[2] = r_z;
             outVectors.push_back(outVec);
             if(++numVectors >= maxValues)
               return false;
 			    }
-          distC += params[2];
         }
       }
-      distB += params[1];
     }
-    distA += params[0];
   }
 
   return true;
+
+  //double dRDistSq;
 	//for(int a = A_min; a <= A_max; ++a)
 	//{
  //   nA = a * myA;

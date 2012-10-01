@@ -2,18 +2,18 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(ST_VERSION_MAJOR 0)
-set(ST_VERSION_MINOR 2)
-set(ST_VERSION_PATCH 0)
+set(STOOLS_VERSION_MAJOR 0)
+set(STOOLS_VERSION_MINOR 3)
+set(STOOLS_VERSION_PATCH 0)
 
-message(STATUS "Configuring STools ${ST_VERSION_MAJOR}.${ST_VERSION_MINOR}.${ST_VERSION_PATCH}")
+message(STATUS "Configuring STools ${STOOLS_VERSION_MAJOR}.${STOOLS_VERSION_MINOR}.${STOOLS_VERSION_PATCH}")
 
 project(STools)
 
 ## Configuration options ###############################
 
 # Custom paths to libraries #########
-set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
+set(BOOSTOOLS_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 set(QHULL_ROOT "" CACHE FILEPATH "Path to qhull library")
 
@@ -33,7 +33,7 @@ configure_file(
 
 ## FIND PACKAGES ########################################
 # First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
+set(CMAKE_PREFIX_PATH "${BOOSTOOLS_ROOT}" "${ARMADILLO_ROOT}")
 
 
 # Boost #

@@ -27,6 +27,7 @@ set(sslib_Source_Files__common
   src/common/DistanceCalculator.cpp
   src/common/DistanceCalculatorDelegator.cpp
   src/common/OrthoCellDistanceCalculator.cpp
+  src/common/ReferenceDistanceCalculator.cpp
   src/common/Structure.cpp
   src/common/UnitCell.cpp
   src/common/UniversalCrystalDistanceCalculator.cpp

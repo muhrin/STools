@@ -19,7 +19,7 @@
   #define NULL 0
 #endif
 
-//#define SSLIB_DEBUG
+#define SSLIB_DEBUG 1
 
 
 

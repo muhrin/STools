@@ -71,6 +71,7 @@ int main(const int argc, const char * const argv[])
   ::std::vector< ::std::string> paramStrings;
   unsigned int maxNumAtoms;
   unsigned int numRandomStructures;
+  double optimisationPressure;
 
   try
   {
@@ -80,7 +81,7 @@ int main(const int argc, const char * const argv[])
       ("strs", po::value<unsigned int>(&numRandomStructures)->default_value(100), "Number of random starting structures")
       ("max-atoms,m", po::value<unsigned int>(&maxNumAtoms)->required(), "Maximum number of atoms")
       ("params", po::value< ::std::vector< ::std::string> >(&paramStrings)->required(), "potential parameters: eAA eAB eBB sAA sAB sBB [format from+delta*nsteps] beta [+/-1]")
-
+      ("opt-press", po::value<double>(&optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
     ;
 
     po::positional_options_description p;
@@ -102,7 +103,13 @@ int main(const int argc, const char * const argv[])
   {
     ::std::cout << e.what() << "\n";
     return 1;
-  }   
+  }
+
+  if(paramStrings.size() != 7)
+  {
+    ::std::cout << "Parameter string must contain 7 entries, only " << paramStrings.size() << " found\n";
+    return 1;
+  }
 
   // Param sweep
   vec from(8), step(8);
@@ -186,11 +193,11 @@ int main(const int argc, const char * const argv[])
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 
-  ::arma::mat33 externalPressure;
-  externalPressure.fill(0.0);
-  externalPressure.diag().fill(0.1);
+  ::arma::mat33 optimisationPressureMtx;
+  optimisationPressureMtx.fill(0.0);
+  optimisationPressureMtx.diag().fill(optimisationPressure);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &externalPressure, false);
+  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &optimisationPressureMtx, false);
 
   sp::blocks::ParamPotentialGo go(pp, optimiser, NULL /*no external pressure*/, true);
 

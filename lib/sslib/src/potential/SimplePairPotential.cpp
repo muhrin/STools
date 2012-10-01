@@ -22,6 +22,8 @@ namespace potential {
 // i.e. the diameter
 const double SimplePairPotential::RADIUS_FACTOR = 0.5 * ::std::pow(2, 1.0/6.0);
 
+const double SimplePairPotential::MIN_SEPARATION_SQ = 1e-20;
+
 
 SimplePairPotential::SimplePairPotential(
 	const size_t 				  numSpecies,
@@ -387,7 +389,7 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 				rSq = dot(r, r);
 
 				// Check that distance is less than cut-off
-				if(rSq < rCutoffSq(speciesI, speciesJ) && rSq > 0.0)
+				if(rSq < rCutoffSq(speciesI, speciesJ) && rSq > MIN_SEPARATION_SQ)
 				{
 					modR = sqrt(rSq);
 

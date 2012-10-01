@@ -41,6 +41,7 @@ set(sslib_Header_Files__common
   include/common/DistanceCalculator.h
   include/common/DistanceCalculatorDelegator.h
   include/common/OrthoCellDistanceCalculator.h
+  include/common/ReferenceDistanceCalculator.h
   include/common/Structure.h
   include/common/Types.h
   include/common/UnitCell.h

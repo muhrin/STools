@@ -72,11 +72,17 @@ public:
 		const double          eTol,
     const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
 
-	static const size_t DEFAULT_MAX_STEPS;
+	static const unsigned int DEFAULT_MAX_STEPS;
 	static const double	DEFAULT_TOLERANCE;
   static const double DEFAULT_MIN_NORM_VOLUME;
 
 private:
+
+  static const unsigned int CHECK_CELL_EVERY_N_STEPS;
+  static const double CELL_MIN_NORM_VOLUME;
+  static const double CELL_MAX_ANGLE_SUM;
+
+  bool cellReasonable(const common::UnitCell & unitCell) const;
 
 	const IPotential & myPotential;
 

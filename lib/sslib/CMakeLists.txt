@@ -35,6 +35,9 @@ if(WIN32)
   set(Boost_USE_STATIC_LIBS ON)
 endif(WIN32)
 
+# LAPACK (Required for parts of Armaillo library to work)#
+#find_package(LAPACK REQUIRED)
+
 if(SSLIB_ENABLE_TESTING)
   find_package(Boost 1.36.0 COMPONENTS system filesystem unit_test_framework REQUIRED)
 else()
@@ -76,6 +79,7 @@ add_library(sslib
 
 # Libraries we need to link to
 target_link_libraries(sslib
+#  ${LAPACK_LIBRARIES}           # Required as we're using Armadillo
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   spglib

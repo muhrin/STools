@@ -1,12 +1,12 @@
 /*
- * UniversalCrystalDistanceCalculator.cpp
+ * ReferenceDistanceCalculator.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES ///////////////
-#include "common/UniversalCrystalDistanceCalculator.h"
+#include "common/ReferenceDistanceCalculator.h"
 
 #include "common/Structure.h"
 #include "common/UnitCell.h"
@@ -15,16 +15,18 @@
 namespace sstbx {
 namespace common {
 
-UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(const Structure & structure):
+ReferenceDistanceCalculator::ReferenceDistanceCalculator(const Structure & structure):
 DistanceCalculator(structure)
 {}
 
-::arma::vec3 UniversalCrystalDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b) const
+::arma::vec3 ReferenceDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
 	// Make sure cart1 and 2 are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
+  const ::arma::vec3 		aUnit	= cell.wrapVec(a);
+  const ::arma::vec3 		bUnit	= cell.wrapVec(b);
+  const ::arma::vec3		dR		= bUnit - aUnit;
 	double minModDRSq = dot(dR, dR);
 	const double minModDR = sqrt(minModDRSq);
 
@@ -67,7 +69,7 @@ DistanceCalculator(structure)
 	return minDR;
 }
 
-bool UniversalCrystalDistanceCalculator::getDistsBetween(
+bool ReferenceDistanceCalculator::getDistsBetween(
     const ::arma::vec3 & a,
     const ::arma::vec3 & b,
     const double cutoff,
@@ -88,43 +90,37 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
 	// Maximum multiple of cell vectors we need to go to
-	const int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
-  const int A_min = -A_max;
-	const int B_min = -B_max;
-	const int C_min = -C_max;
+	const int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	const int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	const int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
   const double cutoffSq = cutoff * cutoff;
+  ::arma::vec3 outVec;
   size_t numFound = 0;
-  ::arma::vec3 rA, rAB, outVec;
-  double testDistSq;
-	for(int a = A_min; a <= A_max; ++a)
+  ::arma::vec3 r;
+  double rSq;
+	for(int a = -A_max; a <= A_max; ++a)
 	{
-    rA = a * A;
-		for(int b = B_min; b <= B_max; ++b)
+		for(int b = -B_max; b <= B_max; ++b)
 		{
-      rAB = rA + b * B;
-			for(int c = C_min; c <= C_max; ++c)
+			for(int c = -C_max; c <= C_max; ++c)
 			{
-        outVec = rAB + c * C + dR;
-        testDistSq = ::arma::dot(outVec, outVec);
+        r = a * A + b * B + c * C + dR;
+        rSq = ::arma::dot(r, r);
 
-				if(testDistSq < cutoffSq)
-				{
-          outValues.push_back(sqrt(testDistSq));
+				if(rSq < cutoffSq)
+        {
+          outValues.push_back(sqrt(rSq));
           if(++numFound >= maxValues)
             return false;
-				}
+        }
       }
 		}
 	}
-
-  // Completed successfully
   return true;
 }
 
-bool UniversalCrystalDistanceCalculator::getVecsBetween(
+bool ReferenceDistanceCalculator::getVecsBetween(
   const ::arma::vec3 & a,
   const ::arma::vec3 & b,
   const double cutoff,
@@ -145,44 +141,40 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
 	// Maximum multiple of cell vectors we need to go to
-	const int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+	const int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	const int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	const int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 outVec;
   size_t numFound = 0;
-  ::arma::vec3 rA, rAB;
+  ::arma::vec3 r;
 	for(int a = -A_max; a <= A_max; ++a)
 	{
-    rA = a * A;
 		for(int b = -B_max; b <= B_max; ++b)
 		{
-      rAB = rA + b * B;
 			for(int c = -C_max; c <= C_max; ++c)
 			{
-        outVec = rAB + c * C + dR;
+        r = a * A + b * B + c * C + dR;
 
-        if(::arma::dot(outVec, outVec) < cutoffSq)
-				{
-          outValues.push_back(outVec);
+				if(::arma::dot(r, r) < cutoffSq)
+        {
+          outValues.push_back(r);
           if(++numFound >= maxValues)
             return false;
-				}
+        }
       }
 		}
 	}
-
-  // Completed successfully
   return true;
 }
 
-bool UniversalCrystalDistanceCalculator::isValid() const
+bool ReferenceDistanceCalculator::isValid() const
 {
   return myStructure.getUnitCell() != NULL;
 }
 
-double UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
+double ReferenceDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
   const ::arma::vec3 & boundDir,
   const ::arma::vec3 & planeVecA,
   const ::arma::vec3 & planeVecB,

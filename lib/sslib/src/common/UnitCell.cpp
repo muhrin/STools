@@ -563,17 +563,13 @@ bool UnitCell::niggliReduce()
     return false;
   }
 
-  SSLIB_ASSERT(arma::det(cob) == 1);
-
-  //Q_ASSERT_X(cob.determinant() == 1, Q_FUNC_INFO,
-  //           "Determinant of change of basis matrix must be 1.");
+  SSLIB_ASSERT_MSG(::arma::det(cob) == 1, "Determinant of change of basis matrix must be 1.");
 
   // Update cell
   init(myOrthoMtx * cob);
   //setCurrentCellMatrix(cob.transpose() * currentCellMatrix());
 
-  //Q_ASSERT_X(StableComp::eq(origVolume, currentVolume(), tol),
-  //           Q_FUNC_INFO, "Cell volume changed during Niggli reduction.");
+  SSLIB_ASSERT_MSG(StableComp::eq(origVolume, getVolume(), tol), "Cell volume changed during Niggli reduction.");
 
   // fix coordinates
   // Apply COB matrix:
