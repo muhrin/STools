@@ -37,6 +37,11 @@ namespace potential {
 class TpsdGeomOptimiser : public IGeomOptimiser
 {
 public:
+
+	static const unsigned int DEFAULT_MAX_STEPS;
+	static const double	DEFAULT_TOLERANCE;
+  static const double DEFAULT_MIN_NORM_VOLUME;
+
 	TpsdGeomOptimiser(
 		const IPotential & potential,
 		const size_t maxSteps = DEFAULT_MAX_STEPS,
@@ -72,15 +77,12 @@ public:
 		const double          eTol,
     const common::OptionalConstMat33 externalPressure = common::OptionalConstMat33()) const;
 
-	static const unsigned int DEFAULT_MAX_STEPS;
-	static const double	DEFAULT_TOLERANCE;
-  static const double DEFAULT_MIN_NORM_VOLUME;
-
 private:
 
   static const unsigned int CHECK_CELL_EVERY_N_STEPS;
   static const double CELL_MIN_NORM_VOLUME;
   static const double CELL_MAX_ANGLE_SUM;
+  static const double MAX_STEPSIZE;
 
   bool cellReasonable(const common::UnitCell & unitCell) const;
 

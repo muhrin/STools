@@ -62,6 +62,7 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   ${SSLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
+  ${PROJECT_BINARY_DIR}/src  # So that we find SToolsConfig.h
 )
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)

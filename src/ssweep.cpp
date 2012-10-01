@@ -75,7 +75,7 @@ int main(const int argc, const char * const argv[])
 
   try
   {
-    po::options_description desc("Usage: " + exeName + " [options] params...\nOptions");
+    po::options_description desc("STools\nUsage: " + exeName + " [options] params...\nOptions");
     desc.add_options()
       ("help", "Show help message")
       ("strs", po::value<unsigned int>(&numRandomStructures)->default_value(100), "Number of random starting structures")

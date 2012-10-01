@@ -20,12 +20,13 @@ namespace potential {
 // CONSTANTS ////////////////////////////////////////////////
 
 
-const size_t TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
+const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
 const double TpsdGeomOptimiser::DEFAULT_TOLERANCE = 1e-13;
 const double TpsdGeomOptimiser::DEFAULT_MIN_NORM_VOLUME = 0.05;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 355.0;
+const double TpsdGeomOptimiser::MAX_STEPSIZE = 0.2;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
@@ -196,7 +197,7 @@ bool TpsdGeomOptimiser::optimise(
 
 
 		if(fabs(xg) > 0.0)
-			step = fabs(xg / gg);
+      step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
 
 		// Move the particles on by a step, saving the old positions
 		deltaPos		= step * data.forces;
@@ -320,7 +321,7 @@ bool TpsdGeomOptimiser::optimise(
 
 
 		if(fabs(xg) > 0.0)
-      step = ::std::min(fabs(xg / gg), 0.2);
+			step = fabs(xg / gg);
 
 		// Move the particles on by a step, saving the old positions
 		deltaPos		= step * data.forces;

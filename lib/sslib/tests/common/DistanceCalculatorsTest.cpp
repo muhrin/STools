@@ -275,12 +275,12 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   // SETTINGS ////////////////
   const size_t numAtoms = 4;
   const double cellDim = 3.1032302270780758;
-  const double tolerance = 1e-11;
+  const double tolerance = 1e-10;
   const double cutoffDist = 5.00;
 
   ssc::Structure structure;
 //  ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, 3.1032310973902493, 89.999998840060258, 90.000001159939757, 89.999999999947718));
-  ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, 3.1032310973902493, 90.0, 90.0, 90.0));
+  ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, 3.1032310973902493, 89.9999999999, 90.0, 90.0));
 
   structure.setUnitCell(cell);
 
