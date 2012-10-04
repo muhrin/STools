@@ -20,10 +20,8 @@
 #include "common/AtomSpeciesId.h"
 
 // FORWARD DECLARES ///////////
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 class AtomConstraintDescription;
 class AtomGroupDescription;
 }

@@ -124,9 +124,9 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        sweepPipeData.structureDescription->addChild(
+        sweepPipeData.structureDescription->addChild(ssbc::AtomsDescriptionPtr(
           new ::sstbx::build_cell::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies)
-        );
+        ));
       }
 
       stoichStringStream << numAtomsOfSpecies;

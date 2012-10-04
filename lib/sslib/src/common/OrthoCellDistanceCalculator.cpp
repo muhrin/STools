@@ -32,7 +32,8 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   const arma::vec3 & r2,
   double cutoff,
   std::vector<double> &outDistances,
-  const size_t maxDistances) const
+  const size_t maxDistances,
+  const unsigned int maxCellMultiples) const
 {
   // The cutoff has to be positive
   cutoff = abs(cutoff);
@@ -53,14 +54,21 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   const double rDotC = ::arma::dot(r12, myCNorm);
 
   // Maximum multiples of cell vectors we need to go to
-  const int A_min = -(int)floor((cutoff + rDotA) * myARecip);
-  const int A_max = (int)floor((cutoff - rDotA) * myARecip);
+  int A_min = -(int)floor((cutoff + rDotA) * myARecip);
+  int A_max = (int)floor((cutoff - rDotA) * myARecip);
   int B_min = -(int)floor((cutoff + rDotB) * myBRecip);
   int B_max = (int)floor((cutoff - rDotB) * myBRecip);
   int C_min = -(int)floor((cutoff + rDotC) * myCRecip);
   int C_max = (int)floor((cutoff - rDotC) * myCRecip);
 
-  //const bool doFullDistanceCheck = worthDoingAccurately(A_max - A_min, B_max - B_min, C_max - C_min);
+  // Check if there are any vectors that will be within the cutoff
+  if(A_min > A_max || B_min > B_max || C_min > C_max)
+    return true;
+
+  bool problemDuringCalculation = false;
+  problemDuringCalculation &= capMultiples(A_min, A_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(B_min, B_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(C_min, C_max, maxCellMultiples);
 
   // Loop variables
   size_t numDistances = 0;
@@ -137,10 +145,10 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
     }
   }
 
-  return true;
+  return !problemDuringCalculation;
 }
 
-::arma::vec3 OrthoCellDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2) const
+::arma::vec3 OrthoCellDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2, const unsigned int /*maxCellMultiples*/) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
@@ -163,7 +171,8 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   const ::arma::vec3 & r2,
   double cutoff,
   ::std::vector< ::arma::vec3> & outVectors,
-  const size_t maxValues) const
+  const size_t maxValues,
+  const unsigned int maxCellMultiples) const
 {
   // The cutoff has to be positive
   cutoff = abs(cutoff);
@@ -179,12 +188,21 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   const double rDotC = ::arma::dot(r12, myCNorm);
 
   // Maximum multiples of cell vectors we need to go to
-  const int A_min = -(int)floor((cutoff + rDotA) * myARecip);
-  const int A_max = (int)floor((cutoff - rDotA) * myARecip);
+  int A_min = -(int)floor((cutoff + rDotA) * myARecip);
+  int A_max = (int)floor((cutoff - rDotA) * myARecip);
   int B_min = -(int)floor((cutoff + rDotB) * myBRecip);
   int B_max = (int)floor((cutoff - rDotB) * myBRecip);
   int C_min = -(int)floor((cutoff + rDotC) * myCRecip);
   int C_max = (int)floor((cutoff - rDotC) * myCRecip);
+
+  // Check if there are any vectors that will be within the cutoff
+  if(A_min > A_max || B_min > B_max || C_min > C_max)
+    return true;
+
+  bool problemDuringCalculation = false;
+  problemDuringCalculation &= capMultiples(A_min, A_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(B_min, B_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(C_min, C_max, maxCellMultiples);
 
   // Loop variables
   size_t numVectors = 0;
@@ -263,9 +281,9 @@ bool OrthoCellDistanceCalculator::isValid() const
 
   // All angles equal 90
   return
-    utility::StableComp::eq(params[3], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::StableComp::eq(params[4], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::StableComp::eq(params[5], 90.0, VALID_ANGLE_TOLERANCE);
+    utility::StableComp::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::StableComp::eq(params[BETA], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::StableComp::eq(params[GAMMA], 90.0, VALID_ANGLE_TOLERANCE);
 }
 
 void OrthoCellDistanceCalculator::unitCellChanged()
@@ -282,21 +300,15 @@ void OrthoCellDistanceCalculator::updateBufferedValues()
   myB = cell.getBVec();
   myC = cell.getCVec();
 
-  myANorm = myA / params[0];
-  myBNorm = myB / params[1];
-  myCNorm = myC / params[2];
+  myANorm = myA / params[A];
+  myBNorm = myB / params[B];
+  myCNorm = myC / params[C];
 
-  myARecip = 1.0 / params[0];
-  myBRecip = 1.0 / params[1];
-  myCRecip = 1.0 / params[2];
+  myARecip = 1.0 / params[A];
+  myBRecip = 1.0 / params[B];
+  myCRecip = 1.0 / params[C];
 }
 
-bool OrthoCellDistanceCalculator::worthDoingAccurately(const int dA, const int dB, const int dC) const
-{
-  int max = ::std::max(dA, ::std::max(dB, dC));
-
-  return max > 250;
-}
 
 }
 }

@@ -68,6 +68,8 @@ double UnitCell::getVolume() const
 
 double UnitCell::setVolume(const double volume)
 {
+  SSLIB_ASSERT(volume > 0);
+
 	const double scale = pow(volume / getVolume(), 1.0 / 3.0);
 	init(scale * myOrthoMtx);
   return scale;

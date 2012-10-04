@@ -9,17 +9,18 @@
 #define YAML_COMMON_H
 
 // INCLUDES //////////////////////////////////
+#include "SSLib.h"
+
+#ifdef SSLIB_USE_YAML
 
 #include <string>
 
-#include <armadillo>
+#include "potential/SimplePairPotential.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
+namespace sstbx {
+namespace factory {
 
 /** The id type used by elements in a yaml document */
 typedef ::std::string     KwTyp;
@@ -28,8 +29,6 @@ struct ArmaTriangularMat
 {
   ::arma::mat mat;
 };
-
-
 
 }
 }
@@ -122,9 +121,9 @@ namespace YAML {
 
   // Armadillo triangular matrices
   template<>
-  struct convert< ::spipe::common::ArmaTriangularMat>
+  struct convert< ::sstbx::factory::ArmaTriangularMat>
   {
-    static Node encode(const ::spipe::common::ArmaTriangularMat & rhs)
+    static Node encode(const ::sstbx::factory::ArmaTriangularMat & rhs)
     {
       Node node;
       for(size_t i = 0; i < rhs.mat.n_rows; ++i)
@@ -137,7 +136,7 @@ namespace YAML {
       return node;
      }
 
-    static bool decode(const Node & node, ::spipe::common::ArmaTriangularMat & rhs)
+    static bool decode(const Node & node, ::sstbx::factory::ArmaTriangularMat & rhs)
     {
       if(!node.IsSequence())
         return false;
@@ -200,3 +199,5 @@ namespace YAML {
 
 
 #endif /* YAML_COMMON_H */
+
+#endif /* SSLIB_USE_YAML */

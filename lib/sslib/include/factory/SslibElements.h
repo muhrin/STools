@@ -1,5 +1,5 @@
 /*
- * SslibElements.h
+ * SsLibElements.h
  *
  *
  *  Created on: May 29, 2012
@@ -15,10 +15,8 @@
 
 // DEFINES //////////////////////////////////////////////
 
-namespace sstbx
-{
-namespace factory
-{
+namespace sstbx {
+namespace factory {
 
 class SchemaList;
 class SchemaMap;
@@ -27,7 +25,7 @@ class SchemaMapSingle;
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-class SslibElements
+class SsLibElements
 {
 public:
 
@@ -36,7 +34,7 @@ public:
   typedef ::boost::shared_ptr<SchemaMapSingle>   ScalarPtr;
 
 
-  SslibElements();
+  SsLibElements();
 
   // Generic number of things i.e. +ve integer
   ScalarPtr   n;

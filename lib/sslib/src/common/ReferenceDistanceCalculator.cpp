@@ -19,7 +19,7 @@ ReferenceDistanceCalculator::ReferenceDistanceCalculator(const Structure & struc
 DistanceCalculator(structure)
 {}
 
-::arma::vec3 ReferenceDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b) const
+::arma::vec3 ReferenceDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b, const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
@@ -36,9 +36,14 @@ DistanceCalculator(structure)
   const ::arma::vec3 C(cell.getCVec());
 
 	// Maximum multiple of cell vectors we need to go to
-	int maxA = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, minModDR));
-	int maxB = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, minModDR));
-	int maxC = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
+	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, minModDR));
+	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, minModDR));
+	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
+
+  bool problemDuringCalculation = false;
+  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
 
   // Loop variables
   ::arma::vec3 minDR = dR;
@@ -46,13 +51,13 @@ DistanceCalculator(structure)
 	double modDRSq;
   ::arma::vec3 nA, nAPlusNB, dRImg;
   size_t numDistances = 0;
-	for(int a = -maxA; a <= maxA; ++a)
+	for(int a = -A_max; a <= A_max; ++a)
 	{
 		nA = a * A;
-		for(int b = -maxB; b <= maxB; ++b)
+		for(int b = -B_max; b <= B_max; ++b)
 		{
 		  nAPlusNB = nA + b * B;
-			for(int c = -maxC; c <= maxC; ++c)
+			for(int c = -C_max; c <= C_max; ++c)
 			{
         dRImg = nAPlusNB + c * C + dR;
 				
@@ -74,10 +79,10 @@ bool ReferenceDistanceCalculator::getDistsBetween(
     const ::arma::vec3 & b,
     const double cutoff,
     ::std::vector<double> & outValues,
-    const size_t maxValues) const
+    const size_t maxValues,
+    const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
-  const double (&params)[6] = cell.getLatticeParams();
 
 	// Make sure a and b are in the unit cell at the origin
   const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
@@ -90,9 +95,14 @@ bool ReferenceDistanceCalculator::getDistsBetween(
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
 	// Maximum multiple of cell vectors we need to go to
-	const int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+
+  bool problemDuringCalculation = false;
+  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 outVec;
@@ -117,7 +127,7 @@ bool ReferenceDistanceCalculator::getDistsBetween(
       }
 		}
 	}
-  return true;
+  return !problemDuringCalculation;
 }
 
 bool ReferenceDistanceCalculator::getVecsBetween(
@@ -125,10 +135,10 @@ bool ReferenceDistanceCalculator::getVecsBetween(
   const ::arma::vec3 & b,
   const double cutoff,
   ::std::vector< ::arma::vec3> & outValues,
-  const size_t maxValues) const
+  const size_t maxValues,
+  const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
-  const double (&params)[6] = cell.getLatticeParams();
 
 	// Make sure a and b are in the unit cell at the origin
   const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
@@ -141,9 +151,14 @@ bool ReferenceDistanceCalculator::getVecsBetween(
   const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
 
 	// Maximum multiple of cell vectors we need to go to
-	const int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
-	const int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
-	const int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, C, safeCutoff));
+	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, A, C, safeCutoff));
+	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
+
+  bool problemDuringCalculation = false;
+  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 outVec;
@@ -166,7 +181,7 @@ bool ReferenceDistanceCalculator::getVecsBetween(
       }
 		}
 	}
-  return true;
+  return !problemDuringCalculation;
 }
 
 bool ReferenceDistanceCalculator::isValid() const

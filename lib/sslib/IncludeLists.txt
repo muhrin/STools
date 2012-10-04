@@ -61,6 +61,7 @@ source_group("Header Files\\common\\event" FILES ${sslib_Header_Files__common__e
 
 set(sslib_Header_Files__factory
   include/factory/AbstractInputObject.h
+  include/factory/FactoryError.h
   include/factory/IInputObject.h
   include/factory/ISchemaElementInstance.h
   include/factory/Scalar.h
@@ -74,7 +75,10 @@ set(sslib_Header_Files__factory
   include/factory/SchemaScalarValue.h
   include/factory/SchemaScalarValueAny.h
   include/factory/SchemaScalarValueLiteral.h
-  include/factory/SslibElements.h
+  include/factory/SsLibElements.h
+  include/factory/SsLibFactoryYaml.h
+  include/factory/SsLibYamlKeywords.h
+  include/factory/YamlCommon.h
 )
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
 
@@ -104,6 +108,7 @@ source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 
 set(sslib_Header_Files__utility
   include/utility/BoostFilesystem.h
+  include/utility/CellParamsEnum.h
   include/utility/DistanceMatrixComparator.h
   include/utility/EdgeMap.h
   include/utility/Enum.h
@@ -127,9 +132,10 @@ set(sslib_Header_Files__utility
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 
 set(sslib_Header_Files__
+  include/SSLibConfig.h.in
+  ${PROJECT_BINARY_DIR}/include/SSLibConfig.h
   include/SSLibAssert.h
   include/SSLib.h
-  include/SSLibConfig.h
   include/SSLibTypes.h
 )
 source_group("Header Files" FILES ${sslib_Header_Files__})

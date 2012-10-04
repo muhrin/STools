@@ -16,10 +16,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
+namespace sstbx {
+namespace factory {
 
 struct FactoryError : virtual ::boost::exception, virtual ::std::exception {};
 

@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(HeapArrayIndexRemapping)
 {
   // SETTINGS /////////////////
   typedef unsigned short DataType;
-  const size_t numElements = 10;
+  const size_t numElements = 5;
 
   ::boost::scoped_array<DataType> sArray(new DataType[numElements]);
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(StdVectorIndexRemapping)
   // SETTINGS /////////////////
   typedef unsigned short DataType;
   typedef ::std::vector<DataType> CollectionType;
-  const size_t numElements = 10;
+  const size_t numElements = 5;
 
   CollectionType collection(numElements);
 
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(VectorTest)
   typedef unsigned short DataType;
   typedef ::std::vector<DataType> CollectionType;
   typedef ssu::PermutationRange<CollectionType, DataType> Range;
-  const size_t maxNumElements = 11;
+  const size_t maxNumElements = 5;
 
 
   CollectionType collection;

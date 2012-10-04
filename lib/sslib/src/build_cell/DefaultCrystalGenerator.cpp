@@ -50,7 +50,7 @@ common::StructurePtr DefaultCrystalGenerator::generateStructure(
 {
 	using ::sstbx::common::Structure;
 
-  const bool hasUnitCell = structureDescription.getUnitCell().get() != NULL;
+  const bool hasUnitCell = structureDescription.getUnitCell() != NULL;
 
   // Create a builder that will populate the structure with the required atoms
   StructureBuilder builder;

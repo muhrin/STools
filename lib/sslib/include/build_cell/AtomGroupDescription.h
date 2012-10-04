@@ -17,8 +17,9 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "build_cell/AtomConstraintDescription.h"
-#include "build_cell/IAtomConstrainable.h"
 #include "build_cell/ConstraintDescriptionId.h"
+#include "build_cell/IAtomConstrainable.h"
+#include "build_cell/Types.h"
 #include "common/AtomSpeciesId.h"
 
 
@@ -60,7 +61,7 @@ public:
 
 	const AtomsContainer & getChildAtoms() const;
 
-	void addChild(AtomsDescription * const childAtom);
+	void addChild(AtomsDescriptionPtr childAtom);
 
   void clearChildAtoms();
 

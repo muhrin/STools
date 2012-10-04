@@ -160,7 +160,7 @@ private:
 
 
 } // namespace utility
-} // namespace sslib
+} // namespace sstbx
 
 #ifdef _MSC_VER
   #pragma warning( pop )

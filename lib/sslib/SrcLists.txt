@@ -51,7 +51,8 @@ set(sslib_Source_Files__factory
   src/factory/SchemaScalarValue.cpp
   src/factory/SchemaScalarValueAny.cpp
   src/factory/SchemaScalarValueLiteral.cpp
-  src/factory/SslibElements.cpp
+  src/factory/SsLibElements.cpp
+  src/factory/SsLibFactoryYaml.cpp
 )
 source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 

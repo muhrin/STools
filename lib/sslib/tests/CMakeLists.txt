@@ -27,6 +27,13 @@ set(tests_Source_Files__common
 )
 source_group("Source Files\\common" FILES ${tests_Source_Files__common})
 
+# tests/factory
+
+set(tests_Source_Files__factory
+  factory/YamlFactoryTest.cpp
+)
+source_group("Source Files\\factory" FILES ${tests_Source_Files__factory})
+
 ## tests/utility
 
 set(tests_Header_Files__utility
@@ -59,6 +66,7 @@ set(tests_Header_Files
 set(tests_Source_Files
   ${tests_Source_Files__build_cell}
   ${tests_Source_Files__common}
+  ${tests_Source_Files__factory}
   ${tests_Source_Files__utility}
   ${tests_Source_Files__}
 )

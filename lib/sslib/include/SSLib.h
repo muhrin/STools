@@ -14,6 +14,8 @@
 
 #include "SSLibTypes.h"
 
+#include <armadillo>
+
 // DEFINES ///////////////////////////////////////////////
 #ifndef NULL
   #define NULL 0

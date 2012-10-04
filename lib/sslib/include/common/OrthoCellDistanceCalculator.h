@@ -11,14 +11,16 @@
 // INCLUDES ///////////////////////////////////
 #include <armadillo>
 
+#include "SSLibAssert.h"
 #include "common/DistanceCalculator.h"
+#include "utility/CellParamsEnum.h"
 
 namespace sstbx {
 namespace common {
 
 class Structure;
 
-class OrthoCellDistanceCalculator : public DistanceCalculator
+class OrthoCellDistanceCalculator : public DistanceCalculator, private utility::CellParamsEnum
 {
 public:
 
@@ -34,27 +36,26 @@ public:
     const ::arma::vec3 & r2,
     const double cutoff,
     ::std::vector<double> & outDistances,
-    const size_t maxDistances = DEFAULT_MAX_OUTPUTS) const;
+    const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
+    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
-  virtual ::arma::vec3 getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2) const;
+  virtual ::arma::vec3 getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2, const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool getVecsBetween(
     const ::arma::vec3 & r1,
     const ::arma::vec3 & r2,
     const double cutoff,
     ::std::vector< ::arma::vec3> & outVectors,
-    const size_t maxVectors = DEFAULT_MAX_OUTPUTS) const;
+    const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
+    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool isValid() const;
 
-  virtual void unitCellChanged();
-
+  void unitCellChanged();
 
 private:
 
   void updateBufferedValues();
-
-  bool worthDoingAccurately(const int dA, const int dB, const int dC) const;
 
   ::arma::vec3 myA;
   ::arma::vec3 myB;

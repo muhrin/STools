@@ -43,7 +43,6 @@ set(spipe_Header_Files__common
   common/PipeFactoryYaml.h
   common/PipeFunctions.h
   common/SharedData.h
-  common/SsLibFactoryYaml.h
   common/StructureData.h
   common/UtilityFunctions.h
   common/YamlInputObjectAdapter.h
@@ -56,7 +55,6 @@ set(spipe_Source_Files__common
   common/PipeFactoryYaml.cpp
   common/PipeFunctions.cpp
   common/SharedData.cpp
-  common/SsLibFactoryYaml.cpp
   common/StructureData.cpp
   common/UtilityFunctions.cpp
   common/YamlInputObjectAdapter.cpp

@@ -19,10 +19,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace spipe
-{
-namespace utility
-{
+namespace spipe {
+namespace utility {
 
 class IDataTableChangeListener;
 
@@ -63,7 +61,7 @@ public:
 
   void writeToFile(
     const ::std::string & filename,
-    const ::std::string & colDelimiter = " ") const;
+    const ::std::string & colDelimiter = "\t") const;
 
   void clear();
 

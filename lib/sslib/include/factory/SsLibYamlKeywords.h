@@ -9,17 +9,17 @@
 #define SSLIB_YAML_KEYWORDS_H
 
 // INCLUDES //////////////////////////////////
+#include "SSLib.h"
+
+#ifdef SSLIB_USE_YAML
 
 #include <string>
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
-namespace sslib_yaml_keywords
-{
+namespace sstbx {
+namespace factory {
+namespace sslib_yaml_keywords {
 
 /** The id type used by elements in the yaml document */
 typedef ::std::string     KwTyp;
@@ -33,22 +33,29 @@ static const KwTyp VALUE                 = "value";
 static const KwTyp DEFAULT               = "default";
 
 // Structure description ///
+static const KwTyp STRUCTURE             = "structure";
+static const KwTyp STRUCTURE__ATOMS_RADII= "atomsRadii";
+
+// Atoms list ///
+static const KwTyp STRUCTURE__ATOMS__TYPE   = "type";
+static const KwTyp STRUCTURE__ATOMS__RADIUS = "radius";
+
 static const KwTyp STR_DESC              = "strDesc";
 static const KwTyp STR_DESC__ATOMS       = "atoms";
 static const KwTyp STR_DESC__ATOMS__SPEC = "spec";
 static const KwTyp STR_DESC__ATOMS__N    = "n";
-static const KwTyp STR_DESC__CONSTRAINTS = "constraints";
-static const KwTyp STR_DESC__CONSTRAINTS__TYPE___MINSEP = "minsep";
 
 static const KwTyp STR_GENERATOR                    = "strGenerator";
 static const KwTyp STR_GENERATOR__TYPE___DEFAULT    = DEFAULT;
 
-static const KwTyp CELL_DESC                  = "cellDesc";
-static const KwTyp CELL_DESC__PARAMS          = "params";
-static const KwTyp CELL_DESC__VOL             = "vol";
-static const KwTyp CELL_DESC__VOL_DELTA       = "volDelta";
-static const KwTyp CELL_DESC__MIN_ANGLE       = "minAngle";
-static const KwTyp CELL_DESC__MAX_ANGLE       = "maxAngle";
+static const KwTyp CELL                       = "cell";
+static const KwTyp CELL__TYPE___RANDOM        = "random";
+static const KwTyp CELL_RANDOM                = "cellDesc";
+static const KwTyp CELL_RANDOM__PARAMS        = "params";
+static const KwTyp CELL_RANDOM__VOL           = "vol";
+static const KwTyp CELL_RANDOM__VOL_DELTA     = "volDelta";
+static const KwTyp CELL_RANDOM__MIN_ANGLE     = "minAngle";
+static const KwTyp CELL_RANDOM__MAX_ANGLE     = "maxAngle";
 
 static const KwTyp CELL_GENERATOR                   = "cellGenerator";
 static const KwTyp CELL_GENERATOR__TYPE___DEFAULT   = DEFAULT;
@@ -79,3 +86,4 @@ static const KwTyp STR_WRITER__TYPE___RES = "res";
 
 #endif /* SSLIB_YAML_KEYWORDS_H */
 
+#endif /* SSLIB_USE_YAML */

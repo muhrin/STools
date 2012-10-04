@@ -41,6 +41,21 @@ set(stools_Files__sinfo
   ${stools_Source_Files__sinfo}
 )
 
+## ssearch
+set(stools_Header_Files__ssearch
+)
+source_group("Header Files" FILES ${stools_Header_Files__ssearch})
+
+set(stools_Source_Files__ssearch
+  ssearch.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__ssearch})
+
+set(stools_Files__ssearch
+  ${stools_Header_Files__ssearch}
+  ${stools_Source_Files__ssearch}
+)
+
 ## ssweep
 
 set(stools_Header_Files__ssweep
@@ -115,6 +130,29 @@ target_link_libraries(sinfo
   yaml-cpp
   spglib
   sslib
+)
+
+#####################################
+## sinfo: General structure search ##
+#####################################
+add_executable(ssearch
+  ${stools_Files}
+  ${stools_Files__ssearch}
+)
+
+add_dependencies(ssearch yaml_cpp spglib sslib pipelib spipe)
+
+# Libraries we need to link to
+target_link_libraries(ssearch
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${ARMADILLO_LIBRARIES}
+  yaml-cpp
+  spglib
+  sslib
+  pipelib
+  spipe
 )
 
 ###############################################

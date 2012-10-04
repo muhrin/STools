@@ -271,12 +271,10 @@ AtomGroupDescription::getChildAtoms() const
 	return myAtoms;
 }
 
-void AtomGroupDescription::addChild(AtomsDescription * const atoms)
+void AtomGroupDescription::addChild(AtomsDescriptionPtr atoms)
 {
-	myAtoms.push_back(atoms);
-
-	// Tell it that we are the new parent
-	atoms->setParent(this);
+  // Insert and tell it that we are the new parent
+  myAtoms.insert(myAtoms.end(), atoms.release())->setParent(this);
 }
 
 void AtomGroupDescription::clearChildAtoms()

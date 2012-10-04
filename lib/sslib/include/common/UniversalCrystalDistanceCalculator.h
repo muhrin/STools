@@ -23,26 +23,25 @@ public:
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
 
-  virtual ::arma::vec3 getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b) const;
+  virtual ::arma::vec3 getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b, const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool getDistsBetween(
     const ::arma::vec3 & a,
     const ::arma::vec3 & b,
     const double cutoff,
     ::std::vector<double> & outDistances,
-    const size_t maxDistances = DistanceCalculator::DEFAULT_MAX_OUTPUTS) const;
+    const size_t maxDistances = DistanceCalculator::DEFAULT_MAX_OUTPUTS,
+    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool getVecsBetween(
     const ::arma::vec3 & a,
     const ::arma::vec3 & b,
     const double cutoff,
     ::std::vector< ::arma::vec3> & outVectors,
-    const size_t maxVectors = DistanceCalculator::DEFAULT_MAX_OUTPUTS) const;
+    const size_t maxVectors = DistanceCalculator::DEFAULT_MAX_OUTPUTS,
+    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool isValid() const;
-
-  virtual void unitCellChanged() {}
-
 
 private:
 

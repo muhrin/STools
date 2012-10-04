@@ -12,6 +12,7 @@
 #include <armadillo>
 
 #include "SSLibAssert.h"
+#include "utility/CellParamsEnum.h"
 #include "utility/StableComparison.h"
 
 namespace sstbx {
@@ -20,7 +21,7 @@ namespace common {
 // FORWARD DECLARES ///////////////////////////
 class Structure;
 
-class UnitCell
+class UnitCell : private utility::CellParamsEnum
 {
 public:
 
@@ -37,8 +38,6 @@ public:
       CUBIC
     };
   };
-
-  enum Parameter {A, B, C, ALPHA, BETA, GAMMA};
 
   UnitCell(
     const double a, const double b, const double c,

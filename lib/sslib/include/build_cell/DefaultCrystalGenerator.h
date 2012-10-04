@@ -27,10 +27,8 @@ class StructureDescriptionMap;
 }
 }
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 
 class DefaultCrystalGenerator : public IStructureGenerator
 {

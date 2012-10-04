@@ -14,7 +14,8 @@
 
 #include "common/AtomSpeciesId.h"
 
-namespace sstbx { namespace build_cell {
+namespace sstbx {
+namespace build_cell {
 
 AtomsDescription::AtomsDescription():
 mySpecies(sstbx::common::AtomSpeciesId::CUSTOM_1),

@@ -35,10 +35,15 @@ namespace ssu = ::sstbx::utility;
 BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 {
   // SETTINGS ////////////////
-  const size_t numAtoms = 25;
   const double cellDim = 1;
   const double tolerance = 1e-13;
-  const double maxCutoff = 4;
+#ifdef DIST_TEST_MANUAL_DEBUG
+  const size_t numAtoms = 15;
+  const double maxCutoff = 2 * cellDim;
+#else
+  const size_t numAtoms = 50;
+  const double maxCutoff = 4 * cellDim;
+#endif
   const size_t numAttempts = 100;
 
   // Timers
@@ -175,10 +180,15 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 {
   // SETTINGS ////////////////
-  const size_t numAtoms = 50;
   const double cellDim = 1;
   const double tolerance = 1e-13;
-  const double maxCutoff = 5;
+#ifdef DIST_TEST_MANUAL_DEBUG
+  const size_t numAtoms = 15;
+  const double maxCutoff = 2 * cellDim;
+#else
+  const size_t numAtoms = 50;
+  const double maxCutoff = 4 * cellDim;
+#endif
   const size_t numAttempts = 100;
 
   ::ssbc::RandomUnitCell randomCell;

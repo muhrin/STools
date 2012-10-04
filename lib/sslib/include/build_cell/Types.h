@@ -9,16 +9,25 @@
 #define BUILD_CELL__TYPES_H
 
 // INCLUDES ////////////
-#include <boost/shared_ptr.hpp>
-
+#include "SSLib.h"
 
 namespace sstbx {
 namespace build_cell {
 
 // FORWARD DECLARES ////////////
+class AtomsDescription;
 class IUnitCellBlueprint;
+class RandomUnitCell;
+class StructureDescription;
 
-typedef ::boost::shared_ptr<const IUnitCellBlueprint> ConstUnitCellBlueprintPtr;
+typedef UniquePtr<AtomsDescription>::Type AtomsDescriptionPtr;
+
+typedef UniquePtr<StructureDescription>::Type StructureDescriptionPtr;
+
+typedef UniquePtr<IUnitCellBlueprint>::Type UnitCellBlueprintPtr;
+typedef UniquePtr<const IUnitCellBlueprint>::Type ConstUnitCellBlueprintPtr;
+
+typedef UniquePtr<RandomUnitCell>::Type RandomUnitCellPtr;
 
 }
 }

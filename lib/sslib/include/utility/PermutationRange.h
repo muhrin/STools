@@ -303,7 +303,7 @@ PermutationRange<T *, T>::base_t(iterator_t::makeBegin(ptr, numElements),
 {}
 
 } // namespace utility
-} // namespace sslib
+} // namespace sstbx
 
 
 #endif /* PERMUTATION_RANGE_H */

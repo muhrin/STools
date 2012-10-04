@@ -27,6 +27,7 @@
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "utility/BoostFilesystem.h"
+#include "utility/CellParamsEnum.h"
 
 // DEFINES /////////////////////////////////
 
@@ -54,6 +55,7 @@ void ResReaderWriter::writeStructure(
 	const AdditionalData * const data) const
 {
 	using namespace ::boost::filesystem;
+  using namespace utility::cell_params_enum;
 	using ::sstbx::common::AtomSpeciesId;
 	using ::std::endl;
 	using ::boost::filesystem::ofstream;
@@ -124,7 +126,7 @@ void ResReaderWriter::writeStructure(
 
 	// Do cell parameters
 	strFile << "CELL 1.0";
-	for(size_t i = 0; i < 6; ++i)
+	for(size_t i = A; i <= GAMMA; ++i)
 	{
 		strFile << " " << latticeParams[i];
 	}

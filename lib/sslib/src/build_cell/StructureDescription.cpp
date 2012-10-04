@@ -16,9 +16,10 @@
 namespace sstbx {
 namespace build_cell {
 
-StructureDescription::StructureDescription(const ConstUnitCellBlueprintPtr unitCell):
-myUnitCell(unitCell)
-{}
+StructureDescription::StructureDescription(ConstUnitCellBlueprintPtr unitCell)
+{
+  myUnitCell = unitCell;
+}
 
 void StructureDescription::addStructureConstraint(
   StructureConstraintDescription * const structureConstraint)
@@ -76,14 +77,14 @@ bool StructureDescription::traversePostorder(ConstStructureDescriptionVisitor & 
   return outcome;
 }
 
-void StructureDescription::setUnitCell(const ConstUnitCellBlueprintPtr unitCell)
+void StructureDescription::setUnitCell(ConstUnitCellBlueprintPtr unitCell)
 {
   myUnitCell = unitCell;
 }
 
-ConstUnitCellBlueprintPtr StructureDescription::getUnitCell() const
+const IUnitCellBlueprint * StructureDescription::getUnitCell() const
 {
-  return myUnitCell;
+  return myUnitCell.get();
 }
 
 }
