@@ -138,7 +138,7 @@ size_t LoadPotStructures::loadStructures(
       //std::cout << "Got res file: " << dirEntry.string() << std::endl;
 
       // Try loading
-      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, &data);
+      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, myPipeline->getGlobalData().getSpeciesDatabase(), &data);
       strDat->setStructure(str);
 
       generateStructureDataFromIo(data, *strDat);

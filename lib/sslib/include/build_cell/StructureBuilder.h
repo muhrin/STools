@@ -16,6 +16,9 @@
 #include "common/Types.h"
 
 namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
+}
 namespace build_cell {
 
 class StructureDescription;
@@ -27,7 +30,11 @@ public:
 
   typedef UniquePtr<StructureDescriptionMap>::Type DescriptionMapPtr;
 
-  common::StructurePtr buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap);
+  StructureBuilder(const common::AtomSpeciesDatabase & speciesDb);
+
+  common::StructurePtr buildStructure(
+    const StructureDescription & description,
+    DescriptionMapPtr & outDescriptionMap);
 
   // From StructureDescriptionVisitor ///////////////////
   virtual bool visitAtom(const AtomsDescription & description);
@@ -39,8 +46,9 @@ private:
 
   typedef ::std::pair<common::Structure *, StructureDescriptionMap *> StructurePair;
 
-  StructurePair     myCurrentPair;
-  double            myAtomsVolume;
+  const common::AtomSpeciesDatabase & mySpeciesDb;
+  StructurePair                       myCurrentPair;
+  double                              myAtomsVolume;
   
 };
 

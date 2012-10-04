@@ -37,14 +37,22 @@ public:
 
 	virtual ~IPotential() {}
 
+  /**
+  /* Get the name of this potential.
+  /*
+  /**/
 	virtual const ::std::string & getName() const = 0;
 
+  /**
+  /* Get the potential radius for a particular atom species.  Return value is optional as the potential may
+  /* not know or may not deal with the species specified.
+  /**/
   virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const = 0;
 
-  virtual ::boost::shared_ptr<IPotentialEvaluator>
-    createEvaluator(const sstbx::common::Structure & structure) const = 0;
+  virtual ::boost::shared_ptr<IPotentialEvaluator> createEvaluator(const sstbx::common::Structure & structure) const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_POTENTIAL_H */

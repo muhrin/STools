@@ -23,18 +23,14 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 class StructureDescription;
 }
-namespace common
-{
+namespace common {
 class AtomSpeciesDatabase;
 }
-namespace potential
-{
+namespace potential {
 class IGeomOptimiser;
 class IPotential;
 }
@@ -56,7 +52,6 @@ public:
 
   // From Block ///////////////////////////////
   virtual void pipelineInitialising();
-  virtual void pipelineStarting();
   // End from Block //////////////////////////
 
   // From PipeBlock ///////////////////////////
@@ -70,11 +65,6 @@ protected:
     spipe::common::StructureData & strData);
 
   void updateTable(const ::spipe::StructureDataTyp & strData);
-
-  void updateAtomRadiiFromPotential(
-    const ::sstbx::potential::IPotential &      potential,
-    ::sstbx::build_cell::StructureDescription & structureDescription,
-    ::sstbx::common::AtomSpeciesDatabase &      speciesDatabase) const;
 
   // Should we write information about structures being optimised
   // to file.

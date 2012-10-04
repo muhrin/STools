@@ -20,6 +20,7 @@ namespace build_cell {
 class StructureDescription;
 }
 namespace common {
+class AtomSpeciesDatabase;
 class Structure;
 }
 }
@@ -31,7 +32,10 @@ class IStructureGenerator
 {
 public:
 
-  virtual common::StructurePtr generateStructure(const StructureDescription &  strDesc, StructureGenerationOutcome::Value * outcome = NULL) const = 0;
+  virtual common::StructurePtr generateStructure(
+    const StructureDescription &  strDesc,
+    const common::AtomSpeciesDatabase & speciesDb,
+    StructureGenerationOutcome::Value * outcome = NULL) const = 0;
 
   virtual ~IStructureGenerator() {}
 };

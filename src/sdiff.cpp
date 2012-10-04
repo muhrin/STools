@@ -22,6 +22,7 @@
 
 
 // From SSLib //
+#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <common/UnitCell.h>
@@ -37,6 +38,7 @@ namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 
 int main(const int argc, char * argv[])
 {
@@ -83,8 +85,9 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
-
-  sstbx::io::ResReaderWriter resReader;
+  
+  ssc::AtomSpeciesDatabase speciesDb;
+  ssio::ResReaderWriter resReader;
   ::std::vector<PathStructurePair> structures;
   ssc::StructurePtr str;
 
@@ -97,7 +100,7 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    str = resReader.readStructure(strPath);
+    str = resReader.readStructure(strPath, speciesDb);
     if(str.get())
       structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
   }

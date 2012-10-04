@@ -16,21 +16,20 @@
 #include <map>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
 class Structure;
 }
-namespace io
-{
+namespace io {
 struct AdditionalData;
 class IStructureWriter;
 }
 }
 
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
 class StructureWriterManager
 {
@@ -41,8 +40,9 @@ public:
 
 	
 	bool writeStructure(
-		const ::sstbx::common::Structure & str,
+		const common::Structure & str,
 		const ::boost::filesystem::path & path,
+    const common::AtomSpeciesDatabase & atomSpeciesDb,
 		const AdditionalData * const data = NULL) const;
 
 

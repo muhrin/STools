@@ -6,7 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "StructurePipe.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -19,6 +18,7 @@
 
 
 // From SSLib //
+#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <common/UnitCell.h>
@@ -100,13 +100,14 @@ int main(const int argc, char * argv[])
   sstbx::io::ResReaderWriter resReader;
 
 
+  ssc::AtomSpeciesDatabase speciesDb;
   ::std::string inputFile;
   fs::path structurePath;
   ssc::StructurePtr structure;
   BOOST_FOREACH(inputFile, inputFiles)
   {
     fs::path structurePath(inputFile);
-    structure = resReader.readStructure(structurePath);
+    structure = resReader.readStructure(structurePath, speciesDb);
 
     printInfo(*structure.get(), infoString);
   }

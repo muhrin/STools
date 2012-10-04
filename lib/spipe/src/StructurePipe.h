@@ -74,14 +74,10 @@ class StartBlock;
 
 }
 
-namespace spipe
-{
-namespace common
-{
-
+namespace spipe {
+namespace common {
 class SharedData;
 class StructureData;
-
 }
 }
 

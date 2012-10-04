@@ -181,6 +181,7 @@ int main(const int argc, const char * const argv[])
 			<< 1 << betaDiagonal << endr;
 
   ssp::SimplePairPotential pp(
+    paramSweepPipe.getGlobalData().getSpeciesDatabase(),
     2,
     potentialSpecies,
     epsilon,

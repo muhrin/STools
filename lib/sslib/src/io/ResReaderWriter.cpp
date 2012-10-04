@@ -38,16 +38,6 @@
 namespace sstbx {
 namespace io {
 
-namespace common = ::sstbx::common;
-
-void ResReaderWriter::writeStructure(
-	const sstbx::common::Structure &str,
-	const::boost::filesystem::path & filepath,
-	const AdditionalData *const data) const
-{
-	writeStructure(str, filepath, ::sstbx::common::AtomSpeciesDatabase::inst(), data);
-}
-
 void ResReaderWriter::writeStructure(
 	const ::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & filepath,
@@ -182,13 +172,6 @@ void ResReaderWriter::writeStructure(
 
  if(strFile.is_open())
     strFile.close();
-}
-
-UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
-	const boost::filesystem::path &   filepath,
-	AdditionalData * const            data) const
-{
-  return readStructure(filepath, ::sstbx::common::AtomSpeciesDatabase::inst(), data);
 }
 
 UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(

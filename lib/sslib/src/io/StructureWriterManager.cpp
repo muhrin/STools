@@ -48,6 +48,7 @@ void StructureWriterManager::deregisterWriter(sstbx::io::IStructureWriter &write
 bool StructureWriterManager::writeStructure(
 	const ::sstbx::common::Structure & str,
 	const ::boost::filesystem::path & path,
+  const common::AtomSpeciesDatabase & atomSpeciesDb,
 	const AdditionalData * const data) const
 {
 	// TODO: Add status return value to this method
@@ -77,7 +78,7 @@ bool StructureWriterManager::writeStructure(
 	}
 
 	// Finally pass it on the the correct writer
-	it->second->writeStructure(str, path, data);
+	it->second->writeStructure(str, path, atomSpeciesDb, data);
 
   // TODO: The write may have failed so provide better and accurate feedback!
   return true;

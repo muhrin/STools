@@ -60,6 +60,10 @@ namespace kw = sslib_yaml_keywords;
 typedef boost::tokenizer<boost::char_separator<char> > Tok;
 const boost::char_separator<char> tokSep(" \t");
 
+SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
+  myAtomSpeciesDb(atomSpeciesDb)
+{}
+
 ssbc::UnitCellBlueprintPtr
 SsLibFactoryYaml::createCellGenerator(const YAML::Node & node)
 {
@@ -210,6 +214,7 @@ ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
     const ::std::vector<ssc::AtomSpeciesId> species;
 
     pot = new ssp::SimplePairPotential(
+      myAtomSpeciesDb,
       numSpecies,
       species,
       epsilon.mat,
@@ -450,7 +455,7 @@ SsLibFactoryYaml::parseAtomTypeString(const ::std::string & atomSpecString) cons
 
     if(it != tok.end())
     {
-      type.first = common::AtomSpeciesDatabase::inst().getIdFromSymbol(*it);
+      type.first = myAtomSpeciesDb.getIdFromSymbol(*it);
       if(type.first != common::AtomSpeciesId::DUMMY)
         successful = true;
     }

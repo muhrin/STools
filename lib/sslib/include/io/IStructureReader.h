@@ -36,16 +36,6 @@ public:
 
 	/**
 	/* Read a structure from disk.  Additional data may be read if avilable
-	/* and will be written out by any readers that support it.
-	/* WARNING: This method may rely on an atom species database in which case the
-	/* default database will be used which is NOT thread safe.
-	/**/
-  virtual UniquePtr<common::Structure>::Type readStructure(
-		const boost::filesystem::path & path,
-		AdditionalData * const          data = NULL) const = 0;
-
-	/**
-	/* Read a structure from disk.  Additional data may be read if avilable
 	/* and will be written out by any writers that support it.
 	/* The user can supply their own species database, however it is up to them
 	/* to make sure that the implementation is thread safe if necessary.

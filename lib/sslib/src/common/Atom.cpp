@@ -8,6 +8,7 @@
 // INCLUDES ///////////////
 #include "common/Atom.h"
 
+#include "SSLibAssert.h"
 #include "common/Structure.h"
 
 namespace sstbx {
@@ -49,6 +50,8 @@ double Atom::getRadius() const
 
 void Atom::setRadius(const double radius)
 {
+  SSLIB_ASSERT(radius > 0.0);
+
   myRadius = radius;
 }
 

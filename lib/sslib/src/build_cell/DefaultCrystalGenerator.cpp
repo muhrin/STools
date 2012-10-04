@@ -46,6 +46,7 @@ myMaxAttempts(10000)
 
 common::StructurePtr DefaultCrystalGenerator::generateStructure(
   const StructureDescription &  structureDescription,
+  const common::AtomSpeciesDatabase & speciesDb,
   StructureGenerationOutcome::Value * outOutcome) const
 {
 	using ::sstbx::common::Structure;
@@ -53,7 +54,7 @@ common::StructurePtr DefaultCrystalGenerator::generateStructure(
   const bool hasUnitCell = structureDescription.getUnitCell() != NULL;
 
   // Create a builder that will populate the structure with the required atoms
-  StructureBuilder builder;
+  StructureBuilder builder(speciesDb);
   // and build
   StructureBuilder::DescriptionMapPtr descriptionMap;
   common::StructurePtr str = builder.buildStructure(structureDescription, descriptionMap);

@@ -13,10 +13,12 @@
 #include <yaml-cpp/yaml.h>
 
 #include <build_cell/Types.h>
+#include <common/AtomSpeciesDatabase.h>
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
 
 namespace ssbc = ::sstbx::build_cell;
+namespace ssc  = ::sstbx::common;
 namespace ssf = ::sstbx::factory;
 
 namespace kw = ::sstbx::factory::sslib_yaml_keywords;
@@ -26,7 +28,9 @@ BOOST_AUTO_TEST_CASE(StructureDescriptionTest)
   // Settings ////////////////
   const char simpleStructure[] = "SimpleStructure.sslib";
 
-  ssf::SsLibFactoryYaml factory;
+  ssc::AtomSpeciesDatabase speciesDb;
+
+  ssf::SsLibFactoryYaml factory(speciesDb);
 
   YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 

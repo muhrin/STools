@@ -12,10 +12,9 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx { namespace common {
+namespace sstbx {
+namespace common {
 
-// Declare the singleton instance
-::boost::shared_ptr<AtomSpeciesDatabase> AtomSpeciesDatabase::INSTANCE;
 
 AtomSpeciesDatabase::AtomSpeciesDatabase()
 {
@@ -69,12 +68,13 @@ const AtomSpeciesId::Value AtomSpeciesDatabase::getIdFromSymbol(const std::strin
   return id;
 }
 
-const double * AtomSpeciesDatabase::getRadius(const AtomSpeciesId::Value id) const
+::boost::optional<double> AtomSpeciesDatabase::getRadius(const AtomSpeciesId::Value id) const
 {
+  ::boost::optional<double> rad;
 	SpeciesDouble::const_iterator it = myRadii.find(id);
-	if(it == myRadii.end())
-		return NULL;
-	return &it->second;
+	if(it != myRadii.end())
+    rad.reset(it->second);
+	return rad;
 }
 
 void AtomSpeciesDatabase::setRadius(const AtomSpeciesId::Value id, const double radius)
@@ -91,13 +91,6 @@ void AtomSpeciesDatabase::setAll(
 	setName(id, name);
 }
 
-AtomSpeciesDatabase & AtomSpeciesDatabase::inst()
-{
-	if(!INSTANCE.get())
-	{
-		INSTANCE.reset(new AtomSpeciesDatabase());
-	}
-	return *INSTANCE;
-}
 
-}}
+}
+}

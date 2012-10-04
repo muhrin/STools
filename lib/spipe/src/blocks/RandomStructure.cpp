@@ -76,7 +76,7 @@ void RandomStructure::in(::spipe::common::StructureData & data)
   initDescriptions();
 
 	// Create the random structure
-  ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription);
+  ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, myPipeline->getGlobalData().getSpeciesDatabase());
 
 	if(str.get())
 	{

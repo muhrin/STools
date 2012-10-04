@@ -13,6 +13,8 @@
 #include <map>
 #include <string>
 
+#include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include "common/AtomSpeciesId.h"
@@ -22,7 +24,7 @@
 namespace sstbx {
 namespace common {
 
-class AtomSpeciesDatabase
+class AtomSpeciesDatabase : ::boost::noncopyable
 {
 public:
 
@@ -41,10 +43,8 @@ public:
 
   virtual const AtomSpeciesId::Value getIdFromSymbol(const std::string & symbol) const;
 
-  virtual const double * getRadius(const AtomSpeciesId::Value id) const;
+  virtual ::boost::optional<double> getRadius(const AtomSpeciesId::Value id) const;
   virtual void setRadius(const AtomSpeciesId::Value id, const double radius);
-
-	static AtomSpeciesDatabase & inst();
 
 protected:
 
@@ -54,10 +54,6 @@ protected:
 	SpeciesString	myNames;
 	SpeciesString	mySymbols;
   SpeciesDouble myRadii;
-
-private:
-
-  static ::boost::shared_ptr<AtomSpeciesDatabase>  INSTANCE;
 
 };
 

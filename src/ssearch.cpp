@@ -20,6 +20,7 @@
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/DefaultCrystalGenerator.h>
 #include <build_cell/StructureDescription.h>
+#include <common/AtomSpeciesDatabase.h>
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
 #include <io/ResReaderWriter.h>
@@ -117,7 +118,6 @@ int main(const int argc, const char * const argv[])
 
   // Potential parameters
   vec params(8);
-  double betaDiagonal;
   Tok toker(paramsString, tokSep);
 
   size_t i = 0;
@@ -131,14 +131,7 @@ int main(const int argc, const char * const argv[])
     }
     try
     {
-      if(i == 6)
-      {
-        betaDiagonal = ::boost::lexical_cast<double>(paramStr);
-      }
-      else
-      {
-        params(i) = ::boost::lexical_cast<double>(paramStr);
-      }
+      params(i) = ::boost::lexical_cast<double>(paramStr);
     }
     catch(::boost::bad_lexical_cast )
     {
@@ -148,18 +141,22 @@ int main(const int argc, const char * const argv[])
     ++i;
   }
 
-  if(!parsedSuccessfully)
+  if(!parsedSuccessfully || i < 7)
   {
     ::std::cout << "Error parsing parameters\n";
     return 1;
   } 
 
-
   ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
   potentialSpecies[0] = ssc::AtomSpeciesId::NA;
   potentialSpecies[1] = ssc::AtomSpeciesId::CL;
 
-  ssf::SsLibFactoryYaml factory;
+
+  // Generate the pipeline
+  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> randomSearchPipe;
+  ssc::AtomSpeciesDatabase & speciesDb = randomSearchPipe.getGlobalData().getSpeciesDatabase();
+
+  ssf::SsLibFactoryYaml factory(speciesDb);
 
   YAML::Node loadedNode = YAML::LoadFile(inputStructure);
 
@@ -172,9 +169,6 @@ int main(const int argc, const char * const argv[])
   }
 
   ssbc::StructureDescriptionPtr strDesc = factory.createStructureDescription(*structureNode); 
-
-  // Generate the pipelines that we need
-  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> randomSearchPipe;
 
   // Make sure the shared data is correctly hooked up
   randomSearchPipe.getSharedData().setPipe(randomSearchPipe);
@@ -203,6 +197,7 @@ int main(const int argc, const char * const argv[])
 			<< 1 << params(6) << endr;
 
   ssp::SimplePairPotential pp(
+    speciesDb,
     2,
     potentialSpecies,
     epsilon,

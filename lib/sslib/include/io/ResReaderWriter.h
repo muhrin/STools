@@ -35,17 +35,6 @@ public:
 	/**
 	/* Write a structure out to disk.  Additional data may be supplied if avilable
 	/* and will be written out by any writers that support it.
-	/* WARNING: This method may rely on an atom species database in which case the
-	/* default database will be used which is NOT thread safe.
-	/**/
-	virtual void writeStructure(
-		const ::sstbx::common::Structure & str,
-		const ::boost::filesystem::path & filepath,
-		const AdditionalData * const data = NULL) const;
-
-	/**
-	/* Write a structure out to disk.  Additional data may be supplied if avilable
-	/* and will be written out by any writers that support it.
 	/* The user can supply their own species database, however it is up to them
 	/* to make sure that the implementation is thread safe if necessary.
 	/**/
@@ -56,10 +45,6 @@ public:
 		const AdditionalData * const data = NULL) const;
 
   // From IStructureReader //
-
-  virtual UniquePtr<common::Structure>::Type readStructure(
-		const boost::filesystem::path & path,
-		AdditionalData * const          data = NULL) const;
 
   virtual UniquePtr<common::Structure>::Type readStructure(
 		const ::boost::filesystem::path &     filepath,

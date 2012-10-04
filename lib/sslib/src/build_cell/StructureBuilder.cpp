@@ -12,11 +12,16 @@
 #include "build_cell/StructureDescription.h"
 #include "build_cell/StructureDescriptionMap.h"
 #include "common/Atom.h"
+#include "common/AtomSpeciesDatabase.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
 
 namespace sstbx {
 namespace build_cell {
+
+StructureBuilder::StructureBuilder(const common::AtomSpeciesDatabase & speciesDb):
+  mySpeciesDb(speciesDb)
+{}
 
 common::StructurePtr
 StructureBuilder::buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap)
@@ -42,24 +47,30 @@ StructureBuilder::buildStructure(const StructureDescription & description, Descr
 bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
 {
   const size_t numAtoms = atomDescription.getCount();
-  ::boost::optional<double> radius;
+  ::boost::optional<double> optionalRadius;
+
+  // See if the description contains a radius
+  optionalRadius = atomDescription.getRadius();
+  if(!optionalRadius)
+  {
+    // The user hasn't specified a radius so try to get a default on from the databaase
+    optionalRadius = mySpeciesDb.getRadius(atomDescription.getSpecies());
+  }
+
+  double radius;
   for(size_t i = 0; i < atomDescription.getCount(); ++i)
   {
     common::Atom & atom = myCurrentPair.first->newAtom(atomDescription.getSpecies());
-    radius = atomDescription.getRadius();
-    if(radius)
-    {
-      atom.setRadius(*radius);
-    }
-    myCurrentPair.second->insert(atomDescription.getParent(), &atomDescription, &atom);
-  }
 
-  // Try to determine the volume of the atoms
-  radius = atomDescription.getRadius();
-  if(radius)
-  {
-    const double radDouble = *radius;
-    myAtomsVolume += numAtoms * 1.333333 * common::Constants::PI * radDouble * radDouble * radDouble;
+    if(optionalRadius)
+      atom.setRadius(*optionalRadius);
+
+    radius = atom.getRadius();
+
+    myAtomsVolume += 1.333333 * common::Constants::PI * radius * radius * radius;
+
+    // Finally store the atom and description pair
+    myCurrentPair.second->insert(atomDescription.getParent(), &atomDescription, &atom);
   }
 
   return true;

@@ -26,16 +26,18 @@ const double SimplePairPotential::MIN_SEPARATION_SQ = 1e-20;
 
 
 SimplePairPotential::SimplePairPotential(
-	const size_t 				  numSpecies,
-  const SpeciesList &   speciesList,
-	const ::arma::mat &		epsilon,
-	const ::arma::mat &		sigma,
-	const double 			    cutoffFactor,
-	const ::arma::mat &		beta,
-	const double 			    m,
-	const double    			n,
-  const CombiningRule   combiningRule):
+  common::AtomSpeciesDatabase & atomSpeciesDb,
+	const size_t 				          numSpecies,
+  const SpeciesList &           speciesList,
+	const ::arma::mat &		        epsilon,
+	const ::arma::mat &		        sigma,
+	const double 			            cutoffFactor,
+	const ::arma::mat &		        beta,
+	const double 			            m,
+	const double    			        n,
+  const CombiningRule           combiningRule):
 	myName("Simple pair potential"),
+  myAtomSpeciesDb(atomSpeciesDb),
 	myNumSpecies(numSpecies),
   mySpeciesList(speciesList),
 	myEpsilon(epsilon),
@@ -48,6 +50,7 @@ SimplePairPotential::SimplePairPotential(
 {
   applyCombiningRule();
 	initCutoff(myCutoffFactor);
+  updateSpeciesDb();
 }
 
 
@@ -62,7 +65,6 @@ void SimplePairPotential::initCutoff(double cutoff)
 	rCutoff		= cutoff * mySigma;
 	rCutoffSq	= arma::pow(rCutoff, 2.0);
 
-	// TODO: Change this to matrix notation rather than loops
 	double invRMaxN, invRMaxM;
 	for(size_t i = 0; i < myNumSpecies; ++i)
 	{
@@ -207,6 +209,8 @@ void SimplePairPotential::setParams(const ::arma::vec & params)
 
 	// Reset the parameter string
 	myParamString.clear();
+  // Update the species database
+  updateSpeciesDb();
 }
 
 
@@ -389,7 +393,7 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 				rSq = dot(r, r);
 
 				// Check that distance is less than cut-off
-				if(rSq < rCutoffSq(speciesI, speciesJ) && rSq > MIN_SEPARATION_SQ)
+				if(rSq > MIN_SEPARATION_SQ)
 				{
 					modR = sqrt(rSq);
 
@@ -489,6 +493,13 @@ void SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) cons
 	data.stressMtx.fill(0.0);
 }
 
+void SimplePairPotential::updateSpeciesDb()
+{
+  BOOST_FOREACH(common::AtomSpeciesId::Value species, mySpeciesList)
+  {
+    myAtomSpeciesDb.setRadius(species, *getPotentialRadius(species));
+  }
+}
 
 }
 }

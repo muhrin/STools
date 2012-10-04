@@ -27,24 +27,14 @@ namespace sstbx
 	}
 }
 
-namespace sstbx { namespace io {
+namespace sstbx {
+namespace io {
 
 class IStructureWriter
 {
 public:
 
 	virtual ~IStructureWriter() {}
-
-	/**
-	/* Write a structure out to disk.  Additional data may be supplied if avilable
-	/* and will be written out by any writers that support it.
-	/* WARNING: This method may rely on an atom species database in which case the
-	/* default database will be used which is NOT thread safe.
-	/**/
-	virtual void writeStructure(
-		const ::sstbx::common::Structure & str,
-		const ::boost::filesystem::path & path,
-		const AdditionalData * const data) const = 0;
 
 	/**
 	/* Write a structure out to disk.  Additional data may be supplied if avilable

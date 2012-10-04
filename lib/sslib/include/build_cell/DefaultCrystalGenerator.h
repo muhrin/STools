@@ -43,6 +43,7 @@ public:
 	 */
   virtual common::StructurePtr generateStructure(
     const StructureDescription &  strDesc,
+    const common::AtomSpeciesDatabase & speciesDb,
     StructureGenerationOutcome::Value * outOutcome = NULL) const;
 
 private:

@@ -44,9 +44,10 @@ namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
 }
+namespace common {
+class AtomSpeciesDatabase;
 }
 
-namespace sstbx {
 namespace factory {
 
 class SsLibFactoryYaml : ::boost::noncopyable
@@ -61,6 +62,8 @@ public:
     REQUIRED_KEYWORD_MISSING,
     MALFORMED_VALUE
   };
+
+  SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb);
 
   build_cell::UnitCellBlueprintPtr               createCellGenerator(const YAML::Node & desc);
   build_cell::StructureDescriptionPtr            createStructureDescription(const YAML::Node & desc);
@@ -85,6 +88,7 @@ private:
 
   OptionalAtomSpeciesCount parseAtomTypeString(const ::std::string & atomSpecString) const;
 
+  common::AtomSpeciesDatabase &   myAtomSpeciesDb;
 
   ::boost::ptr_vector< ::sstbx::io::IStructureWriter>                          myStructureWriters;
   ::boost::ptr_vector< ::sstbx::potential::IGeomOptimiser>                     myOptimisers;

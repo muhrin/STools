@@ -9,7 +9,6 @@
 #define SIMPLE_PAIR_POTENTIAL_H
 
 // DEFINES ////////////////////////////////////////////////
-#define SPP_TYPE typename SimplePairPotential
 
 // INCLUDES ///////////////////////////////////////////////
 
@@ -24,9 +23,8 @@
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 
-#include <armadillo>
-
 // Local includes
+#include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
 #include "common/Utils.h"
 #include "potential/GenericPotentialEvaluator.h"
@@ -73,15 +71,16 @@ public:
   static const unsigned int MAX_INTERACTION_VECTORS = 10000;
 
 	SimplePairPotential(
-		const size_t 				  numSpecies,
-    const SpeciesList &   speciesList,
-		const ::arma::mat &		epsilon,
-		const ::arma::mat &		sigma,
-		const double 			    cutoffFactor,
-		const ::arma::mat &	  beta,
-		const double  			  m,
-		const double 	  		  n,
-    const CombiningRule   combiningRule = NONE);
+    common::AtomSpeciesDatabase & atomSpeciesDb,
+		const size_t 				          numSpecies,
+    const SpeciesList &           speciesList,
+		const ::arma::mat &		        epsilon,
+		const ::arma::mat &		        sigma,
+		const double 			            cutoffFactor,
+		const ::arma::mat &	          beta,
+		const double  			          m,
+		const double 	  		          n,
+    const CombiningRule           combiningRule = NONE);
 
 	virtual const ::std::string & getName() const;
 
@@ -117,17 +116,21 @@ private:
 
 	void resetAccumulators(SimplePairPotentialData & data) const;
 
+  void updateSpeciesDb();
+
+  common::AtomSpeciesDatabase & myAtomSpeciesDb;
+
 	const ::std::string		myName;
 
 	mutable ::std::string	myParamString;
 
 	/** Potential parameters */
-	size_t					  myNumSpecies;
-  SpeciesList       mySpeciesList;
+	size_t					myNumSpecies;
+  SpeciesList     mySpeciesList;
 	::arma::mat			myEpsilon;
 	::arma::mat			mySigma;
 	::arma::mat			myBeta;
-  const double      myCutoffFactor;
+  const double    myCutoffFactor;
 
 	/** The powers of the sigma/r terms in the potential */
 	double				myN, myM;

@@ -51,7 +51,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
   // Prepend the pipe output path
   p = myPipeline->getSharedData().getOutputPath() / p;
 	
-	if(myWriterManager.writeStructure(*data.getStructure(), p, &ioData))
+  if(myWriterManager.writeStructure(*data.getStructure(), p, myPipeline->getGlobalData().getSpeciesDatabase(), &ioData))
   {
     // Save the location that the file was written
     data.objectsStore.insert(

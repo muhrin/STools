@@ -23,7 +23,6 @@
 // From SSTbx
 #include <build_cell/RandomUnitCell.h>
 #include <build_cell/StructureDescription.h>
-#include <common/AtomSpeciesDatabase.h>
 #include <common/AtomSpeciesId.h>
 #include <utility/BoostFilesystem.h>
 #include <utility/MultiIdxRange.h>
@@ -32,17 +31,19 @@
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
-namespace spipe
-{
 // FORWARD DECLARATIONS ////////////////////////////////////
+namespace sstbx {
+namespace common {
+class AtomSpeciesDatabase;
+}
+}
 
-namespace common
-{
+namespace spipe {
+namespace common {
 class DataTableWriter;
 }
 
-namespace blocks
-{
+namespace blocks {
 
 struct SpeciesParameter
 {
@@ -108,7 +109,8 @@ private:
 
   void updateTable(
     const utility::DataTable::Key &             key,
-    const ::sstbx::utility::MultiIdx<unsigned int> & currentIdx
+    const ::sstbx::utility::MultiIdx<unsigned int> & currentIdx,
+    const ::sstbx::common::AtomSpeciesDatabase & atomsDb
   );
 
   SpPipelineTyp &                       mySubpipe;
@@ -124,9 +126,6 @@ private:
 	::std::vector<StructureDataTyp *>		  myBuffer;
 
   SpeciesParamters                      mySpeciesParameters;
-
-  const ::sstbx::common::AtomSpeciesDatabase  myAtomsDb;
-
 
 };
 
