@@ -86,7 +86,7 @@ void PotentialParamSweep::start()
 		::arma::vec params(myNumParams);
 		for(size_t i = 0; i < myNumParams; ++i)
 		{
-			params(i) = myFrom(i) + stepsIdx[i] * myStep(i);
+			params(i) = myFrom(i) + (double)stepsIdx[i] * myStep(i);
 		}
 		// Store the potential parameters in global memory
     myPipeline->getGlobalData().objectsStore.insert(::spipe::common::GlobalKeys::POTENTIAL_PARAMS, params);
@@ -154,7 +154,8 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
       table.insert(
         key,
         "param" + ::boost::lexical_cast< ::std::string>(i),
-        ::boost::lexical_cast< ::std::string>((*params)[i]));
+        common::getString((*params)[i])
+      );
     }
   }
 
@@ -164,7 +165,8 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
     table.insert(
       key,
       "energy",
-      ::boost::lexical_cast< ::std::string>(energy));
+      common::getString(energy)
+    );
 
     if(sweepStrData.getStructure())
     {
@@ -172,7 +174,8 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
       table.insert(
         key,
         "energy/atom",
-        ::boost::lexical_cast< ::std::string>(energy / numAtoms));
+        common::getString(energy / numAtoms)
+      );
     }
   }
 

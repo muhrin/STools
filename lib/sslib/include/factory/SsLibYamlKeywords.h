@@ -31,14 +31,20 @@ typedef ::std::string     KwTyp;
 static const KwTyp TYPE                  = "type";
 static const KwTyp VALUE                 = "value";
 static const KwTyp DEFAULT               = "default";
+static const KwTyp MIN                   = "min";
+static const KwTyp MAX                   = "max";
 
 // Structure description ///
-static const KwTyp STRUCTURE             = "structure";
-static const KwTyp STRUCTURE__ATOMS_RADII= "atomsRadii";
+static const KwTyp STRUCTURE               = "structure";
+static const KwTyp STRUCTURE__ATOMS        = "atoms";
+static const KwTyp STRUCTURE__ATOMS__TYPE  = "type";
+static const KwTyp STRUCTURE__ATOMS__POS   = "pos";
 
-// Atoms list ///
-static const KwTyp STRUCTURE__ATOMS__TYPE   = "type";
-static const KwTyp STRUCTURE__ATOMS__RADIUS = "radius";
+// Random structure ///////////////
+static const KwTyp RANDOM_STRUCTURE                       = "randomStructure";
+static const KwTyp RANDOM_STRUCTURE__ATOM_RADII           = "atomRadii";
+static const KwTyp RANDOM_STRUCTURE__ATOMS__RADIUS        = "radius";
+static const KwTyp RANDOM_STRUCTURE__ATOMS__POS           = STRUCTURE__ATOMS__POS;
 
 static const KwTyp STR_DESC              = "strDesc";
 static const KwTyp STR_DESC__ATOMS       = "atoms";
@@ -48,19 +54,22 @@ static const KwTyp STR_DESC__ATOMS__N    = "n";
 static const KwTyp STR_GENERATOR                    = "strGenerator";
 static const KwTyp STR_GENERATOR__TYPE___DEFAULT    = DEFAULT;
 
+// Unit cell ////////////////////////////////
 static const KwTyp CELL                       = "cell";
-static const KwTyp CELL__TYPE___RANDOM        = "random";
-static const KwTyp CELL_RANDOM                = "cellDesc";
-static const KwTyp CELL_RANDOM__PARAMS        = "params";
-static const KwTyp CELL_RANDOM__VOL           = "vol";
-static const KwTyp CELL_RANDOM__VOL_DELTA     = "volDelta";
-static const KwTyp CELL_RANDOM__MIN_ANGLE     = "minAngle";
-static const KwTyp CELL_RANDOM__MAX_ANGLE     = "maxAngle";
+static const KwTyp CELL__PARAMS               = "params";
 
-static const KwTyp CELL_GENERATOR                   = "cellGenerator";
-static const KwTyp CELL_GENERATOR__TYPE___DEFAULT   = DEFAULT;
-
-static const KwTyp OPTIMISER__TYPE___TPSD   = "tpsd";
+// Random unit cell /////////////////////////
+static const KwTyp RANDOM_CELL                      = "randomCell";
+static const KwTyp RANDOM_CELL__PARAMS              = CELL__PARAMS;
+static const KwTyp RANDOM_CELL__VOL                 = "vol";
+static const KwTyp RANDOM_CELL__VOL_DELTA           = "volDelta";
+static const KwTyp RANDOM_CELL__ANGLES              = "angles";
+static const KwTyp RANDOM_CELL__ANGLES__MIN         = MIN;
+static const KwTyp RANDOM_CELL__ANGLES__MAX         = MAX;
+static const KwTyp RANDOM_CELL__LENGTHS             = "lengths";
+static const KwTyp RANDOM_CELL__LENGTHS__MIN        = MIN;
+static const KwTyp RANDOM_CELL__LENGTHS__MAX        = MAX;
+static const KwTyp RANDOM_CELL__LENGTHS__MAX_RATIO  = "maxRatio";
 
 static const KwTyp POTENTIAL                    = "potential";
 static const KwTyp POTENTIAL__TYPE___PAIR_POT   = "pairPot";
@@ -70,6 +79,8 @@ static const KwTyp POTENTIAL__PAIR_POT__CUT     = "cut";
 static const KwTyp POTENTIAL__PAIR_POT__B       = "b";
 static const KwTyp POTENTIAL__PAIR_POT__POW     = "pow";
 static const KwTyp POTENTIAL__PAIR_POT__COMB    = "comb";
+
+static const KwTyp OPTIMISER__TYPE___TPSD       = "tpsd";
 
 static const KwTyp STR_SET                = "strSet";
 

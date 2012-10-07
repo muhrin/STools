@@ -22,7 +22,7 @@ const double RandomUnitCell::DEFAULT_MIN_LENGTH = 0.25;
 const double RandomUnitCell::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCell::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCell::DEFAULT_VOLUME_DELTA = 0.25;
-const double RandomUnitCell::DEFAULT_MAX_LENGTH_RATIO = 10.0;
+const double RandomUnitCell::DEFAULT_MAX_LENGTH_RATIO = 6.0;
 
 RandomUnitCell::ParamValue RandomUnitCell::getMin(const size_t param) const
 {

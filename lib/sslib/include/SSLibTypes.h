@@ -32,7 +32,6 @@ struct UniquePtr : ::boost::noncopyable
 #else
   typedef ::std::auto_ptr<T> Type;
 #endif
-
 private:
   UniquePtr() {}
 };

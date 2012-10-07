@@ -21,6 +21,7 @@ namespace factory {
 
 struct FactoryError : virtual ::boost::exception, virtual ::std::exception {};
 
-}}
+}
+}
 
 #endif /* FACTORY_ERROR_H */

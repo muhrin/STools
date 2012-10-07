@@ -46,7 +46,7 @@ void DetermineSpaceGroup::in(StructureDataTyp & data)
   // Express structure data in form that spglib can work with
   const ssc::Structure * const structure = data.getStructure();
 
-  if(structure)
+  if(structure && structure->getUnitCell())
   {
     double lattice[3][3];
     const ssc::UnitCell * const cell = structure->getUnitCell();

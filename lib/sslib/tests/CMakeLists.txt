@@ -33,6 +33,9 @@ set(tests_Source_Files__factory
   factory/YamlFactoryTest.cpp
 )
 source_group("Source Files\\factory" FILES ${tests_Source_Files__factory})
+set(tests_Input_Files__factory
+  factory/RandomStructure.sslib
+)
 
 ## tests/utility
 
@@ -75,6 +78,15 @@ set(tests_Files
   ${tests_Header_Files}
   ${tests_Source_Files}
 )
+
+
+## Copy over files needed by tests
+file(COPY
+  ${tests_Input_Files__factory}
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
+)
+
+message(STATUS "Copied ${tests_Input_Files__factory} to ${CMAKE_CURRENT_BINARY_DIR}")
 
 
 #########################

@@ -8,13 +8,15 @@
 // INCLUDES /////////////////////////////////////
 #include "common/OrthoCellDistanceCalculator.h"
 
-#include <iostream> // tmp
-
 #include "common/Structure.h"
 #include "common/UnitCell.h"
 #include "utility/StableComparison.h"
 
 #define SSLIB_ORTHO_DIST_CALC_DEBUG (SSLIB_DEBUG && 0)
+
+#if SSLIB_ORTHO_DIST_CALC_DEBUG
+#  include <iostream>
+#endif
 
 namespace sstbx {
 namespace common {
@@ -66,9 +68,9 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
     return true;
 
   bool problemDuringCalculation = false;
-  problemDuringCalculation &= capMultiples(A_min, A_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(B_min, B_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(C_min, C_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(A_min, A_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(B_min, B_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(C_min, C_max, maxCellMultiples);
 
   // Loop variables
   size_t numDistances = 0;
@@ -200,9 +202,9 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
     return true;
 
   bool problemDuringCalculation = false;
-  problemDuringCalculation &= capMultiples(A_min, A_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(B_min, B_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(C_min, C_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(A_min, A_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(B_min, B_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(C_min, C_max, maxCellMultiples);
 
   // Loop variables
   size_t numVectors = 0;
@@ -237,7 +239,7 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
     }
   }
 
-  return true;
+  return !problemDuringCalculation;
 
   //double dRDistSq;
 	//for(int a = A_min; a <= A_max; ++a)

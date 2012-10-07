@@ -41,9 +41,9 @@ DistanceCalculator(structure)
 	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, minModDR));
 
   bool problemDuringCalculation = false;
-  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(C_max, maxCellMultiples);
 
   // Loop variables
   ::arma::vec3 minDR = dR;
@@ -100,9 +100,9 @@ bool ReferenceDistanceCalculator::getDistsBetween(
 	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
   bool problemDuringCalculation = false;
-  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(C_max, maxCellMultiples);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 outVec;
@@ -156,9 +156,9 @@ bool ReferenceDistanceCalculator::getVecsBetween(
 	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(C, A, B, safeCutoff));
 
   bool problemDuringCalculation = false;
-  problemDuringCalculation &= capMultiples(A_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(B_max, maxCellMultiples);
-  problemDuringCalculation &= capMultiples(C_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(B_max, maxCellMultiples);
+  problemDuringCalculation |= capMultiples(C_max, maxCellMultiples);
 
   const double cutoffSq = cutoff * cutoff;
   ::arma::vec3 outVec;

@@ -8,12 +8,14 @@
 // INCLUDES //////////////////////////////////
 #include <iostream>
 
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <yaml-cpp/yaml.h>
 
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
+#include <factory/FactoryError.h>
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
 
@@ -26,7 +28,7 @@ namespace kw = ::sstbx::factory::sslib_yaml_keywords;
 BOOST_AUTO_TEST_CASE(StructureDescriptionTest)
 {
   // Settings ////////////////
-  const char simpleStructure[] = "SimpleStructure.sslib";
+  const char simpleStructure[] = "RandomStructure.sslib";
 
   ssc::AtomSpeciesDatabase speciesDb;
 
@@ -34,13 +36,17 @@ BOOST_AUTO_TEST_CASE(StructureDescriptionTest)
 
   YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 
-  YAML::Node * structureNode = &loadedNode;
-  YAML::Node strNode;
-  if(loadedNode[kw::STRUCTURE])
+  if(loadedNode[kw::RANDOM_STRUCTURE])
   {
-    strNode = loadedNode[kw::STRUCTURE];
-    structureNode = &strNode;
-  }
+    const YAML::Node & strNode = loadedNode[kw::RANDOM_STRUCTURE];
 
-  ssbc::StructureDescriptionPtr strGen = factory.createStructureDescription(*structureNode);  
+    try
+    {
+      ssbc::StructureDescriptionPtr strGen = factory.createStructureDescription(strNode);
+    }
+    catch(const ssf::FactoryError & e)
+    {
+      ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
+    }
+  }
 }

@@ -138,7 +138,7 @@ public:
     myEnd(last),
     base_t(iterator_t(first, *this), iterator_t(last, *this))
   {
-    SSLIB_ASSERT(myBegin <= myEnd);
+    SSLIB_ASSERT(myBegin != myEnd);
   }
 
   size_t dims() const
@@ -152,10 +152,14 @@ private:
   const MultiIdx<Integer> myBegin;
   const MultiIdx<Integer> myEnd;
 
+#if SSLIB_USE_CPP11
+  friend class iterator_t;
+#else
   // Sadly can't use iterator_t typedef here as this behaviour is not supported
   // until C++11.
   // See e.g.: http://stackoverflow.com/questions/392120/why-cant-i-declare-a-friend-through-a-typedef
   friend class utility_detail::ConstMultiIdxIterator<Integer>;
+#endif
 };
 
 

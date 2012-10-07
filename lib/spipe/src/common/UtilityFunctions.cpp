@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "UtilityFunctions.h"
 
+#include <iomanip>
+
 #include <boost/lexical_cast.hpp>
 
 // From SSTbx
@@ -18,7 +20,8 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe { namespace common {
+namespace spipe {
+namespace common {
 
 ProcessId getProcessId()
 {
@@ -96,7 +99,7 @@ void generateStructureDataFromIo(
 	}
 }
 
-bool parseParamString(
+void parseParamString(
   const std::string & str,
   double &            from,
   double &            step,
@@ -107,7 +110,9 @@ bool parseParamString(
   using boost::lexical_cast;
 
   if(str.empty())
-    return false;
+  {
+    throw ::std::invalid_argument("Cannot get parameters from empty string");
+  }
 
   const size_t plusPos = str.find("+");
   const size_t timesPos = str.find("*");
@@ -117,59 +122,63 @@ bool parseParamString(
   // Create our own temporaries so we don't change values if parsing is unsuccessful
   double lFrom = 0.0;
   double lStep = 0.0;
-  unsigned int lNSteps = 0;
+  unsigned int lNSteps = 1;
 
   // Try to get the from value
-  bool castOk = true;
   try
   {
     lFrom = lexical_cast<double>(substr);
   }
   catch(const boost::bad_lexical_cast &)
   {
-    castOk = false;
+    throw ::std::invalid_argument("Could not parse " + substr + " as double");
   }
 
   // Try to get step if it exists
-  if(castOk && plusPos != string::npos)
+  if(plusPos != string::npos)
   {
-    castOk = true;
     const size_t plusEnd = timesPos == string::npos ? string::npos : timesPos - 1;
+    substr = str.substr(plusPos + 1, plusEnd - plusPos);
     try
     {
-      substr = str.substr(plusPos + 1, plusEnd - plusPos);
       lStep = lexical_cast<double>(substr);
+      lNSteps = 2;  // Have two steps (the original number, lFrom, and lFrom+lStep)
     }
     catch(const boost::bad_lexical_cast &)
     {
-      castOk = false;
+      throw ::std::invalid_argument("Could not parse " + substr + " as double");
     }
 
     // Try to get nsteps if it exists
-    if(castOk && timesPos != string::npos)
+    if(timesPos != string::npos)
     {
-      castOk = true;
+      substr = str.substr(timesPos + 1, string::npos);
       try
       {
-        substr = str.substr(timesPos + 1, string::npos);
-        lNSteps = lexical_cast<unsigned int>(substr);
+        lNSteps = lexical_cast<unsigned int>(substr) + 1;
       }
       catch(const boost::bad_lexical_cast &)
       {
-        castOk = false;
+        throw ::std::invalid_argument("Could not parse " + substr + " as unsigned integer");
       }
     }
   }
 
-  // Copy over temporaries if successful
-  if(castOk)
-  {
-    from = lFrom;
-    step = lStep;
-    nSteps = lNSteps;
-  }
-
-  return castOk;
+  // Copy over temporaries
+  from = lFrom;
+  step = lStep;
+  nSteps = lNSteps;
 }
 
-}}
+::std::string getString(const double in, int precision)
+{
+  int digits = precision;
+  if(in != 0.0)
+    digits += (int)ceil(log10(abs(in)));
+  ::std::ostringstream ss;
+  ss << ::std::setprecision(digits) << in;
+  return ss.str();
+}
+
+}
+}

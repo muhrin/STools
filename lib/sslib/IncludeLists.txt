@@ -112,6 +112,7 @@ set(sslib_Header_Files__utility
   include/utility/DistanceMatrixComparator.h
   include/utility/EdgeMap.h
   include/utility/Enum.h
+  include/utility/FloatRange.h
   include/utility/GenericBufferedComparator.h
   include/utility/HeterogeneousMap.h
   include/utility/IBufferedComparator.h
@@ -120,6 +121,7 @@ set(sslib_Header_Files__utility
   include/utility/IStructureSet.h
   include/utility/Math.h
   include/utility/MetaProgramming.h
+  include/utility/MinMax.h
   include/utility/MultiArray.h
   include/utility/MultiIdx.h
   include/utility/MultiIdxRange.h

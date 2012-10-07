@@ -48,6 +48,16 @@
 
 // NAMESPACES ////////////////////////////////
 
+struct InputOptions
+{
+  unsigned int      numRandomStructures;
+  double            optimisationPressure;
+  ::std::string     potential;
+  ::std::vector< ::std::string> potSpecies;
+  ::std::vector< ::std::string> potParams;
+  ::std::string     structurePath;
+  unsigned int      maxNumAtoms;
+};
 
 int main(const int argc, const char * const argv[])
 {
@@ -68,20 +78,20 @@ int main(const int argc, const char * const argv[])
   const ::std::string exeName(argv[0]);
 
   // Program options
-  ::std::vector< ::std::string> paramStrings;
-  unsigned int maxNumAtoms;
-  unsigned int numRandomStructures;
-  double optimisationPressure;
+  InputOptions in;
 
   try
   {
     po::options_description desc("STools\nUsage: " + exeName + " [options] params...\nOptions");
     desc.add_options()
       ("help", "Show help message")
-      ("strs", po::value<unsigned int>(&numRandomStructures)->default_value(100), "Number of random starting structures")
-      ("max-atoms,m", po::value<unsigned int>(&maxNumAtoms)->required(), "Maximum number of atoms")
-      ("params", po::value< ::std::vector< ::std::string> >(&paramStrings)->required(), "potential parameters: eAA eAB eBB sAA sAB sBB [format from+delta*nsteps] beta [+/-1]")
-      ("opt-press", po::value<double>(&optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
+      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
+      ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
+      ("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
+      ("input", po::value< ::std::string>(&in.structurePath), "The input structure")
+      ("max-atoms,m", po::value<unsigned int>(&in.maxNumAtoms)->required(), "Maximum number of atoms")
     ;
 
     po::positional_options_description p;
@@ -105,40 +115,40 @@ int main(const int argc, const char * const argv[])
     return 1;
   }
 
-  if(paramStrings.size() != 7)
+  if(in.potParams.size() != 7)
   {
-    ::std::cout << "Parameter string must contain 7 entries, only " << paramStrings.size() << " found\n";
+    ::std::cout << "Parameter string must contain 7 entries, only " << in.potParams.size() << " found\n";
     return 1;
   }
 
-  // Param sweep
-  vec from(8), step(8);
-  Col<unsigned int> steps(8);
+  // Potential parameters
+  vec from(8), stepSize(8);
+  Col<unsigned int> numSteps(8);
+  // Initialise with reasonable values
+  from.zeros();
+  stepSize.ones();
+  numSteps.ones();
 
-  from.fill(0.0);
-  step.fill(0.0);
-  steps.fill(0);
-
-  double lFrom, lStep;
-  unsigned int lNSteps;
-  bool parsedParams = true;
+  double lFrom, lStepSize;
+  unsigned int lNumSteps;
   for(size_t i = 0; i < 6; ++i)
   {
-    if(sp::common::parseParamString(paramStrings[i], lFrom, lStep, lNSteps))
+    try
     {
+      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
       from(i) = lFrom;
-      step(i) = lStep;
-      steps(i) = lNSteps;
+      stepSize(i) = lStepSize;
+      numSteps(i) = lNumSteps;
     }
-    else
+    catch(const ::std::invalid_argument & e)
     {
-      parsedParams = false;
-      cout << "Unable to parse parameter " << i << ": " << paramStrings[i] << endl;
+      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
+      ::std::cout << e.what();
       return 1;
     }
   }
 
-  const double betaDiagonal = ::boost::lexical_cast<double>(paramStrings[6]);
+  const double betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
 
   ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
   potentialSpecies[0] = ssc::AtomSpeciesId::NA;
@@ -159,7 +169,7 @@ int main(const int argc, const char * const argv[])
 
   // Random structure
   ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(strGen, numRandomStructures);
+  sp::blocks::RandomStructure randStr(strGen, in.numRandomStructures);
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
@@ -196,7 +206,7 @@ int main(const int argc, const char * const argv[])
 
   ::arma::mat33 optimisationPressureMtx;
   optimisationPressureMtx.fill(0.0);
-  optimisationPressureMtx.diag().fill(optimisationPressure);
+  optimisationPressureMtx.diag().fill(in.optimisationPressure);
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &optimisationPressureMtx, false);
 
@@ -238,7 +248,7 @@ int main(const int argc, const char * const argv[])
   randomSearchPipe.connect(write2, lowestE);
 
   // Configure stoichiometry sweep pipeline
-  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, maxNumAtoms, randomSearchPipe);
+  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, in.maxNumAtoms, randomSearchPipe);
   sp::blocks::LowestFreeEnergy lowestEStoich;
 
   stoichSweepPipe.setStartBlock(stoichSearch);
@@ -246,7 +256,7 @@ int main(const int argc, const char * const argv[])
 
 
   // Configure parameter sweep pipeline
-  sp::blocks::PotentialParamSweep ppSweep(from, step, steps, stoichSweepPipe);
+  sp::blocks::PotentialParamSweep ppSweep(from, stepSize, numSteps, stoichSweepPipe);
 
   paramSweepPipe.setStartBlock(ppSweep);
 

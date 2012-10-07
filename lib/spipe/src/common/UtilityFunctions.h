@@ -23,18 +23,14 @@
 #include <boost/any.hpp>
 
 // FORWARD DECLARES ////////////////////////////////
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 class StructureData;
 }
 }
 
-namespace sstbx
-{
-namespace io
-{
+namespace sstbx {
+namespace io {
 struct AdditionalData;
 }
 }
@@ -67,12 +63,14 @@ void generateStructureDataFromIo(
   const sstbx::io::AdditionalData & ioData,
   spipe::common::StructureData & strData);
 
-bool parseParamString(
+void parseParamString(
   const std::string & str,
   double &            from,
   double &            step,
   unsigned int &      nSteps
 );
+
+::std::string getString(const double in, int precision = 5);
 
 }
 }

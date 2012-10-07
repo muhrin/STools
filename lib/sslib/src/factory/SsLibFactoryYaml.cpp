@@ -42,11 +42,6 @@
 namespace sstbx {
 namespace factory {
 
-// TYPEDEFS /////////////////
-typedef ::boost::error_info<struct TagErrorType, SsLibFactoryYaml::ErrorCode>    ErrorType;
-typedef ::boost::error_info<struct TagNodeName, ::std::string>                   NodeName;
-typedef ::boost::error_info<struct TagKeyword, ::std::string>                    Keyword;
-
 // namespace aliases
 namespace ssbc  = ::sstbx::build_cell;
 namespace ssc   = ::sstbx::common;
@@ -65,55 +60,82 @@ SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
 {}
 
 ssbc::UnitCellBlueprintPtr
-SsLibFactoryYaml::createCellGenerator(const YAML::Node & node)
+SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
 {
   using namespace utility::cell_params_enum;
-  //// Make sure we have a cell description node
-  //if(node.Scalar() != kw::CELL_DESC)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar()) << Keyword(kw::CELL_DESC);
-  //}
 
   ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCell());
 
-  double dValue;
-
-  if(node[kw::CELL_RANDOM__PARAMS])
+  if(node[kw::RANDOM_CELL__PARAMS])
   {
-    const YAML::Node & paramsNode = node[kw::CELL_RANDOM__PARAMS];
+    const YAML::Node & paramsNode = node[kw::RANDOM_CELL__PARAMS];
 
     if(paramsNode.IsSequence() && paramsNode.size() == 6)
     {
       double params[6];
       for(size_t i = A; i <= GAMMA; ++i)
       {
-        params[i] = paramsNode[i].as<double>();
+        try
+        {
+          params[i] = paramsNode[i].as<double>();
+        }
+        catch(YAML::TypedBadConversion<double> e)
+        {
+          BOOST_THROW_EXCEPTION(FactoryError() <<
+            ErrorType(MALFORMED_VALUE) <<
+            NodeName(kw::RANDOM_CELL__PARAMS) <<
+            ProblemValue(paramsNode[i].as< ::std::string>()));
+        }
         cell->setMin(i, params[i]);
         cell->setMax(i, params[i]);
       }
     }
     else
     {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
+      BOOST_THROW_EXCEPTION(FactoryError() <<
+        ErrorType(SEQUENCE_LENGTH_INVALID) <<
+        NodeName(kw::RANDOM_CELL__PARAMS));
     }
   }
 
-  if(node[kw::CELL_RANDOM__VOL])
+  OptionalDouble dValue;
+
+  dValue = getNodeChildValueAs<double>(node, kw::RANDOM_CELL__VOL);
+  if(dValue)
   {
-    dValue = node[kw::CELL_RANDOM__VOL].as<double>();
-    cell->setTargetVolume(dValue);
+    cell->setTargetVolume(*dValue);
   }
 
-  if(node[kw::CELL_RANDOM__MIN_ANGLE])
+  if(node[kw::RANDOM_CELL__ANGLES])
   {
-    dValue = node[kw::CELL_RANDOM__MIN_ANGLE].as<double>();
-    cell->setMinAngles(dValue);
+    const OptionalMinMax<double>::Type minMax = getMinMax<double>(node[kw::RANDOM_CELL__ANGLES]);
+    if(minMax.first)
+    {
+      cell->setMinAngles(*minMax.first);
+    }
+    if(minMax.second)
+    {
+      cell->setMaxAngles(*minMax.second);
+    }
   }
 
-  if(node[kw::CELL_RANDOM__MAX_ANGLE])
+  if(node[kw::RANDOM_CELL__LENGTHS])
   {
-    dValue = node[kw::CELL_RANDOM__MAX_ANGLE].as<double>();
-    cell->setMaxAngles(dValue);
+    const YAML::Node & lengths = node[kw::RANDOM_CELL__LENGTHS];
+    const OptionalMinMax<double>::Type minMax = getMinMax<double>(lengths);
+    if(minMax.first)
+    {
+      cell->setMinLengths(*minMax.first);
+    }
+    if(minMax.second)
+    {
+      cell->setMaxLengths(*minMax.second);
+    }
+    dValue = getNodeChildValueAs<double>(lengths, kw::RANDOM_CELL__LENGTHS__MAX_RATIO);
+    if(dValue)
+    {
+      cell->setMaxLengthRatio(dValue);
+    }
   }
 
   return (ssbc::UnitCellBlueprintPtr)cell;
@@ -130,16 +152,7 @@ SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
 
   ssbc::StructureDescriptionPtr strDescription(new ssbc::StructureDescription());
 
-  ::boost::optional<double> atomsRadii;
-  if(node[kw::STRUCTURE__ATOMS_RADII])
-  {
-    const YAML::Node & atomsRadiiNode = node[kw::STRUCTURE__ATOMS_RADII];
-
-    if(atomsRadiiNode.IsScalar())
-    {
-      atomsRadii.reset(atomsRadiiNode.as<double>());
-    }
-  }
+  const OptionalDouble atomsRadii = getNodeChildValueAs<double>(node, kw::RANDOM_STRUCTURE__ATOM_RADII);
 
   // Atoms //
   if(node[kw::STR_DESC__ATOMS])
@@ -155,14 +168,14 @@ SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
     }
     else
     {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
+      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
     }
   }
 
   // Unit cell
-  if(node[kw::CELL])
+  if(node[kw::RANDOM_CELL])
   {
-    strDescription->setUnitCell((ssbc::ConstUnitCellBlueprintPtr)createCellGenerator(node[kw::CELL]));
+    strDescription->setUnitCell((ssbc::ConstUnitCellBlueprintPtr)createRandomCellGenerator(node[kw::RANDOM_CELL]));
   }
 
   // Assign the pointer so the caller gets the object
@@ -230,7 +243,7 @@ ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
   }
   else
   {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD) << Keyword(potType);
+    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD) << ProblemValue(potType);
   }
 
 
@@ -376,9 +389,9 @@ SsLibFactoryYaml::createAtomsDescription(const YAML::Node & descNode, OptionalDo
   if(atomsRadii)
     atomsDescription->setRadius(*atomsRadii);
 
-  if(descNode[kw::STRUCTURE__ATOMS__RADIUS])
+  if(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS])
   {
-    atomsDescription->setRadius(descNode[kw::STRUCTURE__ATOMS__RADIUS].as<double>());
+    atomsDescription->setRadius(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS].as<double>());
   }
 
 
@@ -419,7 +432,7 @@ SsLibFactoryYaml::createAtomConstraintDescription(
   }
   else
   {
-    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << Keyword(kw::TYPE);
+    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << ProblemValue(kw::TYPE);
   }
 
   return constraint.release();
@@ -430,6 +443,19 @@ SsLibFactoryYaml::createStructureConstraintDescription(const YAML::Node & descNo
 {
   // TODO: No structure constraint
   return NULL;
+}
+
+SsLibFactoryYaml::OptionalNode
+SsLibFactoryYaml::getChildNode(const YAML::Node & parent, const ::std::string & childNodeName) const
+{
+  OptionalNode childNode;
+
+  if(parent[childNodeName])
+  {
+    childNode.reset(parent[childNodeName]);
+  }
+
+  return childNode;
 }
 
 SsLibFactoryYaml::OptionalAtomSpeciesCount

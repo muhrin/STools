@@ -26,6 +26,7 @@
 // Local includes
 #include "common/StructureData.h"
 #include "common/SharedData.h"
+#include "common/UtilityFunctions.h"
 #include "utility/DataTable.h"
 
 // NAMESPACES ////////////////////////////////
@@ -99,7 +100,7 @@ void StoichiometrySearch::start()
   size_t totalAtoms = 0;
   ::std::string sweepPipeOutputPath;
 
-  ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
+  const ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
   {
     totalAtoms = currentIdx.sum();
@@ -203,8 +204,7 @@ void StoichiometrySearch::releaseBufferedStructures(
       const size_t numAtoms = strData->getStructure()->getNumAtoms();
       if(numAtoms != 0)
       {
-        const double energyPerAtom = *strData->enthalpy / numAtoms;
-        table.insert(tableKey, "energy/atom", ::boost::lexical_cast< ::std::string>(energyPerAtom));
+        table.insert(tableKey, "energy/atom", common::getString(*strData->enthalpy / numAtoms));
       }
     }
     

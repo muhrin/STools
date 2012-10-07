@@ -35,7 +35,14 @@ myStructure(descriptionMap.getStructure())
 void RandomAtomPositioner::enteringAtomGroup(const AtomGroupDescription & atomGroup)
 {
   const common::UnitCell * const cell = myStructure.getUnitCell();
-  pushDisplacement(cell->randomPoint());
+  if(cell)
+    pushDisplacement(cell->randomPoint());
+  else
+  {
+    ::arma::vec3 rand;
+    rand.randu();
+    pushDisplacement(rand);
+  }
 }
 
 void RandomAtomPositioner::leavingAtomGroup(const AtomGroupDescription & atomGroup)
@@ -52,10 +59,17 @@ bool RandomAtomPositioner::visitAtomGroup(const AtomGroupDescription & atomGroup
   ::arma::vec3 pos;
   const StructureDescriptionMap::GroupAtomsRange range = myDescriptionMap.getAtoms(&atomGroup);
   
+  ::arma::vec3 rand;
   BOOST_FOREACH(atom, range)
   {
-    pos = myCurrentPosition + cell->randomPoint();
-    cell->wrapVecInplace(pos);
+    if(cell)
+      rand = cell->randomPoint();
+    else
+      rand.randu();
+    pos = myCurrentPosition + rand;
+    
+    if(cell)
+     cell->wrapVecInplace(pos);
     atom->setPosition(pos);
   }
 

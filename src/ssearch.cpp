@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "STools.h"
 
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/tokenizer.hpp>
@@ -21,6 +22,7 @@
 #include <build_cell/DefaultCrystalGenerator.h>
 #include <build_cell/StructureDescription.h>
 #include <common/AtomSpeciesDatabase.h>
+#include <factory/FactoryError.h>
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
 #include <io/ResReaderWriter.h>
@@ -55,11 +57,22 @@
 
 // NAMESPACES ////////////////////////////////
 
+struct InputOptions
+{
+  unsigned int      numRandomStructures;
+  double            optimisationPressure;
+  ::std::string     potential;
+  ::std::vector< ::std::string> potSpecies;
+  ::std::vector< ::std::string> potParams;
+  ::std::string     structurePath;
+};
+
 
 int main(const int argc, const char * const argv[])
 {
   namespace po    = ::boost::program_options;
   namespace sp    = ::spipe;
+  namespace spb   = ::spipe::blocks;
   namespace ssbc  = ::sstbx::build_cell;
   namespace ssc   = ::sstbx::common;
   namespace ssf   = ::sstbx::factory;
@@ -78,32 +91,38 @@ int main(const int argc, const char * const argv[])
   const ::std::string exeName(argv[0]);
 
   // Program options
-  ::std::string paramsString;
-  unsigned int numRandomStructures;
-  double optimisationPressure;
-  ::std::string inputStructure;
+  InputOptions in;
 
   try
   {
-    po::options_description desc("STools\nUsage: " + exeName + " [options] inpue_file...\nOptions");
-    desc.add_options()
+    po::options_description general("STools\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+    general.add_options()
       ("help", "Show help message")
-      ("num,n", po::value<unsigned int>(&numRandomStructures)->default_value(100), "Number of random starting structures")
-      ("params,p", po::value< ::std::string>(&paramsString)->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
-      ("opt-press", po::value<double>(&optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
-      ("input", po::value< ::std::string>(&inputStructure), "The input structure")
+      ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
+      ("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
+      ("input", po::value< ::std::string>(&in.structurePath), "The input structure")
+    ;
+
+    po::options_description lennardJones("Lennard-Jones options (when --pot lj is used)");
+    lennardJones.add_options()
+      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
     ;
 
     po::positional_options_description p;
     p.add("input", 1);
 
+    po::options_description cmdLineOptions;
+    cmdLineOptions.add(general).add(lennardJones);
+
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::store(po::command_line_parser(argc, argv).options(cmdLineOptions).positional(p).run(), vm);
 
     // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
     if(vm.count("help"))
     {
-      ::std::cout << desc << ::std::endl;
+      ::std::cout << cmdLineOptions << ::std::endl;
       return 1;
     }
 
@@ -115,67 +134,113 @@ int main(const int argc, const char * const argv[])
     return 1;
   }
 
-
-  // Potential parameters
-  vec params(8);
-  Tok toker(paramsString, tokSep);
-
-  size_t i = 0;
-  bool parsedSuccessfully = true;
-  BOOST_FOREACH(::std::string paramStr, toker)
+  if(in.potential != "lj")
   {
-    if(i == 7)
-    {
-      parsedSuccessfully = false;
-      break;
-    }
-    try
-    {
-      params(i) = ::boost::lexical_cast<double>(paramStr);
-    }
-    catch(::boost::bad_lexical_cast )
-    {
-      parsedSuccessfully = false;
-      break;
-    }
-    ++i;
+    ::std::cout << "--pot must have the value lj";
+    return 1;
   }
 
-  if(!parsedSuccessfully || i < 7)
+  if(in.potParams.size() != 7)
   {
-    ::std::cout << "Error parsing parameters\n";
+    ::std::cout << "There must be 7 potential parameters specified\n";
     return 1;
-  } 
+  }
 
-  ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
-  potentialSpecies[0] = ssc::AtomSpeciesId::NA;
-  potentialSpecies[1] = ssc::AtomSpeciesId::CL;
+  // Do potential parameters ////////////////////////////////
+  vec from(8), stepSize(8);
+  Col<unsigned int> numSteps(8);
+  // Initialise with reasonable values
+  from.zeros();
+  stepSize.ones();
+  numSteps.ones();
 
+  double lFrom, lStepSize;
+  unsigned int lNumSteps;
+  for(size_t i = 0; i < 6; ++i)
+  {
+    try
+    {
+      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
+      from(i) = lFrom;
+      stepSize(i) = lStepSize;
+      numSteps(i) = lNumSteps;
+    }
+    catch(const ::std::invalid_argument & e)
+    {
+      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
+      ::std::cout << e.what();
+      return 1;
+    }
+  }
+
+  bool doingSweep = false;
+  for(size_t i = 0; i < numSteps.n_rows; ++i)
+  {
+    doingSweep |= numSteps(i) != 1;
+  }
 
   // Generate the pipeline
-  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> randomSearchPipe;
-  ssc::AtomSpeciesDatabase & speciesDb = randomSearchPipe.getGlobalData().getSpeciesDatabase();
+  typedef ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> Pipeline;
+  typedef spb::PotentialParamSweep ParamSweepBlock;
+
+  ::boost::scoped_ptr<Pipeline> potparamsSweepPipe;
+  ::boost::scoped_ptr<Pipeline> randomSearchPipeOwned;
+
+  Pipeline * masterPipe;
+  Pipeline * randomSearchPipe;
+  if(doingSweep)
+  {
+    potparamsSweepPipe.reset(new Pipeline());
+    potparamsSweepPipe->getSharedData().setPipe(*potparamsSweepPipe.get());
+    masterPipe = potparamsSweepPipe.get();
+    randomSearchPipe = &potparamsSweepPipe->spawnChild();
+  }
+  else
+  {
+    randomSearchPipeOwned.reset(new Pipeline());
+    randomSearchPipe = randomSearchPipeOwned.get();
+    masterPipe = randomSearchPipe;
+  }
+  // Make sure the shared data is correctly hooked up
+  randomSearchPipe->getSharedData().setPipe(*randomSearchPipe);
+
+  ssc::AtomSpeciesDatabase & speciesDb = randomSearchPipe->getGlobalData().getSpeciesDatabase();
+
+  // Do atom species ///////////////////////////////////////
+  if(in.potSpecies.size() != 2)
+  {
+    ::std::cout << "There must be 2 potential species specified\n";
+    return 1;
+  }
+
+  ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
+  potentialSpecies[0] = speciesDb.getIdFromSymbol(in.potSpecies[0]);
+  potentialSpecies[1] = speciesDb.getIdFromSymbol(in.potSpecies[1]);
+  from(6) = potentialSpecies[0].ordinal();
+  from(7) = potentialSpecies[1].ordinal();
 
   ssf::SsLibFactoryYaml factory(speciesDb);
 
-  YAML::Node loadedNode = YAML::LoadFile(inputStructure);
-
-  YAML::Node * structureNode = &loadedNode;
-  YAML::Node strNode;
-  if(loadedNode[kw::STRUCTURE])
+  ssbc::StructureDescriptionPtr strDesc;
+  try
   {
-    strNode = loadedNode[kw::STRUCTURE];
-    structureNode = &strNode;
+    YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
+    if(!loadedNode[kw::RANDOM_STRUCTURE])
+    {
+      ::std::cout << "Couldn't find random structure in input file\n";
+      return 1;
+    }
+    strDesc = factory.createStructureDescription(loadedNode[kw::RANDOM_STRUCTURE]);
   }
-
-  ssbc::StructureDescriptionPtr strDesc = factory.createStructureDescription(*structureNode); 
-
-  // Make sure the shared data is correctly hooked up
-  randomSearchPipe.getSharedData().setPipe(randomSearchPipe);
+  catch(const ssf::FactoryError & e)
+  {
+    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
+    return 1;
+  }
 
   // Random structure
   ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(strGen, numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release()));
+  sp::blocks::RandomStructure randStr(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release()));
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
@@ -183,18 +248,18 @@ int main(const int argc, const char * const argv[])
   // Geometry optimise
   ::arma::mat epsilon;
 	epsilon.set_size(2, 2);
-	epsilon << params(0) << params(1) << endr
-			<< params(1) << params(2) << endr;
+	epsilon << from(0) << from(1) << endr
+			<< from(1) << from(2) << endr;
 
 	::arma::mat sigma;
 	sigma.set_size(2, 2);
-	sigma << params(3) << params(4) << endr
-			<< params(4) << params(5) << endr;
+	sigma << from(3) << from(4) << endr
+			<< from(4) << from(5) << endr;
 
 	::arma::mat beta;
 	beta.set_size(2, 2);
-	beta << params(6) << 1 << endr
-			<< 1 << params(6) << endr;
+	beta << from(6) << 1 << endr
+			<< 1 << from(6) << endr;
 
   ssp::SimplePairPotential pp(
     speciesDb,
@@ -212,7 +277,7 @@ int main(const int argc, const char * const argv[])
 
   ::arma::mat33 optimisationPressureMtx;
   optimisationPressureMtx.fill(0.0);
-  optimisationPressureMtx.diag().fill(optimisationPressure);
+  optimisationPressureMtx.diag().fill(in.optimisationPressure);
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &optimisationPressureMtx, false);
 
@@ -242,18 +307,29 @@ int main(const int argc, const char * const argv[])
   sp::blocks::LowestFreeEnergy lowestE;
 
   // Put it all together
-  randomSearchPipe.setStartBlock(randStr);
-  randomSearchPipe.connect(randStr, niggli);
-  randomSearchPipe.connect(niggli, goPressure);
-  randomSearchPipe.connect(goPressure, go);
-  randomSearchPipe.connect(go, remDuplicates);
-  randomSearchPipe.connect(remDuplicates, sg);
-  randomSearchPipe.connect(sg, write1);
-  randomSearchPipe.connect(write1, barrier);
-  randomSearchPipe.connect(barrier, write2);
-  randomSearchPipe.connect(write2, lowestE);
+  randomSearchPipe->setStartBlock(randStr);
+  randomSearchPipe->connect(randStr, niggli);
+  randomSearchPipe->connect(niggli, goPressure);
+  randomSearchPipe->connect(goPressure, go);
+  randomSearchPipe->connect(go, remDuplicates);
+  randomSearchPipe->connect(remDuplicates, sg);
+  randomSearchPipe->connect(sg, write1);
+  randomSearchPipe->connect(write1, barrier);
+  randomSearchPipe->connect(barrier, write2);
+  randomSearchPipe->connect(write2, lowestE);
 
-  randomSearchPipe.initialise();
-  randomSearchPipe.start();
+
+  ::boost::scoped_ptr<ParamSweepBlock> paramSweepBlock;
+  if(doingSweep)
+  {
+    // Configure parameter sweep pipeline
+    paramSweepBlock.reset(new ParamSweepBlock(from, stepSize, numSteps, *randomSearchPipe));
+    potparamsSweepPipe->setStartBlock(*paramSweepBlock.get());
+  }
+
+
+  // Finally initialise and start whichever pipeline is the master
+  masterPipe->initialise();
+  masterPipe->start();
 }
 
