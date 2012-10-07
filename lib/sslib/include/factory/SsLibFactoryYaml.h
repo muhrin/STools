@@ -27,6 +27,7 @@
 #include "build_cell/IStructureGenerator.h"
 #include "build_cell/StructureDescription.h"
 #include "build_cell/Types.h"
+#include "factory/FactoryError.h"
 #include "factory/SsLibYamlKeywords.h"
 #include "factory/YamlCommon.h"
 #include "io/IStructureWriter.h"
@@ -176,7 +177,7 @@ template <typename T>
 typename SsLibFactoryYaml::OptionalMinMax<T>::Type
 SsLibFactoryYaml::getMinMax(const YAML::Node & parentNode, const SsLibFactoryYaml::MinMaxRequire::Value requiredFlag) const
 {
-  OptionalMinMax<T>::Type minMax;
+  typename OptionalMinMax<T>::Type minMax;
 
   minMax.first  = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MIN, (bool)(requiredFlag & MinMaxRequire::MIN));
   minMax.second = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MAX, (bool)(requiredFlag & MinMaxRequire::MAX));
