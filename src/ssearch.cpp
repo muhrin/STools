@@ -64,9 +64,34 @@ struct InputOptions
   ::std::string     potential;
   ::std::vector< ::std::string> potSpecies;
   ::std::vector< ::std::string> potParams;
+  ::std::string     potCombiningRule;
   ::std::string     structurePath;
 };
 
+::sstbx::potential::SimplePairPotential::CombiningRule
+getCombiningRuleFromString(const ::std::string & str)
+{
+  ::sstbx::potential::SimplePairPotential::CombiningRule rule = ::sstbx::potential::SimplePairPotential::NONE;
+
+  if(str == "lorentz")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::LORENTZ;
+  }
+  else if(str == "berthelot")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::BERTHELOT;
+  }
+  else if(str == "lorentz_berthelot")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::LORENTZ_BERTHELOT;
+  }
+  else if(str == "custom")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::CUSTOM;
+  }
+
+  return rule;
+}
 
 int main(const int argc, const char * const argv[])
 {
@@ -99,14 +124,15 @@ int main(const int argc, const char * const argv[])
     general.add_options()
       ("help", "Show help message")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
-      ("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
-      ("input", po::value< ::std::string>(&in.structurePath), "The input structure")
+      ("pot,u", po::value < ::std::string>(&in.potential)->default_value("lj"), "The potential to use (possible values: lj)")
+      ("input,i", po::value< ::std::string>(&in.structurePath), "The input structure")
     ;
 
     po::options_description lennardJones("Lennard-Jones options (when --pot lj is used)");
     lennardJones.add_options()
       ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
-      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "Potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("comb,c", po::value< ::std::string>(&in.potCombiningRule)->default_value("none"), "Off-diagonal combining rule to use")
       ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
     ;
 
@@ -261,6 +287,9 @@ int main(const int argc, const char * const argv[])
 	beta << from(6) << 1 << endr
 			<< 1 << from(6) << endr;
 
+
+  const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
+
   ssp::SimplePairPotential pp(
     speciesDb,
     2,
@@ -271,7 +300,7 @@ int main(const int argc, const char * const argv[])
     beta,
     12,
     6,
-    ssp::SimplePairPotential::CUSTOM
+    combRule
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 

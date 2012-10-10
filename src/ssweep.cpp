@@ -52,8 +52,8 @@ struct InputOptions
 {
   unsigned int      numRandomStructures;
   double            optimisationPressure;
-  ::std::string     potential;
-  ::std::vector< ::std::string> potSpecies;
+  //::std::string     potential;
+  //::std::vector< ::std::string> potSpecies;
   ::std::vector< ::std::string> potParams;
   ::std::string     structurePath;
   unsigned int      maxNumAtoms;
@@ -85,11 +85,11 @@ int main(const int argc, const char * const argv[])
     po::options_description desc("STools\nUsage: " + exeName + " [options] params...\nOptions");
     desc.add_options()
       ("help", "Show help message")
-      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
+      //("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
       ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
       ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
-      ("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
+      //("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
       ("input", po::value< ::std::string>(&in.structurePath), "The input structure")
       ("max-atoms,m", po::value<unsigned int>(&in.maxNumAtoms)->required(), "Maximum number of atoms")
     ;
