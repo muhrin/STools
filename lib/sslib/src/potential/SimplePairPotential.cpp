@@ -381,7 +381,7 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 
       // TODO: Buffer rSqs as getAllVectorsWithinCutoff needs to calculate it anyway!
 			imageVectors.clear();
-      if(!distCalc.getVecsBetween(posI, posJ, rCutoff(speciesI, speciesJ), imageVectors, MAX_INTERACTION_VECTORS))
+      if(!distCalc.getVecsBetween(posI, posJ, rCutoff(speciesI, speciesJ), imageVectors, MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES))
       {
         // We reached the maximum number of interaction vectors so indicate that there was a problem
         problemDuringCalculation = true;
