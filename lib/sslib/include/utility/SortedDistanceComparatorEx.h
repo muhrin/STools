@@ -1,15 +1,16 @@
 /*
- * SortedDistanceComparator.h
+ * SortedDistanceComparatorEx.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef SORTED_DISTANCE_COMPARATOR_H
-#define SORTED_DISTANCE_COMPARATOR_H
+#ifndef SORTED_DISTANCE_COMPARATOR_EX_H
+#define SORTED_DISTANCE_COMPARATOR_EX_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <map>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -28,7 +29,7 @@ class Structure;
 namespace sstbx {
 namespace utility {
 
-class SortedDistanceComparisonData
+class SortedDistanceComparisonDataEx
 {
 public:
   typedef ::std::vector<double> DistancesVec;;
@@ -37,9 +38,10 @@ public:
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
 
-  SortedDistanceComparisonData(const common::Structure & structure, const double _cutoff);
+  SortedDistanceComparisonDataEx(const common::Structure & structure, const double _cutoff);
 
   ::std::vector<common::AtomSpeciesId::Value> species;
+  DistancesVec              latticeDistances;
   SpeciesDistancesMap       speciesDistancesMap;
   const double              cutoff;
 
@@ -48,15 +50,15 @@ private:
   void initSpeciesDistancesMap();
 };
 
-class SortedDistanceComparator : public IStructureComparator
+class SortedDistanceComparatorEx : public IStructureComparator
 {
   typedef ::std::vector<double> DistancesVec;
 public:
 
-	typedef SortedDistanceComparisonData DataTyp;
+	typedef SortedDistanceComparisonDataEx DataTyp;
   typedef IBufferedComparator   BufferedTyp;
 
-	SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE);
+	SortedDistanceComparatorEx(double tolerance = DEFAULT_TOLERANCE);
 
   // From IStructureComparator ////////////////
 
@@ -75,17 +77,17 @@ public:
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
     const common::Structure & str1,
-		const SortedDistanceComparisonData & dist1,
+		const SortedDistanceComparisonDataEx & dist1,
     const common::Structure & str2,
-		const SortedDistanceComparisonData & dist2) const;
+		const SortedDistanceComparisonDataEx & dist2) const;
 
 	bool areSimilar(
     const common::Structure & str1,
-		const SortedDistanceComparisonData & dist1,
+		const SortedDistanceComparisonDataEx & dist1,
     const common::Structure & str2,
-		const SortedDistanceComparisonData & dist2) const;
+		const SortedDistanceComparisonDataEx & dist2) const;
 
-  ::std::auto_ptr<SortedDistanceComparisonData>
+  ::std::auto_ptr<SortedDistanceComparisonDataEx>
     generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 	
@@ -99,14 +101,14 @@ private:
   void calcProperties(
     const DistancesVec & dist1,
     const DistancesVec & dist2,
-    double & sqSum,
-    double & max,
-    unsigned int & runningComparedTotal) const;
+    double & rms,
+    double & max) const;
 
 	double myTolerance;
 
 };
 
-}}
+}
+}
 
-#endif /* SORTED_DISTANCE_COMPARATOR_H */
+#endif /* SORTED_DISTANCE_COMPARATOR_EX_H */

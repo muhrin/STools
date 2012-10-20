@@ -29,7 +29,7 @@ RandomAtomPositioner::RandomAtomPositioner(StructureDescriptionMap & description
 myDescriptionMap(descriptionMap),
 myStructure(descriptionMap.getStructure())
 {
-  myCurrentPosition.fill(0.0);
+  myCurrentPosition.zeros();
 }
 
 void RandomAtomPositioner::enteringAtomGroup(const AtomGroupDescription & atomGroup)

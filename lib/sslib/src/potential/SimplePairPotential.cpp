@@ -392,7 +392,7 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 				// Get the distance squared
 				rSq = dot(r, r);
 
-				// Check that distance is less than cut-off
+				// Check that distance isn't near the 0 as this will cause near-singular values
 				if(rSq > MIN_SEPARATION_SQ)
 				{
 					modR = sqrt(rSq);
@@ -489,8 +489,8 @@ SimplePairPotential::createEvaluator(const sstbx::common::Structure & structure)
 void SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 {
 	data.internalEnergy = 0.0;
-	data.forces.fill(0.0);
-	data.stressMtx.fill(0.0);
+	data.forces.zeros();
+	data.stressMtx.zeros();
 }
 
 void SimplePairPotential::updateSpeciesDb()

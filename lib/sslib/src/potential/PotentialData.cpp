@@ -26,8 +26,8 @@ PotentialData::PotentialData(const sstbx::common::Structure & structure)
 	internalEnergy = 0.0;
 	structure.getAtomPositions(pos);
 	forces.set_size(3, numParticles);
-	forces.fill(0.0);
-	stressMtx.fill(0.0);
+	forces.zeros();
+	stressMtx.zeros();
 }
 
 }

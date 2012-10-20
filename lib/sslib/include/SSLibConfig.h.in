@@ -8,6 +8,7 @@
 #define SSLIB_VERSION_PATCH @SSLIB_VERSION_PATCH@
 
 #cmakedefine SSLIB_USE_YAML
+#cmakedefine SSLIB_USE_CGAL
 
 #cmakedefine SSLIB_DISABLE_CPP11
 

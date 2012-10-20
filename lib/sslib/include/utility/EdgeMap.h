@@ -131,9 +131,9 @@ references(0)
 void EdgeMap::EdgeData::init(const size_t numDirections)
 {
 	directionValues.set_size(numDirections);
-  directionValues.fill(0);
+  directionValues.zeros();
   maskTotals.set_size(numDirections);
-  maskTotals.fill(0);
+  maskTotals.zeros();
 }
 
 void EdgeMap::EdgeData::addNeighbour(
@@ -331,7 +331,7 @@ void EdgeMap::generateMask()
 
 	// Generate the convolution mask along the 0th parameter direction
 	myMask.reset(new MultiArray<double>(maskExtents));
-	myMask->fill(1);	// Fill with 1 so multiplication works
+	myMask->ones();	// Fill with 1 so multiplication works
 
   double maskVal = 0.0;
   const MultiIdxRange maskRange(MultiIdx<size_t>(maskExtents.dims()), maskExtents);

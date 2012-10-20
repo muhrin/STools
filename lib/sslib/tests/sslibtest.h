@@ -7,4 +7,4 @@
  *      Author: Martin Uhrin
  */
 
-#cmakedefine SSLIB_BOOST_DYN_LINK
+#include <boost/test/unit_test.hpp>

@@ -126,7 +126,7 @@ bool TpsdGeomOptimiser::optimise(
 {
   // Set up the external pressure
   ::arma::mat33 pressureMtx;
-  pressureMtx.fill(0.0);
+  pressureMtx.zeros();
   if(externalPressure)
   {
     pressureMtx = *externalPressure;
@@ -146,8 +146,8 @@ bool TpsdGeomOptimiser::optimise(
 	double xg, gg;
   ::arma::vec3 f;
 
-	data.forces.fill(1.0);
-	deltaPos.fill(0.0);
+	data.forces.ones();
+	deltaPos.zeros();
 
 	// Initialisation of variables
 	dH	= std::numeric_limits<double>::max();
@@ -226,7 +226,7 @@ bool TpsdGeomOptimiser::optimise(
 {
   // Set up the external pressure
   ::arma::mat33 pressureMtx;
-  pressureMtx.fill(0.0);
+  pressureMtx.zeros();
   if(externalPressure)
   {
     pressureMtx = *externalPressure;
@@ -250,15 +250,15 @@ bool TpsdGeomOptimiser::optimise(
 	double xg, gg;
   ::arma::vec3 f;
 
-	data.forces.fill(1.0);
-	deltaPos.fill(0.0);
-	deltaLatticeCar.fill(0.0);
+	data.forces.ones();
+	deltaPos.zeros();
+	deltaLatticeCar.zeros();
 	latticeCar = unitCell.getOrthoMtx();
 
 	// Initialisation of variables
 	dH	= std::numeric_limits<double>::max(); // Change in enthalpy between steps
 	h	= 1.0;  // Enthalpy = U + pV
-	s.fill(1.0);
+	s.ones();
 
 	const size_t numIonsSq	= data.numParticles * data.numParticles;
 

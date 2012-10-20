@@ -198,6 +198,7 @@ int main(const int argc, const char * const argv[])
       return 1;
     }
   }
+  const double betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
 
   bool doingSweep = false;
   for(size_t i = 0; i < numSteps.n_rows; ++i)
@@ -284,8 +285,8 @@ int main(const int argc, const char * const argv[])
 
 	::arma::mat beta;
 	beta.set_size(2, 2);
-	beta << from(6) << 1 << endr
-			<< 1 << from(6) << endr;
+	beta << betaDiagonal << 1 << endr
+			<< 1 << betaDiagonal << endr;
 
 
   const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);

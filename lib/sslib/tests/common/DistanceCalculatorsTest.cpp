@@ -6,11 +6,12 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <iostream>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <armadillo>
 
@@ -25,7 +26,7 @@
 #include <common/Utils.h>
 #include <utility/StableComparison.h>
 
-#define DIST_TEST_MANUAL_DEBUG
+//#define DIST_TEST_MANUAL_DEBUG
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
@@ -75,7 +76,7 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
 
-    cutoff = ssc::randDouble() * maxCutoff;
+    cutoff = ssc::randDouble(0.0, maxCutoff);
 
     t0 = time(NULL);
 
@@ -136,9 +137,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
     const size_t numElements = ::std::min(orthoDist.size(), univDist.size());
 
-    referenceSum.fill(0.0);
-    univSum.fill(0.0);
-    orthoSum.fill(0.0);
+    referenceSum.zeros();
+    univSum.zeros();
+    orthoSum.zeros();
     for(size_t i = 0; i < numElements; ++i)
     {
       referenceSum += referenceVecs[i];
@@ -251,8 +252,8 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 
     const size_t numElements = ::std::min(referenceDists.size(), univDist.size());
 
-    univSum.fill(0.0);
-    referenceSum.fill(0.0);
+    univSum.zeros();
+    referenceSum.zeros();
     for(size_t i = 0; i < numElements; ++i)
     {
       referenceSum += referenceVecs[i];

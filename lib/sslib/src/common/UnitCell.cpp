@@ -636,7 +636,7 @@ void UnitCell::initOrthoAndFracMatrices()
   const double betaRad = Constants::DEG_TO_RAD * myLatticeParams[4];
   const double gammaRad = Constants::DEG_TO_RAD * myLatticeParams[5];
 
-	myOrthoMtx.fill(0);
+	myOrthoMtx.zeros();
 	// A - col 0
 	myOrthoMtx.at(0, 0) = myLatticeParams[0];
 	// B - col 1

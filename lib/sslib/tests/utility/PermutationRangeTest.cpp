@@ -6,12 +6,13 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <iostream>
 #include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <utility/PermutationRange.h>
 

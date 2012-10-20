@@ -69,7 +69,7 @@ public:
   };
 
   static const unsigned int MAX_INTERACTION_VECTORS = 10000;
-  static const unsigned int MAX_CELL_MULTIPLES = 250;
+  static const unsigned int MAX_CELL_MULTIPLES = 500;
 
 	SimplePairPotential(
     common::AtomSpeciesDatabase & atomSpeciesDb,

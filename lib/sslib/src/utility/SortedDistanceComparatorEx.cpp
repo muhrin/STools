@@ -1,5 +1,5 @@
 /*
- * SortedDistanceComparator.cpp
+ * SortedDistanceComparatorEx.cpp
  *
  *  Created on: Aug 17, 2011
  *      Author: muhrin
@@ -7,7 +7,7 @@
 
 // INCLUDES /////////////////////////////////////
 
-#include "utility/SortedDistanceComparator.h"
+#include "utility/SortedDistanceComparatorEx.h"
 
 #include <memory>
 
@@ -24,21 +24,17 @@
 namespace sstbx {
 namespace utility {
 
-const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
-const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 1e-3;
+const size_t SortedDistanceComparatorEx::MAX_CELL_MULTIPLES   = 10;
+const double SortedDistanceComparatorEx::DEFAULT_TOLERANCE    = 1e-3;
 
-
-SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structure & structure, const double _cutoff):
+SortedDistanceComparisonDataEx::SortedDistanceComparisonDataEx(const common::Structure & structure, const double _cutoff):
 cutoff(_cutoff)
 {
-  // TODO: Change to use primitive later!
-//  const common::StructurePtr primitive = structure.getPrimitiveCopy();
-  const common::Structure * const primitive = &structure;
-
+  const common::StructurePtr primitive = structure.getPrimitiveCopy();
   const common::DistanceCalculator & distCalc = primitive->getDistanceCalculator();
 
-//  const common::UnitCell * const unitCell = primitive->getUnitCell();
-//  unitCell->niggliReduce();
+  common::UnitCell * const unitCell = primitive->getUnitCell();
+  unitCell->niggliReduce();
 
   const size_t numAtoms = primitive->getNumAtoms();
 
@@ -50,6 +46,9 @@ cutoff(_cutoff)
 
   initSpeciesDistancesMap();
 
+  // First calculation all the 'lattice distances'
+  distCalc.getDistsBetween(::arma::vec3(), ::arma::vec3(), cutoff, latticeDistances);
+
 	// Calculate the distances ...
   common::AtomSpeciesId::Value specI, specJ;
   DistancesVecPtr distVecIJ;
@@ -60,7 +59,9 @@ cutoff(_cutoff)
     DistancesMap & iDistMap = speciesDistancesMap[specI];
 
     // Now to all the others
-    for(size_t j = i; j < numAtoms; ++j)
+    for(size_t j = 0; j < numAtoms; ++j)
+    {
+    if(i != j)
     {
       const common::Atom & atomJ = primitive->getAtom(j);
       specJ = atomJ.getSpecies();
@@ -68,9 +69,11 @@ cutoff(_cutoff)
 
       distCalc.getDistsBetween(atomI, atomJ, cutoff, *distVecIJ);
     }
+    }
   }
 
 	// ... and sort them
+  ::std::sort(latticeDistances.begin(), latticeDistances.end());
   for(size_t i = 0; i < numSpecies; ++i)
   {
     specI = species[i];
@@ -84,7 +87,7 @@ cutoff(_cutoff)
   }
 }
 
-void SortedDistanceComparisonData::initSpeciesDistancesMap()
+void SortedDistanceComparisonDataEx::initSpeciesDistancesMap()
 {
   const size_t numSpecies = species.size();
   common::AtomSpeciesId::Value specI, specJ;
@@ -102,35 +105,35 @@ void SortedDistanceComparisonData::initSpeciesDistancesMap()
   }
 }
 
-SortedDistanceComparator::SortedDistanceComparator(const double tolerance):
+SortedDistanceComparatorEx::SortedDistanceComparatorEx(const double tolerance):
 myTolerance(tolerance)
 {}
 
-double SortedDistanceComparator::compareStructures(
+double SortedDistanceComparatorEx::compareStructures(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
-  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
+  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp1(generateComparisonData(str1));
+  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp2(generateComparisonData(str2));
 
   return compareStructures(str1, *comp1, str2, *comp2);
 }
 
-bool SortedDistanceComparator::areSimilar(
+bool SortedDistanceComparatorEx::areSimilar(
 	const sstbx::common::Structure & str1,
 	const sstbx::common::Structure & str2) const
 {
-  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp1(generateComparisonData(str1));
-  ::std::auto_ptr<const SortedDistanceComparator::DataTyp> comp2(generateComparisonData(str2));
+  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp1(generateComparisonData(str1));
+  ::std::auto_ptr<const SortedDistanceComparatorEx::DataTyp> comp2(generateComparisonData(str2));
 
   return areSimilar(str1, *comp1, str2, *comp2);
 }
 
-double SortedDistanceComparator::compareStructures(
+double SortedDistanceComparatorEx::compareStructures(
     const common::Structure & str1,
-		const SortedDistanceComparisonData & dist1,
+		const SortedDistanceComparisonDataEx & dist1,
     const common::Structure & str2,
-		const SortedDistanceComparisonData & dist2) const
+		const SortedDistanceComparisonDataEx & dist2) const
 {
   typedef ::std::vector<double> DistancesVec;
 
@@ -143,40 +146,46 @@ double SortedDistanceComparator::compareStructures(
   }
 
   double max = ::std::numeric_limits<double>::min();
-  double sqSum = 0.0;
-  unsigned int totalCompared = 0;
+  double rms = 0.0;
+
+  // Do lattice distances
+  calcProperties(
+    dist1.latticeDistances,
+    dist2.latticeDistances,
+    rms,
+    max);
+
   common::AtomSpeciesId::Value specI, specJ;
   for(size_t i = 0; i < numSpecies - 1; ++i)
   {
     specI = dist1.species[i];
     
     // Do others
-    const SortedDistanceComparisonData::DistancesMap & distMapI1 =
+    const SortedDistanceComparisonDataEx::DistancesMap & distMapI1 =
       dist1.speciesDistancesMap(specI);
-    const SortedDistanceComparisonData::DistancesMap & distMapI2 =
+    const SortedDistanceComparisonDataEx::DistancesMap & distMapI2 =
       dist2.speciesDistancesMap(specI);
     for(size_t j = i; j < numSpecies; ++j)
     {
       specJ = dist1.species[j];
-      calcProperties(*distMapI1(specJ), *distMapI2(specJ), sqSum, max, totalCompared);
+      calcProperties(*distMapI1(specJ), *distMapI2(specJ), rms, max);
     }
   }
 
-  //return sqrt(sqSum / totalCompared);
   return max;
 }
 
-bool SortedDistanceComparator::areSimilar(
+bool SortedDistanceComparatorEx::areSimilar(
     const common::Structure & str1,
-		const SortedDistanceComparisonData & dist1,
+		const SortedDistanceComparisonDataEx & dist1,
     const common::Structure & str2,
-		const SortedDistanceComparisonData & dist2) const
+		const SortedDistanceComparisonDataEx & dist2) const
 {
 	return compareStructures(str1, dist1, str2, dist2) < myTolerance;
 }
 
-::std::auto_ptr<SortedDistanceComparisonData>
-SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure & str) const
+::std::auto_ptr<SortedDistanceComparisonDataEx>
+SortedDistanceComparatorEx::generateComparisonData(const sstbx::common::Structure & str) const
 {
   const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
 
@@ -190,48 +199,21 @@ SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure 
     maxDist = 1.75 * longestDiag;
   }
 
-	return ::std::auto_ptr<SortedDistanceComparisonData>(new SortedDistanceComparisonData(str, maxDist));
+	return ::std::auto_ptr<SortedDistanceComparisonDataEx>(new SortedDistanceComparisonDataEx(str, maxDist));
 }
 
-::boost::shared_ptr<SortedDistanceComparator::BufferedTyp> SortedDistanceComparator::generateBuffered() const
+::boost::shared_ptr<SortedDistanceComparatorEx::BufferedTyp> SortedDistanceComparatorEx::generateBuffered() const
 {
   return ::boost::shared_ptr<IBufferedComparator>(
-    new GenericBufferedComparator<SortedDistanceComparator>(*this)
+    new GenericBufferedComparator<SortedDistanceComparatorEx>(*this)
   );
 }
 
-//void SortedDistanceComparator::populateDistanceVector(
-//	const ::sstbx::common::Structure & str,
-//	std::vector<double> & distVec,
-//	const double cutoff) const
-//{
-//  ::arma::mat pos;
-//	str.getAtomPositions(pos);
-//  const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
-//
-//  // Have to do all i, j pairs including i = j and ij/ji to get all the possible distances.
-//  // TODO: Figure out why I have to do the above!!
-//	std::vector<double> distances;
-//	const size_t numParticles = pos.n_cols;
-//	for(size_t i = 0; i < numParticles; ++i)
-//	{
-//		for(size_t j = 0; j < numParticles; ++j)
-//		{
-//			distances.clear();
-//
-//			distCalc.getDistsBetween(pos.col(i), pos.col(j), cutoff, distances);
-//
-//			distVec.insert(distVec.end(), distances.begin(), distances.end());
-//		}
-//	}
-//}
-
-void SortedDistanceComparator::calcProperties(
-  const SortedDistanceComparator::DistancesVec & dist1,
-  const SortedDistanceComparator::DistancesVec & dist2,
-  double & sqSum,
-  double & max,
-  unsigned int & runningComparedTotal) const
+void SortedDistanceComparatorEx::calcProperties(
+  const SortedDistanceComparatorEx::DistancesVec & dist1,
+  const SortedDistanceComparatorEx::DistancesVec & dist2,
+  double & rms,
+  double & max) const
 {
   const size_t maxIdx = ::std::min(dist1.size(), dist2.size());
 
@@ -244,9 +226,8 @@ void SortedDistanceComparator::calcProperties(
     sum = d1 + d2;
     delta = sum > 0 ? std::abs(d1 - d2) / sum : 0;
     max   = std::max(max, delta);
-    sqSum   += delta * delta;
+    rms   += delta * delta;
   }
-  runningComparedTotal += maxIdx;
 }
 
 }

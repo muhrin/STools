@@ -6,10 +6,10 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <vector>
 #include <iostream>
-
-#include <boost/test/unit_test.hpp>
 
 #include <armadillo>
 

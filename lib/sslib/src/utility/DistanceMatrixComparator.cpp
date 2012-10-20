@@ -19,7 +19,7 @@
 #include "utility/PermutationRange.h"
 
 // Turn on or off DistanceMatrixComparator (DMC) debugging
-#define SSLIB_DMC_DEBUG
+//#define SSLIB_DMC_DEBUG
 
 namespace sstbx {
 namespace utility {
@@ -41,7 +41,7 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
 
   const size_t numAtoms = primitive->getNumAtoms();
   ::arma::mat unsortedDistnacesMatrix(numAtoms, numAtoms);
-  unsortedDistnacesMatrix.diag().fill(0.0);
+  unsortedDistnacesMatrix.diag().zeros();
 
   // Copy over the species of all the atoms (ordered by index)
   primitive->getAtomSpecies(speciesList);

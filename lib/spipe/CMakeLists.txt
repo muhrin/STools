@@ -15,10 +15,14 @@ project(StructurePipe)
 # Custom paths to libraries #########
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
-set(QHULL_ROOT "" CACHE FILEPATH "Path to qhull library")
 
 # Build settings
-set(SP_USE_YAML TRUE CACHE BOOL "")
+set(SP_USE_YAML TRUE CACHE BOOL "Build StructurePipe with YAML support.")
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
+  "${PROJECT_BINARY_DIR}/src/StructurePipeConfig.h"
+)
 
 ## End configuration options ###########################
 
@@ -30,16 +34,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/
 set(CMAKE_PREFIX_PATH
   "${BOOST_ROOT}"
   "${ARMADILLO_ROOT}"
-  "${QHULL_ROOT}"
 )
 
-
 ## Boost ##
-# Tell Windows builds to look for static boost libraries
-if(WIN32)
-  set(Boost_USE_STATIC_LIBS ON)
-endif(WIN32)
-find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
+# Disable auto-linking
+add_definitions(-DBOOST_ALL_NO_LIB)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 ## Armadillo ##
 find_package(Armadillo)
@@ -47,25 +47,11 @@ if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
-## QHull ##
-if(WIN32)
-  set(QHULL_USE_STATIC ON)
-endif(WIN32)
-find_package(Qhull COMPONENTS QhullCpp)
-set(SP_USE_QHULL ${QHULL_QHULLCPP_FOUND})
-
 ## END FIND PACKAGES ####################################
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
-  "${PROJECT_BINARY_DIR}/src/StructurePipeConfig.h"
-)
 
-if(SP_USE_QHULL)
-include_directories(
-  ${QHULL_INCLUDE_DIRS}
-)
-endif(SP_USE_QHULL)
+## First libraries #####################################
+
 
 set(SPIPE_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}/src  # So that we find StructurePipeConfig.h

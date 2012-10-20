@@ -60,7 +60,7 @@ myWriteOutput(writeOutput)
   }
   else
   {
-    myExternalPressure.fill(0.0);
+    myExternalPressure.zeros();
   }
 }
 

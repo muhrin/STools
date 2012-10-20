@@ -55,9 +55,9 @@ StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) cons
   if(lastSaved)
   {
     relativePath = *lastSaved;
-    if(ssu::isAbsolute(relativePath))
+    if(ssu::fs::isAbsolute(relativePath))
     {
-      relativePath = fs::make_relative(ssu::absolute(pipeline.getSharedData().getOutputPath()), relativePath);
+      relativePath = ssu::fs::make_relative(pipeline.getSharedData().getOutputPath(), relativePath);
     }
   }
 

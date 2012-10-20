@@ -167,7 +167,7 @@ void ResReaderWriter::writeStructure(
 		  fracPos = cell->cartToFrac(positions.col(i));
     else
       fracPos = positions.col(i);
-		strFile << endl << ::std::setprecision(32) << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
+		strFile << endl << ::std::setprecision(16) << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
 			fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
 	}
 
@@ -230,7 +230,7 @@ UniquePtr<common::Structure>::Type ResReaderWriter::readStructure(
         if(++tokIt != toker.end())
           str->setName(*tokIt);
         else
-          str->setName(utility::stemString(filepath));
+          str->setName(utility::fs::stemString(filepath));
 
         // Does the user want additional data?
         if(data)

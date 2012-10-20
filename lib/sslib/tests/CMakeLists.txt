@@ -1,16 +1,24 @@
 
 ## Configure the tests header file
 
-# Figure out if we are using dynamic or static boost libraries
+## CONFIGURATION SETTINGS ##############################
+
+# Build options ###
 if(Boost_USE_STATIC_LIBS)
 else()
-  set(SSLIB_BOOST_DYN_LINK ON)
-endif()
+  add_definitions(-DBOOST_TEST_DYN_LINK)
+endif(Boost_USE_STATIC_LIBS)
 
-configure_file(
-  "${PROJECT_SOURCE_DIR}/tests/sslibtest.h.in"
-  "${PROJECT_BINARY_DIR}/tests/sslibtest.h"
+## END CONFIGURATION SETTINGS ##########################
+
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem unit_test_framework)
+
+# tests/analysis
+
+set(tests_Source_Files__analysis
+  analysis/VoronoiMapTest.cpp
 )
+source_group("Source Files\\analysis" FILES ${tests_Source_Files__analysis})
 
 # tests/build_cell
 
@@ -53,7 +61,7 @@ source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})
 ## tests/
 
 set(tests_Header_Files__
-  "${PROJECT_BINARY_DIR}/tests/sslibtest.h"
+  sslibtest.h
 )
 source_group("Header Files" FILES ${tests_Header_Files__})
 
@@ -67,6 +75,7 @@ set(tests_Header_Files
 )
 
 set(tests_Source_Files
+  ${tests_Source_Files__analysis}
   ${tests_Source_Files__build_cell}
   ${tests_Source_Files__common}
   ${tests_Source_Files__factory}
@@ -112,9 +121,8 @@ add_dependencies(sslibtest sslib)
 
 # Libraries we need to link to
 target_link_libraries(sslibtest
-  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   spglib
   sslib
 )
-

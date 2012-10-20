@@ -70,7 +70,7 @@ void parseParamString(
   unsigned int &      nSteps
 );
 
-::std::string getString(const double in, int precision = 5);
+::std::string getString(const double in, unsigned int digitsAfterDecimal = 5);
 
 }
 }

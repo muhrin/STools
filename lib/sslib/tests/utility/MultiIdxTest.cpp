@@ -6,13 +6,13 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <iostream>
 
 #include <boost/foreach.hpp>
 
 #include <utility/MultiIdx.h>
-
-#include <boost/test/unit_test.hpp>
 
 namespace ssu = ::sstbx::utility;
 

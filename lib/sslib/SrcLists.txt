@@ -1,3 +1,11 @@
+# analysis
+
+set(sslib_Source_Files__analysis
+  src/analysis/VoronoiMap.cpp
+)
+source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
+
+# build_cell
 
 set(sslib_Source_Files__build_cell
   src/build_cell/AbstractConstraintDescription.cpp
@@ -76,6 +84,7 @@ set(sslib_Source_Files__utility
   src/utility/DistanceMatrixComparator.cpp
   src/utility/HeterogeneousMap.cpp
   src/utility/SortedDistanceComparator.cpp
+  src/utility/SortedDistanceComparatorEx.cpp
   src/utility/StableComparison.cpp
   src/utility/UniqueStructureSet.cpp
 )
@@ -86,6 +95,7 @@ set(sslib_Source_Files__
 source_group("Header Files" FILES ${sslib_Source_Files__})
 
 set(sslib_Source_Files
+  ${sslib_Source_Files__analysis}
   ${sslib_Source_Files__build_cell}
   ${sslib_Source_Files__common}
   ${sslib_Source_Files__common__event}

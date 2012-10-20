@@ -6,8 +6,9 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <boost/shared_ptr.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <armadillo>
 

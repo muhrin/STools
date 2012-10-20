@@ -9,50 +9,59 @@ set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MINOR 2)
 set(SSLIB_VERSION_PATCH 3)
 set(SSLIB_VERSION_STRING "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+message(STATUS "Configuring SSLib ${SSLIB_VERSION_STRING}")
 
 ## CONFIGURATION SETTINGS ##############################
 
 # Custom paths to libraries ####
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
+set(CGAL_ROOT "" CACHE FILEPATH "Path to CGAL library")
 
 # Build options ###
 set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
 set(SSLIB_USE_YAML TRUE CACHE BOOL "SSLib should use YAML for input")
-
-## END CONFIGURATION SETTINGS ##########################
-
-message(STATUS "Configuring SSLib ${SSLIB_VERSION_STRING}")
+set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as convex hulls")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/SSLibConfig.h.in"
   "${PROJECT_BINARY_DIR}/include/SSLibConfig.h"
 )
 
+## END CONFIGURATION SETTINGS ##########################
 
 ## FIND PACKAGES ########################################
+
+# Tell CMake where to find modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+
 # First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
+set(CMAKE_PREFIX_PATH
+  "${BOOST_ROOT}"
+  "${ARMADILLO_ROOT}"
+  "${CGAL_ROOT}"
+)
 
 # Boost #
-if(WIN32)
-  set(Boost_USE_STATIC_LIBS ON)
-endif(WIN32)
-
-# LAPACK (Required for parts of Armaillo library to work)
-#find_package(LAPACK REQUIRED)
-
-if(SSLIB_ENABLE_TESTING)
-  find_package(Boost 1.36.0 COMPONENTS system filesystem unit_test_framework REQUIRED)
-else()
-  find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
-endif(SSLIB_ENABLE_TESTING)
+# Disable auto-linking
+add_definitions(-DBOOST_ALL_NO_LIB)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
+
+# CGAL #
+if(SSLIB_USE_CGAL)
+  find_package(CGAL REQUIRED)
+  include( ${CGAL_USE_FILE} )
+endif(SSLIB_USE_CGAL)
+
+# TODO: Add if !CGAL_FOUND print useful message
+if(CGAL_FOUND)
+endif(CGAL_FOUND)
 
 ## END FIND PACKAGES ####################################
 
@@ -78,6 +87,11 @@ if(SSLIB_USE_YAML)
   include_directories(${YAML_INCLUDE_DIRECTORIES})
 endif(SSLIB_USE_YAML)
 
+# Include CGAL if we're using it
+if(SSLIB_USE_CGAL)
+  include_directories(${CGAL_INCLUDE_DIRS})
+endif(SSLIB_USE_CGAL)
+
 # Process header and source files
 include(IncludeLists.txt)
 include(SrcLists.txt)
@@ -93,9 +107,7 @@ add_library(sslib
 
 # Libraries we need to link to
 target_link_libraries(sslib
-#  ${LAPACK_LIBRARIES}           # Required as we're using Armadillo
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_LIBRARIES}
   spglib                        # TODO: Change this dependency
   yaml-cpp
 )

@@ -6,10 +6,11 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "sslibtest.h"
+
 #include <iostream>
 
 #include <boost/exception/diagnostic_information.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <yaml-cpp/yaml.h>
 

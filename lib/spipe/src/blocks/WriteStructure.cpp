@@ -24,7 +24,8 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
 
 WriteStructure::WriteStructure(const ::sstbx::io::StructureWriterManager & writerManager):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Write structures"),
@@ -34,6 +35,7 @@ myWriterManager(writerManager)
 void WriteStructure::in(::spipe::common::StructureData & data)
 {
   namespace fs = ::boost::filesystem;
+  namespace ssu = ::sstbx::utility;
 
 	// Check if the structure has a name already, otherwise give it one
 	if(!data.name)
@@ -56,7 +58,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
     // Save the location that the file was written
     data.objectsStore.insert(
       ::spipe::common::StructureObjectKeys::LAST_ABS_SAVE_PATH,
-      ::sstbx::utility::absolute(p)
+      ssu::fs::absolute(p)
     );
   }
 

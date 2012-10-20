@@ -170,9 +170,9 @@ void parseParamString(
   nSteps = lNSteps;
 }
 
-::std::string getString(const double in, int precision)
+::std::string getString(const double in, unsigned int digitsAfterDecimal)
 {
-  int digits = precision;
+  int digits = digitsAfterDecimal + 1;
   if(in != 0.0)
     digits += (int)ceil(log10(abs(in)));
   ::std::ostringstream ss;

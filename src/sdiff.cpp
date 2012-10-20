@@ -15,6 +15,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 
 #include <armadillo>
 
@@ -28,6 +29,8 @@
 #include <common/UnitCell.h>
 #include <io/ResReaderWriter.h>
 #include <utility/DistanceMatrixComparator.h>
+#include <utility/SortedDistanceComparator.h>
+#include <utility/SortedDistanceComparatorEx.h>
 #include <utility/IBufferedComparator.h>
 
 // My includes //
@@ -40,6 +43,15 @@ namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
+struct InputOptions
+{
+  double tolerance;
+  ::std::vector< ::std::string> inputFiles;
+  ::std::string comparator;
+  bool printFull;
+  unsigned int maxAtoms;
+};
+
 int main(const int argc, char * argv[])
 {
   typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
@@ -48,20 +60,18 @@ int main(const int argc, char * argv[])
   const ::std::string exeName(argv[0]);
 
   // Input options
-  double tolerance;
-  ::std::vector< ::std::string> inputFiles;
-  bool printFull;
-  unsigned int maxAtoms;
+  InputOptions in;
 
   try
   {
     po::options_description desc("Usage: " + exeName + " [options] files...\nOptions:");
     desc.add_options()
       ("help", "Show help message")
-      ("tol,t", po::value<double>(&tolerance)->default_value(0.01), "Set comparator tolerance")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&inputFiles)->required(), "input file(s)")
-      ("full", po::value<bool>(&printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
-      ("maxatoms", po::value<unsigned int>(&maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
+      ("tol,t", po::value<double>(&in.tolerance)->default_value(0.01), "Set comparator tolerance")
+      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles)->required(), "input file(s)")
+      ("full", po::value<bool>(&in.printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
+      ("maxatoms", po::value<unsigned int>(&in.maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
+      ("comp,c", po::value< ::std::string>(&in.comparator)->default_value("sd"), "The comparator to use: sd = sorted distance, sdex = sorted distance extended, dm = distance matrix")
     ;
 
     po::positional_options_description p;
@@ -85,13 +95,32 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
+  ::boost::scoped_ptr<ssu::IStructureComparator> comp;
+
+  if(in.comparator == "sd")
+  {
+    comp.reset(new ssu::SortedDistanceComparator());
+  }
+  else if(in.comparator == "sdex")
+  {
+    comp.reset(new ssu::SortedDistanceComparatorEx());
+  }
+  else if(in.comparator == "dm")
+  {
+    comp.reset(new ssu::DistanceMatrixComparator(in.maxAtoms));
+  }
+  else
+  {
+    ::std::cout << "Error: unrecognised comparator - " << in.comparator << ::std::endl;
+    return 1;
+  }
   
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
   ::std::vector<PathStructurePair> structures;
   ssc::StructurePtr str;
 
-  BOOST_FOREACH(::std::string & pathString, inputFiles)
+  BOOST_FOREACH(::std::string & pathString, in.inputFiles)
   {
     fs::path strPath(pathString);
     if(!fs::exists(strPath))
@@ -112,8 +141,7 @@ int main(const int argc, char * argv[])
   }
 
   const size_t numStructures = structures.size();
-  ssu::DistanceMatrixComparator comp(maxAtoms);
-  ::boost::shared_ptr<ssu::IBufferedComparator> comparator = comp.generateBuffered();
+  ::boost::shared_ptr<ssu::IBufferedComparator> comparator = comp->generateBuffered();
 
   ::arma::mat diffs(numStructures, numStructures);
   diffs.diag().fill(0.0);
@@ -132,7 +160,7 @@ int main(const int argc, char * argv[])
   size_t maxJ;
   for(size_t i = 0; i < numStructures; ++i)
   {
-    maxJ = printFull ? numStructures: i;
+    maxJ = in.printFull ? numStructures: i;
     for(size_t j = 0; j < maxJ; ++j)
     {
       ::std::cout << diffs(i, j) << " ";

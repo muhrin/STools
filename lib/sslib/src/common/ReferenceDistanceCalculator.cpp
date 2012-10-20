@@ -19,14 +19,12 @@ ReferenceDistanceCalculator::ReferenceDistanceCalculator(const Structure & struc
 DistanceCalculator(structure)
 {}
 
-::arma::vec3 ReferenceDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b, const unsigned int maxCellMultiples) const
+::arma::vec3 ReferenceDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2, const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
 	// Make sure cart1 and 2 are in the unit cell at the origin
-  const ::arma::vec3 		aUnit	= cell.wrapVec(a);
-  const ::arma::vec3 		bUnit	= cell.wrapVec(b);
-  const ::arma::vec3		dR		= bUnit - aUnit;
+  const ::arma::vec3		dR		= cell.wrapVec(r2) - cell.wrapVec(r1);
 	double minModDRSq = dot(dR, dR);
 	const double minModDR = sqrt(minModDRSq);
 
@@ -75,8 +73,8 @@ DistanceCalculator(structure)
 }
 
 bool ReferenceDistanceCalculator::getDistsBetween(
-    const ::arma::vec3 & a,
-    const ::arma::vec3 & b,
+    const ::arma::vec3 & r1,
+    const ::arma::vec3 & r2,
     const double cutoff,
     ::std::vector<double> & outValues,
     const size_t maxValues,
@@ -85,7 +83,7 @@ bool ReferenceDistanceCalculator::getDistsBetween(
   const UnitCell & cell = *myStructure.getUnitCell();
 
 	// Make sure a and b are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
+  const ::arma::vec3		dR		= cell.wrapVec(r2) - cell.wrapVec(r1);
 
 	// Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
@@ -131,8 +129,8 @@ bool ReferenceDistanceCalculator::getDistsBetween(
 }
 
 bool ReferenceDistanceCalculator::getVecsBetween(
-  const ::arma::vec3 & a,
-  const ::arma::vec3 & b,
+  const ::arma::vec3 & r1,
+  const ::arma::vec3 & r2,
   const double cutoff,
   ::std::vector< ::arma::vec3> & outValues,
   const size_t maxValues,
@@ -141,7 +139,7 @@ bool ReferenceDistanceCalculator::getVecsBetween(
   const UnitCell & cell = *myStructure.getUnitCell();
 
 	// Make sure a and b are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
+  const ::arma::vec3		dR		= cell.wrapVec(r2) - cell.wrapVec(r1);
 
 	// Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
