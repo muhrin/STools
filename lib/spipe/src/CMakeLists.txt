@@ -121,8 +121,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/lib/pipelib/include
   ${CMAKE_SOURCE_DIR}/lib/sslib/include
   ${SSLIB_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include
-  ${CMAKE_SOURCE_DIR}/lib/spglib/include
+  ${YAML_CPP_INCLUDE_DIRS}
+  ${SPGLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
 )
 
@@ -137,8 +137,8 @@ add_library(spipe
 target_link_libraries(spipe
   ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
-  yaml-cpp
-  spglib
+  ${YAML_CPP_LIBRARIES}
+  ${SPGLIB_LIBRARIES}
   pipelib
   sslib
 )

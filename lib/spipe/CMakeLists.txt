@@ -5,8 +5,9 @@ cmake_minimum_required(VERSION 2.6)
 set(SP_VERSION_MAJOR 0)
 set(SP_VERSION_MINOR 3)
 set(SP_VERSION_PATCH 0)
+set(SP_VERSION "${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}.${SP_VERSION_PATCH}")
 
-message(STATUS "Configuring StructurePipe ${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}.${SP_VERSION_PATCH}")
+message(STATUS "Configuring StructurePipe ${SP_VERSION}")
 
 project(StructurePipe)
 
@@ -47,17 +48,17 @@ if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
+## Yaml ##
+if(SP_USE_YAML)
+  find_package(YamlCpp REQUIRED)
+endif(SP_USE_YAML)
+
 ## END FIND PACKAGES ####################################
 
 
 ## First libraries #####################################
 
 add_subdirectory(lib/pipelib)    # Pipeline library
-add_subdirectory(lib/spglib)     # Space group library (https://sourceforge.net/projects/spglib/)
-if(SP_USE_YAML)
-  add_subdirectory(lib/yaml-cpp) # YAML library (http://code.google.com/p/yaml-cpp/)
-  set(YAML_INCLUDE_DIRS "lib/yaml-cpp/include" CACHE FILEPATH INTERNAL FORCE)
-endif(SP_USE_YAML)
 add_subdirectory(lib/sslib)      # Structure searching library
 
 
@@ -77,13 +78,6 @@ include_directories(
   ${SPIPE_INCLUDE_DIRS}
 )
 
-add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
-
-# Suppress yaml-cpp warnings
-if(MSVC)
-  set_target_properties(yaml-cpp PROPERTIES COMPILE_FLAGS "/W0")
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set_target_properties(yaml-cpp PROPERTIES COMPILE_FLAGS "-w")
-endif()
+add_subdirectory(src ${CMAKE_BINARY_DIR}/spipe)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "StructurePipe")
