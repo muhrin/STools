@@ -3,7 +3,7 @@
 
 set(stools_Header_Files__
   STools.h
-  SToolsConfig.h
+  ${PROJECT_BINARY_DIR}/src/SToolsConfig.h
 )
 source_group("Header Files" FILES ${stools_Header_Files__})
 
@@ -22,6 +22,7 @@ set(stools_Source_Files__sdiff
 source_group("Source Files" FILES ${stools_Source_Files__sdiff})
 
 set(stools_Files__sdiff
+  ${stools_Files}
   ${stools_Header_Files__sdiff}
   ${stools_Source_Files__sdiff}
 )
@@ -37,6 +38,7 @@ set(stools_Source_Files__sinfo
 source_group("Source Files" FILES ${stools_Source_Files__sinfo})
 
 set(stools_Files__sinfo
+  ${stools_Files}
   ${stools_Header_Files__sinfo}
   ${stools_Source_Files__sinfo}
 )
@@ -52,6 +54,7 @@ set(stools_Source_Files__ssearch
 source_group("Source Files" FILES ${stools_Source_Files__ssearch})
 
 set(stools_Files__ssearch
+  ${stools_Files}
   ${stools_Header_Files__ssearch}
   ${stools_Source_Files__ssearch}
 )
@@ -68,24 +71,10 @@ set(stools_Source_Files__ssweep
 source_group("Source Files" FILES ${stools_Source_Files__ssweep})
 
 set(stools_Files__ssweep
+  ${stools_Files}
   ${stools_Header_Files__ssweep}
   ${stools_Source_Files__ssweep}
 )
-
-#########################
-## Include directories ##
-#########################
-
-include_directories(
-  ${CMAKE_SOURCE_DIR}/lib/yaml-cpp/include
-  ${CMAKE_SOURCE_DIR}/lib/pipelib/include
-  ${CMAKE_SOURCE_DIR}/lib/sslib/include
-  ${CMAKE_SOURCE_DIR}/lib/sslib/src # TODO: Remove this and move sslib/src/SSLib* to include
-  ${CMAKE_SOURCE_DIR}/lib/spglib/include
-  ${CMAKE_SOURCE_DIR}/lib/spipe/src
-)
-
-include_directories(.)
 
 
 #############################################
@@ -96,7 +85,7 @@ add_executable(sdiff
   ${stools_Files__sdiff}
 )
 
-add_dependencies(sdiff spglib sslib pipelib spipe)
+add_dependencies(sdiff spipe)
 
 # Libraries we need to link to
 target_link_libraries(sdiff
@@ -104,10 +93,8 @@ target_link_libraries(sdiff
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
-  yaml-cpp
-  spglib
-  sslib
-  pipelib
+  ${YAML_CPP_LIBRARIES}
+  ${SPGLIB_LIBRARIES}
   spipe
 )
 
@@ -119,7 +106,7 @@ add_executable(sinfo
   ${stools_Files__sinfo}
 )
 
-add_dependencies(sinfo spglib sslib)
+add_dependencies(sinfo sslib)
 
 # Libraries we need to link to
 target_link_libraries(sinfo
@@ -127,8 +114,6 @@ target_link_libraries(sinfo
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
-  yaml-cpp
-  spglib
   sslib
 )
 
@@ -140,7 +125,7 @@ add_executable(ssearch
   ${stools_Files__ssearch}
 )
 
-add_dependencies(ssearch yaml_cpp spglib sslib pipelib spipe)
+add_dependencies(ssearch spipe)
 
 # Libraries we need to link to
 target_link_libraries(ssearch
@@ -148,10 +133,7 @@ target_link_libraries(ssearch
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
-  yaml-cpp
-  spglib
-  sslib
-  pipelib
+  ${YAML_CPP_LIBRARIES}
   spipe
 )
 
@@ -163,7 +145,7 @@ add_executable(ssweep
   ${stools_Files__ssweep}
 )
 
-add_dependencies(ssweep yaml_cpp spglib sslib pipelib spipe)
+add_dependencies(ssweep spipe)
 
 # Libraries we need to link to
 target_link_libraries(ssweep
@@ -171,10 +153,6 @@ target_link_libraries(ssweep
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
-  yaml-cpp
-  spglib
-  sslib
-  pipelib
   spipe
 )
 

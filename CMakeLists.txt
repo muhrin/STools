@@ -43,21 +43,38 @@ if(WIN32)
   set(Boost_USE_STATIC_LIBS ON)
 endif(WIN32)
 find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
+
+#
 # Armadillo #
 find_package(Armadillo)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
+#
+# Yaml
+if(NOT YAML_CPP_LIBRARIES)
+  find_package(YamlCpp REQUIRED)
+endif(NOT YAML_CPP_LIBRARIES)
+
 ## END FIND PACKAGES ####################################
 
 add_subdirectory(lib/spipe)	# StructurePipe
+
+set(STOOLS_INCLUDE_DIRS
+  ${PROJECT_SOURCE_DIR}/src # To find STools.h
+  ${PROJECT_BINARY_DIR}/src # To find SToolsConfig.h
+)
 
 # Include directories with header files
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
-  ${PROJECT_BINARY_DIR}/src  # So that we find SToolsConfig.h
+  ${YAML_CPP_INCLUDE_DIRS}
+  ${PIPELIB_INCLUDE_DIRS}
+  ${SPIPE_INCLUDE_DIRS}
+  ${SSLIB_INCLUDE_DIRS}
+  ${STOOLS_INCLUDE_DIRS}
 )
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
