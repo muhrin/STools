@@ -1,0 +1,19 @@
+Overview
+========
+
+StructurePipe is a high throughput (crystal) structure processing code.  It
+uses PipeLib and SSLib to create pipelines through which structure data flows
+allowing the same operations to be performed on many structures.  The primary
+goal of StructurePipe is to act as a crystal structure prediction and
+processing tool.
+
+Folders
+=======
+src    - Headers and source files
+lib    - External libraries supplied with StructurePipe
+build  - The build directory
+
+License
+=======
+
+GPL v2 or later. See COPYING.
