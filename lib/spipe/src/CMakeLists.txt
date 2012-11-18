@@ -118,12 +118,8 @@ set(spipe_Files
 #########################
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/lib/pipelib/include
-  ${CMAKE_SOURCE_DIR}/lib/sslib/include
-  ${SSLIB_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
-  ${SPIPE_INCLUDE_DIRS}
 )
 
 ###########################

@@ -50,7 +50,9 @@ endif()
 
 ## Yaml ##
 if(SP_USE_YAML)
-  find_package(YamlCpp REQUIRED)
+  if(NOT YAML_CPP_LIBRARIES)
+    find_package(YamlCpp REQUIRED)
+  endif(NOT YAML_CPP_LIBRARIES)
 endif(SP_USE_YAML)
 
 ## END FIND PACKAGES ####################################
@@ -74,10 +76,14 @@ set(SPIPE_INCLUDE_DIRS
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
+  ${SSLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
 )
 
-message(STATUS "DIr: ${SSLIB_INCLUDE_DIRS}")
+include_directories(
+  lib/pipelib/include
+  lib/sslib/include
+)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/spipe)
 
