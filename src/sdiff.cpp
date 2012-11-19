@@ -60,13 +60,13 @@ struct InputOptions
   ::std::string comparator;
   bool printFull;
   unsigned int maxAtoms;
-  bool uniqueOnly;
+  char mode;
   bool volumeAgnostic;
   bool dontUsePrimitive;
 };
 
 // FORWARD DECLARES //////////
-void doUniques(const StructuresList & structures, ComparatorPtr comparator);
+void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques);
 void doDiff(const StructuresList & structures, ComparatorPtr comparator, const InputOptions & in);
 
 int main(const int argc, char * argv[])
@@ -90,7 +90,7 @@ int main(const int argc, char * argv[])
       ("comp,c", po::value< ::std::string>(&in.comparator)->default_value("sd"), "The comparator to use: sd = sorted distance, sdex = sorted distance extended, dm = distance matrix")
       ("agnostic,a", po::value<bool>(&in.volumeAgnostic)->default_value(false)->zero_tokens(), "Volume agnostic: volume/atom to 1 for each structure before performing comparison")
       ("no-primitive,p", po::value<bool>(&in.dontUsePrimitive)->default_value(false)->zero_tokens(), "Do not transform structures to primitive setting before comparison")
-      ("unique,u", po::value<bool>(&in.uniqueOnly)->default_value(false)->zero_tokens(), "Print a list of the paths to the unique structures only from the list of input structures")
+      ("mode,m", po::value<char>(&in.mode)->default_value('d'), "Mode:\nd = diff,\nu = print list of unique structures (first if duplicates),\ns = print list of similar structures (excluding first)")
     ;
 
     po::positional_options_description p;
@@ -196,13 +196,22 @@ int main(const int argc, char * argv[])
 
 
   // Do the actual comparison based on command line options
-  if(in.uniqueOnly)
+  if(in.mode == 'u')
   {
-    doUniques(structures, comparator);
+    doPrintList(structures, comparator, true);
+  }
+  else if(in.mode == 's')
+  {
+    doPrintList(structures, comparator, false);
+  }
+  else if(in.mode == 'd')
+  {
+    doDiff(structures, comparator, in);
   }
   else
   {
-    doDiff(structures, comparator, in);
+    std::cout << "Error: Unrecognised mode - " << in.mode << std::endl;
+    return 1;
   }
 
 
@@ -218,32 +227,22 @@ public:
   }
 };
 
-void doUniques(const StructuresList & structures, ComparatorPtr comparator)
+void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques)
 {
   typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
+  typedef ::std::pair<ssu::UniqueStructureSet::iterator, bool> InsertReturnVal;
   ssu::UniqueStructureSet structuresSet(comparator->getComparator());
 
-  // First let's put all the structures in the set to see which are unique
-  structuresSet.insert(iterator(structures.begin()), iterator(structures.end()));
-
-  // Probably easiest just to iterate through the structures list as this has
-  // the paths, and see which ones survived into the unique structure set
-
-  // Annoying cast needed to stay consistent here
-  const ssu::UniqueStructureSet * constSet = const_cast<const ssu::UniqueStructureSet *>(&structuresSet);
-  ssu::UniqueStructureSet::const_iterator foundIt;
-  const ssu::UniqueStructureSet::const_iterator end = constSet->end();
-  BOOST_FOREACH(const PathStructurePair pair, structures)
+  InsertReturnVal insertResult;
+  for(iterator it = iterator(structures.begin()), end = iterator(structures.end()); it != end; ++it)
   {
-    foundIt = constSet->find(pair.second.get());
-    if(foundIt != end)
+    insertResult = structuresSet.insert(*it);
+    if(insertResult.second == printUniques)
     {
-      std::cout << pair.first.string() << std::endl;
+      std::cout << it.base()->first.string() << std::endl;
     }
   }
-
 }
-
 
 void doDiff(
   const StructuresList & structures,
