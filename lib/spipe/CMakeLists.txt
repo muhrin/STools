@@ -43,10 +43,12 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 ## Armadillo ##
-find_package(Armadillo)
-if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
-  set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
-endif()
+if(NOT ARMADILLO_INCLUDE_DIRS)
+  find_package(Armadillo)
+  if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
+    set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
+  endif()
+endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 ## Yaml ##
 if(SP_USE_YAML)
@@ -54,6 +56,12 @@ if(SP_USE_YAML)
     find_package(YamlCpp REQUIRED)
   endif(NOT YAML_CPP_LIBRARIES)
 endif(SP_USE_YAML)
+
+#
+# Spglib
+if(NOT SPGLIB_INCLUDE_DIRS)
+  find_package(Spglib REQUIRED)
+endif(NOT SPGLIB_INCLUDE_DIRS)
 
 ## END FIND PACKAGES ####################################
 
@@ -77,6 +85,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${SSLIB_INCLUDE_DIRS}
+  ${SPGLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
 )
 
