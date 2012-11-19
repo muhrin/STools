@@ -88,7 +88,7 @@ int main(const int argc, char * argv[])
       ("full", po::value<bool>(&in.printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
       ("maxatoms", po::value<unsigned int>(&in.maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
       ("comp,c", po::value< ::std::string>(&in.comparator)->default_value("sd"), "The comparator to use: sd = sorted distance, sdex = sorted distance extended, dm = distance matrix")
-      ("agnostic,a", po::value<bool>(&in.volumeAgnostic)->default_value(false)->zero_tokens(), "Volume agnostic: scale volumes of structure to match before performing comparison")
+      ("agnostic,a", po::value<bool>(&in.volumeAgnostic)->default_value(false)->zero_tokens(), "Volume agnostic: volume/atom to 1 for each structure before performing comparison")
       ("no-primitive,p", po::value<bool>(&in.dontUsePrimitive)->default_value(false)->zero_tokens(), "Do not transform structures to primitive setting before comparison")
       ("unique,u", po::value<bool>(&in.uniqueOnly)->default_value(false)->zero_tokens(), "Print a list of the paths to the unique structures only from the list of input structures")
     ;
@@ -176,7 +176,11 @@ int main(const int argc, char * argv[])
       // to 1.0 per atom
       ssc::UnitCell * const unitCell = str->getUnitCell();
       if(in.volumeAgnostic && unitCell)
-        unitCell->setVolume(str->getNumAtoms());
+      {
+        const double scaleFactor = str->getNumAtoms() / unitCell->getVolume();
+        str->scale(scaleFactor);
+      }
+
 
       structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
     }
