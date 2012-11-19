@@ -14,7 +14,7 @@ project(STools)
 ## Configuration options ###############################
 
 # Custom paths to libraries #########
-set(BOOSTOOLS_ROOT "" CACHE FILEPATH "Path to boost library")
+set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 set(QHULL_ROOT "" CACHE FILEPATH "Path to qhull library")
 
@@ -34,7 +34,7 @@ configure_file(
 
 ## FIND PACKAGES ########################################
 # First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH "${BOOSTOOLS_ROOT}" "${ARMADILLO_ROOT}")
+set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
 
 
 # Boost #

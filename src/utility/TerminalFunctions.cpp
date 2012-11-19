@@ -27,7 +27,8 @@ bool isStdInPipedOrFile()
 {
 #ifdef WIN32
   return !_isatty(_fileno(stdin));
-#else ifdef __unix__
+#endif
+#ifdef __unix__
   return !isatty(fileno(stdin));
 #endif
 }
