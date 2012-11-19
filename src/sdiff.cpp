@@ -8,14 +8,17 @@
 // INCLUDES //////////////////////////////////
 #include "StructurePipe.h"
 
+#include <functional>
 #include <iostream>
 #include <string>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <boost/io/detail/quoted_manip.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include <armadillo>
 
@@ -32,8 +35,11 @@
 #include <utility/SortedDistanceComparator.h>
 #include <utility/SortedDistanceComparatorEx.h>
 #include <utility/IBufferedComparator.h>
+#include <utility/TransformFunctions.h>
+#include <utility/UniqueStructureSet.h>
 
 // My includes //
+#include "utility/TerminalFunctions.h"
 
 
 // NAMESPACES ////////////////////////////////
@@ -43,6 +49,11 @@ namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
+typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
+typedef ::std::pair<fs::path, SharedStructurePtr> PathStructurePair;
+typedef ::std::vector<PathStructurePair> StructuresList;
+typedef ::boost::shared_ptr<ssu::IBufferedComparator> ComparatorPtr;
+
 struct InputOptions
 {
   double tolerance;
@@ -50,12 +61,18 @@ struct InputOptions
   ::std::string comparator;
   bool printFull;
   unsigned int maxAtoms;
+  bool uniqueOnly;
+  bool volumeAgnostic;
+  bool dontUsePrimitive;
 };
+
+// FORWARD DECLARES //////////
+void doUniques(const StructuresList & structures, ComparatorPtr comparator);
+void doDiff(const StructuresList & structures, ComparatorPtr comparator, const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
-  typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
-  typedef ::std::pair<fs::path, SharedStructurePtr> PathStructurePair;
+  
 
   const ::std::string exeName(argv[0]);
 
@@ -68,10 +85,13 @@ int main(const int argc, char * argv[])
     desc.add_options()
       ("help", "Show help message")
       ("tol,t", po::value<double>(&in.tolerance)->default_value(0.01), "Set comparator tolerance")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles)->required(), "input file(s)")
+      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
       ("full", po::value<bool>(&in.printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
       ("maxatoms", po::value<unsigned int>(&in.maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
       ("comp,c", po::value< ::std::string>(&in.comparator)->default_value("sd"), "The comparator to use: sd = sorted distance, sdex = sorted distance extended, dm = distance matrix")
+      ("agnostic,a", po::value<bool>(&in.volumeAgnostic)->default_value(false)->zero_tokens(), "Volume agnostic: scale volumes of structure to match before performing comparison")
+      ("no-primitive,p", po::value<bool>(&in.dontUsePrimitive)->default_value(false)->zero_tokens(), "Do not transform structures to primitive setting before comparison")
+      ("unique,u", po::value<bool>(&in.uniqueOnly)->default_value(false)->zero_tokens(), "Print a list of the paths to the unique structures only from the list of input structures")
     ;
 
     po::positional_options_description p;
@@ -91,7 +111,25 @@ int main(const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    ::std::cout << e.what() << "\n";
+    ::std::cout << e.what() << ::std::endl;
+    return 1;
+  }
+
+  // Get any input from standard in (piped)
+  std::string lineInput;
+  bool foundPipedInput = false;
+  if(stools::utility::isStdInPipedOrFile())
+  {
+    while(std::cin >> lineInput)
+    {
+      in.inputFiles.push_back(lineInput);
+      foundPipedInput = true;
+    }
+  }
+
+  if(!foundPipedInput && in.inputFiles.empty())
+  {
+    std::cout << "No structure files given.  Supply files with piped input or as command line paramter." << std::endl;
     return 1;
   }
 
@@ -99,7 +137,7 @@ int main(const int argc, char * argv[])
 
   if(in.comparator == "sd")
   {
-    comp.reset(new ssu::SortedDistanceComparator());
+    comp.reset(new ssu::SortedDistanceComparator(ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, false, false));
   }
   else if(in.comparator == "sdex")
   {
@@ -117,7 +155,7 @@ int main(const int argc, char * argv[])
   
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
-  ::std::vector<PathStructurePair> structures;
+  StructuresList structures;
   ssc::StructurePtr str;
 
   BOOST_FOREACH(::std::string & pathString, in.inputFiles)
@@ -131,7 +169,18 @@ int main(const int argc, char * argv[])
 
     str = resReader.readStructure(strPath, speciesDb);
     if(str.get())
+    {
+      if(!in.dontUsePrimitive)
+        str->makePrimitive();
+
+      // If we are to be volume agnostic then set the volume
+      // to 1.0 per atom
+      ssc::UnitCell * const unitCell = str->getUnitCell();
+      if(in.volumeAgnostic && unitCell)
+        unitCell->setVolume(str->getNumAtoms());
+
       structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
+    }
   }
 
   if(structures.size() < 2)
@@ -140,9 +189,65 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
-  const size_t numStructures = structures.size();
-  ::boost::shared_ptr<ssu::IBufferedComparator> comparator = comp->generateBuffered();
+  ComparatorPtr comparator = comp->generateBuffered();
 
+
+  // Do the actual comparison based on command line options
+  if(in.uniqueOnly)
+  {
+    doUniques(structures, comparator);
+  }
+  else
+  {
+    doDiff(structures, comparator, in);
+  }
+
+
+	return 0;
+}
+
+class TakeStructureAddress : public ::std::unary_function<PathStructurePair, ssc::Structure *>
+{
+public:
+  ssc::Structure * operator()(PathStructurePair pair) const
+  {
+    return pair.second.get();
+  }
+};
+
+void doUniques(const StructuresList & structures, ComparatorPtr comparator)
+{
+  typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
+  ssu::UniqueStructureSet structuresSet(comparator->getComparator());
+
+  // First let's put all the structures in the set to see which are unique
+  structuresSet.insert(iterator(structures.begin()), iterator(structures.end()));
+
+  // Probably easiest just to iterate through the structures list as this has
+  // the paths, and see which ones survived into the unique structure set
+
+  // Annoying cast needed to stay consistent here
+  const ssu::UniqueStructureSet * constSet = const_cast<const ssu::UniqueStructureSet *>(&structuresSet);
+  ssu::UniqueStructureSet::const_iterator foundIt;
+  const ssu::UniqueStructureSet::const_iterator end = constSet->end();
+  BOOST_FOREACH(const PathStructurePair pair, structures)
+  {
+    foundIt = constSet->find(pair.second.get());
+    if(foundIt != end)
+    {
+      std::cout << pair.first.string() << std::endl;
+    }
+  }
+
+}
+
+
+void doDiff(
+  const StructuresList & structures,
+  ComparatorPtr comparator,
+  const InputOptions & in)
+{
+  const size_t numStructures = structures.size();
   ::arma::mat diffs(numStructures, numStructures);
   diffs.diag().fill(0.0);
 
@@ -166,9 +271,5 @@ int main(const int argc, char * argv[])
       ::std::cout << diffs(i, j) << " ";
     }
     ::std::cout << ::std::endl;
-  }
-
-
-	return 0;
+    }
 }
-

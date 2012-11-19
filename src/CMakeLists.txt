@@ -7,8 +7,21 @@ set(stools_Header_Files__
 )
 source_group("Header Files" FILES ${stools_Header_Files__})
 
+## stools/utility
+set(stools_Header_Files__utility
+  utility/TerminalFunctions.h
+)
+source_group("Header Files\\utility" FILES ${stools_Header_Files__utility})
+
+set(stools_Source_Files__utility
+  utility/TerminalFunctions.cpp
+)
+source_group("Source Files\\utility" FILES ${stools_Source_Files__utility})
+
 set(stools_Files
   ${stools_Header_Files__}
+  ${stools_Header_Files__utility}
+  ${stools_Source_Files__utility}
 )
 
 ## sdiff
