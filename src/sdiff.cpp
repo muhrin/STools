@@ -83,7 +83,7 @@ int main(const int argc, char * argv[])
     po::options_description desc("Usage: " + exeName + " [options] files...\nOptions:");
     desc.add_options()
       ("help", "Show help message")
-      ("tol,t", po::value<double>(&in.tolerance)->default_value(0.01), "Set comparator tolerance")
+      ("tol,t", po::value<double>(&in.tolerance)->default_value(ssu::SortedDistanceComparator::DEFAULT_TOLERANCE), "Set comparator tolerance")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
       ("full", po::value<bool>(&in.printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
       ("maxatoms", po::value<unsigned int>(&in.maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
@@ -136,7 +136,7 @@ int main(const int argc, char * argv[])
 
   if(in.comparator == "sd")
   {
-    comp.reset(new ssu::SortedDistanceComparator(ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, false, false));
+    comp.reset(new ssu::SortedDistanceComparator(in.tolerance, false, false));
   }
   else if(in.comparator == "sdex")
   {
