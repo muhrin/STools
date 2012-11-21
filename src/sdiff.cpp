@@ -10,6 +10,7 @@
 
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -63,10 +64,11 @@ struct InputOptions
   char mode;
   bool volumeAgnostic;
   bool dontUsePrimitive;
+  bool summaryOnly;
 };
 
 // FORWARD DECLARES //////////
-void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques);
+void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques, const InputOptions & in);
 void doDiff(const StructuresList & structures, ComparatorPtr comparator, const InputOptions & in);
 
 int main(const int argc, char * argv[])
@@ -91,6 +93,7 @@ int main(const int argc, char * argv[])
       ("agnostic,a", po::value<bool>(&in.volumeAgnostic)->default_value(false)->zero_tokens(), "Volume agnostic: volume/atom to 1 for each structure before performing comparison")
       ("no-primitive,p", po::value<bool>(&in.dontUsePrimitive)->default_value(false)->zero_tokens(), "Do not transform structures to primitive setting before comparison")
       ("mode,m", po::value<char>(&in.mode)->default_value('d'), "Mode:\nd = diff,\nu = print list of unique structures (first if duplicates),\ns = print list of similar structures (excluding first)")
+      ("summary,s", po::value<bool>(&in.summaryOnly)->default_value(false)->zero_tokens(), "Show summary only")
     ;
 
     po::positional_options_description p;
@@ -198,11 +201,11 @@ int main(const int argc, char * argv[])
   // Do the actual comparison based on command line options
   if(in.mode == 'u')
   {
-    doPrintList(structures, comparator, true);
+    doPrintList(structures, comparator, true, in);
   }
   else if(in.mode == 's')
   {
-    doPrintList(structures, comparator, false);
+    doPrintList(structures, comparator, false, in);
   }
   else if(in.mode == 'd')
   {
@@ -227,20 +230,31 @@ public:
   }
 };
 
-void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques)
+void doPrintList(
+  const StructuresList & structures,
+  ComparatorPtr comparator,
+  const bool printUniques,
+  const InputOptions & in)
 {
   typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
   typedef ::std::pair<ssu::UniqueStructureSet::iterator, bool> InsertReturnVal;
   ssu::UniqueStructureSet structuresSet(comparator->getComparator());
 
   InsertReturnVal insertResult;
+
   for(iterator it = iterator(structures.begin()), end = iterator(structures.end()); it != end; ++it)
   {
     insertResult = structuresSet.insert(*it);
-    if(insertResult.second == printUniques)
+    if(!in.summaryOnly && insertResult.second == printUniques)
     {
       std::cout << it.base()->first.string() << std::endl;
     }
+  }
+
+  if(in.summaryOnly)
+  {
+    ::std::cout << "unique: " << structuresSet.size()
+      << ", similar: " << structures.size() - structuresSet.size() << ::std::endl;
   }
 }
 
@@ -253,6 +267,7 @@ void doDiff(
   ::arma::mat diffs(numStructures, numStructures);
   diffs.diag().fill(0.0);
 
+  double mean = 0.0, min = ::std::numeric_limits<double>::max(), max = 0.0;
   for(size_t i = 0; i < numStructures - 1; ++i)
   {
     for(size_t j = i + 1; j < numStructures; ++j)
@@ -260,18 +275,30 @@ void doDiff(
       diffs(i, j) = comparator->compareStructures(
         *structures[i].second.get(),
         *structures[j].second.get());
+      
+      mean += diffs(i, j);
+      max = ::std::max(max, diffs(i, j));
+      min = ::std::min(min, diffs(i, j));
     }
   }
   diffs = ::arma::symmatu(diffs);
+  mean /= 0.5 * numStructures * (numStructures - 1);
 
-  size_t maxJ;
-  for(size_t i = 0; i < numStructures; ++i)
+  if(in.summaryOnly)
+  {  
+    ::std::cout << "mean: " << mean << ", min: " << min << ", max: " << max << ::std::endl;
+  }
+  else
   {
-    maxJ = in.printFull ? numStructures: i;
-    for(size_t j = 0; j < maxJ; ++j)
+    size_t maxJ;
+    for(size_t i = 0; i < numStructures; ++i)
     {
-      ::std::cout << diffs(i, j) << " ";
+      maxJ = in.printFull ? numStructures: i;
+      for(size_t j = 0; j < maxJ; ++j)
+      {
+        ::std::cout << diffs(i, j) << " ";
+      }
+      ::std::cout << ::std::endl;
     }
-    ::std::cout << ::std::endl;
-    }
+  }
 }
