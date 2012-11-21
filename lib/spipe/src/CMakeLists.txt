@@ -5,6 +5,7 @@ set(spipe_Header_Files__blocks
   blocks/DetermineSpaceGroup.h
   blocks/EdgeDetect.h
   blocks/LoadPotStructures.h
+  blocks/LoadSeedStructures.h
   blocks/LowestFreeEnergy.h
   blocks/MakeConvexHull.h
   blocks/MakeMap.h
@@ -22,6 +23,7 @@ source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 set(spipe_Source_Files__blocks
   blocks/DetermineSpaceGroup.cpp
   blocks/LoadPotStructures.cpp
+  blocks/LoadSeedStructures.cpp
   blocks/LowestFreeEnergy.cpp
   blocks/MakeConvexHull.cpp
   blocks/MakeMap.cpp

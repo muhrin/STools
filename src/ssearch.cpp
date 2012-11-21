@@ -40,6 +40,7 @@
 // From StructurePipe
 #include <StructurePipe.h>
 #include <blocks/DetermineSpaceGroup.h>
+#include <blocks/LoadSeedStructures.h>
 #include <blocks/LowestFreeEnergy.h>
 #include <blocks/NiggliReduction.h>
 #include <blocks/ParamPotentialGo.h>
@@ -93,6 +94,8 @@ getCombiningRuleFromString(const ::std::string & str)
   return rule;
 }
 
+enum InputType { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
+
 int main(const int argc, const char * const argv[])
 {
   namespace po    = ::boost::program_options;
@@ -110,10 +113,11 @@ int main(const int argc, const char * const argv[])
   using ::arma::vec;
   using ::arma::endr;
 
-  typedef boost::tokenizer<boost::char_separator<char> > Tok;
+    typedef boost::tokenizer<boost::char_separator<char> > Tok;
   const boost::char_separator<char> tokSep(" \t");
 
   const ::std::string exeName(argv[0]);
+  const ::std::string KW_SEED_STRUCTURES("seedStructures");
 
   // Program options
   InputOptions in;
@@ -249,15 +253,28 @@ int main(const int argc, const char * const argv[])
   ssf::SsLibFactoryYaml factory(speciesDb);
 
   ssbc::StructureDescriptionPtr strDesc;
+  ::std::string seedStructures;
+  InputType inputType = InputType::UNKNOWN;
   try
   {
     YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
-    if(!loadedNode[kw::RANDOM_STRUCTURE])
+
+    if(loadedNode[kw::RANDOM_STRUCTURE])
     {
-      ::std::cout << "Couldn't find random structure in input file\n";
+      inputType = InputType::RANDOM_STRUCTURES;
+      strDesc = factory.createStructureDescription(loadedNode[kw::RANDOM_STRUCTURE]);
+    }
+    else if(loadedNode[KW_SEED_STRUCTURES])
+    {
+      inputType = InputType::SEED_STRUCTURES;
+      seedStructures = loadedNode[KW_SEED_STRUCTURES].as<::std::string>();
+    }
+
+    if(inputType == InputType::UNKNOWN)
+    {
+      ::std::cout << "No input structure type found in input file\n";
       return 1;
     }
-    strDesc = factory.createStructureDescription(loadedNode[kw::RANDOM_STRUCTURE]);
   }
   catch(const ssf::FactoryError & e)
   {
@@ -265,9 +282,18 @@ int main(const int argc, const char * const argv[])
     return 1;
   }
 
-  // Random structure
-  ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release()));
+  ::boost::scoped_ptr<pipelib::AbstractSimpleStartBlock<sp::StructureDataTyp, sp::SharedDataTyp> > startBlock;
+
+  if(inputType == InputType::RANDOM_STRUCTURES)
+  {
+    // Random structure
+    ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
+    startBlock.reset(new sp::blocks::RandomStructure(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
+  }
+  else if(inputType == InputType::SEED_STRUCTURES)
+  {
+    startBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures));
+  }
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
@@ -337,8 +363,8 @@ int main(const int argc, const char * const argv[])
   sp::blocks::LowestFreeEnergy lowestE;
 
   // Put it all together
-  randomSearchPipe->setStartBlock(randStr);
-  randomSearchPipe->connect(randStr, niggli);
+  randomSearchPipe->setStartBlock(*startBlock.get());
+  randomSearchPipe->connect(*startBlock.get(), niggli);
   randomSearchPipe->connect(niggli, goPressure);
   randomSearchPipe->connect(goPressure, go);
   randomSearchPipe->connect(go, remDuplicates);

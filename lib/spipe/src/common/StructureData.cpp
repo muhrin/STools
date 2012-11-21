@@ -29,18 +29,19 @@ namespace ssu = ::sstbx::utility;
 ::sstbx::utility::Key< ::std::string> StructureObjectKeys::SPACEGROUP_SYMBOL;
 ::sstbx::utility::Key< double > StructureObjectKeys::PRESSURE_INTERNAL;
 
-sstbx::common::Structure * StructureData::getStructure() const
+ssc::Structure * StructureData::getStructure() const
 {
   return myStructure.get();
 }
 
-void StructureData::setStructure(sstbx::UniquePtr<ssc::Structure>::Type structure)
+ssc::Structure & StructureData::setStructure(sstbx::UniquePtr<ssc::Structure>::Type structure)
 {
 #ifdef SSLIB_USE_CPP11
   myStructure = ::std::move(structure);
 #else
 	myStructure = structure;
 #endif
+  return *myStructure.get();
 }
 
 ::boost::filesystem::path

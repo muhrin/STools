@@ -9,6 +9,7 @@ set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MINOR 2)
 set(SSLIB_VERSION_PATCH 3)
 set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+
 message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
 
 ## CONFIGURATION SETTINGS ##############################
@@ -93,8 +94,6 @@ include_directories(
   ${SSLIB_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
 )
-
-message(STATUS "Spglib: ${SPGLIB_INCLUDE_DIRS}")
 
 # Include YAML if we're using it
 if(SSLIB_USE_YAML)
