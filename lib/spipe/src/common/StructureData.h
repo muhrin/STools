@@ -47,7 +47,7 @@ class StructureData
 public:
 
 	sstbx::common::Structure * getStructure() const;
-  void setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
+  sstbx::common::Structure & setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path

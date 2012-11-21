@@ -82,8 +82,7 @@ class StructureData;
 }
 
 
-namespace spipe
-{
+namespace spipe {
 
 // TYPEDEFS ///////////////////////
 
