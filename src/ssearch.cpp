@@ -94,7 +94,10 @@ getCombiningRuleFromString(const ::std::string & str)
   return rule;
 }
 
-enum InputType { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
+struct InputType
+{
+  enum Value { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
+};
 
 int main(const int argc, const char * const argv[])
 {
@@ -254,7 +257,7 @@ int main(const int argc, const char * const argv[])
 
   ssbc::StructureDescriptionPtr strDesc;
   ::std::string seedStructures;
-  InputType inputType = InputType::UNKNOWN;
+  InputType::Value inputType = InputType::UNKNOWN;
   try
   {
     YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
@@ -267,7 +270,7 @@ int main(const int argc, const char * const argv[])
     else if(loadedNode[KW_SEED_STRUCTURES])
     {
       inputType = InputType::SEED_STRUCTURES;
-      seedStructures = loadedNode[KW_SEED_STRUCTURES].as<::std::string>();
+      seedStructures = loadedNode[KW_SEED_STRUCTURES].as< ::std::string>();
     }
 
     if(inputType == InputType::UNKNOWN)
