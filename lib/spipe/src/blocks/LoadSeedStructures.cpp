@@ -39,7 +39,7 @@ namespace ssio = ::sstbx::io;
 LoadSeedStructures::LoadSeedStructures(
   const ssc::AtomSpeciesDatabase & atomSpeciesDb,
   const ::std::string & seedStructures):
-Block<spipe::StructureDataTyp, spipe::SharedDataTyp>("Load seed structures"),
+::pipelib::Block<spipe::StructureDataTyp, spipe::SharedDataTyp>("Load seed structures"),
 mySpeciesDb(atomSpeciesDb)
 {
   // First of all split the string up
