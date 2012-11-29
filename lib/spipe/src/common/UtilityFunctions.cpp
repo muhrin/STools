@@ -12,6 +12,9 @@
 
 #include <boost/lexical_cast.hpp>
 
+// From SSTbx
+#include <io/IoFunctions.h>
+
 // From local
 #include "common/StructureData.h"
 
@@ -19,6 +22,8 @@
 
 namespace spipe {
 namespace common {
+
+namespace ssio = ::sstbx::io;
 
 ProcessId getProcessId()
 {
@@ -111,9 +116,7 @@ void parseParamString(
 
 ::std::string getString(const double in, unsigned int digitsAfterDecimal)
 {
-  int digits = digitsAfterDecimal + 1;
-  if(in != 0.0)
-    digits += (int)ceil(log10(abs(in)));
+  int digits = ssio::getPrecision(in, digitsAfterDecimal);
   ::std::ostringstream ss;
   ss << ::std::setprecision(digits) << in;
   return ss.str();
