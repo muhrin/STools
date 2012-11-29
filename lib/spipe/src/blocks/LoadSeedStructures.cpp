@@ -63,7 +63,6 @@ void LoadSeedStructures::start()
     // Set up the structure name
     if(structure.getName().empty())
       structure.setName(common::generateUniqueName());
-    data.name.reset(structure.getName());
 
     // Send it on its way
     myOutput->in(data);

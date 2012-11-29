@@ -37,14 +37,13 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 namespace ssp = ::sstbx::potential;
+namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
@@ -76,13 +75,14 @@ void PotentialGo::pipelineInitialising()
 void PotentialGo::in(spipe::common::StructureData & data)
 {
   ssp::PotentialData optData;
-	if(myOptimiser.optimise(*data.getStructure(), optData, myExternalPressure))
+  ssc::Structure * const structure = data.getStructure();
+	if(myOptimiser.optimise(*structure, optData, myExternalPressure))
   {
     // Copy over information from the optimisation results
-    copyOptimisationResults(optData, data);
+    copyOptimisationResults(optData, *structure);
 
     // Update our data table with the structure data
-    updateTable(data);
+    updateTable(*structure);
 
 	  myOutput->in(data);
   }
@@ -95,26 +95,35 @@ void PotentialGo::in(spipe::common::StructureData & data)
 
 void PotentialGo::copyOptimisationResults(
   const sstbx::potential::PotentialData & optData,
-  spipe::common::StructureData & strData)
+  ssc::Structure & structure)
 {
   // Copy over information from the optimisation results
 
-  // Enthaly
-  strData.enthalpy.reset(optData.internalEnergy);
+  // Internal energy
+  structure.setProperty(
+    structure_properties::general::ENERGY_INTERNAL,
+    optData.internalEnergy
+  );
 
   // Pressure
   const double pressure = ::arma::trace(optData.stressMtx) / 3.0;
-  strData.pressure.reset(pressure);
-  strData.objectsStore[common::StructureObjectKeys::PRESSURE_INTERNAL] = pressure; 
+  structure.setProperty(
+    structure_properties::general::ENERGY_INTERNAL,
+    pressure
+  );
 }
 
-void PotentialGo::updateTable(const ::spipe::StructureDataTyp & strData)
+void PotentialGo::updateTable(const ssc::Structure & structure)
 {
   utility::DataTable & table = myTableSupport.getTable();
-  const ::std::string & strName = *strData.name;
+  const ::std::string & strName = structure.getName();
 
-  if(strData.enthalpy)
-    table.insert(strName, "energy", common::getString(*strData.enthalpy));
+  const double * const internalEnergy = structure.getProperty(structure_properties::general::ENERGY_INTERNAL);
+  if(internalEnergy)
+  {
+    table.insert(strName, "energy", common::getString(*internalEnergy));
+    table.insert(strName, "energy/atom", common::getString(*internalEnergy / structure.getNumAtoms()));
+  }
 }
 
 }

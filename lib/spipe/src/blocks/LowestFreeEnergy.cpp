@@ -8,15 +8,19 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/LowestFreeEnergy.h"
 
-#include "common/StructureData.h"
-
+#include <common/Structure.h>
+#include <common/StructureData.h>
 
 #include <pipelib/IPipeline.h>
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
+
+namespace ssc = ::sstbx::common;
+namespace structure_properties = ssc::structure_properties;
 
 LowestFreeEnergy::LowestFreeEnergy():
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Lowest free energy"),
@@ -27,7 +31,10 @@ void LowestFreeEnergy::in(spipe::common::StructureData & data)
 {
 	if(myLowest)
 	{
-		if(data.enthalpy < myLowest->enthalpy)
+    ssc::Structure * structure = data.getStructure();
+    double * internalEnergy = structure->getProperty(structure_properties::general::ENERGY_INTERNAL);
+		if(internalEnergy &&
+      *internalEnergy < *myLowest->getStructure()->getProperty(structure_properties::general::ENERGY_INTERNAL))
 		{
 			// Unflag and delete the old lowest
 			myPipeline->unflagData(*this, *myLowest);

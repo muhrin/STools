@@ -22,12 +22,8 @@ namespace common {
 namespace fs = ::boost::filesystem;
 namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
+namespace structure_properties = ssc::structure_properties;
 
-
-::sstbx::utility::Key< ::boost::filesystem::path> StructureObjectKeys::LAST_ABS_SAVE_PATH;
-::sstbx::utility::Key<unsigned int> StructureObjectKeys::SPACEGROUP_NUMBER;
-::sstbx::utility::Key< ::std::string> StructureObjectKeys::SPACEGROUP_SYMBOL;
-::sstbx::utility::Key< double > StructureObjectKeys::PRESSURE_INTERNAL;
 
 ssc::Structure * StructureData::getStructure() const
 {
@@ -49,7 +45,7 @@ StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) cons
 {
   fs::path relativePath;
 
-  const fs::path * lastSaved = objectsStore.find(common::StructureObjectKeys::LAST_ABS_SAVE_PATH);
+  const fs::path * lastSaved = objectsStore.find(structure_properties::io::LAST_ABS_FILE_PATH);
 
   if(lastSaved)
   {

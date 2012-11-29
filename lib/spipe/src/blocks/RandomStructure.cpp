@@ -57,17 +57,28 @@ void RandomStructure::start()
 {
 	using ::spipe::common::StructureData;
   const unsigned int numToGenerate = myNumToGenerate ? *myNumToGenerate : 100;
-	for(size_t i = 0; i < numToGenerate; ++i)
-	{
-		StructureData & data = myPipeline->newData();
+	
+  initDescriptions();
 
-		// Build up the name
-		std::stringstream ss;
-		ss << ::spipe::common::generateUniqueName() << "-" << i;
-		data.name.reset(ss.str());
+  for(size_t i = 0; i < numToGenerate; ++i)
+  {
+	  // Create the random structure
+    ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, myPipeline->getGlobalData().getSpeciesDatabase());
 
-		in(data);
-	}
+	  if(str.get())
+	  {
+      StructureData & data = myPipeline->newData();
+		  data.setStructure(str);
+
+		  // Build up the name
+			std::stringstream ss;
+			ss << ::spipe::common::generateUniqueName() << "-" << i;
+			data.getStructure()->setName(ss.str());
+
+		  // Send it down the pipe
+		  myOutput->in(data);
+	  }
+  }	
 }
 
 
@@ -83,11 +94,11 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		data.setStructure(str);
 
 		// Build up the name
-		if(!data.name)
+		if(!data.getStructure()->getName().empty())
 		{
 			std::stringstream ss;
 			ss << ::spipe::common::generateUniqueName();
-			data.name.reset(ss.str());
+			data.getStructure()->setName(ss.str());
 		}
 
 		// Send it down the pipe

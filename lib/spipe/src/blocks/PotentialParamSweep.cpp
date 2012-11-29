@@ -25,14 +25,14 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
+namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
+namespace structure_properties = ssc::structure_properties;
 
 PotentialParamSweep::PotentialParamSweep(
 	const ::arma::vec	&		from,
@@ -159,18 +159,22 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
     }
   }
 
-  if(sweepStrData.enthalpy)
+  const ssc::Structure * const structure = sweepStrData.getStructure();
+  if(structure)
   {
-    const double energy = *sweepStrData.enthalpy;
-    table.insert(
-      key,
-      "energy",
-      common::getString(energy)
-    );
-
-    if(sweepStrData.getStructure())
+    const double * const internalEnergy = structure->getProperty(
+      structure_properties::general::ENERGY_INTERNAL
+      );
+    if(internalEnergy)
     {
-      const size_t numAtoms = sweepStrData.getStructure()->getNumAtoms();
+      const double energy = *internalEnergy;
+      table.insert(
+        key,
+        "energy",
+        common::getString(energy)
+      );
+
+      const size_t numAtoms = structure->getNumAtoms();
       table.insert(
         key,
         "energy/atom",
@@ -189,11 +193,9 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
     );
   }
 
-  const unsigned int * const spacegroup = sweepStrData.objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
+  const unsigned int * const spacegroup = sweepStrData.objectsStore.find(structure_properties::general::SPACEGROUP_NUMBER);
   if(spacegroup)
-  {
     table.insert(key, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
-  }
 }
 
 }}

@@ -79,7 +79,7 @@ void ParamPotentialGo::copyOptimisationResults(
   spipe::common::StructureData & strData)
 {
   // Copy over information from the optimisation results
-  PotentialGo::copyOptimisationResults(optData, strData);
+  PotentialGo::copyOptimisationResults(optData, *strData.getStructure());
 
   // Add the potential parameters to its data
   strData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = myCurrentParams;

@@ -29,7 +29,9 @@
 namespace spipe {
 namespace blocks {
 
+namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
+namespace structure_properties = ssc::structure_properties;
 
 RemoveDuplicates::RemoveDuplicates(ssu::UniqueStructureSet & structureSet):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Remove duplicates"),
@@ -39,13 +41,14 @@ myStructureSet(structureSet)
 void RemoveDuplicates::in(::spipe::common::StructureData & data)
 {
   const std::pair<ssu::UniqueStructureSet::iterator, bool> result = myStructureSet.insert(data.getStructure());
+  ssc::Structure * const structure = data.getStructure();
 
 	if(result.second)
 	{
 		// Flag the data to say that we will want to use it again
 		myPipeline->flagData(*this, data);
     myStructureDataMap.insert(StructureDataMap::value_type(*result.first, &data));
-		data.timesFound.reset(1);
+    structure->setProperty(structure_properties::searching::TIMES_FOUND, (unsigned int)1);
 
 		myOutput->in(data);
 	}
@@ -63,13 +66,21 @@ void RemoveDuplicates::in(::spipe::common::StructureData & data)
 		}
 
 		::spipe::common::StructureData & origStrData = *it->second;
-		if(origStrData.timesFound)
+    unsigned int * timesFound =
+      origStrData.getStructure()->getProperty(structure_properties::searching::TIMES_FOUND);
+		if(timesFound)
 		{
-			origStrData.timesFound.reset(*origStrData.timesFound + 1);
+      origStrData.getStructure()->setProperty(
+        structure_properties::searching::TIMES_FOUND,
+        *timesFound + 1
+      );
 		}
 		else
 		{
-			origStrData.timesFound.reset(1);
+      origStrData.getStructure()->setProperty(
+        structure_properties::searching::TIMES_FOUND,
+        (unsigned int)1
+      );
 		}
 
 

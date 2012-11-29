@@ -62,9 +62,9 @@ protected:
 
   virtual void copyOptimisationResults(
     const sstbx::potential::PotentialData & optData,
-    spipe::common::StructureData & strData);
+    sstbx::common::Structure & structure);
 
-  void updateTable(const ::spipe::StructureDataTyp & strData);
+  void updateTable(const sstbx::common::Structure & structure);
 
   // Should we write information about structures being optimised
   // to file.

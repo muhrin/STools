@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/LoadPotStructures.h"
 
+#include <limits>
 #include <vector>
 
 #include <boost/filesystem/fstream.hpp>
@@ -36,6 +37,7 @@ namespace spipe {
 namespace blocks {
 
 namespace ssc = ::sstbx::common;
+namespace structure_properties = ssc::structure_properties;
 
 LoadPotStructures::LoadPotStructures(
   const sstbx::potential::IParameterisable &        pot,
@@ -122,6 +124,9 @@ size_t LoadPotStructures::loadStructures(
   // Keep track of the lowest energy
   StructureDataTyp * lowest = NULL;
   size_t numLoaded = 0;
+  ssc::Structure * structure;
+  double lowestInternalEnergy = ::std::numeric_limits<double>::max();
+  double * internalEnergy;
 
   const directory_iterator end = directory_iterator();
   for(directory_iterator dirIt = directory_iterator(strFolder);
@@ -135,20 +140,24 @@ size_t LoadPotStructures::loadStructures(
 
       //std::cout << "Got res file: " << dirEntry.string() << std::endl;
 
-      // Try loading
-      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, myPipeline->getGlobalData().getSpeciesDatabase());
-      strDat->setStructure(str);
+      { // Try loading
+        sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, myPipeline->getGlobalData().getSpeciesDatabase());
+        structure = &strDat->setStructure(str);
+      }
+
+      internalEnergy = structure->getProperty(structure_properties::general::ENERGY_INTERNAL);
 
       if(myLowestEOnly)
       {
         if(lowest)
         {
-          if(lowest->enthalpy && strDat->enthalpy)
+          if(internalEnergy)
           {
-            if(*lowest->enthalpy > *strDat->enthalpy)
+            if(lowestInternalEnergy > *internalEnergy)
             {
               delete lowest;
               lowest = strDat;
+              lowestInternalEnergy = *internalEnergy;
             }
           }
         }

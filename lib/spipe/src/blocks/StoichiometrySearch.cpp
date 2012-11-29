@@ -41,6 +41,7 @@ namespace common = ::spipe::common;
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
+namespace structure_properties = ssc::structure_properties;
 
 
 StoichiometrySearch::StoichiometrySearch(
@@ -181,9 +182,13 @@ void StoichiometrySearch::releaseBufferedStructures(
 
   fs::path lastSavedRelative;
 
+  const ssc::Structure * structure;
+  const double * internalEnergy;
+
   unsigned int * spacegroup;
 	BOOST_FOREACH(StructureDataTyp * const strData, myBuffer)
 	{
+    structure = strData->getStructure();
     lastSavedRelative = strData->getRelativeSavePath(*myPipeline);
 
     if(!lastSavedRelative.empty())
@@ -192,20 +197,19 @@ void StoichiometrySearch::releaseBufferedStructures(
       table.insert(tableKey, "lowest", lastSavedRelative.string());
     }
 
-    spacegroup = strData->objectsStore.find(common::StructureObjectKeys::SPACEGROUP_NUMBER);
+    spacegroup = strData->objectsStore.find(structure_properties::general::SPACEGROUP_NUMBER);
     if(spacegroup)
     {
       table.insert(tableKey, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
     }
 
     // Try to calculate the energy/atom
-    if(strData->enthalpy && strData->getStructure())
+    internalEnergy = structure->getProperty(structure_properties::general::ENERGY_INTERNAL);
+    if(internalEnergy)
     {
-      const size_t numAtoms = strData->getStructure()->getNumAtoms();
+      const size_t numAtoms = structure->getNumAtoms();
       if(numAtoms != 0)
-      {
-        table.insert(tableKey, "energy/atom", common::getString(*strData->enthalpy / numAtoms));
-      }
+        table.insert(tableKey, "energy/atom", common::getString(*internalEnergy / numAtoms));
     }
     
 
