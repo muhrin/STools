@@ -40,6 +40,39 @@ set(stools_Files__sdiff
   ${stools_Source_Files__sdiff}
 )
 
+#######################################
+## sgroup: Get structure space group ##
+#######################################
+set(stools_Header_Files__sgroup
+)
+source_group("Header Files" FILES ${stools_Header_Files__sgroup})
+
+set(stools_Source_Files__sgroup
+  sgroup.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__sgroup})
+
+set(stools_Files__sgroup
+  ${stools_Header_Files__sgroup}
+  ${stools_Source_Files__sgroup}
+)
+
+add_executable(sgroup
+  ${stools_Files}
+  ${stools_Files__sgroup}
+)
+
+add_dependencies(sgroup sslib)
+
+# Libraries we need to link to
+target_link_libraries(sgroup
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${ARMADILLO_LIBRARIES}
+  sslib
+)
+
 ## sinfo
 set(stools_Header_Files__sinfo
 )
@@ -130,9 +163,9 @@ target_link_libraries(sinfo
   sslib
 )
 
-#####################################
-## sinfo: General structure search ##
-#####################################
+#######################################
+## ssearch: General structure search ##
+#######################################
 add_executable(ssearch
   ${stools_Files}
   ${stools_Files__ssearch}
