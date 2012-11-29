@@ -45,7 +45,13 @@ StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) cons
 {
   fs::path relativePath;
 
-  const fs::path * lastSaved = objectsStore.find(structure_properties::io::LAST_ABS_FILE_PATH);
+  const ssc::Structure * const structure = getStructure();
+
+  // If no structure, return empty path
+  if(!structure)
+    return relativePath;
+
+  const fs::path * lastSaved = structure->getProperty(structure_properties::io::LAST_ABS_FILE_PATH);
 
   if(lastSaved)
   {
