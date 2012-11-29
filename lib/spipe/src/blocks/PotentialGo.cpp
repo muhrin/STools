@@ -108,7 +108,7 @@ void PotentialGo::copyOptimisationResults(
   // Pressure
   const double pressure = ::arma::trace(optData.stressMtx) / 3.0;
   structure.setProperty(
-    structure_properties::general::ENERGY_INTERNAL,
+    structure_properties::general::PRESSURE_INTERNAL,
     pressure
   );
 }
