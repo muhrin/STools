@@ -40,6 +40,8 @@ class LoadSeedStructures : public pipelib::AbstractSimpleStartBlock<StructureDat
 {
 public:
 
+  static const double ATOMIC_VOLUME_MULTIPLIER;
+
   /**
   /*  seedStructures - Can be:
   /*  - path to single structure
@@ -50,7 +52,8 @@ public:
   /**/
   LoadSeedStructures(
     const sstbx::common::AtomSpeciesDatabase & atomSpeciesDb,
-    const ::std::string & seedStructures);
+    const ::std::string & seedStructures,
+    const bool tryToScaleVolumes = true);
 
   // From StartBlock ///
 	virtual void start();
@@ -69,9 +72,12 @@ private:
   int processFolderPath(const boost::filesystem::path & entryPath);
   EntryType entryType(const ::std::string & entry) const;
 
+  double getTotalAtomicVolume(const ::sstbx::common::Structure & structure) const;
+
   sstbx::io::ResReaderWriter  myReader;
   StructuresList              myStructures;
   const ::sstbx::common::AtomSpeciesDatabase & mySpeciesDb;
+  const bool                  myTryToScaleVolumes;
 };
 
 }}

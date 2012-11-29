@@ -9,11 +9,13 @@
 #include "blocks/LoadSeedStructures.h"
 
 #include <sstream>
+#include <vector>
 
 #include <boost/foreach.hpp>
 
 // From SSTbx
 #include <common/AtomSpeciesDatabase.h>
+#include <common/Constants.h>
 #include <common/Structure.h>
 #include <io/IoFunctions.h>
 
@@ -36,11 +38,15 @@ namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
+const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
+
 LoadSeedStructures::LoadSeedStructures(
   const ssc::AtomSpeciesDatabase & atomSpeciesDb,
-  const ::std::string & seedStructures):
+  const ::std::string & seedStructures,
+  const bool tryToScaleVolumes):
 ::pipelib::Block<spipe::StructureDataTyp, spipe::SharedDataTyp>("Load seed structures"),
-mySpeciesDb(atomSpeciesDb)
+mySpeciesDb(atomSpeciesDb),
+myTryToScaleVolumes(tryToScaleVolumes)
 {
   // First of all split the string up
   ::std::string entry;
@@ -54,15 +60,25 @@ void LoadSeedStructures::start()
 {
 	using ::spipe::common::StructureData;
 
+  double oldVolume, newVolume;
+  const ssc::UnitCell * unitCell;
   BOOST_FOREACH(const ssc::Structure & str, myStructures)
   {
     StructureData & data = myPipeline->newData();
     // Make a clone of our structure
     ssc::Structure & structure = data.setStructure(str.clone());
     
-    // Set up the structure name
+    // Set up the structure name if needed
     if(structure.getName().empty())
       structure.setName(common::generateUniqueName());
+
+    unitCell = structure.getUnitCell();
+    if(myTryToScaleVolumes && unitCell)
+    {
+      oldVolume = unitCell->getVolume();
+      newVolume = ATOMIC_VOLUME_MULTIPLIER * getTotalAtomicVolume(str);
+      structure.scale(newVolume / oldVolume);
+    }
 
     // Send it on its way
     myOutput->in(data);
@@ -147,6 +163,30 @@ LoadSeedStructures::entryType(const ::std::string & entry) const
   }
 
   return UNKNOWN;
+}
+
+double LoadSeedStructures::getTotalAtomicVolume(
+  const ::sstbx::common::Structure & structure) const
+{
+  typedef ::boost::optional<double> OptionalDouble;
+
+  ::std::vector<ssc::AtomSpeciesId::Value> species;
+  structure.getAtomSpecies(species);
+
+  OptionalDouble radius;
+  double dRadius, volume = 0.0;
+  BOOST_FOREACH(ssc::AtomSpeciesId::Value spec, species)
+  {
+    radius = mySpeciesDb.getRadius(spec);
+    if(radius)
+    {
+      dRadius = *radius;
+      volume += dRadius * dRadius * dRadius;
+    }
+  }
+
+  volume *= (4.0 / 3.0) * ssc::Constants::PI;
+  return volume;
 }
 
 }
