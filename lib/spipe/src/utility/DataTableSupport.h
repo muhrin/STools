@@ -16,7 +16,7 @@
 
 #include <pipelib/event/IPipeListener.h>
 
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 
 // Local includes
 #include "utility/DataTable.h"

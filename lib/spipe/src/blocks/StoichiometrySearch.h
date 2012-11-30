@@ -24,7 +24,7 @@
 #include <build_cell/RandomUnitCell.h>
 #include <build_cell/StructureDescription.h>
 #include <common/AtomSpeciesId.h>
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 #include <utility/MultiIdxRange.h>
 
 // Local includes

@@ -13,7 +13,7 @@
 // From SSTbx
 #include <common/Structure.h>
 #include <io/StructureWriterManager.h>
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 
 // From local
 #include "common/SharedData.h"

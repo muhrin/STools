@@ -16,6 +16,7 @@
 
 #include <pipelib/AbstractSimpleBlock.h>
 
+#include <potential/IGeomOptimiser.h>
 #include <potential/PotentialData.h>
 
 #include "utility/DataTable.h"
@@ -31,7 +32,6 @@ namespace common {
 class AtomSpeciesDatabase;
 }
 namespace potential {
-class IGeomOptimiser;
 class IPotential;
 }
 }
@@ -46,7 +46,12 @@ public:
 
 	PotentialGo(
     const ::sstbx::potential::IGeomOptimiser &  optimiser,
-    const ::arma::mat33 * const                 externalPressure = NULL,
+    const bool                                  writeOutput = true
+  );
+
+	PotentialGo(
+    const ::sstbx::potential::IGeomOptimiser &  optimiser,
+    const ::sstbx::potential::OptimisationOptions & optimisationParams,
     const bool                                  writeOutput = true
   );
 
@@ -71,10 +76,12 @@ protected:
   const bool                               myWriteOutput;
 
 	const sstbx::potential::IGeomOptimiser & myOptimiser;
+  const ::sstbx::potential::OptimisationOptions  myOptimisationParams;
   ::arma::mat33                            myExternalPressure;
 
   // Use a table to store data about structure that are being optimised
   ::spipe::utility::DataTableSupport       myTableSupport;
+
 };
 
 }}

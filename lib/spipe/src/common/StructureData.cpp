@@ -21,6 +21,7 @@ namespace spipe {
 namespace common {
 namespace fs = ::boost::filesystem;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
@@ -56,9 +57,9 @@ StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) cons
   if(lastSaved)
   {
     relativePath = *lastSaved;
-    if(ssu::fs::isAbsolute(relativePath))
+    if(ssio::isAbsolute(relativePath))
     {
-      relativePath = ssu::fs::make_relative(pipeline.getSharedData().getOutputPath(), relativePath);
+      relativePath = ssio::make_relative(pipeline.getSharedData().getOutputPath(), relativePath);
     }
   }
 

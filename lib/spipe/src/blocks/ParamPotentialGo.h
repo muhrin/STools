@@ -46,7 +46,12 @@ public:
 	ParamPotentialGo(
 		::sstbx::potential::IParameterisable & paramPotential,
 		const ::sstbx::potential::IGeomOptimiser & optimiser,
-    const ::arma::mat33 * const externalPressure = NULL,
+    const bool                  writeOutput = true);
+
+	ParamPotentialGo(
+		::sstbx::potential::IParameterisable & paramPotential,
+		const ::sstbx::potential::IGeomOptimiser & optimiser,
+    const ::sstbx::potential::OptimisationOptions & optimisationParams,
     const bool                  writeOutput = true);
 
   // From Block /////////////////////////

@@ -21,7 +21,7 @@
 #include <pipelib/event/IPipeListener.h>
 
 #include <common/AtomSpeciesDatabase.h>
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
 
 // Local includes

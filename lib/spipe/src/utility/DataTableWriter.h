@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 
 // Local includes
 #include "utility/IDataTableChangeListener.h"

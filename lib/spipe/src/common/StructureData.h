@@ -19,7 +19,7 @@
 // From SSLib
 #include <SSLib.h>
 #include <common/Types.h>
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////

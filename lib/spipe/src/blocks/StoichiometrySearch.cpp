@@ -20,7 +20,7 @@
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
-#include <utility/BoostFilesystem.h>
+#include <io/BoostFilesystem.h>
 #include <utility/MultiIdx.h>
 
 // Local includes

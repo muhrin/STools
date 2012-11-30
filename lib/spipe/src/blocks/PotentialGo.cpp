@@ -47,21 +47,21 @@ namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
-  const ::arma::mat33 * const              externalPressure,
   const bool                               writeOutput):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput)
-{
-  if(externalPressure)
-  {
-    myExternalPressure = *externalPressure;
-  }
-  else
-  {
-    myExternalPressure.zeros();
-  }
-}
+{}
+
+PotentialGo::PotentialGo(
+	const sstbx::potential::IGeomOptimiser & optimiser,
+  const ::sstbx::potential::OptimisationOptions & optimisationParams,
+  const bool                               writeOutput):
+pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
+myOptimiser(optimiser),
+myWriteOutput(writeOutput),
+myOptimisationParams(optimisationParams)
+{}
 
 void PotentialGo::pipelineInitialising()
 {
@@ -76,7 +76,7 @@ void PotentialGo::in(spipe::common::StructureData & data)
 {
   ssp::PotentialData optData;
   ssc::Structure * const structure = data.getStructure();
-	if(myOptimiser.optimise(*structure, optData, myExternalPressure))
+	if(myOptimiser.optimise(*structure, optData, myOptimisationParams))
   {
     // Copy over information from the optimisation results
     copyOptimisationResults(optData, *structure);
