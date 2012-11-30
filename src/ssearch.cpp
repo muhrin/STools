@@ -334,13 +334,16 @@ int main(const int argc, const char * const argv[])
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 
-  ::arma::mat33 optimisationPressureMtx;
-  optimisationPressureMtx.fill(0.0);
-  optimisationPressureMtx.diag().fill(in.optimisationPressure);
+  ssp::OptimisationOptions optimisationParams;
+  optimisationParams.externalPressure.diag().fill(in.optimisationPressure);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, &optimisationPressureMtx, false);
+  // For seed structure pre-optimise only the volume
+  if(inputType == InputType::SEED_STRUCTURES)
+    optimisationParams.optimise = ssp::OptimisationOptions::LATTICE;
 
-  sp::blocks::ParamPotentialGo go(pp, optimiser, NULL /*no external pressure*/, true);
+  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, optimisationParams, false);
+
+  sp::blocks::ParamPotentialGo go(pp, optimiser, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;

@@ -253,7 +253,7 @@ void doPrintList(
 
   if(in.summaryOnly)
   {
-    ::std::cout << "unique: " << structuresSet.size()
+    ::std::cout << "total: " << structures.size() << ", unique: " << structuresSet.size()
       << ", similar: " << structures.size() - structuresSet.size() << ::std::endl;
   }
 }
@@ -286,7 +286,7 @@ void doDiff(
 
   if(in.summaryOnly)
   {  
-    ::std::cout << "mean: " << mean << ", min: " << min << ", max: " << max << ::std::endl;
+    ::std::cout << "total: " << numStructures << ", mean: " << mean << ", min: " << min << ", max: " << max << ::std::endl;
   }
   else
   {
