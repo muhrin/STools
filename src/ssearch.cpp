@@ -70,6 +70,10 @@ struct InputOptions
   ::std::string     structurePath;
 };
 
+// CONSTANTS /////////////////////////////////
+static const double DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS = 5000;
+static const double DEFAULT_OPTIMISATION_MAX_ITERS = 10000;
+
 ::sstbx::potential::SimplePairPotential::CombiningRule
 getCombiningRuleFromString(const ::std::string & str)
 {
@@ -335,22 +339,22 @@ int main(const int argc, const char * const argv[])
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 
-  ssp::OptimisationSettings optimisationParams;
+  ssp::OptimisationSettings initialOptimisationParams;
   ::arma::mat33 pressureMtx;
   pressureMtx.zeros();
   pressureMtx.diag().fill(in.optimisationPressure);
-  optimisationParams.setExternalPressure(pressureMtx);
+  initialOptimisationParams.setExternalPressure(pressureMtx);
+  initialOptimisationParams.setMaxIterations(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS);
 
-  // For seed structure pre-optimise only the volume
+  // For seed structure pre-optimise only the lattice
   if(inputType == InputType::SEED_STRUCTURES)
-  {
-    // Only optimise the lattice first time around
-    optimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
-  }
+    initialOptimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, optimisationParams, false);
+  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, initialOptimisationParams, false);
 
-  sp::blocks::ParamPotentialGo go(pp, optimiser, true);
+  ssp::OptimisationSettings optimisationParams;
+  optimisationParams.setMaxIterations(DEFAULT_OPTIMISATION_MAX_ITERS);
+  sp::blocks::ParamPotentialGo go(pp, optimiser, optimisationParams, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;
