@@ -181,22 +181,23 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
         common::getString(energy / numAtoms)
       );
     }
-  }
 
-  const fs::path savePath = sweepStrData.getRelativeSavePath(*myPipeline);
-  if(!savePath.empty())
-  {
-    table.insert(
-      key,
-      "path",
-      savePath.string()
-    );
-  }
+    const fs::path savePath = sweepStrData.getRelativeSavePath(*myPipeline);
+    if(!savePath.empty())
+    {
+      table.insert(
+        key,
+        "path",
+        savePath.string()
+      );
+    }
 
-  const unsigned int * const spacegroup = sweepStrData.objectsStore.find(structure_properties::general::SPACEGROUP_NUMBER);
-  if(spacegroup)
-    table.insert(key, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
+    const unsigned int * const spacegroup = structure->getProperty(structure_properties::general::SPACEGROUP_NUMBER);
+    if(spacegroup)
+      table.insert(key, "sg", ::boost::lexical_cast< ::std::string>(*spacegroup));
+  }
 }
 
-}}
+}
+}
 
