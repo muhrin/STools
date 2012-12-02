@@ -55,7 +55,7 @@ myWriteOutput(writeOutput)
 
 PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
-  const ::sstbx::potential::OptimisationOptions & optimisationParams,
+  const ::sstbx::potential::OptimisationSettings & optimisationParams,
   const bool                               writeOutput):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
 myOptimiser(optimiser),

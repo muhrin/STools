@@ -51,7 +51,7 @@ public:
 	ParamPotentialGo(
 		::sstbx::potential::IParameterisable & paramPotential,
 		const ::sstbx::potential::IGeomOptimiser & optimiser,
-    const ::sstbx::potential::OptimisationOptions & optimisationParams,
+    const ::sstbx::potential::OptimisationSettings & optimisationParams,
     const bool                  writeOutput = true);
 
   // From Block /////////////////////////

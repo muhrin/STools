@@ -17,6 +17,7 @@
 #include <pipelib/AbstractSimpleBlock.h>
 
 #include <potential/IGeomOptimiser.h>
+#include <potential/OptimisationSettings.h>
 #include <potential/PotentialData.h>
 
 #include "utility/DataTable.h"
@@ -51,7 +52,7 @@ public:
 
 	PotentialGo(
     const ::sstbx::potential::IGeomOptimiser &  optimiser,
-    const ::sstbx::potential::OptimisationOptions & optimisationParams,
+    const ::sstbx::potential::OptimisationSettings & optimisationParams,
     const bool                                  writeOutput = true
   );
 
@@ -76,7 +77,7 @@ protected:
   const bool                               myWriteOutput;
 
 	const sstbx::potential::IGeomOptimiser & myOptimiser;
-  const ::sstbx::potential::OptimisationOptions  myOptimisationParams;
+  const ::sstbx::potential::OptimisationSettings  myOptimisationParams;
   ::arma::mat33                            myExternalPressure;
 
   // Use a table to store data about structure that are being optimised
