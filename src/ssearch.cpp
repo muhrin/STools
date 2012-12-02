@@ -28,6 +28,7 @@
 #include <io/ResReaderWriter.h>
 #include <io/StructureWriterManager.h>
 #include <potential/SimplePairPotential.h>
+#include <potential/FixedLatticeShapeConstraint.h>
 #include <potential/TpsdGeomOptimiser.h>
 #include <utility/SortedDistanceComparator.h>
 #include <utility/UniqueStructureSet.h>
@@ -334,12 +335,18 @@ int main(const int argc, const char * const argv[])
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 
-  ssp::OptimisationOptions optimisationParams;
-  optimisationParams.externalPressure.diag().fill(in.optimisationPressure);
+  ssp::OptimisationSettings optimisationParams;
+  ::arma::mat33 pressureMtx;
+  pressureMtx.zeros();
+  pressureMtx.diag().fill(in.optimisationPressure);
+  optimisationParams.setExternalPressure(pressureMtx);
 
   // For seed structure pre-optimise only the volume
   if(inputType == InputType::SEED_STRUCTURES)
-    optimisationParams.optimise = ssp::OptimisationOptions::LATTICE;
+  {
+    // Only optimise the lattice first time around
+    optimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
+  }
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, optimisationParams, false);
 

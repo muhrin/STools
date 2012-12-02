@@ -204,8 +204,11 @@ int main(const int argc, const char * const argv[])
   );
   ssp::TpsdGeomOptimiser optimiser(pp);
 
-  ssp::OptimisationOptions optimisationParams;
-  optimisationParams.externalPressure.diag().fill(in.optimisationPressure);
+  ssp::OptimisationSettings optimisationParams;
+  ::arma::mat33 pressureMtx;
+  pressureMtx.zeros();
+  pressureMtx.diag().fill(in.optimisationPressure);
+  optimisationParams.setExternalPressure(pressureMtx);
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, optimisationParams, false);
 
