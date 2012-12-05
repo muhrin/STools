@@ -9,6 +9,7 @@
 #include "STools.h"
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/tokenizer.hpp>
@@ -58,6 +59,15 @@
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
+namespace po    = ::boost::program_options;
+namespace sp    = ::spipe;
+namespace spb   = ::spipe::blocks;
+namespace ssbc  = ::sstbx::build_cell;
+namespace ssc   = ::sstbx::common;
+namespace ssf   = ::sstbx::factory;
+namespace ssio  = ::sstbx::io;
+namespace ssp   = ::sstbx::potential;
+namespace ssu   = ::sstbx::utility;
 
 struct InputOptions
 {
@@ -68,11 +78,13 @@ struct InputOptions
   ::std::vector< ::std::string> potParams;
   ::std::string     potCombiningRule;
   ::std::string     structurePath;
+  double            potCutoff;
 };
 
 // CONSTANTS /////////////////////////////////
 static const double DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS = 5000;
 static const double DEFAULT_OPTIMISATION_MAX_ITERS = 10000;
+static const double DEFAULT_POT_CUTOFF = 2.5;
 
 ::sstbx::potential::SimplePairPotential::CombiningRule
 getCombiningRuleFromString(const ::std::string & str)
@@ -104,113 +116,41 @@ struct InputType
   enum Value { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
 };
 
+int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[]);
+
+int processPotParams(  ::arma::vec & from,
+  ::arma::vec & stepsize,
+  ::arma::Col<unsigned int> & numSteps,
+  double & betaDiagonal,
+  const InputOptions & in);
+
 int main(const int argc, const char * const argv[])
 {
-  namespace po    = ::boost::program_options;
-  namespace sp    = ::spipe;
-  namespace spb   = ::spipe::blocks;
-  namespace ssbc  = ::sstbx::build_cell;
-  namespace ssc   = ::sstbx::common;
-  namespace ssf   = ::sstbx::factory;
-  namespace ssio  = ::sstbx::io;
-  namespace ssp   = ::sstbx::potential;
-  namespace ssu   = ::sstbx::utility;
   namespace kw    = ssf::sslib_yaml_keywords;
   using ::arma::Mat;
   using ::arma::Col;
   using ::arma::vec;
   using ::arma::endr;
 
-    typedef boost::tokenizer<boost::char_separator<char> > Tok;
+  typedef boost::tokenizer<boost::char_separator<char> > Tok;
   const boost::char_separator<char> tokSep(" \t");
 
-  const ::std::string exeName(argv[0]);
   const ::std::string KW_SEED_STRUCTURES("seedStructures");
 
   // Program options
   InputOptions in;
 
-  try
-  {
-    po::options_description general("STools\nUsage: " + exeName + " [options] inpue_file...\nOptions");
-    general.add_options()
-      ("help", "Show help message")
-      ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
-      ("pot,u", po::value < ::std::string>(&in.potential)->default_value("lj"), "The potential to use (possible values: lj)")
-      ("input,i", po::value< ::std::string>(&in.structurePath), "The input structure")
-    ;
-
-    po::options_description lennardJones("Lennard-Jones options (when --pot lj is used)");
-    lennardJones.add_options()
-      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
-      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "Potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
-      ("comb,c", po::value< ::std::string>(&in.potCombiningRule)->default_value("none"), "Off-diagonal combining rule to use")
-      ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
-    ;
-
-    po::positional_options_description p;
-    p.add("input", 1);
-
-    po::options_description cmdLineOptions;
-    cmdLineOptions.add(general).add(lennardJones);
-
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(cmdLineOptions).positional(p).run(), vm);
-
-    // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
-    if(vm.count("help"))
-    {
-      ::std::cout << cmdLineOptions << ::std::endl;
-      return 1;
-    }
-
-    po::notify(vm);
-  }
-  catch(std::exception& e)
-  {
-    ::std::cout << e.what() << "\n";
-    return 1;
-  }
-
-  if(in.potential != "lj")
-  {
-    ::std::cout << "--pot must have the value lj";
-    return 1;
-  }
-
-  if(in.potParams.size() != 7)
-  {
-    ::std::cout << "There must be 7 potential parameters specified\n";
-    return 1;
-  }
+  int result = processCommandLineArgs(in, argc, argv);
+  if(result != 0)
+    return result;
 
   // Do potential parameters ////////////////////////////////
   vec from(8), stepSize(8);
   Col<unsigned int> numSteps(8);
-  // Initialise with reasonable values
-  from.zeros();
-  stepSize.ones();
-  numSteps.ones();
-
-  double lFrom, lStepSize;
-  unsigned int lNumSteps;
-  for(size_t i = 0; i < 6; ++i)
-  {
-    try
-    {
-      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
-      from(i) = lFrom;
-      stepSize(i) = lStepSize;
-      numSteps(i) = lNumSteps;
-    }
-    catch(const ::std::invalid_argument & e)
-    {
-      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
-      ::std::cout << e.what();
-      return 1;
-    }
-  }
-  const double betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
+  double betaDiagonal;
+  result = processPotParams(from, stepSize, numSteps, betaDiagonal, in);
+  if(result != 0)
+    return result;
 
   bool doingSweep = false;
   for(size_t i = 0; i < numSteps.n_rows; ++i)
@@ -331,7 +271,7 @@ int main(const int argc, const char * const argv[])
     potentialSpecies,
     epsilon,
     sigma,
-    2.5,
+    in.potCutoff,
     beta,
     12,
     6,
@@ -406,3 +346,103 @@ int main(const int argc, const char * const argv[])
   masterPipe->start();
 }
 
+int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[])
+{
+  const ::std::string exeName(argv[0]);
+
+  try
+  {
+    po::options_description general("STools\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+    general.add_options()
+      ("help", "Show help message")
+      ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
+      ("pot,u", po::value < ::std::string>(&in.potential)->default_value("lj"), "The potential to use (possible values: lj)")
+      ("input,i", po::value< ::std::string>(&in.structurePath), "The input structure")
+    ;
+
+    po::options_description lennardJones("Lennard-Jones options (when --pot lj is used)");
+    lennardJones.add_options()
+      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "Potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("comb,c", po::value< ::std::string>(&in.potCombiningRule)->default_value("none"), "Off-diagonal combining rule to use")
+      ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
+      ("cutoff", po::value<double>(&in.potCutoff)->default_value(DEFAULT_POT_CUTOFF), "Potential cutoff as multiple of sigma_ij")
+    ;
+
+    po::positional_options_description p;
+    p.add("input", 1);
+
+    po::options_description cmdLineOptions;
+    cmdLineOptions.add(general).add(lennardJones);
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(cmdLineOptions).positional(p).run(), vm);
+
+    // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
+    if(vm.count("help"))
+    {
+      ::std::cout << cmdLineOptions << ::std::endl;
+      return 1;
+    }
+
+    po::notify(vm);
+  }
+  catch(std::exception& e)
+  {
+    ::std::cout << e.what() << "\n";
+    return 1;
+  }
+
+  if(in.potential != "lj")
+  {
+    ::std::cout << "--pot must have the value lj";
+    return 1;
+  }
+
+  if(in.potParams.size() != 7)
+  {
+    ::std::cout << "There must be 7 potential parameters specified\n";
+    return 1;
+  }
+
+  // Everything went fine
+  return 0;
+}
+
+
+int processPotParams(
+  ::arma::vec & from,
+  ::arma::vec & stepsize,
+  ::arma::Col<unsigned int> & numSteps,
+  double & betaDiagonal,
+  const InputOptions & in)
+{
+  // Initialise with reasonable values
+  from.zeros();
+  stepsize.ones();
+  numSteps.ones();
+
+  double lFrom, lStepSize;
+  unsigned int lNumSteps;
+  for(size_t i = 0; i < 6; ++i)
+  {
+    try
+    {
+      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
+      from(i) = lFrom;
+      stepsize(i) = lStepSize;
+      numSteps(i) = lNumSteps;
+    }
+    catch(const ::std::invalid_argument & e)
+    {
+      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
+      ::std::cout << e.what();
+      return 1;
+    }
+  }
+
+  betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
+
+  // Everything went fine
+  return 0;
+}

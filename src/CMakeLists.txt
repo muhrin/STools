@@ -10,6 +10,7 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 ## stools/utility
 set(stools_Header_Files__utility
   utility/TerminalFunctions.h
+  utility/YamlOptionsParser.h
 )
 source_group("Header Files\\utility" FILES ${stools_Header_Files__utility})
 

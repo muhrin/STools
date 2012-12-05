@@ -37,6 +37,7 @@ struct InputOptions
 {
   double precision;
   ::std::vector< ::std::string> inputFiles;
+  bool printSgNumber;
 };
 
 int main(const int argc, char * argv[])
@@ -53,6 +54,7 @@ int main(const int argc, char * argv[])
       ("help", "Show help message")
       ("prec,p", po::value<double>(&in.precision)->default_value(ssa::space_group::DEFAULT_PRECISION), "Set space group identifier precision")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
+      ("num,n", po::value<bool>(&in.printSgNumber)->default_value(false), "print spacegroup number")
     ;
 
     po::positional_options_description p;
@@ -94,7 +96,10 @@ int main(const int argc, char * argv[])
     structure = resReader.readStructure(strPath, speciesDb);
     if(structure.get() && ssa::space_group::getSpacegroupInfo(sgInfo, *structure.get(), in.precision))
     {
-      ::std::cout << sgInfo.iucSymbol << ::std::endl;
+      if(in.printSgNumber)
+        ::std::cout << sgInfo.number << ::std::endl;
+      else
+        ::std::cout << sgInfo.iucSymbol << ::std::endl;
     }
   }
 
