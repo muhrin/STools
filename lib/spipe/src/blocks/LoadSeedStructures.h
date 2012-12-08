@@ -15,7 +15,6 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
 
 // From SSTbx
 #include <SSLib.h>
@@ -62,7 +61,7 @@ public:
 private:
 
   typedef ::sstbx::common::StructurePtr StructurePtr;
-  typedef ::boost::ptr_list<sstbx::common::Structure> StructuresList;
+  typedef ::sstbx::io::StructuresContainer StructuresContainer;
 
   enum EntryType { UNKNOWN, FILE_PATH, FOLDER_PATH, WILDCARD_PATH };
 
@@ -75,7 +74,7 @@ private:
   double getTotalAtomicVolume(const ::sstbx::common::Structure & structure) const;
 
   sstbx::io::ResReaderWriter  myReader;
-  StructuresList              myStructures;
+  StructuresContainer         myStructures;
   const ::sstbx::common::AtomSpeciesDatabase & mySpeciesDb;
   const bool                  myTryToScaleVolumes;
 };

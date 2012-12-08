@@ -120,12 +120,10 @@ int LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
 int LoadSeedStructures::processFilePath(const boost::filesystem::path & entryPath)
 {
   // Try loading the file
-  StructurePtr str = myReader.readStructure(entryPath, mySpeciesDb);
-  if(str.get())
-  {
-    myStructures.push_back(str.release());
-    return 1;
-  }
+  const size_t numLoaded = myReader.readStructures(myStructures, entryPath, mySpeciesDb);
+  if(numLoaded > 0)
+    return (int)numLoaded;
+
   return -1;
 }
 

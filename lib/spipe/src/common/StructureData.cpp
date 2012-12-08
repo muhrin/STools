@@ -31,13 +31,19 @@ ssc::Structure * StructureData::getStructure() const
   return myStructure.get();
 }
 
-ssc::Structure & StructureData::setStructure(sstbx::UniquePtr<ssc::Structure>::Type structure)
+ssc::Structure & StructureData::setStructure(ssc::types::StructurePtr structure)
 {
 #ifdef SSLIB_USE_CPP11
   myStructure = ::std::move(structure);
 #else
 	myStructure = structure;
 #endif
+  return *myStructure.get();
+}
+
+ssc::Structure & StructureData::setStructure(ssio::StructuresContainer::auto_type structure)
+{
+  myStructure.reset(structure.release());
   return *myStructure.get();
 }
 

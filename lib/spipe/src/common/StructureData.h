@@ -20,6 +20,7 @@
 #include <SSLib.h>
 #include <common/Types.h>
 #include <io/BoostFilesystem.h>
+#include <io/IStructureReader.h>
 #include <utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -38,6 +39,7 @@ public:
 
 	sstbx::common::Structure * getStructure() const;
   sstbx::common::Structure & setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
+  sstbx::common::Structure & StructureData::setStructure(::sstbx::io::StructuresContainer::auto_type structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path

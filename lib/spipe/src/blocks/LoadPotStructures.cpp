@@ -37,6 +37,7 @@ namespace spipe {
 namespace blocks {
 
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace structure_properties = ssc::structure_properties;
 
 LoadPotStructures::LoadPotStructures(
@@ -128,6 +129,8 @@ size_t LoadPotStructures::loadStructures(
   double lowestInternalEnergy = ::std::numeric_limits<double>::max();
   double * internalEnergy;
 
+  ssio::StructuresContainer loadedStructures;
+
   const directory_iterator end = directory_iterator();
   for(directory_iterator dirIt = directory_iterator(strFolder);
     dirIt != end; ++dirIt)
@@ -138,12 +141,10 @@ size_t LoadPotStructures::loadStructures(
     {
       StructureDataTyp * const strDat = new StructureDataTyp();
 
-      //std::cout << "Got res file: " << dirEntry.string() << std::endl;
-
-      { // Try loading
-        sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, myPipeline->getGlobalData().getSpeciesDatabase());
-        structure = &strDat->setStructure(str);
-      }
+      // Try loading
+      if(resReader.readStructures(loadedStructures, dirEntry, myPipeline->getGlobalData().getSpeciesDatabase()) == 1)
+          continue;
+      structure = &strDat->setStructure(loadedStructures.pop_back());
 
       internalEnergy = structure->getProperty(structure_properties::general::ENERGY_INTERNAL);
 
