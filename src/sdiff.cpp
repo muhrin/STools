@@ -30,6 +30,7 @@
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <common/UnitCell.h>
+#include <io/BoostFilesystem.h>
 #include <io/ResReaderWriter.h>
 #include <utility/DistanceMatrixComparator.h>
 #include <utility/SortedDistanceComparator.h>
@@ -50,8 +51,7 @@ namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
 typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
-typedef ::std::pair<fs::path, SharedStructurePtr> PathStructurePair;
-typedef ::std::vector<PathStructurePair> StructuresList;
+typedef ::ssio::StructuresContainer StructuresContainer;
 typedef ::boost::shared_ptr<ssu::IBufferedComparator> ComparatorPtr;
 
 struct InputOptions
@@ -68,8 +68,9 @@ struct InputOptions
 };
 
 // FORWARD DECLARES //////////
-void doPrintList(const StructuresList & structures, ComparatorPtr comparator, const bool printUniques, const InputOptions & in);
-void doDiff(const StructuresList & structures, ComparatorPtr comparator, const InputOptions & in);
+void preprocessStructure(ssc::Structure & structure, const ::std::string & loadPath, const InputOptions & options);
+void doPrintList(StructuresContainer & structures, ComparatorPtr comparator, const bool printUniques, const InputOptions & in);
+void doDiff(const StructuresContainer & structures, ComparatorPtr comparator, const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
@@ -157,9 +158,9 @@ int main(const int argc, char * argv[])
   
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
-  StructuresList structures;
-  ssc::StructurePtr str;
+  StructuresContainer loadedStructures;
 
+  size_t lastLoaded, totalLoaded = 0;
   BOOST_FOREACH(::std::string & pathString, in.inputFiles)
   {
     fs::path strPath(pathString);
@@ -169,29 +170,23 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    str = resReader.readStructure(strPath, speciesDb);
-    if(str.get())
+    lastLoaded = resReader.readStructures(loadedStructures,strPath, speciesDb);
+
+    if(lastLoaded == 0)
+      ::std::cerr << "Couldn't load structure(s) from " << strPath << ::std::endl;
+    else
     {
-      if(!in.dontUsePrimitive)
-        str->makePrimitive();
+      // Perform any preprocessing on the loaded structure
+      for(size_t i = 0; i < lastLoaded; ++i)
+        preprocessStructure(loadedStructures[i], pathString, in);
 
-      // If we are to be volume agnostic then set the volume
-      // to 1.0 per atom
-      ssc::UnitCell * const unitCell = str->getUnitCell();
-      if(in.volumeAgnostic && unitCell)
-      {
-        const double scaleFactor = str->getNumAtoms() / unitCell->getVolume();
-        str->scale(scaleFactor);
-      }
-
-
-      structures.push_back(PathStructurePair(strPath, SharedStructurePtr(str.release())));
+      totalLoaded += lastLoaded;
     }
   }
 
-  if(structures.size() < 2)
+  if(totalLoaded < 2)
   {
-    ::std::cout << "Not enough structures to compare." << ::std::endl;
+    ::std::cerr << "Not enough structures to compare." << ::std::endl;
     return 1;
   }
 
@@ -201,15 +196,15 @@ int main(const int argc, char * argv[])
   // Do the actual comparison based on command line options
   if(in.mode == 'u')
   {
-    doPrintList(structures, comparator, true, in);
+    doPrintList(loadedStructures, comparator, true, in);
   }
   else if(in.mode == 's')
   {
-    doPrintList(structures, comparator, false, in);
+    doPrintList(loadedStructures, comparator, false, in);
   }
   else if(in.mode == 'd')
   {
-    doDiff(structures, comparator, in);
+    doDiff(loadedStructures, comparator, in);
   }
   else
   {
@@ -221,33 +216,53 @@ int main(const int argc, char * argv[])
 	return 0;
 }
 
-class TakeStructureAddress : public ::std::unary_function<PathStructurePair, ssc::Structure *>
+void preprocessStructure(ssc::Structure & structure, const ::std::string & loadPath, const InputOptions & options)
 {
-public:
-  ssc::Structure * operator()(PathStructurePair pair) const
+  // Make sure we know where we loaded the file from
+  structure.setProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH, ssio::absolute(fs::path(loadPath)));
+
+  if(!options.dontUsePrimitive)
+    structure.makePrimitive();
+
+  // If we are to be volume agnostic then set the volume
+  // to 1.0 per atom
+  ssc::UnitCell * const unitCell = structure.getUnitCell();
+  if(options.volumeAgnostic && unitCell)
   {
-    return pair.second.get();
+    const double scaleFactor = structure.getNumAtoms() / unitCell->getVolume();
+    structure.scale(scaleFactor);
   }
-};
+}
 
 void doPrintList(
-  const StructuresList & structures,
+  StructuresContainer & structures,
   ComparatorPtr comparator,
   const bool printUniques,
   const InputOptions & in)
 {
-  typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
+  //typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
   typedef ::std::pair<ssu::UniqueStructureSet::iterator, bool> InsertReturnVal;
   ssu::UniqueStructureSet structuresSet(comparator->getComparator());
 
   InsertReturnVal insertResult;
 
-  for(iterator it = iterator(structures.begin()), end = iterator(structures.end()); it != end; ++it)
+  fs::path relativePath;
+
+  BOOST_FOREACH(ssc::Structure & structure, structures)
   {
-    insertResult = structuresSet.insert(*it);
+    insertResult = structuresSet.insert(&structure);
     if(!in.summaryOnly && insertResult.second == printUniques)
     {
-      std::cout << it.base()->first.string() << std::endl;
+      const fs::path * savePath = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
+      if(savePath)
+      {
+        relativePath = ssio::make_relative(fs::path(), *savePath);
+        std::cout << relativePath.string() << std::endl;
+      }
+      else
+      {
+        ::std::cerr << "Error: couldn't find save path for structure " << structure.getName() << ::std::endl;
+      }
     }
   }
 
@@ -259,7 +274,7 @@ void doPrintList(
 }
 
 void doDiff(
-  const StructuresList & structures,
+  const StructuresContainer & structures,
   ComparatorPtr comparator,
   const InputOptions & in)
 {
@@ -272,9 +287,7 @@ void doDiff(
   {
     for(size_t j = i + 1; j < numStructures; ++j)
     {
-      diffs(i, j) = comparator->compareStructures(
-        *structures[i].second.get(),
-        *structures[j].second.get());
+      diffs(i, j) = comparator->compareStructures(structures[i], structures[j]);
       
       mean += diffs(i, j);
       max = ::std::max(max, diffs(i, j));

@@ -81,7 +81,7 @@ int main(const int argc, char * argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
-  ssc::StructurePtr structure;
+  ssio::StructuresContainer loadedStructures;
   ssa::space_group::SpacegroupInfo sgInfo;
 
   BOOST_FOREACH(::std::string & pathString, in.inputFiles)
@@ -93,13 +93,19 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    structure = resReader.readStructure(strPath, speciesDb);
-    if(structure.get() && ssa::space_group::getSpacegroupInfo(sgInfo, *structure.get(), in.precision))
+    if(resReader.readStructures(loadedStructures, strPath, speciesDb) > 0)
     {
-      if(in.printSgNumber)
-        ::std::cout << sgInfo.number << ::std::endl;
-      else
-        ::std::cout << sgInfo.iucSymbol << ::std::endl;
+      BOOST_FOREACH(const ssc::Structure & structure, loadedStructures)
+      {
+        if(ssa::space_group::getSpacegroupInfo(sgInfo, structure, in.precision))
+        {
+          if(in.printSgNumber)
+            ::std::cout << sgInfo.number << ::std::endl;
+          else
+            ::std::cout << sgInfo.iucSymbol << ::std::endl;
+        }
+      }
+      loadedStructures.clear();
     }
   }
 

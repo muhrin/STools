@@ -25,21 +25,39 @@ set(stools_Files
   ${stools_Source_Files__utility}
 )
 
-## sdiff
-set(stools_Header_Files__sdiff
+##############################################
+## sconvert: Convert structure file formats ##
+##############################################
+set(stools_Header_Files__sconvert
 )
-source_group("Header Files" FILES ${stools_Header_Files__sdiff})
+source_group("Header Files" FILES ${stools_Header_Files__sconvert})
 
-set(stools_Source_Files__sdiff
-  sdiff.cpp
+set(stools_Source_Files__sconvert
+  sconvert.cpp
 )
-source_group("Source Files" FILES ${stools_Source_Files__sdiff})
+source_group("Source Files" FILES ${stools_Source_Files__sconvert})
 
-set(stools_Files__sdiff
+set(stools_Files__sconvert
   ${stools_Files}
-  ${stools_Header_Files__sdiff}
-  ${stools_Source_Files__sdiff}
+  ${stools_Header_Files__sconvert}
+  ${stools_Source_Files__sconvert}
 )
+
+add_executable(sconvert
+  ${stools_Files}
+  ${stools_Files__sconvert}
+)
+
+add_dependencies(sconvert sslib)
+
+# Libraries we need to link to
+target_link_libraries(sconvert
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  sslib
+)
+
 
 #######################################
 ## sgroup: Get structure space group ##
@@ -74,7 +92,10 @@ target_link_libraries(sgroup
   sslib
 )
 
-## sinfo
+########################################
+## sinfo: Print info about structures ##
+########################################
+
 set(stools_Header_Files__sinfo
 )
 source_group("Header Files" FILES ${stools_Header_Files__sinfo})
@@ -90,64 +111,6 @@ set(stools_Files__sinfo
   ${stools_Source_Files__sinfo}
 )
 
-## ssearch
-set(stools_Header_Files__ssearch
-)
-source_group("Header Files" FILES ${stools_Header_Files__ssearch})
-
-set(stools_Source_Files__ssearch
-  ssearch.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__ssearch})
-
-set(stools_Files__ssearch
-  ${stools_Files}
-  ${stools_Header_Files__ssearch}
-  ${stools_Source_Files__ssearch}
-)
-
-## ssweep
-
-set(stools_Header_Files__ssweep
-)
-source_group("Header Files" FILES ${stools_Header_Files__ssweep})
-
-set(stools_Source_Files__ssweep
-  ssweep.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__ssweep})
-
-set(stools_Files__ssweep
-  ${stools_Files}
-  ${stools_Header_Files__ssweep}
-  ${stools_Source_Files__ssweep}
-)
-
-
-#############################################
-## sdiff: Structural difference calculator ##
-#############################################
-add_executable(sdiff
-  ${stools_Files}
-  ${stools_Files__sdiff}
-)
-
-add_dependencies(sdiff spipe)
-
-# Libraries we need to link to
-target_link_libraries(sdiff
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${ARMADILLO_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  ${SPGLIB_LIBRARIES}
-  spipe
-)
-
-########################################
-## sinfo: Print info about structures ##
-########################################
 add_executable(sinfo
   ${stools_Files}
   ${stools_Files__sinfo}
@@ -167,6 +130,22 @@ target_link_libraries(sinfo
 #######################################
 ## ssearch: General structure search ##
 #######################################
+
+set(stools_Header_Files__ssearch
+)
+source_group("Header Files" FILES ${stools_Header_Files__ssearch})
+
+set(stools_Source_Files__ssearch
+  ssearch.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__ssearch})
+
+set(stools_Files__ssearch
+  ${stools_Files}
+  ${stools_Header_Files__ssearch}
+  ${stools_Source_Files__ssearch}
+)
+
 add_executable(ssearch
   ${stools_Files}
   ${stools_Files__ssearch}
@@ -187,6 +166,22 @@ target_link_libraries(ssearch
 ###############################################
 ## ssweep: Potential and stoichiometry sweep ##
 ###############################################
+
+set(stools_Header_Files__ssweep
+)
+source_group("Header Files" FILES ${stools_Header_Files__ssweep})
+
+set(stools_Source_Files__ssweep
+  ssweep.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__ssweep})
+
+set(stools_Files__ssweep
+  ${stools_Files}
+  ${stools_Header_Files__ssweep}
+  ${stools_Source_Files__ssweep}
+)
+
 add_executable(ssweep
   ${stools_Files}
   ${stools_Files__ssweep}
@@ -202,6 +197,44 @@ target_link_libraries(ssweep
   ${ARMADILLO_LIBRARIES}
   spipe
 )
+
+
+#############################################
+## sdiff: Structural difference calculator ##
+#############################################
+set(stools_Header_Files__sdiff
+)
+source_group("Header Files" FILES ${stools_Header_Files__sdiff})
+
+set(stools_Source_Files__sdiff
+  sdiff.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__sdiff})
+
+set(stools_Files__sdiff
+  ${stools_Files}
+  ${stools_Header_Files__sdiff}
+  ${stools_Source_Files__sdiff}
+)
+
+add_executable(sdiff
+  ${stools_Files}
+  ${stools_Files__sdiff}
+)
+
+add_dependencies(sdiff spipe)
+
+# Libraries we need to link to
+target_link_libraries(sdiff
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${ARMADILLO_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+  ${SPGLIB_LIBRARIES}
+  spipe
+)
+
 
 
 ##################
