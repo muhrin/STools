@@ -29,7 +29,7 @@ namespace common {
 class Structure;
 }
 namespace io {
-ResourceLocator;
+class ResourceLocator;
 }
 }
 
@@ -40,9 +40,9 @@ class StructureData
 {
 public:
 
-	sstbx::common::Structure * getStructure() const;
+  sstbx::common::Structure * getStructure() const;
   sstbx::common::Structure & setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
-  sstbx::common::Structure & StructureData::setStructure(::sstbx::io::StructuresContainer::auto_type structure);
+  sstbx::common::Structure & setStructure(::sstbx::io::StructuresContainer::auto_type structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path
