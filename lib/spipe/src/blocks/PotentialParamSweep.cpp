@@ -31,6 +31,7 @@ namespace blocks {
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
@@ -182,13 +183,13 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
       );
     }
 
-    const fs::path savePath = sweepStrData.getRelativeSavePath(*myPipeline);
-    if(!savePath.empty())
+    const ssio::ResourceLocator locator = sweepStrData.getRelativeSavePath(*myPipeline);
+    if(!locator.empty())
     {
       table.insert(
         key,
         "path",
-        savePath.string()
+        locator.string()
       );
     }
 

@@ -13,6 +13,7 @@
 // Local includes
 #include "common/SharedData.h"
 #include "common/Structure.h"
+#include "io/ResourceLocator.h"
 
 
 // NAMESPACES ////////////////////////////////
@@ -47,29 +48,32 @@ ssc::Structure & StructureData::setStructure(ssio::StructuresContainer::auto_typ
   return *myStructure.get();
 }
 
-::boost::filesystem::path
+ssio::ResourceLocator
 StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const
 {
-  fs::path relativePath;
+  ssio::ResourceLocator relativeLocator;
 
   const ssc::Structure * const structure = getStructure();
 
-  // If no structure, return empty path
+  // If no structure, return empty locator
   if(!structure)
-    return relativePath;
+    return relativeLocator;
 
-  const fs::path * lastSaved = structure->getProperty(structure_properties::io::LAST_ABS_FILE_PATH);
+  const ssio::ResourceLocator * lastSaved = structure->getProperty(structure_properties::io::LAST_ABS_FILE_PATH);
 
   if(lastSaved)
   {
-    relativePath = *lastSaved;
+    fs::path relativePath = lastSaved->path();
     if(ssio::isAbsolute(relativePath))
     {
-      relativePath = ssio::make_relative(pipeline.getSharedData().getOutputPath(), relativePath);
+      relativePath = ssio::make_relative(
+        pipeline.getSharedData().getOutputPath(),
+        relativePath);
+      relativeLocator.setPath(relativePath);
     }
   }
 
-  return relativePath;
+  return relativeLocator;
 }
 
 }}

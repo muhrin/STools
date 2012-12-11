@@ -21,6 +21,7 @@
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <io/BoostFilesystem.h>
+#include <io/ResourceLocator.h>
 #include <utility/MultiIdx.h>
 
 // Local includes
@@ -40,6 +41,7 @@ namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
@@ -180,7 +182,7 @@ void StoichiometrySearch::releaseBufferedStructures(
 	// Send any finished structure data down my pipe
   utility::DataTable & table = myTableSupport.getTable();
 
-  fs::path lastSavedRelative;
+  ssio::ResourceLocator lastSavedRelative;
 
   const ssc::Structure * structure;
   const double * internalEnergy;

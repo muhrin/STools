@@ -28,6 +28,9 @@ namespace sstbx {
 namespace common {
 class Structure;
 }
+namespace io {
+ResourceLocator;
+}
 }
 
 namespace spipe {
@@ -45,7 +48,7 @@ public:
   /* Get the path to where this structure was last saved relative to the output path
   /* of a given structure pipe.
   /**/
-  ::boost::filesystem::path getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const;
+  ::sstbx::io::ResourceLocator getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const;
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
