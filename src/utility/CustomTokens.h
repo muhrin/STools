@@ -21,6 +21,35 @@ class Structure;
 
 namespace stools {
 namespace utility {
+
+class EnergyToken : public TypedToken<double>
+{
+public:
+  EnergyToken(
+    const ::std::string & name,
+    const ::std::string & symbol,
+    const bool usePerAtom = false);
+
+  EnergyToken(
+    const ::std::string & name,
+    const ::std::string & symbol,
+    const double relativeEnergy,
+    const bool usePerAtom = false);
+
+  void setRelativeEnergy(const double relativeEnergy);
+
+protected:
+  typedef TypedToken<double>::StructureValue StructureValue;
+
+  virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
+
+private:
+
+  double myRelativeTo; // The energy that all energies will be relative to
+  const bool myUsePerAtom;  // Use the energy/atom when comparing
+};
+
+
 namespace functions {
 ::boost::optional< ::std::string> getName(const ::sstbx::common::Structure & structure);
 ::boost::optional<double> getVolume(const ::sstbx::common::Structure & structure);

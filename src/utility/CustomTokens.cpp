@@ -18,6 +18,47 @@ namespace structure_properties = ssc::structure_properties;
 
 namespace stools {
 namespace utility {
+
+EnergyToken::EnergyToken(
+  const ::std::string & name,
+  const ::std::string & symbol,
+  const double relativeTo,
+  const bool usePerAtom):
+TypedToken<double>(name, symbol),
+myRelativeTo(relativeTo),
+myUsePerAtom(usePerAtom)
+{ 
+}
+
+EnergyToken::EnergyToken(
+  const ::std::string & name,
+  const ::std::string & symbol,
+  const bool usePerAtom):
+TypedToken<double>(name, symbol),
+myRelativeTo(0.0),
+myUsePerAtom(usePerAtom)
+{ 
+}
+
+void EnergyToken::setRelativeEnergy(const double relativeEnergy)
+{
+  myRelativeTo = relativeEnergy;
+}
+
+EnergyToken::StructureValue
+EnergyToken::doGetValue(const ::sstbx::common::Structure & structure ) const
+{
+  StructureValue relativeEnergy;
+  const double * const energy = structure.getProperty(structure_properties::general::ENERGY_INTERNAL);
+
+  if(energy)
+    relativeEnergy.reset(
+    myUsePerAtom ? *energy / structure.getNumAtoms() : *energy
+    - myRelativeTo);
+
+  return relativeEnergy;
+}
+
 namespace functions {
 
 typedef ::boost::optional<double> OptionalDouble;
