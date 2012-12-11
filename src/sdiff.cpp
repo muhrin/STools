@@ -31,6 +31,7 @@
 #include <common/Types.h>
 #include <common/UnitCell.h>
 #include <io/BoostFilesystem.h>
+#include <io/ResourceLocator.h>
 #include <io/ResReaderWriter.h>
 #include <utility/DistanceMatrixComparator.h>
 #include <utility/SortedDistanceComparator.h>
@@ -49,6 +50,7 @@ namespace po = ::boost::program_options;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
+namespace structure_properties = ssc::structure_properties;
 
 typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
 typedef ::ssio::StructuresContainer StructuresContainer;
@@ -67,8 +69,12 @@ struct InputOptions
   bool summaryOnly;
 };
 
+
+// Use this to store the locator for each structure in the format the user used
+ssu::Key<ssio::ResourceLocator> LOAD_LOCATOR;
+
 // FORWARD DECLARES //////////
-void preprocessStructure(ssc::Structure & structure, const ::std::string & loadPath, const InputOptions & options);
+void preprocessStructure(ssc::Structure & structure, const ssio::ResourceLocator & locator, const InputOptions & options);
 void doPrintList(StructuresContainer & structures, ComparatorPtr comparator, const bool printUniques, const InputOptions & in);
 void doDiff(const StructuresContainer & structures, ComparatorPtr comparator, const InputOptions & in);
 
@@ -161,24 +167,29 @@ int main(const int argc, char * argv[])
   StructuresContainer loadedStructures;
 
   size_t lastLoaded, totalLoaded = 0;
-  BOOST_FOREACH(::std::string & pathString, in.inputFiles)
+  ssio::ResourceLocator locator;
+  BOOST_FOREACH(::std::string & locatorString, in.inputFiles)
   {
-    fs::path strPath(pathString);
-    if(!fs::exists(strPath))
+    if(!locator.set(locatorString))
     {
-      ::std::cerr << "File " << strPath << " does not exist.  Skipping" << ::std::endl;
+      ::std::cerr << "Locator " << locatorString << " is not valid.  Skipping" << ::std::endl;
+      continue;
+    }
+    if(!fs::exists(locator.path()))
+    {
+      ::std::cerr << "File " << locator.path().string() << " does not exist.  Skipping" << ::std::endl;
       continue;
     }
 
-    lastLoaded = resReader.readStructures(loadedStructures,strPath, speciesDb);
+    lastLoaded = resReader.readStructures(loadedStructures, locator, speciesDb);
 
     if(lastLoaded == 0)
-      ::std::cerr << "Couldn't load structure(s) from " << strPath << ::std::endl;
+      ::std::cerr << "Couldn't load structure(s) from " << locator.string() << ::std::endl;
     else
     {
       // Perform any preprocessing on the loaded structure
       for(size_t i = 0; i < lastLoaded; ++i)
-        preprocessStructure(loadedStructures[i], pathString, in);
+        preprocessStructure(loadedStructures[i], locator, in);
 
       totalLoaded += lastLoaded;
     }
@@ -216,10 +227,13 @@ int main(const int argc, char * argv[])
 	return 0;
 }
 
-void preprocessStructure(ssc::Structure & structure, const ::std::string & loadPath, const InputOptions & options)
+void preprocessStructure(
+  ssc::Structure & structure,
+  const ssio::ResourceLocator & locator,
+  const InputOptions & options)
 {
   // Make sure we know where we loaded the file from
-  structure.setProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH, ssio::absolute(fs::path(loadPath)));
+  structure.setProperty(LOAD_LOCATOR, locator);
 
   if(!options.dontUsePrimitive)
     structure.makePrimitive();
@@ -240,29 +254,21 @@ void doPrintList(
   const bool printUniques,
   const InputOptions & in)
 {
-  //typedef ::boost::transform_iterator<TakeStructureAddress, StructuresList::const_iterator> iterator;
   typedef ::std::pair<ssu::UniqueStructureSet::iterator, bool> InsertReturnVal;
   ssu::UniqueStructureSet structuresSet(comparator->getComparator());
 
   InsertReturnVal insertResult;
-
-  fs::path relativePath;
 
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
     insertResult = structuresSet.insert(&structure);
     if(!in.summaryOnly && insertResult.second == printUniques)
     {
-      const fs::path * savePath = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
-      if(savePath)
-      {
-        relativePath = ssio::make_relative(fs::path(), *savePath);
-        std::cout << relativePath.string() << std::endl;
-      }
+      const ssio::ResourceLocator * locator = structure.getProperty(LOAD_LOCATOR);
+      if(locator)
+        std::cout << locator->string() << std::endl;
       else
-      {
         ::std::cerr << "Error: couldn't find save path for structure " << structure.getName() << ::std::endl;
-      }
     }
   }
 

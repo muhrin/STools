@@ -9,20 +9,30 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 
 ## stools/utility
 set(stools_Header_Files__utility
+  utility/CustomTokens.h
+  utility/InfoToken.h
   utility/TerminalFunctions.h
   utility/YamlOptionsParser.h
 )
 source_group("Header Files\\utility" FILES ${stools_Header_Files__utility})
 
 set(stools_Source_Files__utility
+  utility/CustomTokens.cpp
+  utility/InfoToken.cpp
   utility/TerminalFunctions.cpp
 )
 source_group("Source Files\\utility" FILES ${stools_Source_Files__utility})
+
+set(stools_Header_Files__utility__detail
+  utility/detail/InfoToken.h
+)
+source_group("Header Files\\utility\\detail" FILES ${stools_Header_Files__utility__detail})
 
 set(stools_Files
   ${stools_Header_Files__}
   ${stools_Header_Files__utility}
   ${stools_Source_Files__utility}
+  ${stools_Header_Files__utility__detail}
 )
 
 ##############################################

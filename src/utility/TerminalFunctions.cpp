@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "TerminalFunctions.h"
+#include "utility/TerminalFunctions.h"
 
 #include <stdio.h>
 
