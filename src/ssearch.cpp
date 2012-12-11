@@ -240,7 +240,7 @@ int main(const int argc, const char * const argv[])
   }
   else if(inputType == InputType::SEED_STRUCTURES)
   {
-    startBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures));
+    startBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures, false));
   }
 
   // Niggli reduction

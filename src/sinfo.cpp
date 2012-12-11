@@ -72,7 +72,7 @@ void printInfo(
   const InfoStringTokens & tokens
 );
 void generateTokens(TokensMap & map);
-void addToken(TokensMap & map, ::std::auto_ptr<stu::InfoToken> & token);
+void addToken(TokensMap & map, ::std::auto_ptr<stu::InfoToken> token);
 int parseInfoString(InfoStringTokens & infoStringTokens, const ::std::string & infoString, const TokensMap & tokensMap);
 
 int main(const int argc, char * argv[])
@@ -194,7 +194,7 @@ void generateTokens(TokensMap & map)
   addToken(map, stu::makeStructurePropertyToken("Times found", "tf", structure_properties::searching::TIMES_FOUND));
 }
 
-void addToken(TokensMap & map, ::std::auto_ptr<stu::InfoToken> & token)
+void addToken(TokensMap & map, ::std::auto_ptr<stu::InfoToken> token)
 {
   // WARNING: Have to store reference to symbol as if we passed 'token->getSymbol()' directly
   // to insert then right-to-left parameter evaluation would pass ownership on before we could

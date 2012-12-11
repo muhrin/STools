@@ -97,7 +97,7 @@ public:
     PropertyKey & propertyKey);
 
 protected:
-  typedef TypedToken<T>::StructureValue StructureValue;
+  typedef typename TypedToken<T>::StructureValue StructureValue;
 
   virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
 
@@ -115,7 +115,7 @@ public:
     Getter getter);
 
 protected:
-  typedef TypedToken<T>::StructureValue StructureValue;
+  typedef typename TypedToken<T>::StructureValue StructureValue;
 
   virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
 
