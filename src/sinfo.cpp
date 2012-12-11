@@ -124,7 +124,6 @@ void printInfo(
   const ::std::string & infoString,
   const InfoStringTokens & tokens
 );
-
 CustomisableTokens generateTokens(TokensMap & map);
 void addToken(TokensMap & map, TokenPtr token);
 int getRequiredTokens(InfoStringTokens & infoStringTokens, const InputOptions & in, const TokensMap & tokensMap);
