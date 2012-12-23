@@ -40,7 +40,7 @@
 #include <utility/TransformFunctions.h>
 #include <utility/UniqueStructureSet.h>
 
-// My includes //
+// Local includes //
 #include "utility/TerminalFunctions.h"
 
 

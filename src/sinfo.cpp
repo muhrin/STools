@@ -33,15 +33,20 @@
 #include <io/ResReaderWriter.h>
 #include <utility/TypedDataTable.h>
 
+// TEMPORARY
+#include <io/StructureReadWriteManager.h>
+
 // My includes //
 #include "utility/CustomTokens.h"
 #include "utility/InfoToken.h"
+#include "utility/TerminalFunctions.h"
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace structure_properties = ssc::structure_properties;
 namespace stu = ::stools::utility;
 
@@ -131,6 +136,13 @@ int getRequiredTokens(InfoStringTokens & infoStringTokens, const InputOptions & 
 int main(const int argc, char * argv[])
 {
   typedef ::boost::ptr_vector<ssc::Structure> StructuresContainer;
+
+
+  // TEMPORARY
+  ssio::StructureReadWriteManager ioMan;
+  typedef ::sstbx::UniquePtr<ssio::ResReaderWriter>::Type ResPtr;
+  ioMan.insert(ResPtr(new ssio::ResReaderWriter()));
+  //ioMan.insert(*new ssio::ResReaderWriter());
 
   // Set up the tokens that we know about
   TokensMap tokensMap;
@@ -226,7 +238,7 @@ int processInputOptions(InputOptions & in, const int argc, const char * const ar
       ("help", "Show help message")
       ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value("%n\t %p\t %v\t %e\t %re\t %sg\t %tf \n"), "info string")
       ("sort,s", po::value< ::std::string>(&in.sortToken)->default_value("re"), "sort token")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles)->required(), "input file(s)")
+      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
     ;
 
     po::positional_options_description p;
@@ -247,6 +259,24 @@ int processInputOptions(InputOptions & in, const int argc, const char * const ar
   catch(std::exception& e)
   {
     ::std::cerr << e.what() << ::std::endl;
+    return 1;
+  }
+
+  // Get any input from standard in (piped)
+  std::string lineInput;
+  bool foundPipedInput = false;
+  if(stools::utility::isStdInPipedOrFile())
+  {
+    while(std::cin >> lineInput)
+    {
+      in.inputFiles.push_back(lineInput);
+      foundPipedInput = true;
+    }
+  }
+
+  if(!foundPipedInput && in.inputFiles.empty())
+  {
+    std::cout << "No structure files given.  Supply files with piped input or as command line paramter." << std::endl;
     return 1;
   }
 

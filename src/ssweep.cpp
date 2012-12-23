@@ -18,7 +18,7 @@
 #include <build_cell/DefaultCrystalGenerator.h>
 #include <build_cell/StructureDescription.h>
 #include <io/ResReaderWriter.h>
-#include <io/StructureWriterManager.h>
+#include <io/StructureReadWriteManager.h>
 #include <potential/SimplePairPotential.h>
 #include <potential/TpsdGeomOptimiser.h>
 #include <utility/SortedDistanceComparator.h>
@@ -224,7 +224,7 @@ int main(const int argc, const char * const argv[])
 
   // Write structures
   ssio::ResReaderWriter resIo;
-  ssio::StructureWriterManager writerManager;
+  ssio::StructureReadWriteManager writerManager;
   writerManager.registerWriter(resIo);
   sp::blocks::WriteStructure write1(writerManager);
 

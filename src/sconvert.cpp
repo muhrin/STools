@@ -15,7 +15,7 @@
 #include <common/Structure.h>
 #include <io/ResReaderWriter.h>
 #include <io/SslibReaderWriter.h>
-#include <io/StructureWriterManager.h>
+#include <io/StructureReadWriteManager.h>
 
 
 // From StructurePipe
@@ -53,7 +53,7 @@ int main(const int argc, const char * const argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-  ssio::StructureWriterManager writerManager;
+  ssio::StructureReadWriteManager writerManager;
   ssio::ResReaderWriter resReadWrite;
   ssio::SslibReaderWriter sslibReadWrite;
 

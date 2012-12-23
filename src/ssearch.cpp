@@ -27,7 +27,7 @@
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
 #include <io/ResReaderWriter.h>
-#include <io/StructureWriterManager.h>
+#include <io/StructureReadWriteManager.h>
 #include <potential/SimplePairPotential.h>
 #include <potential/FixedLatticeShapeConstraint.h>
 #include <potential/TpsdGeomOptimiser.h>
@@ -306,7 +306,7 @@ int main(const int argc, const char * const argv[])
 
   // Write structures
   ssio::ResReaderWriter resIo;
-  ssio::StructureWriterManager writerManager;
+  ssio::StructureReadWriteManager writerManager;
   writerManager.registerWriter(resIo);
   sp::blocks::WriteStructure write1(writerManager);
 

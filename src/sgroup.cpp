@@ -54,7 +54,7 @@ int main(const int argc, char * argv[])
       ("help", "Show help message")
       ("prec,p", po::value<double>(&in.precision)->default_value(ssa::space_group::DEFAULT_PRECISION), "Set space group identifier precision")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
-      ("num,n", po::value<bool>(&in.printSgNumber)->default_value(false), "print spacegroup number")
+      ("num,n", po::value<bool>(&in.printSgNumber)->default_value(false)->zero_tokens(), "print space group number")
     ;
 
     po::positional_options_description p;
