@@ -35,10 +35,8 @@ class IGeomOptimiser;
 }
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 class ParamPotentialGo : public PotentialGo
 {

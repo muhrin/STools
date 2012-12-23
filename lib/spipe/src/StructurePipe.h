@@ -76,6 +76,7 @@ class StartBlock;
 
 namespace spipe {
 namespace common {
+class GlobalData;
 class SharedData;
 class StructureData;
 }
@@ -88,10 +89,11 @@ namespace spipe {
 
 typedef spipe::common::StructureData			                                    StructureDataTyp;
 typedef spipe::common::SharedData					                                    SharedDataTyp;
-typedef pipelib::IPipeline<StructureDataTyp, SharedDataTyp, SharedDataTyp>  	SpPipelineTyp;
-typedef pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>        SpBlockTyp;
-typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>    SpPipeBlockTyp;
-typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlockTyp;
+typedef /*spipe::common::GlobalData*/ SharedDataTyp                                             GlobalData;
+typedef pipelib::IPipeline<StructureDataTyp, SharedDataTyp, GlobalData>  	SpPipelineTyp;
+typedef pipelib::Block<StructureDataTyp, SharedDataTyp, GlobalData>        SpBlockTyp;
+typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, GlobalData>    SpPipeBlockTyp;
+typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, GlobalData>   SpStartBlockTyp;
 
 }
 

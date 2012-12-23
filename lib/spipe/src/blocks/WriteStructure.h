@@ -22,7 +22,7 @@ namespace sstbx
 namespace io
 {
 struct AdditionalData;
-class StructureWriterManager;
+class StructureReadWriteManager;
 }
 }
 
@@ -36,13 +36,13 @@ namespace blocks
 class WriteStructure : public pipelib::AbstractSimpleBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>
 {
 public:
-	WriteStructure(const ::sstbx::io::StructureWriterManager & writerManager);
+	WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager);
 
   virtual void in(spipe::StructureDataTyp & data);
 
 
 private:
-	const ::sstbx::io::StructureWriterManager & myWriterManager;
+	const ::sstbx::io::StructureReadWriteManager & myWriterManager;
 };
 
 }

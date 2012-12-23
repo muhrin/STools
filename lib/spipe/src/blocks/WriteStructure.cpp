@@ -12,7 +12,7 @@
 
 // From SSTbx
 #include <common/Structure.h>
-#include <io/StructureWriterManager.h>
+#include <io/StructureReadWriteManager.h>
 #include <io/BoostFilesystem.h>
 
 // From local
@@ -31,7 +31,7 @@ namespace ssc = ::sstbx::common;
 namespace fs = ::boost::filesystem;
 namespace ssu = ::sstbx::utility;
 
-WriteStructure::WriteStructure(const ::sstbx::io::StructureWriterManager & writerManager):
+WriteStructure::WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager):
 pipelib::Block<StructureDataTyp, SharedDataTyp>("Write structures"),
 myWriterManager(writerManager)
 {}

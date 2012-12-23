@@ -23,7 +23,7 @@
 //#include <pipelib/DefaultBarrier.h>
 //
 //// From SSTbx
-//#include <io/StructureWriterManager.h>
+//#include <io/StructureReadWriteManager.h>
 //
 //// Local includes
 //#include "SsLibFactoryYaml.h"
@@ -79,7 +79,7 @@
 //  ::spipe::blocks::PotentialGo *      createGeomOptimise(const YAML::Node & node);
 //  ::spipe::blocks::WriteStructure *   createWriteStructures(const YAML::Node & node);
 //
-//  ::sstbx::io::StructureWriterManager & getStructureWriterManager();
+//  ::sstbx::io::StructureReadWriteManager & getStructureReadWriteManager();
 //
 //
 //  /**
@@ -92,7 +92,7 @@
 //  ::boost::ptr_vector< ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> >
 //    myBarriers;
 //
-//  ::std::auto_ptr< ::sstbx::io::StructureWriterManager> myStructureWriterManager;
+//  ::std::auto_ptr< ::sstbx::io::StructureReadWriteManager> myStructureReadWriteManager;
 //
 //  SsLibFactoryYaml                    mySsLibFactory;
 //

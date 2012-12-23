@@ -216,7 +216,7 @@
 //  if(node[sslibkw::STR_WRITER])
 //  {
 //    ssio::IStructureWriter * const writer = mySsLibFactory.createStructureWriter(node[sslibkw::STR_WRITER]);
-//    ssio::StructureWriterManager & manager = getStructureWriterManager();
+//    ssio::StructureReadWriteManager & manager = getStructureReadWriteManager();
 //
 //    manager.registerWriter(*writer);
 //
@@ -229,13 +229,13 @@
 //  return writeStrs;
 //}
 //
-//ssio::StructureWriterManager & PipeFactoryYaml::getStructureWriterManager()
+//ssio::StructureReadWriteManager & PipeFactoryYaml::getStructureReadWriteManager()
 //{
-//  if(myStructureWriterManager.get() == NULL)
+//  if(myStructureReadWriteManager.get() == NULL)
 //  {
-//    myStructureWriterManager.reset(new ssio::StructureWriterManager());
+//    myStructureReadWriteManager.reset(new ssio::StructureReadWriteManager());
 //  }
-//  return *myStructureWriterManager;
+//  return *myStructureReadWriteManager;
 //}
 //
 //}

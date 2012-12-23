@@ -27,10 +27,8 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
