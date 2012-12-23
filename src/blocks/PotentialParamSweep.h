@@ -17,22 +17,20 @@
 
 #include <armadillo>
 
-#include <pipelib/AbstractSimpleStartBlock.h>
-#include <pipelib/IDataSink.h>
+#include <pipelib/pipelib.h>
 
 // From SSTbx
 #include <utility/MultiIdx.h>
 
 // Local includes
+#include "PipeLibTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
-namespace spipe
-{
+namespace spipe {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace common
-{
+namespace common {
 class DataTableWriter;
 }
 
@@ -40,15 +38,15 @@ namespace blocks
 {
 
 class PotentialParamSweep :
-	public pipelib::AbstractSimpleStartBlock<StructureDataTyp, SharedDataTyp>,
-	public pipelib::IDataSink<StructureDataTyp>
+	public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>,
+	public pipelib::FinishedSink<StructureDataTyp>
 {
 public:
 	PotentialParamSweep(
 		const ::arma::vec	&		from,
 		const ::arma::vec	&		step,
 		const ::arma::Col<unsigned int> & nSteps,
-		SpPipelineTyp &				sweepPipeline);
+		SpStartBlockTyp &     sweepPipeline);
 
 	// From Block /////////////////////////////////
 	virtual void pipelineInitialising();
@@ -56,11 +54,15 @@ public:
 	virtual void start();
 	// End from Block //////////////////////////////
 
-  // From IDataSink /////////////////////////////
-  virtual void in(StructureDataTyp * const data);
-  // End from IDataSink /////////////////////////
-
 private:
+
+  // From Block ///////////////////////////////
+  virtual void runnerAttached(SpRunnerSetup & setup);
+  // End From Block ///////////////////////////
+
+  // From FinishedSink ///////////////////////
+  virtual void finished(SpStructureDataPtr data);
+  // End from FinishedSink //////////////////
 
   void releaseBufferedStructures(
     const ::spipe::utility::DataTable::Key & key
@@ -79,10 +81,11 @@ private:
 
   ::spipe::utility::DataTableSupport  myTableSupport;
 
-	SpPipelineTyp &                      mySweepPipeline;
+	SpStartBlockTyp &                      mySweepPipeline;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataTyp *>		myBuffer;
+  SpChildRunnerPtr                        mySubpipeRunner;
 
 };
 

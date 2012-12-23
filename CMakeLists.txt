@@ -19,6 +19,7 @@ set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 
 # Build settings
 set(SP_USE_YAML TRUE CACHE BOOL "Build StructurePipe with YAML support.")
+set(SP_ENABLE_TESTING FALSE CACHE BOOL "Build spipe tests.")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
@@ -40,18 +41,28 @@ set(CMAKE_PREFIX_PATH
 ## Boost ##
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
-find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex)
 
 ## Armadillo ##
-find_package(Armadillo)
-if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
-  set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
-endif()
+if(NOT ARMADILLO_INCLUDE_DIRS)
+  find_package(Armadillo)
+  if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
+    set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
+  endif()
+endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 ## Yaml ##
 if(SP_USE_YAML)
-  find_package(YamlCpp REQUIRED)
+  if(NOT YAML_CPP_LIBRARIES)
+    find_package(YamlCpp REQUIRED)
+  endif(NOT YAML_CPP_LIBRARIES)
 endif(SP_USE_YAML)
+
+#
+# Spglib
+if(NOT SPGLIB_INCLUDE_DIRS)
+  find_package(Spglib REQUIRED)
+endif(NOT SPGLIB_INCLUDE_DIRS)
 
 ## END FIND PACKAGES ####################################
 
@@ -74,11 +85,23 @@ set(SPIPE_INCLUDE_DIRS
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
+  ${SSLIB_INCLUDE_DIRS}
+  ${SPGLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
 )
 
-message(STATUS "DIr: ${SSLIB_INCLUDE_DIRS}")
+include_directories(
+  lib/pipelib/include
+  lib/sslib/include
+)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/spipe)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "StructurePipe")
+
+
+#
+# Tests
+if(SP_ENABLE_TESTING)
+  add_subdirectory(tests)
+endif(SP_ENABLE_TESTING)

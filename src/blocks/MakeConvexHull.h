@@ -19,9 +19,11 @@
 
 #include <armadillo>
 
-#include <pipelib/AbstractSimpleBarrier.h>
+#include <pipelib/pipelib.h>
 
 #include <common/AtomSpeciesId.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 

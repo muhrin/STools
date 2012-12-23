@@ -10,8 +10,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-
-#include <pipelib/IPipeline.h>
+#include <pipelib/pipelib.h>
 
 // Local includes
 #include <common/SharedData.h>

@@ -39,61 +39,16 @@
 
 
 // INCLUDES /////////////
-
+#include <pipelib/pipelib.h>
 
 // FORWARD DECLARES //////////////
-namespace pipelib
-{
-template <
-  typename PipelineData,
-  typename SharedData,
-  typename GlobalData
->
-class Block;
 
-template <
-  typename PipelineData,
-  typename SharedData,
-  typename GlobalData
->
-class IPipeline;
-
-template <
-  typename PipelineData,
-  typename SharedData,
-  typename GlobalData
->
-class PipeBlock;
-
-template <
-  typename PipelineData,
-  typename SharedData,
-  typename GlobalData
->
-class StartBlock;
-
-}
 
 namespace spipe {
 namespace common {
 class SharedData;
 class StructureData;
 }
-}
-
-
-namespace spipe
-{
-
-// TYPEDEFS ///////////////////////
-
-typedef spipe::common::StructureData			                                    StructureDataTyp;
-typedef spipe::common::SharedData					                                    SharedDataTyp;
-typedef pipelib::IPipeline<StructureDataTyp, SharedDataTyp, SharedDataTyp>  	SpPipelineTyp;
-typedef pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>        SpBlockTyp;
-typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>    SpPipeBlockTyp;
-typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlockTyp;
-
 }
 
 #endif /* STRUCTURE_PIPE_H */

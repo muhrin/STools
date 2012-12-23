@@ -9,6 +9,7 @@ set(SSLIB_VERSION_MAJOR 0)
 set(SSLIB_VERSION_MINOR 2)
 set(SSLIB_VERSION_PATCH 3)
 set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
+
 message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
 
 ## CONFIGURATION SETTINGS ##############################
@@ -50,10 +51,12 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 #
 # Armadillo #
-find_package(Armadillo)
-if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
-  set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
-endif()
+if(NOT ARMADILLO_INCLUDE_DIRS)
+  find_package(Armadillo)
+  if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
+    set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
+  endif()
+endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 #
 # CGAL #

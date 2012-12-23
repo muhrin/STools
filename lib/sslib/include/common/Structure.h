@@ -12,6 +12,7 @@
 #include "SSLib.h"
 
 #include <memory>
+#include <ostream>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -24,6 +25,8 @@
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "utility/HeterogeneousMap.h"
+
+std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
 
 namespace sstbx {
 
@@ -41,6 +44,7 @@ public:
 
 	explicit Structure(UnitCellPtr cell = UnitCellPtr());
   Structure(const Structure & toCopy);
+  StructurePtr clone() const;
 
 	const std::string & getName() const;
 	void setName(const std::string & name);
@@ -91,6 +95,10 @@ public:
   bool makePrimitive();
 
   UniquePtr<Structure>::Type getPrimitiveCopy() const;
+
+  void scale(const double scaleFactor);
+
+  void print(::std::ostream & os) const;
 
 private:
 
@@ -160,5 +168,7 @@ bool Structure::eraseProperty(utility::Key<T> & key)
 
 }
 }
+
+
 
 #endif /* STRUCTURE_H */

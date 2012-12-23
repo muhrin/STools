@@ -8,8 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/WriteStructure.h"
 
-#include <pipelib/IPipeline.h>
-
 // From SSTbx
 #include <io/StructureWriterManager.h>
 #include <utility/BoostFilesystem.h>
@@ -26,8 +24,10 @@
 namespace spipe {
 namespace blocks {
 
-WriteStructure::WriteStructure(const ::sstbx::io::StructureWriterManager & writerManager):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Write structures"),
+namespace ssio = ::sstbx::io;
+
+WriteStructure::WriteStructure(const ssio::StructureWriterManager & writerManager):
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Write structures"),
 myWriterManager(writerManager)
 {}
 
@@ -46,16 +46,17 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 	fs::path p(*data.name + ".res");
 
   // Prepend the pipe output path
-  p = myPipeline->getSharedData().getOutputPath() / p;
+  p = getRunner()->memory().shared().getOutputPath(*getRunner()) / p;
 	
-  if(myWriterManager.writeStructure(*data.getStructure(), p, myPipeline->getGlobalData().getSpeciesDatabase()))
+  if(myWriterManager.writeStructure(*data.getStructure(), p, getRunner()->memory().global().getSpeciesDatabase()))
   {
     // Save the location that the file was written
     data.objectsStore[::spipe::common::StructureObjectKeys::LAST_ABS_SAVE_PATH] = ::sstbx::utility::fs::absolute(p);
   }
 
-	myOutput->in(data);
+	out(data);
 }
 
-}}
+}
+}
 

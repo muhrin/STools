@@ -21,10 +21,8 @@
 #include <io/ResReaderWriter.h>
 #include <potential/IParameterisable.h>
 
-
-#include <pipelib/IPipeline.h>
-
 // Local includes
+#include "PipeLibTypes.h"
 #include "common/StructureData.h"
 #include "common/UtilityFunctions.h"
 #include "common/SharedData.h"
@@ -41,7 +39,7 @@ LoadPotStructures::LoadPotStructures(
   const sstbx::potential::IParameterisable &        pot,
   const boost::filesystem::path & potPath,
   const bool                      lowestEOnly):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Load potential structures"),
+SpBlock("Load potential structures"),
 myPot(pot),
 myPotPath(potPath),
 myLowestEOnly(lowestEOnly)
@@ -96,8 +94,8 @@ void LoadPotStructures::start()
               strDat->objectsStore[GlobalKeys::POTENTIAL_PARAMS] = result.first;
 
               // Send the structure down the pipe
-              myPipeline->registerNewData(strDat);
-              myOutput->in(*strDat);
+              getRunner()->registerData(SpStructureDataPtr(strDat));
+              out(*strDat);
             }
           } // end if(result.second)
         } // end if(nLoaded > 0)
@@ -136,7 +134,7 @@ size_t LoadPotStructures::loadStructures(
       //std::cout << "Got res file: " << dirEntry.string() << std::endl;
 
       // Try loading
-      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, myPipeline->getGlobalData().getSpeciesDatabase());
+      sstbx::UniquePtr<ssc::Structure>::Type str = resReader.readStructure(dirEntry, getRunner()->memory().global().getSpeciesDatabase());
       strDat->setStructure(str);
 
       if(myLowestEOnly)
@@ -159,9 +157,7 @@ size_t LoadPotStructures::loadStructures(
         }
       }
       else
-      {
         structureVec.push_back(strDat);
-      }
     }
   }
 

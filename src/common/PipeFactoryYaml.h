@@ -67,7 +67,7 @@
 //  /** A mapping from block ids to the instances */
 //  typedef ::std::map<
 //    ::spipe::common::yaml_keywords::IdTyp,
-//    SpBlockTyp *>   BlocksMap;
+//    SpBlock *>   BlocksMap;
 //  
 //
 ////  ::spipe::blocks::RandomStructure *  createBlockRandomCrystal(const YAML::Node & blockNode);
@@ -88,7 +88,7 @@
 //  /* RAII idiom when the factory is destroyed.
 //  /**/
 //  ::boost::ptr_vector<SpPipelineTyp>   myPipelines;
-//  ::boost::ptr_vector<SpBlockTyp>     myBlocks;
+//  ::boost::ptr_vector<SpBlock>     myBlocks;
 //  ::boost::ptr_vector< ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> >
 //    myBarriers;
 //

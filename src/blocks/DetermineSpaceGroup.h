@@ -12,17 +12,17 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include <pipelib/AbstractSimpleBlock.h>
+#include <pipelib/pipelib.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
-  class DetermineSpaceGroup : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+  class DetermineSpaceGroup : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 
@@ -31,9 +31,6 @@ public:
   // From PipeBlock //////////////////////
   virtual void in(StructureDataTyp & data);
   // End from PipeBlock /////////////////
-
-private:
-
 };
 
 }}

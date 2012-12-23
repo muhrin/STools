@@ -34,6 +34,8 @@ public:
   struct value_type : public ::std::pair<Key<Type>, Type>
   {};
 
+  HeterogeneousMap() {}
+  HeterogeneousMap(const HeterogeneousMap & toCopy);
   ~HeterogeneousMap();
  
   // Capacity methods

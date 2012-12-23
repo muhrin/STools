@@ -5,6 +5,7 @@ set(spipe_Header_Files__blocks
   blocks/DetermineSpaceGroup.h
   blocks/EdgeDetect.h
   blocks/LoadPotStructures.h
+  blocks/LoadSeedStructures.h
   blocks/LowestFreeEnergy.h
   blocks/MakeConvexHull.h
   blocks/MakeMap.h
@@ -22,6 +23,7 @@ source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 set(spipe_Source_Files__blocks
   blocks/DetermineSpaceGroup.cpp
   blocks/LoadPotStructures.cpp
+  blocks/LoadSeedStructures.cpp
   blocks/LowestFreeEnergy.cpp
   blocks/MakeConvexHull.cpp
   blocks/MakeMap.cpp
@@ -84,6 +86,7 @@ source_group("Source Files\\utility" FILES ${spipe_Source_Files__utility})
 ## spipe/
 
 set(spipe_Header_Files__
+  PipeLibTypes.h
   StructurePipe.h
   StructurePipeConfig.h
 )
@@ -118,12 +121,8 @@ set(spipe_Files
 #########################
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/lib/pipelib/include
-  ${CMAKE_SOURCE_DIR}/lib/sslib/include
-  ${SSLIB_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
-  ${SPIPE_INCLUDE_DIRS}
 )
 
 ###########################

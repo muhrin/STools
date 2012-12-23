@@ -12,25 +12,26 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include <pipelib/AbstractSimpleBlock.h>
+#include <pipelib/pipelib.h>
 
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
 
-class MakeMap : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+class MakeMap : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 
 	MakeMap();
 
 	virtual void in(spipe::common::StructureData & data);
-
 };
 
-
-}}
+}
+}
 
 #endif /* MAKE_MAP_H */

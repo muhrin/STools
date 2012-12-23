@@ -19,8 +19,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <pipelib/IPipeline.h>
-
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/StructureDescription.h>
@@ -37,10 +35,8 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
@@ -50,27 +46,23 @@ PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
   const ::arma::mat33 * const              externalPressure,
   const bool                               writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
+BlockType("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput)
 {
   if(externalPressure)
-  {
     myExternalPressure = *externalPressure;
-  }
   else
-  {
     myExternalPressure.zeros();
-  }
 }
 
 void PotentialGo::pipelineInitialising()
 {
   if(myWriteOutput)
   {
-    myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".geomopt");
+    myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".geomopt");
   }
-  myTableSupport.registerPipeline(*myPipeline);
+  myTableSupport.registerRunner(*getRunner());
 }
 
 void PotentialGo::in(spipe::common::StructureData & data)
@@ -84,12 +76,12 @@ void PotentialGo::in(spipe::common::StructureData & data)
     // Update our data table with the structure data
     updateTable(data);
 
-	  myOutput->in(data);
+	  out(data);
   }
   else
   {
     // The structure failed to geometry optimise properly so drop it
-    myPipeline->dropData(data);
+    getRunner()->dropData(data);
   }
 }
 
