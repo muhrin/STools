@@ -140,9 +140,10 @@ int main(const int argc, char * argv[])
 
   // TEMPORARY
   ssio::StructureReadWriteManager ioMan;
-  typedef ::sstbx::UniquePtr<ssio::ResReaderWriter>::Type ResPtr;
-  ioMan.insert(ResPtr(new ssio::ResReaderWriter()));
-  //ioMan.insert(*new ssio::ResReaderWriter());
+  {
+    ::sstbx::UniquePtr<ssio::ResReaderWriter>::Type resPtr(new ssio::ResReaderWriter());
+    ioMan.insert(resPtr);
+  }
 
   // Set up the tokens that we know about
   TokensMap tokensMap;
