@@ -16,7 +16,7 @@
 
 #include <boost/concept_check.hpp>
 
-#include <pipelib/IPipeline.h>
+#include <pipelib/pipelib.h>
 
 #include <utility/HeterogeneousMap.h>
 
@@ -44,7 +44,7 @@ struct ObjectData : public ::std::pair<DataLocation::Value, T *>
 };
 
 template <typename T>
-ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, ::spipe::StructureDataTyp & strDat, ::spipe::SpPipelineTyp & pipe)
+ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, StructureDataTyp & strDat, MemoryAccessType & memory)
 {
   ObjectData<T> result;
 
@@ -55,25 +55,25 @@ ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, ::spipe::Structure
   if(!result.second)
   {
     // Try using shared/global memory
-    result = getObject(key, pipe);
+    result = getObject(key, memory);
   }
 
   return result.second;
 }
 
 template <typename T>
-ObjectData<T> getObject(::sstbx::utility::Key<T> & key, ::spipe::SpPipelineTyp & pipe)
+ObjectData<T> getObject(::sstbx::utility::Key<T> & key, MemoryAccessType & memory)
 {
   ObjectData<T> result;
 
   // Try getting the object from shared data
-  result.second = pipe.getSharedData().objectsStore.find(key);
+  result.second = memory.shared().objectsStore.find(key);
   if(result.first)
     result.first  = DataLocation::SHARED;    
   else
   {
     // Try getting the object from global data
-    result.second = pipe.getGlobalData().objectsStore.find(key);
+    result.second = memory.global().objectsStore.find(key);
     if(result.second)
       result.first  = DataLocation::GLOBAL;
   }
@@ -82,18 +82,18 @@ ObjectData<T> getObject(::sstbx::utility::Key<T> & key, ::spipe::SpPipelineTyp &
 }
 
 template <typename T>
-const ObjectData<const T> getObjectConst(::sstbx::utility::Key<T> & key, const ::spipe::SpPipelineTyp & pipe)
+const ObjectData<const T> getObjectConst(::sstbx::utility::Key<T> & key, const MemoryAccessType & memory)
 {
   ObjectData<const T> result;
 
   // Try getting the object from shared data
-  result.second = pipe.getSharedData().objectsStore.find(key);
+  result.second = memory.shared().objectsStore.find(key);
   if(result.first)
     result.first  = DataLocation::SHARED;    
   else
   {
     // Try getting the object from global data
-    result.second = pipe.getGlobalData().objectsStore.find(key);
+    result.second = memory.global().objectsStore.find(key);
     if(result.second)
       result.first  = DataLocation::GLOBAL;
   }
@@ -106,16 +106,16 @@ bool setObject(
   ::sstbx::utility::Key<T> & key,
   const DataLocation::Value location,
   const T & value,
-  ::spipe::SpPipelineTyp & pipe)
+  MemoryAccessType & memory)
 {
   if(location == DataLocation::SHARED)
   {
-    pipe.getSharedData().objectsStore[key] = value;
+    memory.shared().objectsStore[key] = value;
     return true;
   }
   else if(location == DataLocation::GLOBAL)
   {
-    pipe.getGlobalData().objectsStore[key] = value;
+    memory.global().objectsStore[key] = value;
     return true;
   }
 

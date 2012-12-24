@@ -9,10 +9,14 @@
 #define REMOVE_DUPLICATES_H
 
 // INCLUDES /////////////////////////////////////////////
-
-#include "pipelib/AbstractSimpleBlock.h"
-
 #include <map>
+
+#include <pipelib/pipelib.h>
+
+#include <utility/UniqueStructureSet.h>
+#include <utility/IStructureComparator.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -20,18 +24,15 @@ namespace sstbx {
 namespace common {
 class Structure;
 }
-namespace utility {
-class UniqueStructureSet;
-}
 }
 
 namespace spipe {
 namespace blocks {
 
-class RemoveDuplicates : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+class RemoveDuplicates : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
-	RemoveDuplicates(sstbx::utility::UniqueStructureSet & structureSet);
+	RemoveDuplicates(sstbx::utility::IStructureComparator & comparator);
 
 	virtual void in(::spipe::common::StructureData & data);
 
@@ -40,17 +41,12 @@ public:
   // End from Block ///////////////////
 
 private:
+  typedef sstbx::utility::UniqueStructureSet<StructureDataHandle> StructureSet;
 
-	typedef ::std::map<
-		::sstbx::common::Structure *,
-		::spipe::common::StructureData *> StructureDataMap;
-
-	sstbx::utility::UniqueStructureSet & myStructureSet;
-
-	StructureDataMap	myStructureDataMap;
-
+	StructureSet	myStructureSet;
 };
 
-}}
+}
+}
 
 #endif /* REMOVE_DUPLICATES_H */

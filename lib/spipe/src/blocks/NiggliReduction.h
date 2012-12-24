@@ -12,13 +12,16 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include <pipelib/AbstractSimpleBlock.h>
+#include <pipelib/pipelib.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
 
-class NiggliReduction : public pipelib::AbstractSimpleBlock<spipe::StructureDataTyp, spipe::SharedDataTyp>
+class NiggliReduction : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 
@@ -28,6 +31,7 @@ public:
 };
 
 
-}}
+}
+}
 
 #endif /* NIGGLI_REDUCTION_H */

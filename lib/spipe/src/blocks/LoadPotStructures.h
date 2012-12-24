@@ -12,30 +12,31 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-
-#include <pipelib/AbstractSimpleStartBlock.h>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 
-#include <vector>
+#include <pipelib/pipelib.h>
+
+#include "PipeLibTypes.h"
 
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx
 {
-  namespace common
-  {
-    class Structure;
-  }
-  namespace potential
-  {
-    class IParameterisable;
-  }
+namespace common
+{
+class Structure;
+}
+namespace potential
+{
+class IParameterisable;
+}
 }
 
 namespace spipe { namespace blocks {
 
-class LoadPotStructures : public pipelib::AbstractSimpleStartBlock<StructureDataTyp, SharedDataTyp>
+class LoadPotStructures : public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 

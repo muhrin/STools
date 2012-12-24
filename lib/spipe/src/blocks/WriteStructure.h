@@ -12,34 +12,31 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include "pipelib/AbstractSimpleBlock.h"
+#include <pipelib/pipelib.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace sstbx
-{
-namespace io
-{
+namespace sstbx {
+namespace io {
 struct AdditionalData;
 class StructureReadWriteManager;
 }
 }
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
 
-class WriteStructure : public pipelib::AbstractSimpleBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>
+class WriteStructure : public pipelib::PipeBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp, ::spipe::SharedDataTyp>
 {
 public:
 	WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager);
 
   virtual void in(spipe::StructureDataTyp & data);
-
 
 private:
 	const ::sstbx::io::StructureReadWriteManager & myWriterManager;

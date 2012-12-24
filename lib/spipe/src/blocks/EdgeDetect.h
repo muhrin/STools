@@ -23,11 +23,10 @@
 #include <utility/MultiArray.h>
 #include <utility/MultiIdx.h>
 
-
-#include <pipelib/AbstractSimpleBlock.h>
-#include <pipelib/IPipeline.h>
+#include <pipelib/pipelib.h>
 
 // Local includes
+#include "PipeLibTypes.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 
@@ -40,7 +39,7 @@ namespace spipe
 namespace blocks
 {
 
-class EdgeDetect : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+class EdgeDetect : public SpPipeBlockTyp
 {
 public:
 
@@ -189,7 +188,7 @@ void EdgeDetect::in(spipe::common::StructureData & data)
 	}
 
 	// Send the structure on its way
-	myOutput->in(data);
+	out(data);
 }
 
 void EdgeDetect::writeOutput(

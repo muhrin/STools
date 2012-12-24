@@ -82,7 +82,7 @@
 //      {
 //        const YAML::Node & seqNode = pipeNode[kw::PIPELINE__SEQ];
 //
-//        SpBlockTyp * prevBlock = startBlock;
+//        SpBlock * prevBlock = startBlock;
 //
 //        // Do the first as a start block
 //        if(seqNode[0])

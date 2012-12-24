@@ -14,33 +14,22 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <pipelib/event/IPipeListener.h>
-
 #include <io/BoostFilesystem.h>
 
+#include <pipelib/pipelib.h>
+
 // Local includes
+#include "PipeLibTypes.h"
 #include "utility/DataTable.h"
 
-// FORWARD DECLARATIONS ////////////////////////////////////
-namespace pipelib
-{
-namespace event
-{
-template <typename Pipe>
-class PipeStateChanged;
-}
-}
 
-
-namespace spipe
-{
-namespace utility
-{
+namespace spipe {
+namespace utility {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 class DataTableWriter;
 
-class DataTableSupport : public ::pipelib::event::IPipeListener< ::spipe::SpPipelineTyp>
+class DataTableSupport : public SpRunnerListener
 {
 public:
 
@@ -51,15 +40,15 @@ public:
     const bool clearTableOnPipeFinish = true);
   ~DataTableSupport();
 
-  void registerPipeline(::spipe::SpPipelineTyp & pipeline);
-  bool deregisterPipeline();
+  void registerRunner(SpRunnerAccess & runner);
+  bool deregisterRunner();
 
   DataTable & getTable();
 
   void setFilename(const ::boost::filesystem::path & filename);
 
   // From IPipeListener /////////////////////
-  virtual void notify(const ::pipelib::event::PipeStateChanged<SpPipelineTyp> & evt);
+  virtual void notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunner> & evt);
   // End from IPipeListener /////////////////
 
 private:
@@ -68,7 +57,7 @@ private:
 
   bool createWriter();
 
-  ::spipe::SpPipelineTyp *          myPipeline;
+  SpRunnerAccess *                  myRunner;
   ::boost::filesystem::path         myFilename;
   DataTable                         myTable;
   DataTableWriterPtr                myWriter;

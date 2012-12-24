@@ -12,8 +12,6 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <pipelib/IPipeline.h>
-
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/StructureDescription.h>
@@ -50,44 +48,37 @@ StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value  species1,
   const ::sstbx::common::AtomSpeciesId::Value  species2,
   const size_t maxAtoms,
-  SpPipelineTyp &	subpipe):
-pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoichiometry"),
+  SpStartBlock & subpipe):
+SpBlock("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
 mySubpipe(subpipe)
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
-
-  init();
 }
 
 StoichiometrySearch::StoichiometrySearch(
   const SpeciesParamters & speciesParameters,
   const size_t       maxAtoms,
   const double       atomsRadius,
-  SpPipelineTyp &    sweepPipe):
-pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Sweep stoichiometry"),
+  SpStartBlock &   sweepPipe):
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 mySubpipe(sweepPipe),
 myTableSupport(fs::path("stoich.dat"))
-{
-  init();
-}
+{}
 
 void StoichiometrySearch::pipelineInitialising()
 {
-	// Set outselves to collect any finished data from the sweep pipeline
-  mySubpipe.setFinishedDataSink(*this);
-
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".stoich");
-  myTableSupport.registerPipeline(*myPipeline);
+  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".stoich");
+  myTableSupport.registerRunner(*getRunner());
 }
 
 void StoichiometrySearch::pipelineStarting()
 {
   // Save where the pipeline will be writing to
-	myOutputPath = myPipeline->getSharedData().getOutputPath();
+	myOutputPath = getRunner()->memory().shared().getOutputPath(*getRunner());
 }
 
 
@@ -96,8 +87,8 @@ void StoichiometrySearch::start()
   using ::boost::lexical_cast;
   using ::std::string;
 
-  SharedDataTyp & sweepPipeData = mySubpipe.getSharedData();
-  const ssc::AtomSpeciesDatabase & atomsDb = myPipeline->getGlobalData().getSpeciesDatabase();
+  SharedDataTyp & sweepPipeData = mySubpipeRunner->memory().shared();
+  const ssc::AtomSpeciesDatabase & atomsDb = getRunner()->memory().global().getSpeciesDatabase();
 
   // Start looping over the possible stoichiometries
   size_t totalAtoms = 0;
@@ -153,7 +144,7 @@ void StoichiometrySearch::start()
     sweepPipeOutputPath = sweepPipeData.getPipeRelativeOutputPath().string();
 
     // Start the sweep pipeline
-    mySubpipe.start();
+    mySubpipeRunner->run();
 
     // Update the table
     updateTable(sweepPipeOutputPath, currentIdx, atomsDb);
@@ -165,15 +156,11 @@ void StoichiometrySearch::start()
   } // End loop over stoichiometries
 }
 
-void StoichiometrySearch::in(StructureDataTyp * const data)
+void StoichiometrySearch::finished(SpStructureDataPtr data)
 {
-	SP_ASSERT(data);
-
-	// Register the data with our pipeline to transfer ownership
-	myPipeline->registerNewData(data);
-
-	// Save it in the buffer for sending down the pipe
-	myBuffer.push_back(data);
+  // Register the data with our pipeline to transfer ownership
+  // and save it in the buffer for sending down the pipe
+  myBuffer.push_back(&getRunner()->registerData(data));
 }
 
 void StoichiometrySearch::releaseBufferedStructures(
@@ -191,7 +178,7 @@ void StoichiometrySearch::releaseBufferedStructures(
 	BOOST_FOREACH(StructureDataTyp * const strData, myBuffer)
 	{
     structure = strData->getStructure();
-    lastSavedRelative = strData->getRelativeSavePath(*myPipeline);
+    lastSavedRelative = strData->getRelativeSavePath(*getRunner());
 
     if(!lastSavedRelative.empty())
     {
@@ -216,13 +203,16 @@ void StoichiometrySearch::releaseBufferedStructures(
     
 
     // Pass the structure on
-		myOutput->in(*strData);
+		out(*strData);
 	}
 	myBuffer.clear();
 }
 
-void StoichiometrySearch::init()
+void StoichiometrySearch::runnerAttached(RunnerSetupType & setup)
 {
+  mySubpipeRunner = setup.createChildRunner(mySubpipe);
+  // Set outselves to collect any finished data from the sweep pipeline
+  mySubpipeRunner->setFinishedDataSink(this);
 }
 
 ssu::MultiIdxRange<unsigned int> StoichiometrySearch::getStoichRange()

@@ -18,23 +18,15 @@
 
 #include <armadillo>
 
-#include <pipelib/event/IPipeListener.h>
-
 #include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
 #include <utility/HeterogeneousMap.h>
 
 // Local includes
+#include "PipeLibTypes.h"
 #include "utility/DataTable.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-
-namespace pipelib {
-namespace event {
-template <class Listener>
-class PipeStateChanged;
-}
-}
 
 namespace sstbx {
 namespace build_cell {
@@ -53,22 +45,13 @@ struct GlobalKeys
 
 };
 
-class SharedData : public ::pipelib::event::IPipeListener< ::spipe::SpPipelineTyp>
+class SharedData
 {
 public:
 
   static const char DIR_SUBSTRING_DELIMITER[];
 
   SharedData();
-  ~SharedData();
-
-  /**
-  /* Set the pipeline that this shared data belong to.  This should be done immediately
-  /* after constructing the pipeline.
-  /* 
-  /* Precondition: the pipeline must not have been set previously.
-  /**/
-  void setPipe(::spipe::SpPipelineTyp & pipe);
 
   bool appendToOutputDirName(const ::std::string & toAppend);
 
@@ -76,7 +59,7 @@ public:
   /* Get the output path for the pipeline that owns this shared data relative to
   /* the working directory where the code was executed.
   /**/
-  ::boost::filesystem::path getOutputPath() const;
+  ::boost::filesystem::path getOutputPath(const SpRunnerAccess & runner) const;
 
   /**
   /* Get the output path for the pipeline that owns this shared data relative to
@@ -95,10 +78,7 @@ public:
   ::sstbx::build_cell::StructureDescription * getStructureDescription();
 
   ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
-
-  // From IPipeListener ////////////////////////
-  virtual void notify(const ::pipelib::event::PipeStateChanged< ::spipe::SpPipelineTyp> & evt);
-  // End from IPipeListener ///////////////////
+  const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
 
 	/** Potential sweep starting values */
 	::boost::optional< ::arma::vec>			potSweepFrom;
@@ -119,9 +99,7 @@ private:
 
   void reset();
 
-  void buildOutputPathRecursive(::boost::filesystem::path & path, const ::spipe::SpPipelineTyp & pipe) const;
-
-  ::spipe::SpPipelineTyp *            myPipe;
+  void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;

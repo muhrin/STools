@@ -15,9 +15,6 @@
 #include <common/Structure.h>
 #include <utility/MultiIdxRange.h>
 
-// From PipelineLib
-#include <pipelib/IPipeline.h>
-
 #include "common/SharedData.h"
 #include "common/StructureData.h"
 #include "common/PipeFunctions.h"
@@ -39,8 +36,8 @@ PotentialParamSweep::PotentialParamSweep(
 	const ::arma::vec	&		from,
 	const ::arma::vec	&		step,
 	const ::arma::Col<unsigned int> & nSteps,
-	SpPipelineTyp &				sweepPipeline):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential param sweep"),
+	SpStartBlockTyp &		  sweepPipeline):
+SpBlock("Potential param sweep"),
 myFrom(from),
 myStep(step),
 myNSteps(nSteps),
@@ -59,25 +56,19 @@ myStepExtents(nSteps.n_rows)
 void PotentialParamSweep::pipelineInitialising()
 {
 	// Set the parameters in the shared data
-	SharedDataTyp & sharedDat = myPipeline->getSharedData();
+	SharedDataTyp & sharedDat = getRunner()->memory().shared();
 	sharedDat.potSweepFrom.reset(myFrom);
 	sharedDat.potSweepStep.reset(myStep);
 	sharedDat.potSweepNSteps.reset(myNSteps);
 
-  myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".potparams");
-  myTableSupport.registerPipeline(*myPipeline);
-}
-
-void PotentialParamSweep::pipelineInitialised()
-{
-	// Set outselves to collect any finished data from the sweep pipeline
-	mySweepPipeline.setFinishedDataSink(*this);
+  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".potparams");
+  myTableSupport.registerRunner(*getRunner());
 }
 
 void PotentialParamSweep::start()
 {
   ::std::string sweepPipeOutputPath;
-  ::spipe::SharedDataTyp & sweepPipeSharedData = mySweepPipeline.getSharedData();
+  ::spipe::SharedDataTyp & sweepPipeSharedData = mySubpipeRunner->memory().shared();
 
   const ssu::MultiIdxRange<unsigned int> stepsRange(ssu::MultiIdx<unsigned int>(myStepExtents.dims()), myStepExtents);
 
@@ -90,13 +81,13 @@ void PotentialParamSweep::start()
 			params(i) = myFrom(i) + (double)stepsIdx[i] * myStep(i);
 		}
 		// Store the potential parameters in global memory
-    myPipeline->getGlobalData().objectsStore[::spipe::common::GlobalKeys::POTENTIAL_PARAMS] = params;
+    getRunner()->memory().global().objectsStore[::spipe::common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
     // Set a directory for this set of parameters
     sweepPipeSharedData.appendToOutputDirName(common::generateUniqueName());
 
     // Get the relative path to where the pipeline write the structures to
-    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath().string();
+    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath(*getRunner()).string();
 
 		// Start the sweep pipeline
 		mySweepPipeline.start();
@@ -106,26 +97,29 @@ void PotentialParamSweep::start()
 	}
 }
 
-void  PotentialParamSweep::in(StructureDataTyp * const data)
+void PotentialParamSweep::runnerAttached(SpRunnerSetup & setup)
 {
-	SP_ASSERT(data);
+  mySubpipeRunner = setup.createChildRunner(mySweepPipeline);
+	// Set outselves to collect any finished data from the sweep pipeline
+	mySubpipeRunner->setFinishedDataSink(this);
+}
 
+void PotentialParamSweep::finished(SpStructureDataPtr data)
+{
 	// Copy over the parameters into the structure data
   const ::spipe::common::ObjectData<const ::arma::vec> result = ::spipe::common::getObjectConst(
     ::spipe::common::GlobalKeys::POTENTIAL_PARAMS,
-    mySweepPipeline
+    mySubpipeRunner->memory()
   );
 
-  if(result.first != ::spipe::common::DataLocation::NONE)
+  if(result.first != common::DataLocation::NONE)
   {
-    data->objectsStore[::spipe::common::GlobalKeys::POTENTIAL_PARAMS] = *result.second;
+    data->objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = *result.second;
   }
 
 	// Register the data with our pipeline to transfer ownership
-	myPipeline->registerNewData(data);
-
 	// Save it in the buffer for sending down the pipe
-	myBuffer.push_back(data);
+	myBuffer.push_back(&getRunner()->registerData(data));
 }
 
 void PotentialParamSweep::releaseBufferedStructures(
@@ -137,7 +131,7 @@ void PotentialParamSweep::releaseBufferedStructures(
 	{
     updateTable(key, *sweepStrData);
 
-		myOutput->in(*sweepStrData);
+		out(*sweepStrData);
 	}
 	myBuffer.clear();
 }
@@ -183,7 +177,7 @@ void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const
       );
     }
 
-    const ssio::ResourceLocator locator = sweepStrData.getRelativeSavePath(*myPipeline);
+    const ssio::ResourceLocator locator = sweepStrData.getRelativeSavePath(*getRunner());
     if(!locator.empty())
     {
       table.insert(

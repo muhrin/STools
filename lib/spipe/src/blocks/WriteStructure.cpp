@@ -8,8 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/WriteStructure.h"
 
-#include <pipelib/IPipeline.h>
-
 // From SSTbx
 #include <common/Structure.h>
 #include <io/StructureReadWriteManager.h>
@@ -32,7 +30,7 @@ namespace fs = ::boost::filesystem;
 namespace ssu = ::sstbx::utility;
 
 WriteStructure::WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Write structures"),
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Write structures"),
 myWriterManager(writerManager)
 {}
 
@@ -50,14 +48,14 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 	fs::path p(structure->getName() + ".res");
 
   // Prepend the pipe output path
-  p = myPipeline->getSharedData().getOutputPath() / p;
+  p = getRunner()->memory().shared().getOutputPath(*getRunner()) / p;
 	
-  if(!myWriterManager.writeStructure(*data.getStructure(), p, myPipeline->getGlobalData().getSpeciesDatabase()))
+  if(!myWriterManager.writeStructure(*data.getStructure(), p, getRunner()->memory().global().getSpeciesDatabase()))
   {
     // TODO: Produce error
   }
 
-	myOutput->in(data);
+	out(data);
 }
 
 }

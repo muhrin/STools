@@ -11,7 +11,7 @@
 #include <common/Structure.h>
 #include <common/StructureData.h>
 
-#include <pipelib/IPipeline.h>
+#include <pipelib/pipelib.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -23,7 +23,7 @@ namespace ssc = ::sstbx::common;
 namespace structure_properties = ssc::structure_properties;
 
 LowestFreeEnergy::LowestFreeEnergy():
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Lowest free energy"),
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Lowest free energy"),
 myLowest(NULL)
 {}
 
@@ -36,39 +36,26 @@ void LowestFreeEnergy::in(spipe::common::StructureData & data)
 		if(internalEnergy &&
       *internalEnergy < *myLowest->getStructure()->getProperty(structure_properties::general::ENERGY_INTERNAL))
 		{
-			// Unflag and delete the old lowest
-			myPipeline->unflagData(*this, *myLowest);
-			myPipeline->dropData(*myLowest);
-
-			myPipeline->flagData(*this, data);
+			getRunner()->dropData(*myLowest);
 			myLowest = &data;
 		}
 		else
-		{
-			myPipeline->dropData(data);
-		}
+			getRunner()->dropData(data);
 	}
 	else
-	{
-		// Flag the data to say that we will want to use it again
-		myPipeline->flagData(*this, data);
 		myLowest = &data;
-	}
 }
 
 size_t LowestFreeEnergy::release()
 {
 	if(myLowest)
 	{
-		myPipeline->unflagData(*this, *myLowest);
-		myOutput->in(*myLowest);
+		out(*myLowest);
 		myLowest = NULL;
 		return 1;
 	}
 	else
-	{
 		return 0;
-	}
 }
 
 bool LowestFreeEnergy::hasData() const
@@ -76,4 +63,5 @@ bool LowestFreeEnergy::hasData() const
 	return myLowest != NULL;
 }
 
-}}
+}
+}

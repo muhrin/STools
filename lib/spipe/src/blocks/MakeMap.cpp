@@ -10,21 +10,18 @@
 
 #include "common/StructureData.h"
 
-
-#include <pipelib/IPipeline.h>
-
 // NAMESPACES ////////////////////////////////
 
 
 namespace spipe { namespace blocks {
 
 MakeMap::MakeMap():
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Make map")
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Make map")
 {}
 
 void MakeMap::in(spipe::common::StructureData & data)
 {
-	myOutput->in(data);
+	out(data);
 }
 
 }}

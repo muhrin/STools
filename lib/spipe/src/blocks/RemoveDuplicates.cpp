@@ -14,10 +14,6 @@
 
 // From SSTbx
 #include <common/Structure.h>
-#include <utility/UniqueStructureSet.h>
-
-// From PipelineLib
-#include <pipelib/IPipeline.h>
 
 #include <boost/foreach.hpp>
 
@@ -33,47 +29,43 @@ namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
-RemoveDuplicates::RemoveDuplicates(ssu::UniqueStructureSet & structureSet):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Remove duplicates"),
-myStructureSet(structureSet)
+RemoveDuplicates::RemoveDuplicates(sstbx::utility::IStructureComparator & comparator):
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Remove duplicates"),
+myStructureSet(comparator)
 {}
 
 void RemoveDuplicates::in(::spipe::common::StructureData & data)
 {
-  const std::pair<ssu::UniqueStructureSet::iterator, bool> result = myStructureSet.insert(data.getStructure());
-  ssc::Structure * const structure = data.getStructure();
+  if(!data.getStructure())
+  {
+    out(data);
+    return;
+  }
+
+  // Flag the data to say that we may want to use it again
+  const StructureDataHandle handle = getRunner()->createDataHandle(data);
+  const StructureSet::insert_return_type result = myStructureSet.insert(handle, *data.getStructure());
 
 	if(result.second)
 	{
-		// Flag the data to say that we will want to use it again
-		myPipeline->flagData(*this, data);
-    myStructureDataMap.insert(StructureDataMap::value_type(*result.first, &data));
-    structure->setProperty(structure_properties::searching::TIMES_FOUND, (unsigned int)1);
-
-		myOutput->in(data);
+    // Inserted
+    data.getStructure()->setProperty(structure_properties::searching::TIMES_FOUND, (unsigned int)1);
+		out(data);
 	}
 	else
 	{
+    // Not inserted
+    getRunner()->releaseDataHandle(handle);
 		// The structure is not unique so discard it
-		myPipeline->dropData(data);
+		getRunner()->dropData(data);
 
 		// Up the 'times found' counter on the original structure
-		StructureDataMap::iterator it = myStructureDataMap.find(*result.first);
-		
-		if(it == myStructureDataMap.end())
-		{
-			PASSERT(true);
-		}
-
-		::spipe::common::StructureData & origStrData = *it->second;
-    unsigned int * timesFound =
+		::spipe::common::StructureData & origStrData = getRunner()->getData(*result.first);
+    unsigned int * const timesFound =
       origStrData.getStructure()->getProperty(structure_properties::searching::TIMES_FOUND);
 		if(timesFound)
 		{
-      origStrData.getStructure()->setProperty(
-        structure_properties::searching::TIMES_FOUND,
-        *timesFound + 1
-      );
+      *timesFound += 1;
 		}
 		else
 		{
@@ -82,20 +74,18 @@ void RemoveDuplicates::in(::spipe::common::StructureData & data)
         (unsigned int)1
       );
 		}
-
-
 	}
 }
 
 void RemoveDuplicates::pipelineFinishing()
 {
 	// Make sure we clean up any data we are holding on to
-  BOOST_FOREACH(const StructureDataMap::value_type & pair, myStructureDataMap)
+  BOOST_FOREACH(const StructureDataHandle & handle, myStructureSet)
 	{
-		myPipeline->unflagData(*this, *pair.second);
+		getRunner()->releaseDataHandle(handle);
 	}
-	myStructureDataMap.clear();
 	myStructureSet.clear();
 }
 
-}}
+}
+}

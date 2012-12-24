@@ -14,12 +14,13 @@
 
 #include <armadillo>
 
-#include <pipelib/AbstractSimpleBlock.h>
+#include <pipelib/pipelib.h>
 
 #include <potential/IGeomOptimiser.h>
 #include <potential/OptimisationSettings.h>
 #include <potential/PotentialData.h>
 
+#include "PipeLibTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -41,7 +42,7 @@ class IPotential;
 namespace spipe {
 namespace blocks {
 
-class PotentialGo : public pipelib::AbstractSimpleBlock<StructureDataTyp, SharedDataTyp>
+class PotentialGo : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 
@@ -85,6 +86,7 @@ protected:
 
 };
 
-}}
+}
+}
 
 #endif /* POTENTIAL_GO_H */

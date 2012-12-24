@@ -23,6 +23,8 @@
 #include <io/IStructureReader.h>
 #include <utility/HeterogeneousMap.h>
 
+#include "PipeLibTypes.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
 namespace common {
@@ -41,14 +43,14 @@ class StructureData
 public:
 
   sstbx::common::Structure * getStructure() const;
-  sstbx::common::Structure & setStructure(::sstbx::UniquePtr< ::sstbx::common::Structure>::Type structure);
+  sstbx::common::Structure & setStructure(::sstbx::common::types::StructurePtr structure);
   sstbx::common::Structure & setStructure(::sstbx::io::StructuresContainer::auto_type structure);
 
   /**
   /* Get the path to where this structure was last saved relative to the output path
   /* of a given structure pipe.
   /**/
-  ::sstbx::io::ResourceLocator getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const;
+  ::sstbx::io::ResourceLocator getRelativeSavePath(const SpRunnerAccess & runner) const;
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
@@ -57,7 +59,7 @@ private:
   ::sstbx::UniquePtr< ::sstbx::common::Structure>::Type   myStructure;
 };
 
-
-}}
+}
+}
 
 #endif /* STRUCTURE_DATA_H */

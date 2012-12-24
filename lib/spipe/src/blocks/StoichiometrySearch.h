@@ -17,8 +17,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <pipelib/AbstractSimpleStartBlock.h>
-#include <pipelib/IDataSink.h>
+#include <pipelib/pipelib.h>
 
 // From SSTbx
 #include <build_cell/RandomUnitCell.h>
@@ -28,6 +27,7 @@
 #include <utility/MultiIdxRange.h>
 
 // Local includes
+#include "PipeLibTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -58,25 +58,22 @@ struct SpeciesParameter
   size_t                                maxNum;
 };
 
-class StoichiometrySearch :
-  public ::pipelib::AbstractSimpleStartBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>,
-  public pipelib::IDataSink<StructureDataTyp>
+class StoichiometrySearch : public SpStartBlock, public SpFinishedSink
 {
 public:
-
   typedef ::std::vector<SpeciesParameter> SpeciesParamters;
 
   StoichiometrySearch(
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
-    SpPipelineTyp &				subpipe);
+    SpStartBlock &        subpipe);
 
   StoichiometrySearch(
     const SpeciesParamters & speciesParameters,
     const size_t       maxAtoms,
     const double       atomsRadius,
-    SpPipelineTyp &    sweepPipe);
+    SpStartBlock &     subpipe);
 
   // From Block ////////
   virtual void pipelineInitialising();
@@ -88,7 +85,7 @@ public:
   // End from StartBlock ///
 
   // From IDataSink /////////////////////////////
-  virtual void in(StructureDataTyp * const data);
+  virtual void finished(SpStructureDataPtr data);
   // End from IDataSink /////////////////////////
 
 private:
@@ -96,10 +93,11 @@ private:
   typedef ::spipe::StructureDataTyp                                         StructureDataTyp;
   typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription>   StrDescPtr;
   typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>           TableWriterPtr;
+  typedef ::pipelib::PipeRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp> RunnerType;
 
-  
-  // Initialisation //////////////////////////////
-  void init();
+  // From Block ////////
+  virtual void runnerAttached(RunnerSetupType & setup);
+  // End from Block ////
 
   ::sstbx::utility::MultiIdxRange<unsigned int> getStoichRange();
 
@@ -113,20 +111,19 @@ private:
     const ::sstbx::common::AtomSpeciesDatabase & atomsDb
   );
 
-  SpPipelineTyp &                       mySubpipe;
+  SpStartBlock &  mySubpipe;
+  SpChildRunnerPtr mySubpipeRunner;
+
 
   // Use this to write out our table data
   ::spipe::utility::DataTableSupport    myTableSupport;
-
   const size_t                          myMaxAtoms;
-
   ::boost::filesystem::path             myOutputPath;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataTyp *>		  myBuffer;
 
   SpeciesParamters                      mySpeciesParameters;
-
 };
 
 }

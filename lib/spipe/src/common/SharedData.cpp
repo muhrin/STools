@@ -8,9 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "common/SharedData.h"
 
-#include <pipelib/IPipeline.h>
-#include <pipelib/PipelineState.h>
-#include <pipelib/event/PipeStateChanged.h>
+#include <pipelib/pipelib.h>
 
 #include "common/UtilityFunctions.h"
 
@@ -29,33 +27,13 @@ const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 
 SharedData::SharedData():
-myPipe(NULL),
 myOutputFileStem(generateUniqueName())
 {}
-
-SharedData::~SharedData()
-{
-  // Make sure to tell that pipe that we no longer want to receive messages
-  if(myPipe)
-    myPipe->removePipeListener(*this);
-}
-
-void SharedData::setPipe(spipe::SpPipelineTyp & pipe)
-{
-  // Precondition: myPipe has not be null.
-  SP_ASSERT(!myPipe);
-
-  myPipe = &pipe;
-  myPipe->addPipeListener(*this);
-}
 
 bool SharedData::appendToOutputDirName(const std::string & toAppend)
 {
   if(toAppend.empty())
     return true;  // Nothing to append
-
-  if(myPipe->getState() == ::pipelib::PipelineState::RUNNING)
-    return false;  // Can't change output directory while the pipeline is running!
 
   if(!myOutputDir.empty())
   {
@@ -66,13 +44,11 @@ bool SharedData::appendToOutputDirName(const std::string & toAppend)
   return true;
 }
 
-::boost::filesystem::path SharedData::getOutputPath() const
+::boost::filesystem::path SharedData::getOutputPath(const SpRunnerAccess & runner) const
 {
-  SP_ASSERT(myPipe);
-
-  ::boost::filesystem::path outPath = myPipe->getGlobalData().getPipeRelativeOutputPath();
+  ::boost::filesystem::path outPath = runner.memory().global().getPipeRelativeOutputPath();
   // Now build up the from the topmost parent down to this pipeline
-  buildOutputPathRecursive(outPath, *myPipe);
+  buildOutputPathRecursive(outPath, runner);
 
   return outPath;
 }
@@ -97,14 +73,9 @@ ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
   return mySpeciesDatabase;
 }
 
-void SharedData::notify(const ::pipelib::event::PipeStateChanged< ::spipe::SpPipelineTyp> & evt)
+const ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase() const
 {
-  SP_ASSERT(&evt.getPipeline() == myPipe);
-
-  if(evt.getNewState() == ::pipelib::PipelineState::FINISHED)
-  {
-    reset();
-  }
+  return mySpeciesDatabase;
 }
 
 void SharedData::reset()
@@ -125,14 +96,14 @@ void SharedData::reset()
   myOutputFileStem = generateUniqueName();
 }
 
-void SharedData::buildOutputPathRecursive(::boost::filesystem::path & path, const ::spipe::SpPipelineTyp & pipe) const
+void SharedData::buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const
 {
-  const ::spipe::SpPipelineTyp * const parent = pipe.getParent();
+  const SpRunnerAccess * const parent = runner.getParent();
   if(parent)
   {
     buildOutputPathRecursive(path, *parent);
   }
-  path /= pipe.getSharedData().getPipeRelativeOutputPath();
+  path /= runner.memory().shared().getPipeRelativeOutputPath();
 }
 
 }

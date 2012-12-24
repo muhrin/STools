@@ -88,6 +88,7 @@ source_group("Source Files\\utility" FILES ${spipe_Source_Files__utility})
 ## spipe/
 
 set(spipe_Header_Files__
+  PipeLibTypes.h
   StructurePipe.h
   StructurePipeConfig.h
 )

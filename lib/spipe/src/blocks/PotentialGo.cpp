@@ -19,8 +19,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <pipelib/IPipeline.h>
-
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/StructureDescription.h>
@@ -48,7 +46,7 @@ namespace structure_properties = ssc::structure_properties;
 PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
   const bool                               writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
+BlockType("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput)
 {}
@@ -57,7 +55,7 @@ PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
   const bool                               writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Potential geometry optimisation"),
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput),
 myOptimisationParams(optimisationParams)
@@ -67,9 +65,9 @@ void PotentialGo::pipelineInitialising()
 {
   if(myWriteOutput)
   {
-    myTableSupport.setFilename(myPipeline->getGlobalData().getOutputFileStem().string() + ".geomopt");
+    myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".geomopt");
   }
-  myTableSupport.registerPipeline(*myPipeline);
+  myTableSupport.registerRunner(*getRunner());
 }
 
 void PotentialGo::in(spipe::common::StructureData & data)
@@ -84,12 +82,12 @@ void PotentialGo::in(spipe::common::StructureData & data)
     // Update our data table with the structure data
     updateTable(*structure);
 
-	  myOutput->in(data);
+	  out(data);
   }
   else
   {
     // The structure failed to geometry optimise properly so drop it
-    myPipeline->dropData(data);
+    getRunner()->dropData(data);
   }
 }
 

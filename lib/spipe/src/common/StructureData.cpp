@@ -8,7 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "common/StructureData.h"
 
-#include <pipelib/IPipeline.h>
+#include <pipelib/pipelib.h>
 
 // Local includes
 #include "common/SharedData.h"
@@ -25,6 +25,7 @@ namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
+
 
 
 ssc::Structure * StructureData::getStructure() const
@@ -49,7 +50,7 @@ ssc::Structure & StructureData::setStructure(ssio::StructuresContainer::auto_typ
 }
 
 ssio::ResourceLocator
-StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) const
+StructureData::getRelativeSavePath(const SpRunnerAccess & runner) const
 {
   ssio::ResourceLocator relativeLocator;
 
@@ -66,9 +67,7 @@ StructureData::getRelativeSavePath(const ::spipe::SpPipelineTyp & pipeline) cons
     fs::path relativePath = lastSaved->path();
     if(ssio::isAbsolute(relativePath))
     {
-      relativePath = ssio::make_relative(
-        pipeline.getSharedData().getOutputPath(),
-        relativePath);
+      relativePath = ssio::make_relative(runner.memory().shared().getOutputPath(runner), relativePath);
       relativeLocator.setPath(relativePath);
     }
   }

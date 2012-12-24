@@ -19,9 +19,6 @@
 #include <common/Structure.h>
 #include <common/Types.h>
 
-// From PipelineLib
-#include <pipelib/IPipeline.h>
-
 // Local includes
 #include "common/SharedData.h"
 #include "common/StructureData.h"
@@ -40,7 +37,7 @@ RandomStructure::RandomStructure(
   const ::sstbx::build_cell::IStructureGenerator &   structureGenerator,
   const OptionalUInt numToGenerate,
   const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Random structures"),
+pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Random structures"),
 myNumToGenerate(numToGenerate),
 myStructureGenerator(structureGenerator),
 myStructureDescription(structureDescription),
@@ -59,15 +56,14 @@ void RandomStructure::start()
   const unsigned int numToGenerate = myNumToGenerate ? *myNumToGenerate : 100;
 	
   initDescriptions();
-
   for(size_t i = 0; i < numToGenerate; ++i)
   {
 	  // Create the random structure
-    ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, myPipeline->getGlobalData().getSpeciesDatabase());
+    ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
 
 	  if(str.get())
 	  {
-      StructureData & data = myPipeline->newData();
+      StructureData & data = getRunner()->createData();
 		  data.setStructure(str);
 
 		  // Build up the name
@@ -76,7 +72,7 @@ void RandomStructure::start()
 			data.getStructure()->setName(ss.str());
 
 		  // Send it down the pipe
-		  myOutput->in(data);
+		  out(data);
 	  }
   }	
 }
@@ -87,7 +83,7 @@ void RandomStructure::in(::spipe::common::StructureData & data)
   initDescriptions();
 
 	// Create the random structure
-  ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, myPipeline->getGlobalData().getSpeciesDatabase());
+  ssc::StructurePtr str = myStructureGenerator.generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
 
 	if(str.get())
 	{
@@ -102,17 +98,15 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		}
 
 		// Send it down the pipe
-		myOutput->in(data);
+		out(data);
 	}
 	else
-	{
-		myPipeline->dropData(data);
-	}
+		getRunner()->dropData(data);
 }
 
 void RandomStructure::initDescriptions()
 {
-  const common::SharedData & sharedDat = myPipeline->getSharedData();
+  const common::SharedData & sharedDat = getRunner()->memory().shared();
   if(myUseSharedDataStructureDesc)
   {
     if(sharedDat.structureDescription.get())

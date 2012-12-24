@@ -19,9 +19,6 @@
 #include <common/Structure.h>
 #include <io/IoFunctions.h>
 
-// From PipelineLib
-#include <pipelib/IPipeline.h>
-
 // Local includes
 #include "common/SharedData.h"
 #include "common/StructureData.h"
@@ -44,7 +41,7 @@ LoadSeedStructures::LoadSeedStructures(
   const ssc::AtomSpeciesDatabase & atomSpeciesDb,
   const ::std::string & seedStructures,
   const bool tryToScaleVolumes):
-::pipelib::Block<spipe::StructureDataTyp, spipe::SharedDataTyp>("Load seed structures"),
+::pipelib::Block<spipe::StructureDataTyp, spipe::SharedDataTyp, spipe::SharedDataTyp>("Load seed structures"),
 mySpeciesDb(atomSpeciesDb),
 myTryToScaleVolumes(tryToScaleVolumes)
 {
@@ -64,7 +61,7 @@ void LoadSeedStructures::start()
   const ssc::UnitCell * unitCell;
   BOOST_FOREACH(const ssc::Structure & str, myStructures)
   {
-    StructureData & data = myPipeline->newData();
+    StructureData & data = getRunner()->createData();
     // Make a clone of our structure
     ssc::Structure & structure = data.setStructure(str.clone());
     
@@ -81,7 +78,7 @@ void LoadSeedStructures::start()
     }
 
     // Send it on its way
-    myOutput->in(data);
+    out(data);
   }
 }
 

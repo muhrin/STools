@@ -18,8 +18,9 @@
 // From SSTbx
 #include <build_cell/StructureDescription.h>
 
-// From PipelineLib
-#include <pipelib/AbstractSimpleStartBlock.h>
+#include <pipelib/pipelib.h>
+
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -34,7 +35,7 @@ namespace spipe
 namespace blocks {
 
 class RandomStructure :
-	public pipelib::AbstractSimpleStartBlock<StructureDataTyp, SharedDataTyp>
+	public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 

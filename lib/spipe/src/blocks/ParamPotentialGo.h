@@ -18,8 +18,9 @@
 
 #include <armadillo>
 
-#include <pipelib/AbstractSimpleBlock.h>
+#include <pipelib/pipelib.h>
 
+#include "PipeLibTypes.h"
 #include "blocks/PotentialGo.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
@@ -68,6 +69,7 @@ private:
   ::arma::vec                                 myCurrentParams;
 };
 
-}}
+}
+}
 
 #endif /* PARAM_POTENTIAL_GO_H */

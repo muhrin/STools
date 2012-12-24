@@ -12,18 +12,17 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
-#include <pipelib/AbstractSimpleBarrier.h>
+#include <pipelib/pipelib.h>
 
+#include "PipeLibTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
-class LowestFreeEnergy : public ::pipelib::AbstractSimpleBarrier<StructureDataTyp, SharedDataTyp>
+class LowestFreeEnergy : public ::pipelib::Barrier<StructureDataTyp, SharedDataTyp, SharedDataTyp>
 {
 public:
 
@@ -39,10 +38,10 @@ public:
   // End from Barrier //////////////
 
 private:
-
 	::spipe::common::StructureData * myLowest;
 };
 
-}}
+}
+}
 
 #endif /* LOWEST_FREE_ENERGY_H */
