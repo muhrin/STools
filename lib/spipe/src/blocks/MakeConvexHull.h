@@ -17,6 +17,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include <armadillo>
 
 #include <pipelib/pipelib.h>
@@ -27,12 +29,10 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
-class MakeConvexHull : ::pipelib::AbstractSimpleBarrier<StructureDataTyp, SharedDataTyp>
+class MakeConvexHull : ::pipelib::AbstractSimpleBarrier<StructureDataTyp, SharedDataTyp>, ::boost::noncopyable
 {
 public:
 

@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/noncopyable.hpp>
+
 #include <armadillo>
 
 #include <pipelib/pipelib.h>
@@ -42,7 +44,7 @@ class IPotential;
 namespace spipe {
 namespace blocks {
 
-class PotentialGo : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class PotentialGo : public SpPipeBlock, ::boost::noncopyable
 {
 public:
 

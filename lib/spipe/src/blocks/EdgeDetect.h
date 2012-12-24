@@ -15,6 +15,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include <armadillo>
 
 // From SSTbx
@@ -34,12 +36,10 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace spipe
-{
-namespace blocks
-{
+namespace spipe {
+namespace blocks {
 
-class EdgeDetect : public SpPipeBlockTyp
+  class EdgeDetect : public SpPipeBlockTyp, ::boost::noncopyable
 {
 public:
 

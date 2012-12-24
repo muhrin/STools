@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/noncopyable.hpp>
+
 #include <pipelib/pipelib.h>
 
 #include "PipeLibTypes.h"
@@ -22,7 +24,7 @@
 namespace spipe {
 namespace blocks {
 
-  class DetermineSpaceGroup : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class DetermineSpaceGroup : public SpPipeBlock, ::boost::noncopyable
 {
 public:
 

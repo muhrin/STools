@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <boost/filesystem.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <pipelib/pipelib.h>
 
@@ -22,21 +23,19 @@
 
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx
-{
-namespace common
-{
+namespace sstbx {
+namespace common {
 class Structure;
 }
-namespace potential
-{
+namespace potential {
 class IParameterisable;
 }
 }
 
-namespace spipe { namespace blocks {
+namespace spipe {
+namespace blocks {
 
-class LoadPotStructures : public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class LoadPotStructures : public SpStartBlock, ::boost::noncopyable
 {
 public:
 

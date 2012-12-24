@@ -30,14 +30,18 @@ typedef common::SharedData SharedDataTyp;
 
 // Pipe blocks
 typedef pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>        SpBlock;
+typedef pipelib::Barrier<StructureDataTyp, SharedDataTyp, SharedDataTyp>      SpBarrier;
 typedef pipelib::FinishedSink<StructureDataTyp>                               SpFinishedSink;
 typedef SpFinishedSink::PipelineDataPtr                                       SpStructureDataPtr;
-typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>    SpPipeBlockTyp;
+typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>    SpPipeBlock;
 typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlock;
 
 // Pipe engine and runner
 typedef pipelib::PipeRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpRunner;
+typedef pipelib::SingleThreadedEngine<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSingleThreadedEngine;
+typedef pipelib::SingleThreadedRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSingleThreadedRunner;
 typedef pipelib::RunnerSetup<StructureDataTyp, SharedDataTyp, SharedDataTyp>  SpRunnerSetup;
+typedef pipelib::SimpleBarrier<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSimpleBarrier;
 typedef SpRunnerSetup::ChildRunnerPtr                                         SpChildRunnerPtr;
 typedef pipelib::RunnerAccess<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpRunnerAccess;
 typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlockTyp;

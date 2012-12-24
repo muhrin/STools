@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/noncopyable.hpp>
+
 #include <pipelib/pipelib.h>
 
 #include "PipeLibTypes.h"
@@ -21,7 +23,7 @@
 namespace spipe {
 namespace blocks {
 
-class NiggliReduction : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class NiggliReduction : public SpPipeBlock, ::boost::noncopyable
 {
 public:
 

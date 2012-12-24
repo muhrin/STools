@@ -36,7 +36,7 @@ class Structure;
 namespace spipe {
 namespace blocks {
 
-class LoadSeedStructures : public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class LoadSeedStructures : public SpStartBlock, ::boost::noncopyable
 {
 public:
 

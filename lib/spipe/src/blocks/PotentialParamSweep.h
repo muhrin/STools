@@ -50,7 +50,6 @@ public:
 
 	// From Block /////////////////////////////////
 	virtual void pipelineInitialising();
-	virtual void pipelineInitialised();
 	virtual void start();
 	// End from Block //////////////////////////////
 
@@ -81,11 +80,11 @@ private:
 
   ::spipe::utility::DataTableSupport  myTableSupport;
 
-	SpStartBlockTyp &                      mySweepPipeline;
+	SpStartBlockTyp &                   mySweepPipeline;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataTyp *>		myBuffer;
-  SpChildRunnerPtr                        mySubpipeRunner;
+  SpChildRunnerPtr                    mySubpipeRunner;
 
 };
 

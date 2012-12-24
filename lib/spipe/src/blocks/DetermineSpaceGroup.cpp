@@ -39,7 +39,7 @@ namespace ssa = ::sstbx::analysis;
 namespace structure_properties = ssc::structure_properties;
 
 DetermineSpaceGroup::DetermineSpaceGroup():
-::pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Determine space group")
+SpBlock("Determine space group")
 {}
 
 void DetermineSpaceGroup::in(StructureDataTyp & data)

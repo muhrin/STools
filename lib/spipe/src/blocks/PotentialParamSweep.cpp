@@ -89,8 +89,8 @@ void PotentialParamSweep::start()
     // Get the relative path to where the pipeline write the structures to
     sweepPipeOutputPath = sweepPipeSharedData.getOutputPath(*getRunner()).string();
 
-		// Start the sweep pipeline
-		mySweepPipeline.start();
+		// Run the sweep pipeline
+		mySubpipeRunner->run();
 
 		// Send any finished structure data down my pipe
 		releaseBufferedStructures(sweepPipeOutputPath);
