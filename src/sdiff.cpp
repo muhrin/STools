@@ -254,8 +254,8 @@ void doPrintList(
   const bool printUniques,
   const InputOptions & in)
 {
-  typedef ::std::pair<ssu::UniqueStructureSet::iterator, bool> InsertReturnVal;
-  ssu::UniqueStructureSet structuresSet(comparator->getComparator());
+  typedef ::std::pair<ssu::UniqueStructureSet<>::iterator, bool> InsertReturnVal;
+  ssu::UniqueStructureSet<> structuresSet(comparator->getComparator());
 
   InsertReturnVal insertResult;
 
@@ -284,16 +284,23 @@ void doDiff(
   ComparatorPtr comparator,
   const InputOptions & in)
 {
+  typedef ::std::vector<ssu::IBufferedComparator::ComparisonDataHandle> ComparisonHandles;
+
   const size_t numStructures = structures.size();
+  ComparisonHandles comparisonHandles(numStructures);
   ::arma::mat diffs(numStructures, numStructures);
   diffs.diag().fill(0.0);
 
   double mean = 0.0, min = ::std::numeric_limits<double>::max(), max = 0.0;
+  for(size_t i = 0; i < numStructures; ++i)
+  {
+    comparisonHandles[i] = comparator->generateComparisonData(structures[i]);
+  }
   for(size_t i = 0; i < numStructures - 1; ++i)
   {
     for(size_t j = i + 1; j < numStructures; ++j)
     {
-      diffs(i, j) = comparator->compareStructures(structures[i], structures[j]);
+      diffs(i, j) = comparator->compareStructures(comparisonHandles[i], comparisonHandles[j]);
       
       mean += diffs(i, j);
       max = ::std::max(max, diffs(i, j));

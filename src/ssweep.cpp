@@ -24,12 +24,11 @@
 #include <utility/SortedDistanceComparator.h>
 #include <utility/UniqueStructureSet.h>
 
-#include <pipelib/IPipeline.h>
-#include <pipelib/SingleThreadedPipeline.h>
-#include <pipelib/DefaultBarrier.h>
+#include <pipelib/pipelib.h>
 
 // From StructurePipe
 #include <StructurePipe.h>
+#include <PipeLibTypes.h>
 #include <blocks/DetermineSpaceGroup.h>
 #include <blocks/LowestFreeEnergy.h>
 #include <blocks/NiggliReduction.h>
@@ -158,14 +157,9 @@ int main(const int argc, const char * const argv[])
 
 
   // Generate the pipelines that we need
-  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> paramSweepPipe;
-  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> & stoichSweepPipe   = paramSweepPipe.spawnChild();
-  ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> & randomSearchPipe  = stoichSweepPipe.spawnChild();
-
-  // Make sure the shared data is correctly hooked up
-  paramSweepPipe.getSharedData().setPipe(paramSweepPipe);
-  stoichSweepPipe.getSharedData().setPipe(stoichSweepPipe);
-  randomSearchPipe.getSharedData().setPipe(randomSearchPipe);
+  sp::SpSingleThreadedEngine engine;
+  sp::SpSingleThreadedEngine::RunnerPtr runner = engine.createRunner();
+  ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
 
   // Random structure
   ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
@@ -191,7 +185,7 @@ int main(const int argc, const char * const argv[])
 			<< 1 << betaDiagonal << endr;
 
   ssp::SimplePairPotential pp(
-    paramSweepPipe.getGlobalData().getSpeciesDatabase(),
+    speciesDb,
     2,
     potentialSpecies,
     epsilon,
@@ -216,8 +210,7 @@ int main(const int argc, const char * const argv[])
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;
-  ssu::UniqueStructureSet uniqueSet(comparator);
-  sp::blocks::RemoveDuplicates remDuplicates(uniqueSet);
+  sp::blocks::RemoveDuplicates remDuplicates(comparator);
 
   // Determine space group
   sp::blocks::DetermineSpaceGroup sg;
@@ -229,7 +222,7 @@ int main(const int argc, const char * const argv[])
   sp::blocks::WriteStructure write1(writerManager);
 
   // Barrier
-  ::pipelib::DefaultBarrier<sp::StructureDataTyp, sp::SharedDataTyp> barrier;
+  sp::SpSimpleBarrier barrier;
 
   // Write structures 2
   sp::blocks::WriteStructure write2(writerManager);
@@ -238,31 +231,17 @@ int main(const int argc, const char * const argv[])
   sp::blocks::LowestFreeEnergy lowestE;
 
   // Put it all together
-  randomSearchPipe.setStartBlock(randStr);
-  randomSearchPipe.connect(randStr, niggli);
-  randomSearchPipe.connect(niggli, goPressure);
-  randomSearchPipe.connect(goPressure, go);
-  randomSearchPipe.connect(go, remDuplicates);
-  randomSearchPipe.connect(remDuplicates, sg);
-  randomSearchPipe.connect(sg, write1);
-  randomSearchPipe.connect(write1, barrier);
-  randomSearchPipe.connect(barrier, write2);
-  randomSearchPipe.connect(write2, lowestE);
+  randStr |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
 
   // Configure stoichiometry sweep pipeline
-  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, in.maxNumAtoms, randomSearchPipe);
+  sp::blocks::StoichiometrySearch stoichSearch(ssc::AtomSpeciesId::NA, ssc::AtomSpeciesId::CL, in.maxNumAtoms, randStr);
   sp::blocks::LowestFreeEnergy lowestEStoich;
 
-  stoichSweepPipe.setStartBlock(stoichSearch);
-  stoichSweepPipe.connect(stoichSearch, lowestEStoich);
-
+  stoichSearch |= lowestEStoich;
 
   // Configure parameter sweep pipeline
-  sp::blocks::PotentialParamSweep ppSweep(from, stepSize, numSteps, stoichSweepPipe);
+  sp::blocks::PotentialParamSweep ppSweep(from, stepSize, numSteps, stoichSearch);
 
-  paramSweepPipe.setStartBlock(ppSweep);
-
-  paramSweepPipe.initialise();
-  paramSweepPipe.start();
+  runner->run();
 }
 

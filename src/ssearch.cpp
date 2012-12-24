@@ -34,13 +34,11 @@
 #include <utility/SortedDistanceComparator.h>
 #include <utility/UniqueStructureSet.h>
 
-// From Pipelib
-#include <pipelib/IPipeline.h>
-#include <pipelib/SingleThreadedPipeline.h>
-#include <pipelib/DefaultBarrier.h>
+#include <pipelib/pipelib.h>
 
 // From StructurePipe
 #include <StructurePipe.h>
+#include <PipeLibTypes.h>
 #include <blocks/DetermineSpaceGroup.h>
 #include <blocks/LoadSeedStructures.h>
 #include <blocks/LowestFreeEnergy.h>
@@ -69,6 +67,7 @@ namespace ssio  = ::sstbx::io;
 namespace ssp   = ::sstbx::potential;
 namespace ssu   = ::sstbx::utility;
 
+// CLASSES //////////////////////////////////
 struct InputOptions
 {
   unsigned int      numRandomStructures;
@@ -81,40 +80,18 @@ struct InputOptions
   double            potCutoff;
 };
 
+struct InputType
+{
+  enum Value { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
+};
+
 // CONSTANTS /////////////////////////////////
 static const double DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS = 5000;
 static const double DEFAULT_OPTIMISATION_MAX_ITERS = 10000;
 static const double DEFAULT_POT_CUTOFF = 2.5;
 
 ::sstbx::potential::SimplePairPotential::CombiningRule
-getCombiningRuleFromString(const ::std::string & str)
-{
-  ::sstbx::potential::SimplePairPotential::CombiningRule rule = ::sstbx::potential::SimplePairPotential::NONE;
-
-  if(str == "lorentz")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::LORENTZ;
-  }
-  else if(str == "berthelot")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::BERTHELOT;
-  }
-  else if(str == "lorentz_berthelot")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::LORENTZ_BERTHELOT;
-  }
-  else if(str == "custom")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::CUSTOM;
-  }
-
-  return rule;
-}
-
-struct InputType
-{
-  enum Value { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
-};
+getCombiningRuleFromString(const ::std::string & str);
 
 int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[]);
 
@@ -159,31 +136,17 @@ int main(const int argc, const char * const argv[])
   }
 
   // Generate the pipeline
-  typedef ::pipelib::SingleThreadedPipeline<sp::StructureDataTyp, sp::SharedDataTyp> Pipeline;
+  typedef sp::SpSingleThreadedEngine Engine;
+  typedef Engine::RunnerPtr RunnerPtr;
   typedef spb::PotentialParamSweep ParamSweepBlock;
 
-  ::boost::scoped_ptr<Pipeline> potparamsSweepPipe;
-  ::boost::scoped_ptr<Pipeline> randomSearchPipeOwned;
+  Engine pipeEngine;
+  RunnerPtr runner = pipeEngine.createRunner();
 
-  Pipeline * masterPipe;
-  Pipeline * randomSearchPipe;
-  if(doingSweep)
-  {
-    potparamsSweepPipe.reset(new Pipeline());
-    potparamsSweepPipe->getSharedData().setPipe(*potparamsSweepPipe.get());
-    masterPipe = potparamsSweepPipe.get();
-    randomSearchPipe = &potparamsSweepPipe->spawnChild();
-  }
-  else
-  {
-    randomSearchPipeOwned.reset(new Pipeline());
-    randomSearchPipe = randomSearchPipeOwned.get();
-    masterPipe = randomSearchPipe;
-  }
-  // Make sure the shared data is correctly hooked up
-  randomSearchPipe->getSharedData().setPipe(*randomSearchPipe);
+  ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
+  ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
 
-  ssc::AtomSpeciesDatabase & speciesDb = randomSearchPipe->getGlobalData().getSpeciesDatabase();
+  ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
 
   // Do atom species ///////////////////////////////////////
   if(in.potSpecies.size() != 2)
@@ -230,17 +193,17 @@ int main(const int argc, const char * const argv[])
     return 1;
   }
 
-  ::boost::scoped_ptr<pipelib::AbstractSimpleStartBlock<sp::StructureDataTyp, sp::SharedDataTyp> > startBlock;
-
+  // Set up the search starting block
+  ::boost::scoped_ptr<sp::SpStartBlock> searchStartBlock;
   if(inputType == InputType::RANDOM_STRUCTURES)
   {
     // Random structure
     ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-    startBlock.reset(new sp::blocks::RandomStructure(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
+    searchStartBlock.reset(new sp::blocks::RandomStructure(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
   }
   else if(inputType == InputType::SEED_STRUCTURES)
   {
-    startBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures, false));
+    searchStartBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures, false));
   }
 
   // Niggli reduction
@@ -284,7 +247,7 @@ int main(const int argc, const char * const argv[])
   pressureMtx.zeros();
   pressureMtx.diag().fill(in.optimisationPressure);
   initialOptimisationParams.setExternalPressure(pressureMtx);
-  initialOptimisationParams.setMaxIterations(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS);
+  initialOptimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS));
 
   // For seed structure pre-optimise only the lattice
   if(inputType == InputType::SEED_STRUCTURES)
@@ -293,13 +256,12 @@ int main(const int argc, const char * const argv[])
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, initialOptimisationParams, false);
 
   ssp::OptimisationSettings optimisationParams;
-  optimisationParams.setMaxIterations(DEFAULT_OPTIMISATION_MAX_ITERS);
+  optimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_OPTIMISATION_MAX_ITERS));
   sp::blocks::ParamPotentialGo go(pp, optimiser, optimisationParams, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;
-  ssu::UniqueStructureSet uniqueSet(comparator);
-  sp::blocks::RemoveDuplicates remDuplicates(uniqueSet);
+  sp::blocks::RemoveDuplicates remDuplicates(comparator);
 
   // Determine space group
   sp::blocks::DetermineSpaceGroup sg;
@@ -311,7 +273,7 @@ int main(const int argc, const char * const argv[])
   sp::blocks::WriteStructure write1(writerManager);
 
   // Barrier
-  ::pipelib::DefaultBarrier<sp::StructureDataTyp, sp::SharedDataTyp> barrier;
+  sp::SpSimpleBarrier barrier;
 
   // Write structures 2
   sp::blocks::WriteStructure write2(writerManager);
@@ -320,30 +282,46 @@ int main(const int argc, const char * const argv[])
   sp::blocks::LowestFreeEnergy lowestE;
 
   // Put it all together
-  randomSearchPipe->setStartBlock(*startBlock.get());
-  randomSearchPipe->connect(*startBlock.get(), niggli);
-  randomSearchPipe->connect(niggli, goPressure);
-  randomSearchPipe->connect(goPressure, go);
-  randomSearchPipe->connect(go, remDuplicates);
-  randomSearchPipe->connect(remDuplicates, sg);
-  randomSearchPipe->connect(sg, write1);
-  randomSearchPipe->connect(write1, barrier);
-  randomSearchPipe->connect(barrier, write2);
-  randomSearchPipe->connect(write2, lowestE);
-
+  *searchStartBlock |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
 
   ::boost::scoped_ptr<ParamSweepBlock> paramSweepBlock;
+  sp::SpStartBlock * masterPipe;
   if(doingSweep)
   {
     // Configure parameter sweep pipeline
-    paramSweepBlock.reset(new ParamSweepBlock(from, stepSize, numSteps, *randomSearchPipe));
-    potparamsSweepPipe->setStartBlock(*paramSweepBlock.get());
+    paramSweepBlock.reset(new ParamSweepBlock(from, stepSize, numSteps, *searchStartBlock));
+    masterPipe = paramSweepBlock.get();
   }
-
+  else
+    masterPipe = searchStartBlock.get();
 
   // Finally initialise and start whichever pipeline is the master
-  masterPipe->initialise();
-  masterPipe->start();
+  runner->run(*masterPipe);
+}
+
+::sstbx::potential::SimplePairPotential::CombiningRule
+getCombiningRuleFromString(const ::std::string & str)
+{
+  ::sstbx::potential::SimplePairPotential::CombiningRule rule = ::sstbx::potential::SimplePairPotential::NONE;
+
+  if(str == "lorentz")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::LORENTZ;
+  }
+  else if(str == "berthelot")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::BERTHELOT;
+  }
+  else if(str == "lorentz_berthelot")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::LORENTZ_BERTHELOT;
+  }
+  else if(str == "custom")
+  {
+    rule = ::sstbx::potential::SimplePairPotential::CUSTOM;
+  }
+
+  return rule;
 }
 
 int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[])
