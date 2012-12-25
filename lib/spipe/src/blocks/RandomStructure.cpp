@@ -20,8 +20,6 @@
 #include <common/Types.h>
 
 // Local includes
-#include "common/SharedData.h"
-#include "common/StructureData.h"
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
@@ -37,7 +35,7 @@ RandomStructure::RandomStructure(
   const ::sstbx::build_cell::IStructureGenerator &   structureGenerator,
   const OptionalUInt numToGenerate,
   const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Random structures"),
+SpBlock("Generate Random structures"),
 myNumToGenerate(numToGenerate),
 myStructureGenerator(structureGenerator),
 myStructureDescription(structureDescription),

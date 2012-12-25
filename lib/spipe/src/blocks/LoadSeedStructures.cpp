@@ -41,7 +41,7 @@ LoadSeedStructures::LoadSeedStructures(
   const ssc::AtomSpeciesDatabase & atomSpeciesDb,
   const ::std::string & seedStructures,
   const bool tryToScaleVolumes):
-::pipelib::Block<spipe::StructureDataTyp, spipe::SharedDataTyp, spipe::SharedDataTyp>("Load seed structures"),
+SpBlock("Load seed structures"),
 mySpeciesDb(atomSpeciesDb),
 myTryToScaleVolumes(tryToScaleVolumes)
 {

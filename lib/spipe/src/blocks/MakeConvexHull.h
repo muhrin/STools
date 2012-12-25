@@ -25,14 +25,14 @@
 
 #include <common/AtomSpeciesId.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spipe {
 namespace blocks {
 
-class MakeConvexHull : ::pipelib::AbstractSimpleBarrier<StructureDataTyp, SharedDataTyp>, ::boost::noncopyable
+class MakeConvexHull : ::pipelib::AbstractSimpleBarrier<StructureDataTyp, SharedDataType>, ::boost::noncopyable
 {
 public:
 

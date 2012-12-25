@@ -42,7 +42,7 @@ DetermineSpaceGroup::DetermineSpaceGroup():
 SpBlock("Determine space group")
 {}
 
-void DetermineSpaceGroup::in(StructureDataTyp & data)
+void DetermineSpaceGroup::in(StructureDataType & data)
 {
   // Express structure data in form that spglib can work with
   ssc::Structure * const structure = data.getStructure();

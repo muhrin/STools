@@ -15,7 +15,7 @@
 #include <common/Structure.h>
 
 // From SPipe
-#include <PipeLibTypes.h>
+#include <SpTypes.h>
 #include <StructurePipe.h>
 #include <common/SharedData.h>
 #include <common/StructureData.h>
@@ -29,7 +29,7 @@ class StructureSink : public ::spipe::SpFinishedSink
 public:
   StructureSink():myNumReceived(0) {}
 
-  void in(spipe::StructureDataTyp * const data)
+  void in(spipe::StructureDataType * const data)
   {
     ++myNumReceived;
   }

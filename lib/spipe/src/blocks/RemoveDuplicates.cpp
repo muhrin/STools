@@ -6,18 +6,17 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include "blocks/RemoveDuplicates.h"
 #include "StructurePipe.h"
 
-#include "blocks/RemoveDuplicates.h"
+#include <map>
 
-#include "common/StructureData.h"
+#include <boost/foreach.hpp>
 
 // From SSTbx
 #include <common/Structure.h>
 
-#include <boost/foreach.hpp>
-
-#include <map>
+#include "common/StructureData.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -30,7 +29,7 @@ namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
 RemoveDuplicates::RemoveDuplicates(sstbx::utility::IStructureComparator & comparator):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Remove duplicates"),
+SpBlock("Remove duplicates"),
 myStructureSet(comparator)
 {}
 

@@ -26,10 +26,8 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
 static const char NAME_DELIMITER[] = "_";
 
@@ -44,7 +42,7 @@ struct ObjectData : public ::std::pair<DataLocation::Value, T *>
 };
 
 template <typename T>
-ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, StructureDataTyp & strDat, MemoryAccessType & memory)
+ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, StructureDataType & strDat, MemoryAccessType & memory)
 {
   ObjectData<T> result;
 

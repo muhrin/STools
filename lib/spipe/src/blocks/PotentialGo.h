@@ -22,7 +22,7 @@
 #include <potential/OptimisationSettings.h>
 #include <potential/PotentialData.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 

@@ -23,7 +23,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {

@@ -27,7 +27,7 @@
 #include <utility/MultiIdxRange.h>
 
 // Local includes
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -90,10 +90,10 @@ public:
 
 private:
 
-  typedef ::spipe::StructureDataTyp                                         StructureDataTyp;
+  typedef ::spipe::StructureDataType                                        StructureDataTyp;
   typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription>   StrDescPtr;
   typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>           TableWriterPtr;
-  typedef ::pipelib::PipeRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp> RunnerType;
+  typedef ::pipelib::PipeRunner<StructureDataTyp, SharedDataType, SharedDataType> RunnerType;
 
   // From Block ////////
   virtual void runnerAttached(RunnerSetupType & setup);

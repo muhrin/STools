@@ -56,7 +56,7 @@ myStepExtents(nSteps.n_rows)
 void PotentialParamSweep::pipelineInitialising()
 {
 	// Set the parameters in the shared data
-	SharedDataTyp & sharedDat = getRunner()->memory().shared();
+	SharedDataType & sharedDat = getRunner()->memory().shared();
 	sharedDat.potSweepFrom.reset(myFrom);
 	sharedDat.potSweepStep.reset(myStep);
 	sharedDat.potSweepNSteps.reset(myNSteps);
@@ -68,12 +68,13 @@ void PotentialParamSweep::pipelineInitialising()
 void PotentialParamSweep::start()
 {
   ::std::string sweepPipeOutputPath;
-  ::spipe::SharedDataTyp & sweepPipeSharedData = mySubpipeRunner->memory().shared();
 
   const ssu::MultiIdxRange<unsigned int> stepsRange(ssu::MultiIdx<unsigned int>(myStepExtents.dims()), myStepExtents);
 
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & stepsIdx, stepsRange)
 	{
+    ::spipe::SharedDataType & sweepPipeSharedData = mySubpipeRunner->memory().shared();
+
 		// Load the current potential parameters into the pipeline data
 		::arma::vec params(myNumParams);
 		for(size_t i = 0; i < myNumParams; ++i)
@@ -127,7 +128,7 @@ void PotentialParamSweep::releaseBufferedStructures(
 )
 {
 	// Send any finished structure data down my pipe
-	BOOST_FOREACH(StructureDataTyp * const sweepStrData, myBuffer)
+	BOOST_FOREACH(StructureDataType * const sweepStrData, myBuffer)
 	{
     updateTable(key, *sweepStrData);
 
@@ -136,7 +137,9 @@ void PotentialParamSweep::releaseBufferedStructures(
 	myBuffer.clear();
 }
 
-void PotentialParamSweep::updateTable(const utility::DataTable::Key & key, const StructureDataTyp & sweepStrData)
+void PotentialParamSweep::updateTable(
+  const utility::DataTable::Key & key,
+  const StructureDataType & sweepStrData)
 {
   utility::DataTable & table = myTableSupport.getTable();
 

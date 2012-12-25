@@ -15,6 +15,7 @@
 // FORWARD DECLARES //////////////
 namespace spipe {
 namespace common {
+class GlobalData;
 class SharedData;
 class StructureData;
 }
@@ -25,27 +26,28 @@ namespace spipe {
 
 // TYPEDEFS ///////////////////////
 
-typedef common::StructureData StructureDataTyp;
-typedef common::SharedData SharedDataTyp;
+typedef common::StructureData StructureDataType;
+typedef common::SharedData SharedDataType;
+typedef common::GlobalData GlobalDataType;
 
 // Pipe blocks
-typedef pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>        SpBlock;
-typedef pipelib::Barrier<StructureDataTyp, SharedDataTyp, SharedDataTyp>      SpBarrier;
-typedef pipelib::FinishedSink<StructureDataTyp>                               SpFinishedSink;
+typedef pipelib::Block<StructureDataType, SharedDataType, GlobalDataType>        SpBlock;
+typedef pipelib::Barrier<StructureDataType, SharedDataType, GlobalDataType>      SpBarrier;
+typedef pipelib::FinishedSink<StructureDataType>                               SpFinishedSink;
 typedef SpFinishedSink::PipelineDataPtr                                       SpStructureDataPtr;
-typedef pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>    SpPipeBlock;
-typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlock;
+typedef pipelib::PipeBlock<StructureDataType, SharedDataType, GlobalDataType>    SpPipeBlock;
+typedef pipelib::StartBlock<StructureDataType, SharedDataType, GlobalDataType>   SpStartBlock;
 
 // Pipe engine and runner
-typedef pipelib::PipeRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpRunner;
-typedef pipelib::SingleThreadedEngine<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSingleThreadedEngine;
-typedef pipelib::SingleThreadedRunner<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSingleThreadedRunner;
-typedef pipelib::RunnerSetup<StructureDataTyp, SharedDataTyp, SharedDataTyp>  SpRunnerSetup;
-typedef pipelib::SimpleBarrier<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpSimpleBarrier;
+typedef pipelib::PipeRunner<StructureDataType, SharedDataType, GlobalDataType>   SpRunner;
+typedef pipelib::SingleThreadedEngine<StructureDataType, SharedDataType, GlobalDataType> SpSingleThreadedEngine;
+typedef pipelib::SingleThreadedRunner<StructureDataType, SharedDataType, GlobalDataType> SpSingleThreadedRunner;
+typedef pipelib::RunnerSetup<StructureDataType, SharedDataType, GlobalDataType>  SpRunnerSetup;
+typedef pipelib::SimpleBarrier<StructureDataType, SharedDataType, GlobalDataType> SpSimpleBarrier;
 typedef SpRunnerSetup::ChildRunnerPtr                                         SpChildRunnerPtr;
-typedef pipelib::RunnerAccess<StructureDataTyp, SharedDataTyp, SharedDataTyp> SpRunnerAccess;
-typedef pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>   SpStartBlockTyp;
-typedef pipelib::MemoryAccess<SharedDataTyp, SharedDataTyp>                   MemoryAccessType;
+typedef pipelib::RunnerAccess<StructureDataType, SharedDataType, GlobalDataType> SpRunnerAccess;
+typedef pipelib::StartBlock<StructureDataType, SharedDataType, GlobalDataType>   SpStartBlockTyp;
+typedef pipelib::MemoryAccess<SharedDataType, GlobalDataType>                   MemoryAccessType;
 
 typedef pipelib::PipelineDataHandle                                           StructureDataHandle;
 

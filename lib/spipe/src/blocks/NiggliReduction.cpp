@@ -24,10 +24,10 @@ namespace blocks {
 namespace ssc = ::sstbx::common;
 
 NiggliReduction::NiggliReduction():
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Niggli reduction")
+SpBlock("Niggli reduction")
 {}
 
-void NiggliReduction::in(spipe::common::StructureData & data)
+void NiggliReduction::in(StructureDataType & data)
 {
   ssc::UnitCell * const cell = data.getStructure()->getUnitCell();
   if(cell)
@@ -35,5 +35,7 @@ void NiggliReduction::in(spipe::common::StructureData & data)
 
 	out(data);
 }
-}}
+
+}
+}
 

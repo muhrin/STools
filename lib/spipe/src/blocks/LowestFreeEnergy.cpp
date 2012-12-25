@@ -23,7 +23,7 @@ namespace ssc = ::sstbx::common;
 namespace structure_properties = ssc::structure_properties;
 
 LowestFreeEnergy::LowestFreeEnergy():
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Lowest free energy"),
+SpBlock("Lowest free energy"),
 myLowest(NULL)
 {}
 

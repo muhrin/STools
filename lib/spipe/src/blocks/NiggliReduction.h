@@ -16,7 +16,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -29,7 +29,7 @@ public:
 
 	NiggliReduction();
 
-	virtual void in(::spipe::StructureDataTyp & data);
+	virtual void in(StructureDataType & data);
 };
 
 

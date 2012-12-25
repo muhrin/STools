@@ -36,7 +36,7 @@ namespace blocks
 namespace ssc = ::sstbx::common;
 
 MakeConvexHull::MakeConvexHull():
-::pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>("Make convex hull")
+::pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataType>("Make convex hull")
 {}
 
 void MakeConvexHull::pipelineFinishing()

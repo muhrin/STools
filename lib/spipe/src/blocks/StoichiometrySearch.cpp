@@ -28,8 +28,6 @@
 #include "common/UtilityFunctions.h"
 #include "utility/DataTable.h"
 
-// NAMESPACES ////////////////////////////////
-
 
 namespace spipe {
 namespace blocks {
@@ -62,7 +60,7 @@ StoichiometrySearch::StoichiometrySearch(
   const size_t       maxAtoms,
   const double       atomsRadius,
   SpStartBlock &   sweepPipe):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Sweep stoichiometry"),
+SpBlock("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 mySubpipe(sweepPipe),
@@ -87,7 +85,7 @@ void StoichiometrySearch::start()
   using ::boost::lexical_cast;
   using ::std::string;
 
-  SharedDataTyp & sweepPipeData = mySubpipeRunner->memory().shared();
+  SharedDataType & sweepPipeData = mySubpipeRunner->memory().shared();
   const ssc::AtomSpeciesDatabase & atomsDb = getRunner()->memory().global().getSpeciesDatabase();
 
   // Start looping over the possible stoichiometries

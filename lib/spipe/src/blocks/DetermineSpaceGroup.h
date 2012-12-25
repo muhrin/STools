@@ -16,7 +16,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -31,7 +31,7 @@ public:
   DetermineSpaceGroup();
 
   // From PipeBlock //////////////////////
-  virtual void in(StructureDataTyp & data);
+  virtual void in(StructureDataType & data);
   // End from PipeBlock /////////////////
 };
 

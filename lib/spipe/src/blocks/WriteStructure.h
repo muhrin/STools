@@ -12,9 +12,11 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/noncopyable.hpp>
+
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -31,15 +33,14 @@ namespace spipe {
 namespace blocks {
 
 
-class WriteStructure : public pipelib::PipeBlock< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp, ::spipe::SharedDataTyp>
+class WriteStructure : public SpPipeBlock, ::boost::noncopyable
 {
 public:
-	WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager);
+	WriteStructure();
 
-  virtual void in(spipe::StructureDataTyp & data);
-
-private:
-	const ::sstbx::io::StructureReadWriteManager & myWriterManager;
+  // From PipeBlock ////
+  virtual void in(StructureDataType & data);
+  // End from PipeBlock ////
 };
 
 }

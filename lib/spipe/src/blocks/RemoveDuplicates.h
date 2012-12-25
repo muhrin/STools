@@ -11,12 +11,14 @@
 // INCLUDES /////////////////////////////////////////////
 #include <map>
 
+#include <boost/noncopyable.hpp>
+
 #include <pipelib/pipelib.h>
 
 #include <utility/UniqueStructureSet.h>
 #include <utility/IStructureComparator.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -29,7 +31,7 @@ class Structure;
 namespace spipe {
 namespace blocks {
 
-class RemoveDuplicates : public pipelib::PipeBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class RemoveDuplicates : public SpPipeBlock, ::boost::noncopyable
 {
 public:
 	RemoveDuplicates(sstbx::utility::IStructureComparator & comparator);

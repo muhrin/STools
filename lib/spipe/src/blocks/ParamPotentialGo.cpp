@@ -36,7 +36,7 @@ ParamPotentialGo::ParamPotentialGo(
 	::sstbx::potential::IParameterisable & paramPotential,
 	const ::sstbx::potential::IGeomOptimiser & optimiser,
   const bool                  writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
+SpBlock("Parameterised potential geometry optimisation"),
 PotentialGo(optimiser, writeOutput),
 myParamPotential(paramPotential)
 {}
@@ -46,7 +46,7 @@ ParamPotentialGo::ParamPotentialGo(
 	const ::sstbx::potential::IGeomOptimiser & optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
   const bool                  writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Parameterised potential geometry optimisation"),
+SpBlock("Parameterised potential geometry optimisation"),
 PotentialGo(optimiser, optimisationParams, writeOutput),
 myParamPotential(paramPotential)
 {}

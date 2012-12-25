@@ -57,7 +57,7 @@
 //
 //      if(value == kw::PIPELINE__SINGLE_THREADED)
 //      {
-//        pipe = new ::pipelib::SingleThreadedPipeline< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>();
+//        pipe = new ::pipelib::SingleThreadedPipeline< ::spipe::StructureDataTyp, ::spipe::SharedDataType>();
 //        myPipelines.push_back(pipe);
 //      }
 //      // NOTE: Add new pipe types here with "else if" statements
@@ -122,11 +122,11 @@
 //  return block;
 //}
 //
-//::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> *
+//::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataType> *
 //PipeFactoryYaml::createBarrier(const YAML::Node & node)
 //{
-//  ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> * barrier
-//    = new ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp>();
+//  ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataType> * barrier
+//    = new ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataType>();
 //
 //  myBarriers.push_back(barrier);
 //

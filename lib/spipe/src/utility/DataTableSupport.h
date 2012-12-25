@@ -19,7 +19,7 @@
 #include <pipelib/pipelib.h>
 
 // Local includes
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "utility/DataTable.h"
 
 

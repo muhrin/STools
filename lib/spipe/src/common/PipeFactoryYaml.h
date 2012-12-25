@@ -71,7 +71,7 @@
 //  
 //
 ////  ::spipe::blocks::RandomStructure *  createBlockRandomCrystal(const YAML::Node & blockNode);
-//  ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> *
+//  ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataType> *
 //    createBarrier(const YAML::Node & node);
 //  ::spipe::blocks::RandomStructure *  createBlockRandomCrystal(const YAML::Node & blockNode);
 //  ::spipe::blocks::RemoveDuplicates * createDropDuplicates(const YAML::Node & node);
@@ -89,7 +89,7 @@
 //  /**/
 //  ::boost::ptr_vector<SpPipelineTyp>   myPipelines;
 //  ::boost::ptr_vector<SpBlock>     myBlocks;
-//  ::boost::ptr_vector< ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataTyp> >
+//  ::boost::ptr_vector< ::pipelib::DefaultBarrier< ::spipe::StructureDataTyp, ::spipe::SharedDataType> >
 //    myBarriers;
 //
 //  ::std::auto_ptr< ::sstbx::io::StructureReadWriteManager> myStructureReadWriteManager;

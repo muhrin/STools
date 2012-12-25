@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -20,7 +21,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -30,12 +31,10 @@ class IStructureGenerator;
 }
 }
 
-namespace spipe
-{
+namespace spipe {
 namespace blocks {
 
-class RandomStructure :
-	public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>
+class RandomStructure : public SpStartBlock, ::boost::noncopyable
 {
 public:
 

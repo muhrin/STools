@@ -19,7 +19,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -57,14 +57,14 @@ private:
 
   size_t loadStructures(
     const boost::filesystem::path &               strFolder,
-    std::vector<spipe::StructureDataTyp *>  &    structureVec) const;
+    std::vector<StructureDataType *>  &    structureVec) const;
 
   const sstbx::potential::IParameterisable &    myPot;
   const boost::filesystem::path                 myPotPath;
   const bool                                    myLowestEOnly;
 };
 
-
-}}
+}
+}
 
 #endif /* LOAD_POT_STRUCTURES_H */

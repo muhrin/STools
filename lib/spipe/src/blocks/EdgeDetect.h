@@ -28,7 +28,7 @@
 #include <pipelib/pipelib.h>
 
 // Local includes
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 
@@ -110,7 +110,7 @@ EdgeDetect::EdgeMapper::~EdgeMapper()
 // EdgeDetect implementation //
 
 EdgeDetect::EdgeDetect(const ::sstbx::utility::IStructureComparator & comparator):
-pipelib::Block<StructureDataTyp, SharedDataTyp>("Edge detect"),
+pipelib::Block<StructureDataTyp, SharedDataType>("Edge detect"),
 myComparator(comparator),
 myCurrentEdgeMapper(NULL)
 {
@@ -128,7 +128,7 @@ void EdgeDetect::pipelineStarting()
 	using ::sstbx::utility::MultiArray;
 	using ::sstbx::utility::MultiIdx;
 
-	::spipe::SharedDataTyp & sData = myPipeline->getSharedData();
+	::spipe::SharedDataType & sData = myPipeline->getSharedData();
 
 	// From out the number of dimensions if possible
 	if(sData.potSweepNSteps)

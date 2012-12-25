@@ -10,6 +10,7 @@
 
 #include <pipelib/pipelib.h>
 
+#include "common/GlobalData.h"
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
@@ -46,7 +47,7 @@ bool SharedData::appendToOutputDirName(const std::string & toAppend)
 
 ::boost::filesystem::path SharedData::getOutputPath(const SpRunnerAccess & runner) const
 {
-  ::boost::filesystem::path outPath = runner.memory().global().getPipeRelativeOutputPath();
+  ::boost::filesystem::path outPath = runner.memory().global().getOutputPath();
   // Now build up the from the topmost parent down to this pipeline
   buildOutputPathRecursive(outPath, runner);
 

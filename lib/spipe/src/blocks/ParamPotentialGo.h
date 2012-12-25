@@ -20,7 +20,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "blocks/PotentialGo.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"

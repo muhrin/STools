@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <armadillo>
@@ -23,7 +24,7 @@
 #include <utility/MultiIdx.h>
 
 // Local includes
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -37,9 +38,7 @@ class DataTableWriter;
 namespace blocks
 {
 
-class PotentialParamSweep :
-	public pipelib::StartBlock<StructureDataTyp, SharedDataTyp, SharedDataTyp>,
-	public pipelib::FinishedSink<StructureDataTyp>
+class PotentialParamSweep : public SpStartBlock, public SpFinishedSink, ::boost::noncopyable
 {
 public:
 	PotentialParamSweep(
@@ -69,7 +68,7 @@ private:
 
   void updateTable(
     const utility::DataTable::Key & key,
-    const StructureDataTyp & sweepStrData
+    const StructureDataType & sweepStrData
   );
 
 	size_t								                    myNumParams;
@@ -83,7 +82,7 @@ private:
 	SpStartBlockTyp &                   mySweepPipeline;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
-	::std::vector<StructureDataTyp *>		myBuffer;
+	::std::vector<StructureDataType *>		myBuffer;
   SpChildRunnerPtr                    mySubpipeRunner;
 
 };

@@ -46,7 +46,7 @@ namespace structure_properties = ssc::structure_properties;
 PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
   const bool                               writeOutput):
-BlockType("Potential geometry optimisation"),
+SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput)
 {}
@@ -55,7 +55,7 @@ PotentialGo::PotentialGo(
 	const sstbx::potential::IGeomOptimiser & optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
   const bool                               writeOutput):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Potential geometry optimisation"),
+SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput),
 myOptimisationParams(optimisationParams)

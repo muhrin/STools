@@ -10,7 +10,7 @@
 #define STRUCTURE_PIPE_H
 
 #ifndef NULL
-#define NULL 0
+#  define NULL 0
 #endif
 
 #define DEBUG 1
@@ -42,13 +42,5 @@
 #include <pipelib/pipelib.h>
 
 // FORWARD DECLARES //////////////
-
-
-namespace spipe {
-namespace common {
-class SharedData;
-class StructureData;
-}
-}
 
 #endif /* STRUCTURE_PIPE_H */

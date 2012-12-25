@@ -25,17 +25,18 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssc = ::sstbx::common;
 namespace fs = ::boost::filesystem;
+namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 
-WriteStructure::WriteStructure(const ::sstbx::io::StructureReadWriteManager & writerManager):
-pipelib::Block<StructureDataTyp, SharedDataTyp, SharedDataTyp>("Write structures"),
-myWriterManager(writerManager)
+WriteStructure::WriteStructure():
+SpBlock("Write structures")
 {}
 
 void WriteStructure::in(::spipe::common::StructureData & data)
 {
+  ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
   ssc::Structure * const structure = data.getStructure();
 
 	// Check if the structure has a name already, otherwise give it one
@@ -50,7 +51,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
   // Prepend the pipe output path
   p = getRunner()->memory().shared().getOutputPath(*getRunner()) / p;
 	
-  if(!myWriterManager.writeStructure(*data.getStructure(), p, getRunner()->memory().global().getSpeciesDatabase()))
+  if(!rwMan.writeStructure(*data.getStructure(), p, getRunner()->memory().global().getSpeciesDatabase()))
   {
     // TODO: Produce error
   }

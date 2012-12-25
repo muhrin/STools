@@ -23,7 +23,7 @@
 #include <potential/IParameterisable.h>
 
 // Local includes
-#include "PipeLibTypes.h"
+#include "SpTypes.h"
 #include "common/StructureData.h"
 #include "common/UtilityFunctions.h"
 #include "common/SharedData.h"
@@ -63,7 +63,7 @@ void LoadPotStructures::start()
   ifstream potFile(myPotPath);
 
   // Storage for loaded structures 
-  std::vector<spipe::StructureDataTyp *> structures;
+  std::vector<spipe::StructureDataType *> structures;
 
   if(potFile.is_open())
   {
@@ -92,7 +92,7 @@ void LoadPotStructures::start()
           {
             for(size_t i = 0; i < nLoaded; ++i)
             {
-              StructureDataTyp * const strDat = structures[i];
+              StructureDataType * const strDat = structures[i];
 
               strDat->objectsStore[GlobalKeys::POTENTIAL_PARAMS] = result.first;
 
@@ -111,7 +111,7 @@ void LoadPotStructures::start()
 
 size_t LoadPotStructures::loadStructures(
     const boost::filesystem::path &             strFolder,
-    std::vector<spipe::StructureDataTyp *>  &  structureVec) const
+    std::vector<spipe::StructureDataType *>  &  structureVec) const
 {
   using namespace boost::filesystem;
 
@@ -121,7 +121,7 @@ size_t LoadPotStructures::loadStructures(
   sstbx::io::ResReaderWriter resReader;
 
   // Keep track of the lowest energy
-  StructureDataTyp * lowest = NULL;
+  StructureDataType * lowest = NULL;
   size_t numLoaded = 0;
   ssc::Structure * structure;
   double lowestInternalEnergy = ::std::numeric_limits<double>::max();
@@ -137,7 +137,7 @@ size_t LoadPotStructures::loadStructures(
     const path & dirEntry = dirIt->path();
     if(dirEntry.extension() == ".res")
     {
-      StructureDataTyp * const strDat = new StructureDataTyp();
+      StructureDataType * const strDat = new StructureDataType();
 
       // Try loading
       if(resReader.readStructures(loadedStructures, dirEntry, getRunner()->memory().global().getSpeciesDatabase()) == 1)
