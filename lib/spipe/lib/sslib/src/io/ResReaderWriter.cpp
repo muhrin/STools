@@ -487,4 +487,10 @@ std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
 	return ext;
 }
 
-}}
+bool ResReaderWriter::multiStructureSupport() const
+{
+  return false;
+}
+
+}
+}

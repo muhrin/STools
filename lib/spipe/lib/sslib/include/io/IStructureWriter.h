@@ -44,8 +44,14 @@ public:
 		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const = 0;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
+
+  /**
+  /* Does this writer support writing multiple structures to a single file.
+  /**/
+  virtual bool multiStructureSupport() const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_STRUCTURE_WRITER_H */

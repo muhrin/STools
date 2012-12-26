@@ -9,8 +9,6 @@
 #include "io/StructureReadWriteManager.h"
 
 #include "common/Structure.h"
-#include "io/IStructureReader.h"
-#include "io/IStructureWriter.h"
 #include "io/ResourceLocator.h"
 
 #include <boost/foreach.hpp>
@@ -79,12 +77,19 @@ void StructureReadWriteManager::deregisterReader(IStructureReader & reader)
 
 bool StructureReadWriteManager::writeStructure(
 	::sstbx::common::Structure & str,
-	const ResourceLocator & locator,
+	ResourceLocator locator,
   const common::AtomSpeciesDatabase & atomSpeciesDb) const
 {
 	// TODO: Add status return value to this method
   ::std::string ext;
-  if(!getExtension(ext, locator))
+
+  if(!getExtension(ext, locator) && !myDefaultWriteExtension.empty())
+  {
+    // No extension: try default writer
+    ext = myDefaultWriteExtension;
+    locator.setPath(locator.path().string() + "." + ext);
+  }
+  else
     return false;
 
 	const WritersMap::const_iterator it = myWriters.find(ext);
@@ -92,7 +97,7 @@ bool StructureReadWriteManager::writeStructure(
 	if(it == myWriters.end())
 		return false; /*unknown extension*/
 
-	// Finally pass it on the the correct writer
+  // Finally pass it on the the correct writer
 	it->second->writeStructure(str, locator, atomSpeciesDb);
 
   // TODO: The write may have failed so provide better and accurate feedback!
@@ -139,6 +144,28 @@ size_t StructureReadWriteManager::readStructures(
 
 	// Finally pass it on the the correct reader
   return it->second->readStructures(outStructures, locator, speciesDb);
+}
+
+bool StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)
+{
+  myDefaultWriteExtension = extension;
+
+  const WritersMap::const_iterator it = myWriters.find(extension);
+
+  if(it == myWriters.end())
+    return false;
+
+  return true;
+}
+
+const IStructureWriter * StructureReadWriteManager::getDefaultWriter() const
+{
+  const WritersMap::const_iterator it = myWriters.find(myDefaultWriteExtension);
+
+  if(it == myWriters.end())
+    return NULL;
+
+  return it->second;
 }
 
 bool StructureReadWriteManager::getExtension(::std::string & ext, const ResourceLocator & locator) const

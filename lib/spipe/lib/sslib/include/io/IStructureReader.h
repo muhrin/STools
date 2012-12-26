@@ -53,8 +53,14 @@ public:
 		const common::AtomSpeciesDatabase & speciesDb) const = 0;
 
 	virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
+
+  /**
+  /* Does this reader support reading multiple structures from a single file.
+  /**/
+  virtual bool multiStructureSupport() const = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_STRUCTURE_READER_H */

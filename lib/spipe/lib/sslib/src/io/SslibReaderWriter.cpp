@@ -208,5 +208,10 @@ size_t SslibReaderWriter::readStructures(
   return exts;
 }
 
+bool SslibReaderWriter::multiStructureSupport() const
+{
+  return true;
+}
+
 }
 }

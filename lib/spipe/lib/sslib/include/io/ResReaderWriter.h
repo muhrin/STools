@@ -21,9 +21,7 @@
 namespace sstbx {
 namespace io {
 
-class ResReaderWriter :
-  public IStructureWriter,
-  public IStructureReader
+class ResReaderWriter :  public virtual IStructureWriter,  public virtual IStructureReader
 {
 public:
 
@@ -54,8 +52,13 @@ public:
 
   // End from IStructureReader //
 
+  /**
+  /* Does this reader support reading multiple structures from a single file.
+  /**/
+  virtual bool multiStructureSupport() const;
 };
 
-}}
+}
+}
 
 #endif /* RES_READER_WRITER_H */

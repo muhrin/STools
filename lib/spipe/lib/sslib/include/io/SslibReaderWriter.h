@@ -56,10 +56,11 @@ public:
 
   // End from IStructureReader //
 
-private:
+  virtual bool multiStructureSupport() const;
 
 };
 
-}}
+}
+}
 
 #endif /* SSLIB_READER_WRITER_H */

@@ -36,6 +36,12 @@ private:
   UniquePtr() {}
 };
 
+template <typename T>
+typename UniquePtr<T>::Type makeUniquePtr(T * const ptr)
+{
+  return typename UniquePtr<T>::Type(ptr);
+}
+
 
 // Sometimes it's not possible to use the above struct-typedef method,
 // for example in cases where ADL should be used.  In which case this

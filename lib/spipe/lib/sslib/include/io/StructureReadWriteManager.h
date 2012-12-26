@@ -19,6 +19,7 @@
 
 #include "common/Types.h"
 #include "io/IStructureReader.h"
+#include "io/IStructureWriter.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
@@ -57,7 +58,7 @@ public:
 	
 	bool writeStructure(
 		common::Structure & str,
-		const ResourceLocator & path,
+		ResourceLocator path,
     const common::AtomSpeciesDatabase & atomSpeciesDb) const;
 
   common::types::StructurePtr readStructure(
@@ -69,6 +70,9 @@ public:
     const ResourceLocator & locator,
     const common::AtomSpeciesDatabase & speciesDb) const;
 
+  bool setDefaultWriter(const ::std::string & extension);
+  const IStructureWriter * getDefaultWriter() const;
+
 protected:
 
   typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
@@ -77,6 +81,8 @@ protected:
   typedef ::boost::ptr_vector<IStructureReader> ReadersStore;
 
   bool getExtension(::std::string & ext, const ResourceLocator & locator) const;
+
+  ::std::string myDefaultWriteExtension;
 
 	WritersMap myWriters;
   ReadersMap myReaders;
