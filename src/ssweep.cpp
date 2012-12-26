@@ -42,6 +42,7 @@
 #include <common/SharedData.h>
 #include <common/StructureData.h>
 #include <common/UtilityFunctions.h>
+#include <utility/PipeDataInitialisation.h>
 
 // MACROS ////////////////////////////////////
 
@@ -158,7 +159,7 @@ int main(const int argc, const char * const argv[])
 
   // Generate the pipelines that we need
   sp::SpSingleThreadedEngine engine;
-  sp::SpSingleThreadedEngine::RunnerPtr runner = engine.createRunner();
+  sp::SpEngine::RunnerPtr runner = sp::common::generateRunnerInitDefault(engine);
   ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
 
   // Random structure
@@ -216,16 +217,13 @@ int main(const int argc, const char * const argv[])
   sp::blocks::DetermineSpaceGroup sg;
 
   // Write structures
-  ssio::ResReaderWriter resIo;
-  ssio::StructureReadWriteManager writerManager;
-  writerManager.registerWriter(resIo);
-  sp::blocks::WriteStructure write1(writerManager);
+  sp::blocks::WriteStructure write1;
 
   // Barrier
   sp::SpSimpleBarrier barrier;
 
   // Write structures 2
-  sp::blocks::WriteStructure write2(writerManager);
+  sp::blocks::WriteStructure write2;
 
   // Get the lowest free energy
   sp::blocks::LowestFreeEnergy lowestE;

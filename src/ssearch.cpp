@@ -26,7 +26,6 @@
 #include <factory/FactoryError.h>
 #include <factory/SsLibFactoryYaml.h>
 #include <factory/SsLibYamlKeywords.h>
-#include <io/ResReaderWriter.h>
 #include <io/StructureReadWriteManager.h>
 #include <potential/SimplePairPotential.h>
 #include <potential/FixedLatticeShapeConstraint.h>
@@ -38,7 +37,7 @@
 
 // From StructurePipe
 #include <StructurePipe.h>
-#include <PipeLibTypes.h>
+#include <SpTypes.h>
 #include <blocks/DetermineSpaceGroup.h>
 #include <blocks/LoadSeedStructures.h>
 #include <blocks/LowestFreeEnergy.h>
@@ -53,6 +52,8 @@
 #include <common/SharedData.h>
 #include <common/StructureData.h>
 #include <common/UtilityFunctions.h>
+
+#include "utility/PipeDataInitialisation.h"
 
 // MACROS ////////////////////////////////////
 
@@ -141,7 +142,7 @@ int main(const int argc, const char * const argv[])
   typedef spb::PotentialParamSweep ParamSweepBlock;
 
   Engine pipeEngine;
-  RunnerPtr runner = pipeEngine.createRunner();
+  RunnerPtr runner = generateRunnerInitDefault(pipeEngine);
 
   ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
   ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
@@ -267,16 +268,13 @@ int main(const int argc, const char * const argv[])
   sp::blocks::DetermineSpaceGroup sg;
 
   // Write structures
-  ssio::ResReaderWriter resIo;
-  ssio::StructureReadWriteManager writerManager;
-  writerManager.registerWriter(resIo);
-  sp::blocks::WriteStructure write1(writerManager);
+  sp::blocks::WriteStructure write1;
 
   // Barrier
   sp::SpSimpleBarrier barrier;
 
   // Write structures 2
-  sp::blocks::WriteStructure write2(writerManager);
+  sp::blocks::WriteStructure write2;
 
   // Get the lowest free energy
   sp::blocks::LowestFreeEnergy lowestE;
@@ -330,7 +328,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
 
   try
   {
-    po::options_description general("STools\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+    po::options_description general("ssearch\nUsage: " + exeName + " [options] inpue_file...\nOptions");
     general.add_options()
       ("help", "Show help message")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
