@@ -110,7 +110,8 @@ namespace YAML {
       typedef boost::tokenizer<boost::char_separator<char> > Tok;
       const boost::char_separator<char> sep(" ");
 
-      Tok tok(node[kw::STRUCTURE__CELL__ABC].as< ::std::string>(), sep);
+      const ::std::string paramString = node[kw::STRUCTURE__CELL__ABC].as< ::std::string>();
+      Tok tok(paramString, sep);
 
       size_t param = 0;
       for(Tok::iterator it = tok.begin(), end = tok.end();
@@ -297,7 +298,8 @@ namespace YAML {
         typedef boost::tokenizer<boost::char_separator<char> > Tok;
         const boost::char_separator<char> sep(" ");
 
-        Tok tok(node.as< ::std::string>(), sep);
+        const ::std::string coordString = node.as< ::std::string>();
+        Tok tok(coordString, sep);
 
         size_t coord = 0;
         for(Tok::const_iterator it = tok.begin(), end = tok.end();

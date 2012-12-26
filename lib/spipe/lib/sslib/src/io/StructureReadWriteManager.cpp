@@ -83,19 +83,22 @@ bool StructureReadWriteManager::writeStructure(
 	// TODO: Add status return value to this method
   ::std::string ext;
 
-  if(!getExtension(ext, locator) && !myDefaultWriteExtension.empty())
+  if(!getExtension(ext, locator))
   {
     // No extension: try default writer
-    ext = myDefaultWriteExtension;
-    locator.setPath(locator.path().string() + "." + ext);
+    if(!myDefaultWriteExtension.empty())
+    {
+      ext = myDefaultWriteExtension;
+      locator.setPath(locator.path().string() + "." + ext);
+    }
+    else
+      return false; // don't know which output format to use
   }
-  else
-    return false;
 
 	const WritersMap::const_iterator it = myWriters.find(ext);
 
 	if(it == myWriters.end())
-		return false; /*unknown extension*/
+		return false; // unknown extension
 
   // Finally pass it on the the correct writer
 	it->second->writeStructure(str, locator, atomSpeciesDb);
@@ -129,7 +132,7 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
 }
 
 size_t StructureReadWriteManager::readStructures(
-  io::StructuresContainer & outStructures,
+  StructuresContainer & outStructures,
   const ResourceLocator & locator,
   const common::AtomSpeciesDatabase & speciesDb) const
 {

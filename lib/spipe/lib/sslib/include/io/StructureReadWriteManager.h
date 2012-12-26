@@ -66,7 +66,7 @@ public:
     const common::AtomSpeciesDatabase & speciesDb) const;
 
   size_t readStructures(
-    io::StructuresContainer & outStructures,
+    StructuresContainer & outStructures,
     const ResourceLocator & locator,
     const common::AtomSpeciesDatabase & speciesDb) const;
 

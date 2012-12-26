@@ -196,6 +196,7 @@ size_t SslibReaderWriter::readStructures(
 
     if(structure.get())
       outStructures.push_back(structure.release());
+    ++numLoaded;
   }
 
   return numLoaded;
