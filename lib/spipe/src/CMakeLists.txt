@@ -69,6 +69,7 @@ source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
 ## spipe/utility/
 
 set(spipe_Header_Files__utility
+  utility/PipeDataInitialisation.h
   utility/DataTable.h
   utility/DataTableSupport.h
   utility/DataTableValueChanged.h
@@ -78,6 +79,7 @@ set(spipe_Header_Files__utility
 source_group("Header Files\\utility" FILES ${spipe_Header_Files__utility})
 
 set(spipe_Source_Files__utility
+  utility/PipeDataInitialisation.cpp
   utility/DataTable.cpp
   utility/DataTableSupport.cpp
   utility/DataTableValueChanged.cpp

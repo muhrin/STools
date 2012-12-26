@@ -40,6 +40,7 @@ typedef pipelib::StartBlock<StructureDataType, SharedDataType, GlobalDataType>  
 
 // Pipe engine and runner
 typedef pipelib::PipeRunner<StructureDataType, SharedDataType, GlobalDataType>   SpRunner;
+typedef pipelib::PipeEngine<StructureDataType, SharedDataType, GlobalDataType>   SpEngine;
 typedef pipelib::SingleThreadedEngine<StructureDataType, SharedDataType, GlobalDataType> SpSingleThreadedEngine;
 typedef pipelib::SingleThreadedRunner<StructureDataType, SharedDataType, GlobalDataType> SpSingleThreadedRunner;
 typedef pipelib::RunnerSetup<StructureDataType, SharedDataType, GlobalDataType>  SpRunnerSetup;

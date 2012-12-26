@@ -29,12 +29,6 @@ class StructureData;
 }
 }
 
-namespace sstbx {
-namespace io {
-struct AdditionalData;
-}
-}
-
 // DEFINES ////////////////////////////////////////
 #define EPSILON_REL 1e-5;
 

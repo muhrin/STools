@@ -36,11 +36,14 @@ namespace blocks {
 class WriteStructure : public SpPipeBlock, ::boost::noncopyable
 {
 public:
-	WriteStructure();
+	WriteStructure(const bool writeMultiStructure = true);
 
   // From PipeBlock ////
   virtual void in(StructureDataType & data);
   // End from PipeBlock ////
+
+private:
+  const bool myWriteMultiStructure;
 };
 
 }

@@ -12,6 +12,7 @@
 #include <common/Structure.h>
 #include <io/StructureReadWriteManager.h>
 #include <io/BoostFilesystem.h>
+#include <io/ResourceLocator.h>
 
 // From local
 #include "common/SharedData.h"
@@ -30,32 +31,38 @@ namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 
-WriteStructure::WriteStructure():
-SpBlock("Write structures")
+WriteStructure::WriteStructure(const bool writeMultiStructure):
+SpBlock("Write structures"),
+myWriteMultiStructure(writeMultiStructure)
 {}
 
 void WriteStructure::in(::spipe::common::StructureData & data)
 {
-  ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
-  ssc::Structure * const structure = data.getStructure();
-
-	// Check if the structure has a name already, otherwise give it one
-	if(structure->getName().empty())
-	{
-		structure->setName(::spipe::common::generateUniqueName());
-	}
-
-	// Create the path to store the structure
-	fs::path p(structure->getName() + ".res");
-
-  // Prepend the pipe output path
-  p = getRunner()->memory().shared().getOutputPath(*getRunner()) / p;
-	
-  if(!rwMan.writeStructure(*data.getStructure(), p, getRunner()->memory().global().getSpeciesDatabase()))
+  const ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
+  if(rwMan.getDefaultWriter())
   {
-    // TODO: Produce error
-  }
+    common::SharedData & shared = getRunner()->memory().shared();
+    ssc::Structure * const structure = data.getStructure();
 
+	  // Check if the structure has a name already, otherwise give it one
+	  if(structure->getName().empty())
+	  {
+		  structure->setName(::spipe::common::generateUniqueName());
+	  }
+
+	  // Create the path to store the structure
+    fs::path p(shared.getOutputPath(*getRunner()));
+    if(!myWriteMultiStructure || !rwMan.getDefaultWriter()->multiStructureSupport())
+    {
+      p /= fs::path(structure->getName());
+    }
+    ssio::ResourceLocator saveLocation(p, structure->getName());
+  	
+    if(!rwMan.writeStructure(*data.getStructure(), saveLocation, getRunner()->memory().global().getSpeciesDatabase()))
+    {
+      // TODO: Produce error
+    }
+  }
 	out(data);
 }
 
