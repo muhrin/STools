@@ -58,7 +58,7 @@ add_executable(sconvert
   ${stools_Files__sconvert}
 )
 
-add_dependencies(sconvert sslib)
+add_dependencies(sconvert sslib spipe)
 
 # Libraries we need to link to
 target_link_libraries(sconvert
@@ -66,6 +66,7 @@ target_link_libraries(sconvert
   ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   sslib
+  spipe
 )
 
 

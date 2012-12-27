@@ -63,6 +63,7 @@ int main(const int argc, const char * const argv[])
 {
   namespace po    = ::boost::program_options;
   namespace sp    = ::spipe;
+  namespace spu   = ::spipe::utility;
   namespace ssbc  = ::sstbx::build_cell;
   namespace ssc   = ::sstbx::common;
   namespace ssio  = ::sstbx::io;
@@ -159,7 +160,7 @@ int main(const int argc, const char * const argv[])
 
   // Generate the pipelines that we need
   sp::SpSingleThreadedEngine engine;
-  sp::SpEngine::RunnerPtr runner = sp::common::generateRunnerInitDefault(engine);
+  sp::SpEngine::RunnerPtr runner = spu::generateRunnerInitDefault(engine);
   ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
 
   // Random structure

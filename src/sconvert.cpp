@@ -13,19 +13,18 @@
 // From SSTbx
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
-#include <io/ResReaderWriter.h>
-#include <io/SslibReaderWriter.h>
 #include <io/StructureReadWriteManager.h>
 
 
 // From StructurePipe
-
+#include <utility/PipeDataInitialisation.h>
 
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
 namespace fs    = ::boost::filesystem;
 namespace po    = ::boost::program_options;
+namespace spu   = ::spipe::utility;
 namespace ssc   = ::sstbx::common;
 namespace ssio  = ::sstbx::io;
 namespace ssu   = ::sstbx::utility;
@@ -51,19 +50,28 @@ int main(const int argc, const char * const argv[])
   if(result != 0)
     return result;
 
+  ssio::ResourceLocator fileIn, fileOut;
+  if(!fileIn.set(in.inputOutputFiles[0]))
+    ::std::cerr << "Input file not valid" << ::std::endl;
+  if(!fileOut.set(in.inputOutputFiles[1]))
+    ::std::cerr << "Output file not valid" << ::std::endl;
+
   ssc::AtomSpeciesDatabase speciesDb;
 
-  ssio::StructureReadWriteManager writerManager;
-  ssio::ResReaderWriter resReadWrite;
-  ssio::SslibReaderWriter sslibReadWrite;
+  ssio::StructureReadWriteManager rwMan;
+  spu::initStructureRwManDefault(rwMan);
 
-  writerManager.registerWriter(resReadWrite);
-  writerManager.registerWriter(sslibReadWrite);
+  ssio::StructuresContainer structures;
+  if(rwMan.readStructures(structures, fileIn, speciesDb) == 0)
+  {
+    ::std::cerr << "Failed to ready any structures." << ::std::endl;
+    return 1;
+  }
 
-
-  ssc::types::StructurePtr structure = resReadWrite.readStructure(fs::path(in.inputOutputFiles[0]), speciesDb);
-
-  writerManager.writeStructure(*structure.get(), fs::path(in.inputOutputFiles[1]), speciesDb);
+  BOOST_FOREACH(ssc::Structure & structure, structures)
+  {
+    rwMan.writeStructure(structure, fileOut, speciesDb);
+  }
 
   return 0;
 }

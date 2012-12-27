@@ -60,6 +60,7 @@
 // NAMESPACES ////////////////////////////////
 namespace po    = ::boost::program_options;
 namespace sp    = ::spipe;
+namespace spu   = ::spipe::utility;
 namespace spb   = ::spipe::blocks;
 namespace ssbc  = ::sstbx::build_cell;
 namespace ssc   = ::sstbx::common;
@@ -142,7 +143,7 @@ int main(const int argc, const char * const argv[])
   typedef spb::PotentialParamSweep ParamSweepBlock;
 
   Engine pipeEngine;
-  RunnerPtr runner = generateRunnerInitDefault(pipeEngine);
+  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
 
   ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
   ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
