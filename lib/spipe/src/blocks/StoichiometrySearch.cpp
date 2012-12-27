@@ -100,9 +100,10 @@ void StoichiometrySearch::start()
       continue;
 
     // Set the current structure description in our subpipline
-    sweepPipeData.structureDescription = StrDescPtr(
+    StrDescPtr structureDescription(
       new ::sstbx::build_cell::StructureDescription(ssbc::ConstUnitCellBlueprintPtr(new ssbc::RandomUnitCell()))
     );
+    sweepPipeData.setStructureDescription(structureDescription);
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
@@ -117,7 +118,7 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        sweepPipeData.structureDescription->addChild(ssbc::AtomsDescriptionPtr(
+        structureDescription->addChild(ssbc::AtomsDescriptionPtr(
           new ::sstbx::build_cell::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies)
         ));
       }

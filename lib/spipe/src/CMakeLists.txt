@@ -41,6 +41,7 @@ source_group("Source Files\\blocks" FILES ${spipe_Source_Files__blocks})
 ## spipe/common/
 
 set(spipe_Header_Files__common
+  common/CommonData.h
   common/GlobalData.h
   common/PipeBuilder.h
   common/PipeFactoryYaml.h
@@ -54,6 +55,7 @@ set(spipe_Header_Files__common
 source_group("Header Files\\common" FILES ${spipe_Header_Files__common})
 
 set(spipe_Source_Files__common
+  common/CommonData.cpp
   common/GlobalData.cpp
   common/PipeBuilder.cpp
   common/PipeFactoryYaml.cpp

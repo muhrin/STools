@@ -20,6 +20,9 @@ namespace common {
 class GlobalData;
 class SharedData;
 }
+namespace io{
+class StructureReadWriteManager;
+}
 }
 
 // DEFINES ////////////////////////////////////////
@@ -28,11 +31,13 @@ class SharedData;
 // FUNCTIONS ////////////////////////////////////////
 
 namespace spipe {
-namespace common {
+namespace utility {
+
+void initStructureRwManDefault(::sstbx::io::StructureReadWriteManager & rwMan);
 
 ::spipe::SpEngine::RunnerPtr generateRunnerInitDefault(::spipe::SpEngine & engine);
 
-void initGlobalDataDefault(GlobalData & global);
+void initGlobalDataDefault(::spipe::common::GlobalData & global);
 
 
 }

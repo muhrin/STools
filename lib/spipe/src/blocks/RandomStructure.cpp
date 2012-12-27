@@ -107,9 +107,9 @@ void RandomStructure::initDescriptions()
   const common::SharedData & sharedDat = getRunner()->memory().shared();
   if(myUseSharedDataStructureDesc)
   {
-    if(sharedDat.structureDescription.get())
+    if(sharedDat.getStructureDescription())
     {
-      myStructureDescription = sharedDat.structureDescription;
+      myStructureDescription = sharedDat.getStructureDescription();
     }
     else
     {

@@ -39,7 +39,7 @@ class RandomStructure : public SpStartBlock, ::boost::noncopyable
 public:
 
   typedef ::boost::optional<unsigned int> OptionalUInt;
-  typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription >      StructureDescPtr;
+  typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription> StructureDescPtr;
 
 	RandomStructure(
 		const ::sstbx::build_cell::IStructureGenerator & structureGenerator,

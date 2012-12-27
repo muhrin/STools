@@ -26,11 +26,11 @@ namespace spipe {
 namespace blocks {
 
 namespace fs = ::boost::filesystem;
-namespace common = ::spipe::common;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
+typedef common::GlobalKeys Keys;
 
 PotentialParamSweep::PotentialParamSweep(
 	const ::arma::vec	&		from,
@@ -56,10 +56,12 @@ myStepExtents(nSteps.n_rows)
 void PotentialParamSweep::pipelineInitialising()
 {
 	// Set the parameters in the shared data
-	SharedDataType & sharedDat = getRunner()->memory().shared();
-	sharedDat.potSweepFrom.reset(myFrom);
-	sharedDat.potSweepStep.reset(myStep);
-	sharedDat.potSweepNSteps.reset(myNSteps);
+  common::ParamRange paramRange(myFrom.n_rows);
+  paramRange.from = myFrom;
+  paramRange.step = myStep;
+  paramRange.nSteps = myNSteps;
+
+  getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = paramRange;
 
   myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".potparams");
   myTableSupport.registerRunner(*getRunner());

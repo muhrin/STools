@@ -21,9 +21,6 @@ namespace common {
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 
-// Objects keys ////////////////
-::sstbx::utility::Key< ::arma::vec> GlobalKeys::POTENTIAL_PARAMS;
-
 const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 
@@ -64,9 +61,19 @@ const ::boost::filesystem::path & SharedData::getOutputFileStem() const
   return myOutputFileStem;
 }
 
-ssbc::StructureDescription * SharedData::getStructureDescription()
+SharedData::StructureDescriptionPtr SharedData::getStructureDescription()
 {
-  return structureDescription.get();
+  return structureDescription;
+}
+
+SharedData::ConstStructureDescriptionPtr SharedData::getStructureDescription() const
+{
+  return structureDescription;
+}
+
+void SharedData::setStructureDescription(StructureDescriptionPtr description)
+{
+  structureDescription = description;
 }
 
 ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
@@ -82,18 +89,10 @@ const ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase() const
 void SharedData::reset()
 {
   // Reset everything
-  potSweepFrom.reset();
-  potSweepStep.reset();
-  potSweepNSteps.reset();
-
   structureDescription.reset();
-
   objectsStore.clear();
-
   dataTable.clear();
-
   myOutputDir.clear();
-
   myOutputFileStem = generateUniqueName();
 }
 

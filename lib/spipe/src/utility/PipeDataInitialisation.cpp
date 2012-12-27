@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "PipeDataInitialisation.h"
+#include "utility/PipeDataInitialisation.h"
 
 // From SSTbx
 #include <SSLibTypes.h>
@@ -21,9 +21,10 @@
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
-namespace common {
+namespace utility {
 
 namespace sp = ::spipe;
+namespace spc = ::spipe::common;
 namespace ssio = ::sstbx::io;
 
 void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
@@ -40,7 +41,7 @@ sp::SpEngine::RunnerPtr generateRunnerInitDefault(sp::SpEngine & engine)
   return runner;
 }
 
-void initGlobalDataDefault(GlobalData & global)
+void initGlobalDataDefault(spc::GlobalData & global)
 {
   initStructureRwManDefault(global.getStructureIo());
 }

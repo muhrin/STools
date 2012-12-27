@@ -20,11 +20,11 @@
 
 #include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
-#include <utility/HeterogeneousMap.h>
 
 // Local includes
 #include "PipeLibTypes.h"
 #include "utility/DataTable.h"
+#include "common/CommonData.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -37,17 +37,12 @@ class StructureDescription;
 namespace spipe {
 namespace common {
 
-struct GlobalKeys
-{
-  // The current parameterised potential parameters
-  static ::sstbx::utility::Key< ::arma::vec>  POTENTIAL_PARAMS;
-
-
-};
-
 class SharedData
 {
 public:
+
+  typedef ::boost::shared_ptr<sstbx::build_cell::StructureDescription> StructureDescriptionPtr;
+  typedef ::boost::shared_ptr<const sstbx::build_cell::StructureDescription> ConstStructureDescriptionPtr;
 
   static const char DIR_SUBSTRING_DELIMITER[];
 
@@ -75,19 +70,13 @@ public:
   /*/
   const ::boost::filesystem::path & getOutputFileStem() const;
 
-  ::sstbx::build_cell::StructureDescription * getStructureDescription();
+  StructureDescriptionPtr getStructureDescription();
+  ConstStructureDescriptionPtr getStructureDescription() const;
+  void setStructureDescription(StructureDescriptionPtr description);
 
   ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
   const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
 
-	/** Potential sweep starting values */
-	::boost::optional< ::arma::vec>			potSweepFrom;
-	/** Potential sweep deltas */
-	::boost::optional< ::arma::vec>			potSweepStep;
-	/** Potential sweep number of steps to make */
-	::boost::optional< ::arma::Col< unsigned int > >	potSweepNSteps;
-
-  ::boost::shared_ptr< sstbx::build_cell::StructureDescription>            structureDescription;
 
   ::std::string                       outputFilename;
 
@@ -101,6 +90,7 @@ private:
 
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
+  StructureDescriptionPtr structureDescription;
   ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;
   ::boost::filesystem::path             myOutputFileStem;
