@@ -83,7 +83,7 @@ struct DoInsert<ReaderWriter, true, true>
 }
 
 template <class ReaderOrWriter>
-ReaderOrWriter & StructureReadWriteManager::insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) & readerOrWriter)
+ReaderOrWriter & StructureReadWriteManager::insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) readerOrWriter)
 {
   return detail::DoInsert<ReaderOrWriter,
     ::boost::is_convertible<ReaderOrWriter *, IStructureReader *>::value,

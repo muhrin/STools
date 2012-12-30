@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "utility/UtilFunctions.h"
 
+#include <sstream>
+
 // NAMESPACES ////////////////////////////////
 
 namespace sstbx {
@@ -34,15 +36,15 @@ ProcessId getProcessId()
 
 std::string generateUniqueName()
 {
-	// Use boost as portable way to get the process id
-	const ProcessId	processId	= getProcessId();
-	const time_t	currTime	= time(NULL);
+  // Use boost as portable way to get the process id
+  const ProcessId processId = getProcessId();
+  const time_t currTime = time(NULL);
+ 
+  // Build up the name
+  std::stringstream ss;	//create a stringstream
+  ss << processId << "-" << currTime << "-" << randomString(4);
 
-	// Build up the name
-	std::stringstream ss;	//create a stringstream
-	ss << processId << "-" << currTime << "-" << randomString(4);
-
-	return ss.str();
+  return ss.str();
 }
 
 

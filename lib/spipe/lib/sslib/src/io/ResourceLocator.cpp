@@ -107,7 +107,7 @@ ResourceLocator & ResourceLocator::operator =(const ResourceLocator & rhs)
 
 ResourceLocator absolute(const ResourceLocator & loc)
 {
-  return ResourceLocator(fs::absolute(loc.path()), loc.id());
+  return ResourceLocator(absolute(loc.path()), loc.id());
 }
 
 ResourceLocator relative(const ResourceLocator & to)

@@ -152,14 +152,14 @@ target_link_libraries(spipe
 ###################
 ## StructurePipe ##
 ###################
-add_executable(spipe-bin
-  StructurePipe.cpp
-)
+#add_executable(spipe-bin
+#  StructurePipe.cpp
+#)
 
-add_dependencies(spipe-bin spipe)
+#add_dependencies(spipe-bin spipe)
 
 # Libraries we need to link to
-target_link_libraries(spipe-bin
-  spipe
-)
+#target_link_libraries(spipe-bin
+#  spipe
+#)
 

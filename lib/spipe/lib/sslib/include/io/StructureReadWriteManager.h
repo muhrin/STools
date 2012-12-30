@@ -45,7 +45,7 @@ public:
   typedef UniquePtr<IStructureReader>::Type ReaderPtr;
 
   template <class ReaderOrWriter>
-  ReaderOrWriter & insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) & readerOrWriter);
+  ReaderOrWriter & insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) readerOrWriter);
   void insertReader(ReaderPtr reader);
   void insertWriter(WriterPtr writer);
 

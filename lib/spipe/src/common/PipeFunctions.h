@@ -21,6 +21,7 @@
 #include <utility/HeterogeneousMap.h>
 
 #include "common/DataLocation.h"
+#include "common/GlobalData.h"
 #include "common/SharedData.h"
 #include "common/StructureData.h"
 
