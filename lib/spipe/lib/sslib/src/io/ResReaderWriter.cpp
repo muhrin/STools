@@ -51,6 +51,7 @@ void ResReaderWriter::writeStructure(
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
   using namespace utility::cell_params_enum;
+  using namespace utility::cart_coords_enum;
 	using ::sstbx::common::AtomSpeciesId;
 	using ::std::endl;
 
@@ -151,6 +152,11 @@ void ResReaderWriter::writeStructure(
 
   ::arma::mat positions;
 	str.getAtomPositions(positions);
+  if(cell)
+  {
+    cell->cartsToFracInplace(positions);
+    cell->wrapVecFrac(positions);
+  }
 
   vector<AtomSpeciesId::Value> species;
 	str.getAtomSpecies(species);
@@ -172,17 +178,12 @@ void ResReaderWriter::writeStructure(
 	}
 
 	// Now write out the atom positions along with the spcies
-	::arma::vec3 fracPos;
 	for(size_t i = 0; i < positions.n_cols; ++i)
 	{
     const AtomSpeciesId::Value id = species[i];
-    if(cell)
-		  fracPos = cell->cartToFrac(positions.col(i));
-    else
-      fracPos = positions.col(i);
 
 		strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
-			::std::setprecision(12) << fracPos[0] << " " << fracPos[1] << " " << fracPos[2] << " 1.0";
+			::std::setprecision(12) << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << " 1.0";
 	}
 
 	// End atoms ///////////

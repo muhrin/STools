@@ -46,19 +46,25 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structu
     primitive->scale(scaleFactor);
   }
 
+  // Get the unit cell and number of atoms, need to do this as making the
+  // structure primitive may have changed these so we need to store them
+  numAtoms = primitive->getNumAtoms();
   if(unitCell)
   {
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
     const double longestDiag = sqrt(::arma::dot(diag, diag));
     cutoff = SortedDistanceComparator::CUTOFF_FACTOR * longestDiag;
+    volume = unitCell->getVolume();
+  }
+  else
+  {
+    // No repetitions to worry about so consider all distances
+    cutoff = ::std::numeric_limits<double>::max();
+    // Try using the number of atoms as the volume: not great, but will do for now
+    volume = static_cast<double>(primitive->getNumAtoms());
   }
 
   const common::DistanceCalculator & distCalc = primitive->getDistanceCalculator();
-
-  // Get the unit cell and number of atoms, need to do this as making the
-  // structure primitive may have changed these so we need to store them
-  volume = unitCell->getVolume();
-  numAtoms = primitive->getNumAtoms();
 
   primitive->getAtomSpecies(species);
   ::std::set<common::AtomSpeciesId::Value> speciesSet(species.begin(), species.end());

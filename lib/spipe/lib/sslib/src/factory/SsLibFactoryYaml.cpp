@@ -165,9 +165,9 @@ SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
 
   ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCell());
 
-  if(node[kw::RANDOM_CELL__PARAMS])
+  if(node[kw::RANDOM_CELL__ABC])
   {
-    const YAML::Node & paramsNode = node[kw::RANDOM_CELL__PARAMS];
+    const YAML::Node & paramsNode = node[kw::RANDOM_CELL__ABC];
 
     if(paramsNode.IsSequence() && paramsNode.size() == 6)
     {
@@ -182,7 +182,7 @@ SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
         {
           BOOST_THROW_EXCEPTION(FactoryError() <<
             ErrorType(MALFORMED_VALUE) <<
-            NodeName(kw::RANDOM_CELL__PARAMS) <<
+            NodeName(kw::RANDOM_CELL__ABC) <<
             ProblemValue(paramsNode[i].as< ::std::string>()));
         }
         cell->setMin(i, params[i]);
@@ -193,7 +193,7 @@ SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
     {
       BOOST_THROW_EXCEPTION(FactoryError() <<
         ErrorType(SEQUENCE_LENGTH_INVALID) <<
-        NodeName(kw::RANDOM_CELL__PARAMS));
+        NodeName(kw::RANDOM_CELL__ABC));
     }
   }
 
@@ -528,6 +528,7 @@ SsLibFactoryYaml::parseAtomTypeString(const ::std::string & atomSpecString) cons
   Tok::const_iterator it = tok.begin();
 
   AtomSpeciesCount type;
+  type.second = 1;
   bool successful = false;
   if(it != tok.end())
   {

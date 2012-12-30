@@ -53,6 +53,12 @@ private:
   ::std::string myResourceId;
 };
 
+ResourceLocator absolute(const ResourceLocator & loc);
+
+ResourceLocator relative(const ResourceLocator & to);
+
+ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & to);
+
 }
 }
 

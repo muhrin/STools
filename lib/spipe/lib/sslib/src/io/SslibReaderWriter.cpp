@@ -35,6 +35,7 @@
 #include "io/BoostFilesystem.h"
 #include "io/StructureYamlGenerator.h"
 #include "utility/IndexingEnums.h"
+#include "utility/UtilFunctions.h"
 
 // DEFINES /////////////////////////////////
 
@@ -70,28 +71,39 @@ void SslibReaderWriter::writeStructure(
 
   // First open and parse the file to get the current contents (if any)
   YAML::Node doc;
+  fs::fstream strFile;
   if(fs::exists(filepath))
-    doc = YAML::LoadFile(filepath.string());
-
-  ::std::string structureId = locator.id();
-
-  // TODO: Need to generate a unique id if one isn't specified
-  if(structureId.empty())
   {
-    structureId = str.getName();
-    if(structureId.empty())
-      return;
+    strFile.open(filepath, ::std::ios_base::in | ::std::ios_base::out);
+    doc = YAML::Load(strFile);
+    // Go back to the start of the file
+    strFile.clear(); // Clear the EoF flag
+    strFile.seekg(0, ::std::ios::beg);
+  }
+  else
+  {
+    strFile.open(filepath, ::std::ios_base::out);
   }
 
-  doc[kw::STRUCTURES][structureId] = generator.generateNode(str);
+  ResourceLocator uniqueLoc = locator;
+  if(uniqueLoc.id().empty())
+  {
+    ::std::string newId = str.getName();
+    if(newId.empty())
+    {
+      newId = utility::generateUniqueName();
+    }
+    uniqueLoc.setId(newId);
+  }
 
-  fs::ofstream strFile;
-  strFile.open(filepath, ::std::ios_base::out);
+  doc[kw::STRUCTURES][uniqueLoc.id()] = generator.generateNode(str);
 
   if(strFile.is_open())
   {
     strFile << YAML::Dump(doc) << ::std::endl;
     strFile.close();
+
+    str.setProperty(properties::io::LAST_ABS_FILE_PATH, uniqueLoc);
   }
 }
 

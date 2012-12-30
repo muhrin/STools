@@ -105,5 +105,20 @@ ResourceLocator & ResourceLocator::operator =(const ResourceLocator & rhs)
   return *this;
 }
 
+ResourceLocator absolute(const ResourceLocator & loc)
+{
+  return ResourceLocator(fs::absolute(loc.path()), loc.id());
+}
+
+ResourceLocator relative(const ResourceLocator & to)
+{
+  return relative(ResourceLocator(fs::current_path()), to);
+}
+
+ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & to)
+{
+  return ResourceLocator(io::make_relative(from.path(), to.path()), to.id());
+}
+
 }
 }

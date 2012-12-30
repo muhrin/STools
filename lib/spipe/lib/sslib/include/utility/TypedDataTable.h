@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include <boost/format.hpp> 
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 
@@ -43,6 +44,11 @@ public:
     const TypedDataTable<TableKey> & table,
     const TableKey & tableKey) const = 0;
 
+  virtual bool feedFormatter(
+    ::boost::format & formatter,
+    const TypedDataTable<TableKey> & table,
+    const TableKey & tableKey) const = 0;
+
 private:
   const ::std::string myName;
 };
@@ -55,6 +61,11 @@ public:
   TypedColumn(const ::std::string & name);
 
   virtual ::boost::optional< ::std::string> getValue(
+    const TypedDataTable<TableKey> & table,
+    const TableKey & tableKey) const;
+
+  virtual bool feedFormatter(
+    ::boost::format & formatter,
     const TypedDataTable<TableKey> & table,
     const TableKey & tableKey) const;
 

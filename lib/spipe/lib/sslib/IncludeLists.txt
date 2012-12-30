@@ -157,6 +157,7 @@ set(sslib_Header_Files__utility
   include/utility/TransformFunctions.h
   include/utility/TypedDataTable.h
   include/utility/UniqueStructureSet.h
+  include/utility/UtilFunctions.h
 )
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 

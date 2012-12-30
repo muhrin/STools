@@ -25,7 +25,8 @@ extern "C"
 
 #ifdef _MSC_VER
 // Disable warning about passing this pointer to DistanceCalculator in initialisation list
-#pragma warning( disable : 4355 )
+#  pragma warning( push )
+#  pragma warning( disable : 4355 )
 #endif
 
 namespace sstbx {

@@ -55,7 +55,6 @@ static const KwTyp RANDOM_STRUCTURE__ATOM_RADII           = "atomRadii";
 static const KwTyp RANDOM_STRUCTURE__ATOMS__RADIUS        = "radius";
 static const KwTyp RANDOM_STRUCTURE__ATOMS__POS           = STRUCTURE__ATOMS__POS;
 
-static const KwTyp STR_DESC              = "strDesc";
 static const KwTyp STR_DESC__ATOMS       = STRUCTURE__ATOMS;
 static const KwTyp STR_DESC__ATOMS__SPEC = "spec";
 static const KwTyp STR_DESC__ATOMS__N    = "n";
@@ -65,11 +64,11 @@ static const KwTyp STR_GENERATOR__TYPE___DEFAULT    = DEFAULT;
 
 // Unit cell ////////////////////////////////
 static const KwTyp CELL                       = "cell";
-static const KwTyp CELL__PARAMS               = "params";
+static const KwTyp CELL__ABC                  = "abc";
 
 // Random unit cell /////////////////////////
 static const KwTyp RANDOM_CELL                      = "randomCell";
-static const KwTyp RANDOM_CELL__PARAMS              = CELL__PARAMS;
+static const KwTyp RANDOM_CELL__ABC                 = CELL__ABC;
 static const KwTyp RANDOM_CELL__VOL                 = "vol";
 static const KwTyp RANDOM_CELL__VOL_DELTA           = "volDelta";
 static const KwTyp RANDOM_CELL__ANGLES              = "angles";

@@ -49,6 +49,22 @@ TypedColumn<T, TableKey>::getValue(
 }
 
 template <typename T, typename TableKey>
+bool TypedColumn<T, TableKey>::feedFormatter(
+  ::boost::format & formatter,
+  const TypedDataTable<TableKey> & table,
+  const TableKey & tableKey) const
+{
+  const T * const value = table.get(tableKey, *this);
+
+  if(!value)
+    return false;
+
+  formatter % *value;
+
+  return true;
+}
+
+template <typename T, typename TableKey>
 typename TypedColumn<T, TableKey>::MapKey &
 TypedColumn<T, TableKey>::getKey()
 {
