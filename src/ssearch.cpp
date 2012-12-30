@@ -97,9 +97,8 @@ getCombiningRuleFromString(const ::std::string & str);
 
 int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[]);
 
-int processPotParams(  ::arma::vec & from,
-  ::arma::vec & stepsize,
-  ::arma::Col<unsigned int> & numSteps,
+int processPotParams(
+  sp::common::ParamRange & paramRange,
   double & betaDiagonal,
   const InputOptions & in);
 
@@ -124,17 +123,16 @@ int main(const int argc, const char * const argv[])
     return result;
 
   // Do potential parameters ////////////////////////////////
-  vec from(8), stepSize(8);
-  Col<unsigned int> numSteps(8);
+  sp::common::ParamRange paramRange(8);
   double betaDiagonal;
-  result = processPotParams(from, stepSize, numSteps, betaDiagonal, in);
+  result = processPotParams(paramRange, betaDiagonal, in);
   if(result != 0)
     return result;
 
   bool doingSweep = false;
-  for(size_t i = 0; i < numSteps.n_rows; ++i)
+  for(size_t i = 0; i < paramRange.nSteps.n_rows; ++i)
   {
-    doingSweep |= numSteps(i) != 1;
+    doingSweep |= paramRange.nSteps(i) != 1;
   }
 
   // Generate the pipeline
@@ -160,8 +158,8 @@ int main(const int argc, const char * const argv[])
   ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
   potentialSpecies[0] = speciesDb.getIdFromSymbol(in.potSpecies[0]);
   potentialSpecies[1] = speciesDb.getIdFromSymbol(in.potSpecies[1]);
-  from(6) = potentialSpecies[0].ordinal();
-  from(7) = potentialSpecies[1].ordinal();
+  paramRange.from(6) = potentialSpecies[0].ordinal();
+  paramRange.from(7) = potentialSpecies[1].ordinal();
 
   ssf::SsLibFactoryYaml factory(speciesDb);
 
@@ -200,8 +198,7 @@ int main(const int argc, const char * const argv[])
   if(inputType == InputType::RANDOM_STRUCTURES)
   {
     // Random structure
-    ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-    searchStartBlock.reset(new sp::blocks::RandomStructure(strGen, in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
+    searchStartBlock.reset(new sp::blocks::RandomStructure(in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
   }
   else if(inputType == InputType::SEED_STRUCTURES)
   {
@@ -214,19 +211,18 @@ int main(const int argc, const char * const argv[])
   // Geometry optimise
   ::arma::mat epsilon;
 	epsilon.set_size(2, 2);
-	epsilon << from(0) << from(1) << endr
-			<< from(1) << from(2) << endr;
+	epsilon << paramRange.from(0) << paramRange.from(1) << endr
+			<< paramRange.from(1) << paramRange.from(2) << endr;
 
 	::arma::mat sigma;
 	sigma.set_size(2, 2);
-	sigma << from(3) << from(4) << endr
-			<< from(4) << from(5) << endr;
+	sigma << paramRange.from(3) << paramRange.from(4) << endr
+			<< paramRange.from(4) << paramRange.from(5) << endr;
 
 	::arma::mat beta;
 	beta.set_size(2, 2);
 	beta << betaDiagonal << 1 << endr
 			<< 1 << betaDiagonal << endr;
-
 
   const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
 
@@ -288,7 +284,7 @@ int main(const int argc, const char * const argv[])
   if(doingSweep)
   {
     // Configure parameter sweep pipeline
-    paramSweepBlock.reset(new ParamSweepBlock(from, stepSize, numSteps, *searchStartBlock));
+    paramSweepBlock.reset(new ParamSweepBlock(paramRange, *searchStartBlock));
     masterPipe = paramSweepBlock.get();
   }
   else
@@ -388,16 +384,14 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
 
 
 int processPotParams(
-  ::arma::vec & from,
-  ::arma::vec & stepsize,
-  ::arma::Col<unsigned int> & numSteps,
+  sp::common::ParamRange & paramRange,
   double & betaDiagonal,
   const InputOptions & in)
 {
   // Initialise with reasonable values
-  from.zeros();
-  stepsize.ones();
-  numSteps.ones();
+  paramRange.from.zeros();
+  paramRange.step.ones();
+  paramRange.nSteps.ones();
 
   double lFrom, lStepSize;
   unsigned int lNumSteps;
@@ -406,9 +400,9 @@ int processPotParams(
     try
     {
       sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
-      from(i) = lFrom;
-      stepsize(i) = lStepSize;
-      numSteps(i) = lNumSteps;
+      paramRange.from(i) = lFrom;
+      paramRange.step(i) = lStepSize;
+      paramRange.nSteps(i) = lNumSteps;
     }
     catch(const ::std::invalid_argument & e)
     {

@@ -1,0 +1,29 @@
+/*
+ * StringParsing.h
+ *
+ *
+ *  Created on: Nov 19, 2012
+ *      Author: Martin Uhrin
+ */
+
+#ifndef STRING_PARSING_H
+#define STRING_PARSING_H
+
+// INCLUDES /////////////////////////////////////////////
+#include <string>
+
+// FORWARD DECLARES ////////////////////////////////
+
+
+namespace stools {
+namespace utility {
+
+::std::string replaceControlSequencesCopy(const ::std::string & str);
+
+void replaceControlSequences(::std::string & str);
+
+}
+}
+
+
+#endif /* STRING_PARSING_H */

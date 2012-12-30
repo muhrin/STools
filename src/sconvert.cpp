@@ -15,7 +15,6 @@
 #include <common/Structure.h>
 #include <io/StructureReadWriteManager.h>
 
-
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
 
@@ -24,7 +23,7 @@
 // NAMESPACES ////////////////////////////////
 namespace fs    = ::boost::filesystem;
 namespace po    = ::boost::program_options;
-namespace spu   = ::spipe::utility;
+namespace sp    = ::spipe;
 namespace ssc   = ::sstbx::common;
 namespace ssio  = ::sstbx::io;
 namespace ssu   = ::sstbx::utility;
@@ -59,7 +58,7 @@ int main(const int argc, const char * const argv[])
   ssc::AtomSpeciesDatabase speciesDb;
 
   ssio::StructureReadWriteManager rwMan;
-  spu::initStructureRwManDefault(rwMan);
+  sp::utility::initStructureRwManDefault(rwMan);
 
   ssio::StructuresContainer structures;
   if(rwMan.readStructures(structures, fileIn, speciesDb) == 0)
@@ -80,12 +79,13 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
 {
   const ::std::string exeName(argv[0]);
 
+  in.inputOutputFiles.resize(2);
   try
   {
-    po::options_description general("STools\nUsage: " + exeName + " [options] inpue_file output_file\nOptions");
+    po::options_description general("sconvert\nUsage: " + exeName + " [input-options] inpue-file(s) [output-options] output-file(s)\nOptions");
     general.add_options()
       ("help", "Show help message")
-      ("input,i", po::value<StringsVector>(&in.inputOutputFiles), "Input and output filenames")
+      ("input,i", po::value<StringsVector>(&in.inputOutputFiles)->required(), "Input and output filenames")
     ;
 
     po::positional_options_description p;
@@ -111,8 +111,6 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
     ::std::cout << e.what() << "\n";
     return 1;
   }
-
-
   // Everything went fine
   return 0;
 }

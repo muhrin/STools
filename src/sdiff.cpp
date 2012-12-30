@@ -32,13 +32,16 @@
 #include <common/UnitCell.h>
 #include <io/BoostFilesystem.h>
 #include <io/ResourceLocator.h>
-#include <io/ResReaderWriter.h>
+#include <io/StructureReadWriteManager.h>
 #include <utility/DistanceMatrixComparator.h>
 #include <utility/SortedDistanceComparator.h>
 #include <utility/SortedDistanceComparatorEx.h>
 #include <utility/IBufferedComparator.h>
 #include <utility/TransformFunctions.h>
 #include <utility/UniqueStructureSet.h>
+
+// From StructurePipe
+#include <utility/PipeDataInitialisation.h>
 
 // Local includes //
 #include "utility/TerminalFunctions.h"
@@ -47,6 +50,7 @@
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
+namespace sp = ::spipe;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
@@ -69,19 +73,13 @@ struct InputOptions
   bool summaryOnly;
 };
 
-
-// Use this to store the locator for each structure in the format the user used
-ssu::Key<ssio::ResourceLocator> LOAD_LOCATOR;
-
 // FORWARD DECLARES //////////
-void preprocessStructure(ssc::Structure & structure, const ssio::ResourceLocator & locator, const InputOptions & options);
+void preprocessStructure(ssc::Structure & structure, const ssio::ResourceLocator & loadLocation, const InputOptions & options);
 void doPrintList(StructuresContainer & structures, ComparatorPtr comparator, const bool printUniques, const InputOptions & in);
 void doDiff(const StructuresContainer & structures, ComparatorPtr comparator, const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
-  
-
   const ::std::string exeName(argv[0]);
 
   // Input options
@@ -163,7 +161,8 @@ int main(const int argc, char * argv[])
   }
   
   ssc::AtomSpeciesDatabase speciesDb;
-  ssio::ResReaderWriter resReader;
+  ssio::StructureReadWriteManager rwMan;
+  sp::utility::initStructureRwManDefault(rwMan);
   StructuresContainer loadedStructures;
 
   size_t lastLoaded, totalLoaded = 0;
@@ -181,7 +180,7 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    lastLoaded = resReader.readStructures(loadedStructures, locator, speciesDb);
+    lastLoaded = rwMan.readStructures(loadedStructures, locator, speciesDb);
 
     if(lastLoaded == 0)
       ::std::cerr << "Couldn't load structure(s) from " << locator.string() << ::std::endl;
@@ -206,17 +205,11 @@ int main(const int argc, char * argv[])
 
   // Do the actual comparison based on command line options
   if(in.mode == 'u')
-  {
     doPrintList(loadedStructures, comparator, true, in);
-  }
   else if(in.mode == 's')
-  {
     doPrintList(loadedStructures, comparator, false, in);
-  }
   else if(in.mode == 'd')
-  {
     doDiff(loadedStructures, comparator, in);
-  }
   else
   {
     std::cout << "Error: Unrecognised mode - " << in.mode << std::endl;
@@ -229,11 +222,12 @@ int main(const int argc, char * argv[])
 
 void preprocessStructure(
   ssc::Structure & structure,
-  const ssio::ResourceLocator & locator,
+  const ssio::ResourceLocator & loadLocation,
   const InputOptions & options)
 {
   // Make sure we know where we loaded the file from
-  structure.setProperty(LOAD_LOCATOR, locator);
+  if(structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH))
+    structure.setProperty(structure_properties::io::LAST_ABS_FILE_PATH, ssio::absolute(loadLocation));
 
   if(!options.dontUsePrimitive)
     structure.makePrimitive();
@@ -264,9 +258,9 @@ void doPrintList(
     insertResult = structuresSet.insert(&structure);
     if(!in.summaryOnly && insertResult.second == printUniques)
     {
-      const ssio::ResourceLocator * locator = structure.getProperty(LOAD_LOCATOR);
+      const ssio::ResourceLocator * locator = structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH);
       if(locator)
-        std::cout << locator->string() << std::endl;
+        std::cout << ssio::relative(*locator).string() << std::endl;
       else
         ::std::cerr << "Error: couldn't find save path for structure " << structure.getName() << ::std::endl;
     }

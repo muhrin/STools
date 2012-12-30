@@ -47,6 +47,7 @@
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
+namespace sp = ::spipe;
 
 struct InputOptions
 {
@@ -58,6 +59,11 @@ struct InputOptions
   ::std::string     structurePath;
   unsigned int      maxNumAtoms;
 };
+
+int processPotParams(
+  sp::common::ParamRange & paramRange,
+  double & betaDiagonal,
+  const InputOptions & in);
 
 int main(const int argc, const char * const argv[])
 {
@@ -122,40 +128,18 @@ int main(const int argc, const char * const argv[])
     return 1;
   }
 
-  // Potential parameters
-  vec from(8), stepSize(8);
-  Col<unsigned int> numSteps(8);
-  // Initialise with reasonable values
-  from.zeros();
-  stepSize.ones();
-  numSteps.ones();
-
-  double lFrom, lStepSize;
-  unsigned int lNumSteps;
-  for(size_t i = 0; i < 6; ++i)
-  {
-    try
-    {
-      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
-      from(i) = lFrom;
-      stepSize(i) = lStepSize;
-      numSteps(i) = lNumSteps;
-    }
-    catch(const ::std::invalid_argument & e)
-    {
-      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
-      ::std::cout << e.what();
-      return 1;
-    }
-  }
-
-  const double betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
+  // Do potential parameters ////////////////////////////////
+  sp::common::ParamRange paramRange(8);
+  double betaDiagonal;
+  int result = processPotParams(paramRange, betaDiagonal, in);
+  if(result != 0)
+    return result;
 
   ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
   potentialSpecies[0] = ssc::AtomSpeciesId::NA;
   potentialSpecies[1] = ssc::AtomSpeciesId::CL;
-  from(6) = potentialSpecies[0].ordinal();
-  from(7) = potentialSpecies[1].ordinal();
+  paramRange.from(6) = potentialSpecies[0].ordinal();
+  paramRange.from(7) = potentialSpecies[1].ordinal();
 
 
   // Generate the pipelines that we need
@@ -164,8 +148,7 @@ int main(const int argc, const char * const argv[])
   ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
 
   // Random structure
-  ssbc::DefaultCrystalGenerator strGen(true /*use extrusion method*/);
-  sp::blocks::RandomStructure randStr(strGen, in.numRandomStructures);
+  sp::blocks::RandomStructure randStr(in.numRandomStructures);
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
@@ -239,8 +222,42 @@ int main(const int argc, const char * const argv[])
   stoichSearch |= lowestEStoich;
 
   // Configure parameter sweep pipeline
-  sp::blocks::PotentialParamSweep ppSweep(from, stepSize, numSteps, stoichSearch);
+  sp::blocks::PotentialParamSweep ppSweep(paramRange, stoichSearch);
 
   runner->run();
 }
 
+int processPotParams(
+  sp::common::ParamRange & paramRange,
+  double & betaDiagonal,
+  const InputOptions & in)
+{
+  // Initialise with reasonable values
+  paramRange.from.zeros();
+  paramRange.step.ones();
+  paramRange.nSteps.ones();
+
+  double lFrom, lStepSize;
+  unsigned int lNumSteps;
+  for(size_t i = 0; i < 6; ++i)
+  {
+    try
+    {
+      sp::common::parseParamString(in.potParams[i], lFrom, lStepSize, lNumSteps);
+      paramRange.from(i) = lFrom;
+      paramRange.step(i) = lStepSize;
+      paramRange.nSteps(i) = lNumSteps;
+    }
+    catch(const ::std::invalid_argument & e)
+    {
+      ::std::cout << "Unable to parse parameter " << i << ": " << in.potParams[i] << std::endl;
+      ::std::cout << e.what();
+      return 1;
+    }
+  }
+
+  betaDiagonal = ::boost::lexical_cast<double>(in.potParams[6]);
+
+  // Everything went fine
+  return 0;
+}

@@ -11,6 +11,7 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 set(stools_Header_Files__utility
   utility/CustomTokens.h
   utility/InfoToken.h
+  utility/StringParsing.h
   utility/TerminalFunctions.h
   utility/YamlOptionsParser.h
 )
@@ -19,6 +20,7 @@ source_group("Header Files\\utility" FILES ${stools_Header_Files__utility})
 set(stools_Source_Files__utility
   utility/CustomTokens.cpp
   utility/InfoToken.cpp
+  utility/StringParsing.cpp
   utility/TerminalFunctions.cpp
 )
 source_group("Source Files\\utility" FILES ${stools_Source_Files__utility})
@@ -108,18 +110,22 @@ target_link_libraries(sgroup
 ########################################
 
 set(stools_Header_Files__sinfo
+  sinfo/Ancillary.h
+  sinfo/DataGatherer.h
 )
-source_group("Header Files" FILES ${stools_Header_Files__sinfo})
+source_group("Header Files\\sinfo" FILES ${stools_Header_Files__sinfo})
 
 set(stools_Source_Files__sinfo
-  sinfo.cpp
+  sinfo/Ancillary.cpp
+  sinfo/DataGatherer.cpp
 )
-source_group("Source Files" FILES ${stools_Source_Files__sinfo})
+source_group("Source Files\\sinfo" FILES ${stools_Source_Files__sinfo})
 
 set(stools_Files__sinfo
   ${stools_Files}
   ${stools_Header_Files__sinfo}
   ${stools_Source_Files__sinfo}
+  sinfo.cpp
 )
 
 add_executable(sinfo
@@ -127,7 +133,7 @@ add_executable(sinfo
   ${stools_Files__sinfo}
 )
 
-add_dependencies(sinfo sslib)
+add_dependencies(sinfo sslib spipe)
 
 # Libraries we need to link to
 target_link_libraries(sinfo
@@ -136,6 +142,7 @@ target_link_libraries(sinfo
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${ARMADILLO_LIBRARIES}
   sslib
+  spipe
 )
 
 #######################################
@@ -267,3 +274,10 @@ target_link_libraries(sdiff
 #  )
   
   
+## Installation #####
+
+INSTALL(TARGETS sconvert sdiff sinfo ssearch ssweep
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
