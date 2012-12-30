@@ -53,6 +53,7 @@
 #include <common/StructureData.h>
 #include <common/UtilityFunctions.h>
 
+#include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
 
 // MACROS ////////////////////////////////////
@@ -95,14 +96,14 @@ static const double DEFAULT_POT_CUTOFF = 2.5;
 ::sstbx::potential::SimplePairPotential::CombiningRule
 getCombiningRuleFromString(const ::std::string & str);
 
-int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[]);
+int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int processPotParams(
   sp::common::ParamRange & paramRange,
   double & betaDiagonal,
   const InputOptions & in);
 
-int main(const int argc, const char * const argv[])
+int main(const int argc, char * argv[])
 {
   namespace kw    = ssf::sslib_yaml_keywords;
   using ::arma::Mat;
@@ -319,7 +320,7 @@ getCombiningRuleFromString(const ::std::string & str)
   return rule;
 }
 
-int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[])
+int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
   const ::std::string exeName(argv[0]);
 
@@ -335,8 +336,8 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
 
     po::options_description lennardJones("Lennard-Jones options (when --pot lj is used)");
     lennardJones.add_options()
-      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
-      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "Potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      ("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()_ADD_REQUIRED_, "List of species the potential applies to")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()_ADD_REQUIRED_, "Potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
       ("comb,c", po::value< ::std::string>(&in.potCombiningRule)->default_value("none"), "Off-diagonal combining rule to use")
       ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
       ("cutoff", po::value<double>(&in.potCutoff)->default_value(DEFAULT_POT_CUTOFF), "Potential cutoff as multiple of sigma_ij")

@@ -9,6 +9,7 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 
 ## stools/utility
 set(stools_Header_Files__utility
+  utility/BoostCapabilities.h
   utility/CustomTokens.h
   utility/InfoToken.h
   utility/StringParsing.h
@@ -64,9 +65,7 @@ add_dependencies(sconvert sslib spipe)
 
 # Libraries we need to link to
 target_link_libraries(sconvert
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   sslib
   spipe
 )
@@ -98,9 +97,7 @@ add_dependencies(sgroup sslib)
 
 # Libraries we need to link to
 target_link_libraries(sgroup
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   sslib
 )
@@ -137,9 +134,7 @@ add_dependencies(sinfo sslib spipe)
 
 # Libraries we need to link to
 target_link_libraries(sinfo
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   sslib
   spipe
@@ -173,9 +168,7 @@ add_dependencies(ssearch spipe)
 
 # Libraries we need to link to
 target_link_libraries(ssearch
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
   spipe
@@ -209,9 +202,7 @@ add_dependencies(ssweep spipe)
 
 # Libraries we need to link to
 target_link_libraries(ssweep
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   spipe
 )
@@ -244,9 +235,7 @@ add_dependencies(sdiff spipe)
 
 # Libraries we need to link to
 target_link_libraries(sdiff
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
   ${SPGLIB_LIBRARIES}
@@ -267,9 +256,7 @@ target_link_libraries(sdiff
 
 # Libraries we need to link to
 #  target_link_libraries(smap
-#    ${Boost_FILESYSTEM_LIBRARY}
-#    ${Boost_SYSTEM_LIBRARY}	# filesystem depends on this
-#    ${ARMADILLO_LIBRARIES}
+#    ${Boost_LIBRARIES}
 #    sslib
 #  )
   

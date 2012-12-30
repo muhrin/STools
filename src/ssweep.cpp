@@ -44,6 +44,9 @@
 #include <common/UtilityFunctions.h>
 #include <utility/PipeDataInitialisation.h>
 
+// Local //
+#include "utility/BoostCapabilities.h"
+
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
@@ -65,7 +68,7 @@ int processPotParams(
   double & betaDiagonal,
   const InputOptions & in);
 
-int main(const int argc, const char * const argv[])
+int main(const int argc, char * argv[])
 {
   namespace po    = ::boost::program_options;
   namespace sp    = ::spipe;
@@ -92,13 +95,13 @@ int main(const int argc, const char * const argv[])
     po::options_description desc("STools\nUsage: " + exeName + " [options] params...\nOptions");
     desc.add_options()
       ("help", "Show help message")
-      //("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()->required(), "List of species the potential applies to")
-      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()->required(), "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
+      //("species,s", po::value< ::std::vector< ::std::string> >(&in.potSpecies)->multitoken()_ADD_REQUIRED_, "List of species the potential applies to")
+      ("params,p", po::value< ::std::vector< ::std::string> >(&in.potParams)->multitoken()_ADD_REQUIRED_, "potential parameters, must be in quotes: eAA eAB eBB sAA sAB sBB beta [+/-1]")
       ("opt-press", po::value<double>(&in.optimisationPressure)->default_value(0.01), "Pressure used during initial optimisation step to bring atoms together")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
-      //("pot", po::value < ::std::string>(&in.potential)->required(), "The potential to use (possible values: lj)")
+      //("pot", po::value < ::std::string>(&in.potential)_ADD_REQUIRED_, "The potential to use (possible values: lj)")
       ("input", po::value< ::std::string>(&in.structurePath), "The input structure")
-      ("max-atoms,m", po::value<unsigned int>(&in.maxNumAtoms)->required(), "Maximum number of atoms")
+      ("max-atoms,m", po::value<unsigned int>(&in.maxNumAtoms)_ADD_REQUIRED_, "Maximum number of atoms")
     ;
 
     po::positional_options_description p;

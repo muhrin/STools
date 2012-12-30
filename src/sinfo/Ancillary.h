@@ -82,7 +82,7 @@ struct TokensInfo
 // FUNCTIONS /////////////////////////////////////
 
 Result::Value
-processInputOptions(InputOptions & in, const int argc, const char * const argv[], const TokensMap & tokensMap);
+processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap);
 
 CustomisableTokens generateTokens(TokensMap & map);
 

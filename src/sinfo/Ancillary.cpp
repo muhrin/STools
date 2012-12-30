@@ -40,7 +40,7 @@ const ::std::string DEFAULT_EMPTY_STRING("n/a");
 const ::std::string DEFAULT_INFO_STRING("$n%-18.18s $p%10.2f $v%10.2f $e%10.2f $re%10.2f $sg%7.7s $tf%6.6i\n");
 
 Result::Value
-processInputOptions(InputOptions & in, const int argc, const char * const argv[], const TokensMap & tokensMap)
+processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap)
 {
   const ::std::string exeName(argv[0]);
 

@@ -18,6 +18,9 @@
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
 
+// Local //
+#include "utility/BoostCapabilities.h"
+
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
@@ -35,12 +38,12 @@ struct InputOptions
   StringsVector inputOutputFiles;
 };
 
-int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[]);
+int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 // CONSTANTS /////////////////////////////////
 
 
-int main(const int argc, const char * const argv[])
+int main(const int argc, char * argv[])
 {
   // Program options
   InputOptions in;
@@ -75,7 +78,7 @@ int main(const int argc, const char * const argv[])
   return 0;
 }
 
-int processCommandLineArgs(InputOptions & in, const int argc, const char * const argv[])
+int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
   const ::std::string exeName(argv[0]);
 
@@ -85,7 +88,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, const char * const
     po::options_description general("sconvert\nUsage: " + exeName + " [input-options] inpue-file(s) [output-options] output-file(s)\nOptions");
     general.add_options()
       ("help", "Show help message")
-      ("input,i", po::value<StringsVector>(&in.inputOutputFiles)->required(), "Input and output filenames")
+      ("input,i", po::value<StringsVector>(&in.inputOutputFiles)_ADD_REQUIRED_, "Input and output filenames")
     ;
 
     po::positional_options_description p;
