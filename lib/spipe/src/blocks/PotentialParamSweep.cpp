@@ -14,6 +14,7 @@
 // From SSTbx
 #include <common/Structure.h>
 #include <utility/MultiIdxRange.h>
+#include <utility/UtilFunctions.h>
 
 #include "common/SharedData.h"
 #include "common/StructureData.h"
@@ -32,38 +33,36 @@ namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 typedef common::GlobalKeys Keys;
 
-PotentialParamSweep::PotentialParamSweep(
-	const ::arma::vec	&		from,
-	const ::arma::vec	&		step,
-	const ::arma::Col<unsigned int> & nSteps,
-	SpStartBlockTyp &		  sweepPipeline):
-SpBlock("Potential param sweep"),
-myFrom(from),
-myStep(step),
-myNSteps(nSteps),
-mySweepPipeline(sweepPipeline),
-myStepExtents(nSteps.n_rows)
-{
-	SP_ASSERT((myFrom.n_rows == myStep.n_rows) && (myFrom.n_rows == myNSteps.n_rows));
+const ::std::string PotentialParamSweep::POTPARAMS_FILE_EXTENSION("potparams");
 
-	myNumParams		= myNSteps.n_rows;
+PotentialParamSweep::PotentialParamSweep(
+  const common::ParamRange & paramRange,
+	SpStartBlockTyp & sweepPipeline):
+SpBlock("Potential param sweep"),
+myParamRange(paramRange),
+mySweepPipeline(sweepPipeline),
+myStepExtents(paramRange.nSteps.n_rows)
+{
+	SP_ASSERT(
+    (myParamRange.from.n_rows == myParamRange.step.n_rows) &&
+    (myParamRange.from.n_rows == myParamRange.nSteps.n_rows)
+  );
+
+	myNumParams = myParamRange.nSteps.n_rows;
 	for(size_t i = 0; i < myNumParams; ++i)
 	{
-		myStepExtents[i] = myNSteps(i);
+		myStepExtents[i] = myParamRange.nSteps(i);
 	}
 }
 
 void PotentialParamSweep::pipelineInitialising()
 {
 	// Set the parameters in the shared data
-  common::ParamRange paramRange(myFrom.n_rows);
-  paramRange.from = myFrom;
-  paramRange.step = myStep;
-  paramRange.nSteps = myNSteps;
+  getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = myParamRange;
 
-  getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = paramRange;
-
-  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".potparams");
+  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string()
+    + "." + POTPARAMS_FILE_EXTENSION
+  );
   myTableSupport.registerRunner(*getRunner());
 }
 
@@ -81,16 +80,16 @@ void PotentialParamSweep::start()
 		::arma::vec params(myNumParams);
 		for(size_t i = 0; i < myNumParams; ++i)
 		{
-			params(i) = myFrom(i) + (double)stepsIdx[i] * myStep(i);
+			params(i) = myParamRange.from(i) + (double)stepsIdx[i] * myParamRange.step(i);
 		}
 		// Store the potential parameters in global memory
     getRunner()->memory().global().objectsStore[::spipe::common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
     // Set a directory for this set of parameters
-    sweepPipeSharedData.appendToOutputDirName(common::generateUniqueName());
+    sweepPipeSharedData.appendToOutputDirName(ssu::generateUniqueName());
 
     // Get the relative path to where the pipeline write the structures to
-    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath(*getRunner()).string();
+    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath(*mySubpipeRunner).string();
 
 		// Run the sweep pipeline
 		mySubpipeRunner->run();
@@ -187,7 +186,7 @@ void PotentialParamSweep::updateTable(
     {
       table.insert(
         key,
-        "path",
+        "lowest_path",
         locator.string()
       );
     }

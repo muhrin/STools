@@ -25,6 +25,7 @@
 
 // Local includes
 #include "SpTypes.h"
+#include "common/CommonData.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -35,20 +36,19 @@ namespace common {
 class DataTableWriter;
 }
 
-namespace blocks
-{
+namespace blocks {
 
 class PotentialParamSweep : public SpStartBlock, public SpFinishedSink, ::boost::noncopyable
 {
 public:
+
+  static const ::std::string POTPARAMS_FILE_EXTENSION;
+
 	PotentialParamSweep(
-		const ::arma::vec	&		from,
-		const ::arma::vec	&		step,
-		const ::arma::Col<unsigned int> & nSteps,
-		SpStartBlockTyp &     sweepPipeline);
+    const common::ParamRange & paramRange,
+		SpStartBlockTyp & sweepPipeline);
 
 	// From Block /////////////////////////////////
-	virtual void pipelineInitialising();
 	virtual void start();
 	// End from Block //////////////////////////////
 
@@ -56,6 +56,7 @@ private:
 
   // From Block ///////////////////////////////
   virtual void runnerAttached(SpRunnerSetup & setup);
+  virtual void pipelineInitialising();
   // End From Block ///////////////////////////
 
   // From FinishedSink ///////////////////////
@@ -72,9 +73,7 @@ private:
   );
 
 	size_t								                    myNumParams;
-	const ::arma::vec					                myFrom;
-	const ::arma::vec					                myStep;
-	const ::arma::Col<unsigned int>			      myNSteps;
+  const common::ParamRange                  myParamRange;
 	::sstbx::utility::MultiIdx<unsigned int>	myStepExtents;
 
   ::spipe::utility::DataTableSupport  myTableSupport;

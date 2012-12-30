@@ -64,7 +64,9 @@ StructureData::getRelativeSavePath(const SpRunnerAccess & runner) const
 
   if(lastSaved)
   {
+    relativeLocator = *lastSaved;
     fs::path relativePath = lastSaved->path();
+    // Make the path relative if necessary
     if(ssio::isAbsolute(relativePath))
     {
       relativePath = ssio::make_relative(runner.memory().shared().getOutputPath(runner), relativePath);

@@ -54,6 +54,12 @@ public:
   /* Get the output path for the pipeline that owns this shared data relative to
   /* the working directory where the code was executed.
   /**/
+  ::boost::filesystem::path getOutputPath(const SpRunner & runner) const;
+
+  /**
+  /* Get the output path for the pipeline that owns this shared data relative to
+  /* the working directory where the code was executed.
+  /**/
   ::boost::filesystem::path getOutputPath(const SpRunnerAccess & runner) const;
 
   /**
@@ -88,6 +94,7 @@ private:
 
   void reset();
 
+  void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   StructureDescriptionPtr structureDescription;

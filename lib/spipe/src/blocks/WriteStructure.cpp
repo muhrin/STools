@@ -13,6 +13,7 @@
 #include <io/StructureReadWriteManager.h>
 #include <io/BoostFilesystem.h>
 #include <io/ResourceLocator.h>
+#include <utility/UtilFunctions.h>
 
 // From local
 #include "common/SharedData.h"
@@ -47,7 +48,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 	  // Check if the structure has a name already, otherwise give it one
 	  if(structure->getName().empty())
 	  {
-		  structure->setName(::spipe::common::generateUniqueName());
+		  structure->setName(ssu::generateUniqueName());
 	  }
 
 	  // Create the path to store the structure

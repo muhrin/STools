@@ -8,11 +8,15 @@
 // INCLUDES //////////////////////////////////
 #include "common/GlobalData.h"
 
+// From SSTbx
+#include <utility/UtilFunctions.h>
+
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
+namespace ssu = ::sstbx::utility;
 
 namespace spipe {
 namespace common {
@@ -20,7 +24,7 @@ namespace common {
 const char GlobalData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 GlobalData::GlobalData():
-myOutputFileStem(generateUniqueName())
+myOutputFileStem(ssu::generateUniqueName())
 {}
 
 bool GlobalData::appendToOutputDirName(const std::string & toAppend)
@@ -66,7 +70,7 @@ void GlobalData::reset()
 {
   objectsStore.clear();
   myOutputDir.clear();
-  myOutputFileStem = generateUniqueName();
+  myOutputFileStem = ssu::generateUniqueName();
 }
 
 }

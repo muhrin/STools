@@ -15,8 +15,11 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/variant.hpp>
 
 // From SSTbx
+#include <build_cell/IStructureGenerator.h>
 #include <build_cell/StructureDescription.h>
 
 #include <pipelib/pipelib.h>
@@ -34,17 +37,22 @@ class IStructureGenerator;
 namespace spipe {
 namespace blocks {
 
-class RandomStructure : public SpStartBlock, ::boost::noncopyable
+class RandomStructure : public virtual SpStartBlock, public virtual SpPipeBlock,
+  ::boost::noncopyable
 {
 public:
 
-  typedef ::boost::optional<unsigned int> OptionalUInt;
   typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription> StructureDescPtr;
 
 	RandomStructure(
-		const ::sstbx::build_cell::IStructureGenerator & structureGenerator,
-    const OptionalUInt numToGenerate = OptionalUInt(),
-    const StructureDescPtr & structureDescription = StructureDescPtr());
+    const unsigned int numToGenerate,
+    const StructureDescPtr & structureDescription = StructureDescPtr()
+  );
+
+  RandomStructure(
+    const float atomsMultiplierGenerate,
+    const StructureDescPtr & structureDescription = StructureDescPtr()
+  );
 
 
   // From Block ////////
@@ -60,20 +68,21 @@ public:
   // End from PipeBlock
 
 private:
+  typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
   virtual void initDescriptions();
 
   double setRadii() const;
-
-	const OptionalUInt myNumToGenerate;
 
   /** Should the block use the structure description found in shared data */
   const bool  myUseSharedDataStructureDesc;
 
   StructureDescPtr       myStructureDescription;
 
-	const ::sstbx::build_cell::IStructureGenerator &	myStructureGenerator;
-
+	const StructureGeneratorPtr myStructureGenerator;
+  const bool myFixedNumGenerate;
+  const unsigned int myNumToGenerate;
+  const float myAtomsMultiplierGenerate;
 };
 
 

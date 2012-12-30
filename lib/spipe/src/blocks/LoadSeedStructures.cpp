@@ -18,6 +18,7 @@
 #include <common/Constants.h>
 #include <common/Structure.h>
 #include <io/IoFunctions.h>
+#include <utility/UtilFunctions.h>
 
 // Local includes
 #include "common/SharedData.h"
@@ -34,6 +35,7 @@ namespace fs = ::boost::filesystem;
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
+namespace ssu = ::sstbx::utility;
 
 const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
 
@@ -67,7 +69,7 @@ void LoadSeedStructures::start()
     
     // Set up the structure name if needed
     if(structure.getName().empty())
-      structure.setName(common::generateUniqueName());
+      structure.setName(ssu::generateUniqueName());
 
     unitCell = structure.getUnitCell();
     if(myTryToScaleVolumes && unitCell)
