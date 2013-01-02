@@ -346,7 +346,6 @@ void printInfoColumnMode(
       // Get the max width so far
       maxWidths[col] = ::std::max(maxWidths[col], stringsTable[row][col].size());
     }
-    ::std::cout << ::std::endl;
   }
 
   if(!in.noHeader)
@@ -360,8 +359,9 @@ void printInfoColumnMode(
       // Make sure we consider it for the width
       maxWidths[col] = ::std::max(maxWidths[col], colName.size());
 
-      ::std::cout << ::std::setw(maxWidths[col] + 1) << ::std::left << colName;
+      ::std::cout << ::std::setw(maxWidths[col]) << colName << " ";
     } 
+    ::std::cout << ::std::endl;
   }
 
   // Now go through and print everything
@@ -369,7 +369,7 @@ void printInfoColumnMode(
   {
     for(size_t col = 0; col < numColumns; ++col)
     {
-      ::std::cout << ::std::setw(maxWidths[col] + 1) << ::std::left << stringsTable[row][col];
+      ::std::cout << ::std::setw(maxWidths[col]) << stringsTable[row][col] << " ";
     }
     ::std::cout << ::std::endl;
   }
