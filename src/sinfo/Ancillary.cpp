@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "sinfo/Ancillary.h"
 
+#include <iomanip>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp> 
 #include <boost/filesystem.hpp>
