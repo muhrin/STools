@@ -58,6 +58,8 @@ struct InputOptions
   ::std::string infoString;
   ::std::string sortToken;
   ::std::string emptyString;
+  bool freeMode;
+  bool noHeader;
 };
 
 struct CustomisableTokens
@@ -75,7 +77,7 @@ struct TokensInfo
 {
   InfoStringTokens tokenStrings;
   ::std::string sortToken;
-  ::std::string formatString;
+  ::std::vector< ::std::string> formatStrings;
 };
 
 

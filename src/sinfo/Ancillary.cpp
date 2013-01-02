@@ -36,6 +36,7 @@ namespace structure_properties = ssc::structure_properties;
 
 const ::std::string VAR_BRACKET("$");
 const ::std::string VAR_FORMAT("%");
+const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
 const ::std::string DEFAULT_INFO_STRING("$n%-18.18s $p%10.2f $v%10.2f $e%10.2f $re%10.2f $sg%7.7s $tf%6.6i\n");
 
@@ -60,6 +61,8 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("info-string,s", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
       ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("re"), "sort token")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
+      ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
+      ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
     ;
 
@@ -145,6 +148,47 @@ CustomisableTokens generateTokens(TokensMap & map)
   return customisable;
 }
 
+::std::string
+parseTokenNames(
+  const TokensMap & tokensMap,
+  const InputOptions & in)
+{
+  typedef ::boost::find_iterator< ::std::string::iterator> StringFindIterator;
+  ::boost::regex matchTitles(VAR_TITLE + "[^[:space:]]+" + VAR_TITLE);
+
+  ::std::string namesSubstituted = in.infoString;
+
+  ::std::string token;
+  for(StringFindIterator it = ::boost::make_find_iterator(namesSubstituted, ::boost::algorithm::regex_finder(matchTitles)),
+    end = StringFindIterator(); it != end; ++it)
+  {
+    token.assign(it->begin() + 1, it->end() - 1);
+    const TokensMap::const_iterator mapIt = tokensMap.find(token);
+    if(mapIt != tokensMap.end())
+    {
+      ::boost::replace_range(namesSubstituted, *it, mapIt->second->getName());
+    }
+    else
+    {
+      ::std::cerr << "Unrecognised token name: " << token << ::std::endl;
+    }
+  }
+
+  return namesSubstituted;
+}
+
+void addFormatString(
+  TokensInfo & tokensInfo,
+  const ::std::string & formatString,
+  const InputOptions & in
+)
+{
+  if(in.freeMode)
+    tokensInfo.formatStrings[0] += formatString;
+  else
+    tokensInfo.formatStrings.push_back(formatString);
+}
+
 Result::Value
 getRequiredTokens(
   TokensInfo & tokensInfo,
@@ -155,9 +199,14 @@ getRequiredTokens(
   typedef ::boost::tokenizer< ::boost::char_separator<char> > Tok;
   const ::boost::char_separator<char> sep(VAR_BRACKET.c_str(), "", ::boost::keep_empty_tokens);
 
+  if(in.freeMode)
+    tokensInfo.formatStrings.resize(1);
+  
+  const ::std::string namesSubstituted = in.freeMode ? parseTokenNames(tokensMap, in) : in.infoString;
+
   ::boost::format formatter;
 
-  Tok tokens(in.infoString, sep);
+  Tok tokens(namesSubstituted, sep);
   ::std::string entry;
   bool atToken = false;
   for(Tok::const_iterator it = tokens.begin(), end = tokens.end();
@@ -178,7 +227,7 @@ getRequiredTokens(
           {
             formatter.parse(formatString);
             tokensInfo.tokenStrings.push_back(tokString);
-            tokensInfo.formatString += formatString;
+            addFormatString(tokensInfo, formatString, in);
           }
           catch(::boost::io::bad_format_string & e)
           {
@@ -196,14 +245,14 @@ getRequiredTokens(
         if(tokensMap.find(entry) != tokensMap.end())
         {
           tokensInfo.tokenStrings.push_back(entry);
-          tokensInfo.formatString += VAR_FORMAT + "||";
+          addFormatString(tokensInfo, VAR_FORMAT + "||", in);
         }
         else
           ::std::cerr << "Unrecognised token: " << entry << ::std::endl;
       }
     }
-    else
-      tokensInfo.formatString += entry;
+    else if(in.freeMode)
+      tokensInfo.formatStrings[0] += entry;
 
     atToken = !atToken;
   }
@@ -220,7 +269,7 @@ getRequiredTokens(
   return Result::SUCCESS;
 }
 
-void printInfo(
+void printInfoFreeMode(
   const StructureInfoTable & infoTable,
   const SortedKeys & orderedKeys,
   const TokensInfo & tokensInfo,
@@ -230,7 +279,7 @@ void printInfo(
   ::boost::format formatter;
   try
   {
-    formatter.parse(tokensInfo.formatString);
+    formatter.parse(tokensInfo.formatStrings[0]);
   }
   catch(const ::boost::io::bad_format_string & e)
   {
@@ -250,7 +299,92 @@ void printInfo(
     }
     ::std::cout << formatter;
   }
+}
 
+void printInfoColumnMode(
+  const StructureInfoTable & infoTable,
+  const SortedKeys & structures,
+  const TokensInfo & tokensInfo,
+  const TokensMap & tokensMap,
+  const InputOptions & in)
+{
+  ::boost::format formatter;
+  try
+  {
+    formatter.parse(tokensInfo.formatStrings[0]);
+  }
+  catch(const ::boost::io::bad_format_string & e)
+  {
+    ::std::cerr << "Error parsing format string." << ::std::endl;
+    ::std::cerr << e.what() << ::std::endl;
+    return;
+  }
+
+  typedef ::std::vector< ::std::string> StringsRow;
+  typedef ::std::vector<StringsRow> StringsTable;
+
+  const size_t numColumns = tokensInfo.tokenStrings.size();
+
+  StringsTable stringsTable;
+  ::std::vector<size_t> maxWidths(numColumns);
+
+  for(size_t row = 0; row < structures.size(); ++row)
+  {
+    stringsTable.push_back(StringsRow(numColumns));
+    for(size_t col = 0; col < numColumns; ++col)
+    {
+      // Parse the new format string for this column
+      formatter.parse(tokensInfo.formatStrings[col]);
+      
+      // Get the value
+      if(!tokensMap.at(tokensInfo.tokenStrings[col]).getColumn().feedFormatter(formatter, infoTable, structures[row]))
+        formatter % in.emptyString;
+      stringsTable[row][col] = formatter.str();
+      
+      // Get the max width so far
+      maxWidths[col] = ::std::max(maxWidths[col], stringsTable[row][col].size());
+    }
+    ::std::cout << ::std::endl;
+  }
+
+  if(!in.noHeader)
+  {
+    ::std::string colName;
+    for(size_t col = 0; col < numColumns; ++col)
+    {
+      // Get the column name
+      colName = tokensMap.at(tokensInfo.tokenStrings[col]).getName();
+      
+      // Make sure we consider it for the width
+      maxWidths[col] = ::std::max(maxWidths[col], colName.size());
+
+      ::std::cout << ::std::setw(maxWidths[col] + 1) << ::std::left << colName;
+    } 
+  }
+
+  // Now go through and print everything
+  for(size_t row = 0; row < structures.size(); ++row)
+  {
+    for(size_t col = 0; col < numColumns; ++col)
+    {
+      ::std::cout << ::std::setw(maxWidths[col] + 1) << ::std::left << stringsTable[row][col];
+    }
+    ::std::cout << ::std::endl;
+  }
+}
+
+void printInfo(
+  const StructureInfoTable & infoTable,
+  const SortedKeys & orderedKeys,
+  const TokensInfo & tokensInfo,
+  const TokensMap & tokensMap,
+  const InputOptions & in)
+{
+  ::boost::format formatter;
+  if(in.freeMode)
+    printInfoFreeMode(infoTable, orderedKeys, tokensInfo, tokensMap, in);
+  else
+    printInfoColumnMode(infoTable, orderedKeys, tokensInfo, tokensMap, in);
 }
 
 }
