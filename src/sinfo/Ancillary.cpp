@@ -128,8 +128,8 @@ CustomisableTokens generateTokens(TokensMap & map)
 
   CustomisableTokens customisable;
 
-  EnergyTokenPtr lowestEnergy(new utility::EnergyToken("Relative energy", "re"));
-  EnergyTokenPtr lowestEnergyPerAtom(new utility::EnergyToken("Relative energy/atom", "rea", true));
+  EnergyTokenPtr lowestEnergy(new utility::EnergyToken("Rel. energy", "re"));
+  EnergyTokenPtr lowestEnergyPerAtom(new utility::EnergyToken("Rel. energy/atom", "rea", true));
   // Leave behind non-owning observers
   customisable.lowestEnergy = lowestEnergy.get();
   customisable.lowestEnergyPerAtom = lowestEnergyPerAtom.get();
@@ -204,7 +204,10 @@ getRequiredTokens(
   if(in.freeMode)
     tokensInfo.formatStrings.resize(1);
   
-  const ::std::string namesSubstituted = in.freeMode ? parseTokenNames(tokensMap, in) : in.infoString;
+  const ::std::string namesSubstituted =
+    in.freeMode ?
+    parseTokenNames(tokensMap, in) :
+    utility::removeVerticalPositioningSequencesCopy(parseTokenNames(tokensMap, in));
 
   ::boost::format formatter;
 

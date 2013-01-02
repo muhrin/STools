@@ -28,8 +28,14 @@ static const ControlSeqReplace controlSeqReplace[] =
   ControlSeqReplace("\\n", "\n"), // new line (line feed)
   ControlSeqReplace("\\v", "\v"), // vertical tab
   ControlSeqReplace("\\f", "\f"), // form feed
-  ControlSeqReplace("\\r", "\r") // return carriage
+  ControlSeqReplace("\\r", "\r")  // return carriage
 };
+
+void replaceControlSequences(::std::string & str)
+{
+  BOOST_FOREACH(const ControlSeqReplace & seq, controlSeqReplace)
+    ::boost::replace_all(str, seq.first, seq.second);
+}
 
 ::std::string replaceControlSequencesCopy(const ::std::string & str)
 {
@@ -38,10 +44,25 @@ static const ControlSeqReplace controlSeqReplace[] =
   return result;
 }
 
-void replaceControlSequences(::std::string & str)
+void removeControlSequences(::std::string & str)
 {
   BOOST_FOREACH(const ControlSeqReplace & seq, controlSeqReplace)
-    ::boost::replace_all(str, seq.first, seq.second);
+    ::boost::replace_all(str, seq.second, "");
+}
+
+void removeVerticalPositioningSequences(::std::string & str)
+{
+  ::boost::replace_all(str, "\n", "");
+  ::boost::replace_all(str, "\v", "");
+  ::boost::replace_all(str, "\f", "");
+  ::boost::replace_all(str, "\r", "");
+}
+
+::std::string removeVerticalPositioningSequencesCopy(const ::std::string & str)
+{
+  ::std::string result = str;
+  removeVerticalPositioningSequences(result);
+  return result;
 }
 
 }

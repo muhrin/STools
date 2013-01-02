@@ -18,9 +18,13 @@
 namespace stools {
 namespace utility {
 
+void replaceControlSequences(::std::string & str);
 ::std::string replaceControlSequencesCopy(const ::std::string & str);
 
-void replaceControlSequences(::std::string & str);
+void removeControlSequences(::std::string & str);
+
+void removeVerticalPositioningSequences(::std::string & str);
+::std::string removeVerticalPositioningSequencesCopy(const ::std::string & str);
 
 }
 }
