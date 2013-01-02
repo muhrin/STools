@@ -60,6 +60,7 @@ struct InputOptions
   ::std::string emptyString;
   bool freeMode;
   bool noHeader;
+  bool recursive;
 };
 
 struct CustomisableTokens

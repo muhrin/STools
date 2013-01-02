@@ -40,12 +40,13 @@ const ::std::string VAR_BRACKET("$");
 const ::std::string VAR_FORMAT("%");
 const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
-const ::std::string DEFAULT_INFO_STRING("$n%-18.18s $p%10.2f $v%10.2f $e%10.2f $re%10.2f $sg%7.7s $tf%6.6i\n");
+const ::std::string DEFAULT_INFO_STRING("$n%-18.18s $p%10.2f $v%10.2f $e%10.2f $re%10.2f $sg%7.7s $tf%6.6i\\n");
 
 Result::Value
 processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap)
 {
   const ::std::string exeName(argv[0]);
+  ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, ".");
 
   ::std::stringstream tokensDescription;
   BOOST_FOREACH(const TokensMap::const_reference token, tokensMap)
@@ -65,6 +66,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
+      ("recursive,r", po::value<bool>(&in.recursive)->default_value(false)->zero_tokens(), "descend into directories recursively")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
     ;
 
@@ -109,6 +111,9 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
 
   // Everything we okay, so clean up the input
   utility::replaceControlSequences(in.infoString);
+
+  if(in.inputFiles.empty())
+    in.inputFiles = DEFAULT_INPUT_FILES;
 
   return Result::SUCCESS;
 }

@@ -15,6 +15,7 @@
 #include <map>
 
 #include <boost/filesystem.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "common/Types.h"
@@ -37,7 +38,7 @@ class ResourceLocator;
 namespace sstbx {
 namespace io {
 
-class StructureReadWriteManager
+class StructureReadWriteManager : ::boost::noncopyable
 {
 public:
 
@@ -68,12 +69,13 @@ public:
   size_t readStructures(
     StructuresContainer & outStructures,
     const ResourceLocator & locator,
-    const common::AtomSpeciesDatabase & speciesDb) const;
+    const common::AtomSpeciesDatabase & speciesDb,
+    const int maxRecursiveDepth = 0) const;
 
   bool setDefaultWriter(const ::std::string & extension);
   const IStructureWriter * getDefaultWriter() const;
 
-protected:
+private:
 
   typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
   typedef ::std::map< ::std::string, IStructureReader *> ReadersMap;
@@ -81,6 +83,13 @@ protected:
   typedef ::boost::ptr_vector<IStructureReader> ReadersStore;
 
   bool getExtension(::std::string & ext, const ResourceLocator & locator) const;
+
+  size_t doReadAllStructuresFromPath(
+    StructuresContainer & outStructures,
+    const ::boost::filesystem::path & path,
+    const common::AtomSpeciesDatabase & speciesDb,
+    const size_t maxRecursiveDepth,
+    const size_t currentDepth = 0) const;
 
   ::std::string myDefaultWriteExtension;
 

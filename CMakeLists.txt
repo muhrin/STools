@@ -77,6 +77,11 @@ include_directories(
   ${STOOLS_INCLUDE_DIRS}
 )
 
+# Make sure that after make install shared libraries are correctly linked
+# to.  See http://www.cmake.org/Wiki/CMake_RPATH_handling#Common_questions
+# for more details
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "STools")

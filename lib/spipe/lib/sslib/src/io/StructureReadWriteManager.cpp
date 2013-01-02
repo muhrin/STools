@@ -134,19 +134,32 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
 size_t StructureReadWriteManager::readStructures(
   StructuresContainer & outStructures,
   const ResourceLocator & locator,
-  const common::AtomSpeciesDatabase & speciesDb) const
+  const common::AtomSpeciesDatabase & speciesDb,
+  const int maxRecursiveDepth) const
 {
-  ::std::string ext;
-  if(!getExtension(ext, locator))
+  if(!fs::exists(locator.path()))
     return 0;
 
-	const ReadersMap::const_iterator it = myReaders.find(ext);
+  if(fs::is_regular_file(locator.path()))
+  {
+    ::std::string ext;
+    if(!getExtension(ext, locator))
+      return 0;
 
-	if(it == myReaders.end())
-		return 0; /*unknown extension*/
+	  const ReadersMap::const_iterator it = myReaders.find(ext);
 
-	// Finally pass it on the the correct reader
-  return it->second->readStructures(outStructures, locator, speciesDb);
+	  if(it == myReaders.end())
+		  return 0; /*unknown extension*/
+
+	  // Finally pass it on the the correct reader
+    return it->second->readStructures(outStructures, locator, speciesDb);
+  }
+  else if(fs::is_directory(locator.path()))
+  {
+    return doReadAllStructuresFromPath(outStructures, locator.path(), speciesDb, maxRecursiveDepth);
+  }
+  else
+    return 0;
 }
 
 bool StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)
@@ -185,6 +198,35 @@ bool StructureReadWriteManager::getExtension(::std::string & ext, const Resource
 	ext.erase(0,1); // Erase the dot from the extensions
 
   return true;
+}
+
+size_t StructureReadWriteManager::doReadAllStructuresFromPath(
+ StructuresContainer & outStructures,
+ const ::boost::filesystem::path & path,
+ const common::AtomSpeciesDatabase & speciesDb,
+ const size_t maxRecursiveDepth,
+ const size_t currentDepth) const
+{
+  // Preconditions:
+  // fs::exists(path)
+  // fs::is_directory(path)
+  if(maxRecursiveDepth > currentDepth)
+    return 0;
+
+  size_t numRead = 0;
+  BOOST_FOREACH(const fs::path & entry, path)
+  {
+    if(fs::is_regular_file(entry))
+    {
+      numRead += readStructures(outStructures, entry, speciesDb, maxRecursiveDepth);
+    }
+    else if(currentDepth < maxRecursiveDepth && fs::is_directory(entry))
+    {
+      numRead += doReadAllStructuresFromPath(outStructures, entry, speciesDb, maxRecursiveDepth, currentDepth + 1);
+    }
+  }
+
+  return numRead;
 }
 
 }

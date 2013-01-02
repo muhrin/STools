@@ -50,6 +50,13 @@ void removeControlSequences(::std::string & str)
     ::boost::replace_all(str, seq.second, "");
 }
 
+::std::string removeControlSequences(const ::std::string & str)
+{
+  ::std::string result = str;
+  removeControlSequences(result);
+  return result;
+}
+
 void removeVerticalPositioningSequences(::std::string & str)
 {
   ::boost::replace_all(str, "\n", "");
