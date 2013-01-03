@@ -103,17 +103,13 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
     }
   }
 
-  if(!foundPipedInput && in.inputFiles.empty())
-  {
-    std::cout << "No structure files given.  Supply files with piped input or as command line paramter." << std::endl;
-    return Result::FAILURE;
-  }
+  if(in.inputFiles.empty())
+    in.inputFiles = DEFAULT_INPUT_FILES;
 
   // Everything we okay, so clean up the input
   utility::replaceControlSequences(in.infoString);
 
-  if(in.inputFiles.empty())
-    in.inputFiles = DEFAULT_INPUT_FILES;
+
 
   return Result::SUCCESS;
 }

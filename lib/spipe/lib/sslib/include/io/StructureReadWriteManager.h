@@ -70,7 +70,7 @@ public:
     StructuresContainer & outStructures,
     const ResourceLocator & locator,
     const common::AtomSpeciesDatabase & speciesDb,
-    const int maxRecursiveDepth = 0) const;
+    const int maxDepth = 1) const;
 
   bool setDefaultWriter(const ::std::string & extension);
   const IStructureWriter * getDefaultWriter() const;
@@ -88,7 +88,7 @@ private:
     StructuresContainer & outStructures,
     const ::boost::filesystem::path & path,
     const common::AtomSpeciesDatabase & speciesDb,
-    const size_t maxRecursiveDepth,
+    const size_t maxDepth,
     const size_t currentDepth = 0) const;
 
   ::std::string myDefaultWriteExtension;

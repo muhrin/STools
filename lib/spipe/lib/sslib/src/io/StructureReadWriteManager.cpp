@@ -135,7 +135,7 @@ size_t StructureReadWriteManager::readStructures(
   StructuresContainer & outStructures,
   const ResourceLocator & locator,
   const common::AtomSpeciesDatabase & speciesDb,
-  const int maxRecursiveDepth) const
+  const int maxDepth) const
 {
   if(!fs::exists(locator.path()))
     return 0;
@@ -156,7 +156,7 @@ size_t StructureReadWriteManager::readStructures(
   }
   else if(fs::is_directory(locator.path()))
   {
-    return doReadAllStructuresFromPath(outStructures, locator.path(), speciesDb, maxRecursiveDepth);
+    return doReadAllStructuresFromPath(outStructures, locator.path(), speciesDb, maxDepth);
   }
   else
     return 0;
@@ -204,25 +204,26 @@ size_t StructureReadWriteManager::doReadAllStructuresFromPath(
  StructuresContainer & outStructures,
  const ::boost::filesystem::path & path,
  const common::AtomSpeciesDatabase & speciesDb,
- const size_t maxRecursiveDepth,
+ const size_t maxDepth,
  const size_t currentDepth) const
 {
   // Preconditions:
   // fs::exists(path)
   // fs::is_directory(path)
-  if(maxRecursiveDepth > currentDepth)
+  if(currentDepth > maxDepth)
     return 0;
 
   size_t numRead = 0;
-  BOOST_FOREACH(const fs::path & entry, path)
+
+  BOOST_FOREACH(const fs::path & entry, ::std::make_pair(fs::directory_iterator(path), fs::directory_iterator()))
   {
     if(fs::is_regular_file(entry))
     {
-      numRead += readStructures(outStructures, entry, speciesDb, maxRecursiveDepth);
+      numRead += readStructures(outStructures, entry, speciesDb, maxDepth);
     }
-    else if(currentDepth < maxRecursiveDepth && fs::is_directory(entry))
+    else if(currentDepth < maxDepth && fs::is_directory(entry))
     {
-      numRead += doReadAllStructuresFromPath(outStructures, entry, speciesDb, maxRecursiveDepth, currentDepth + 1);
+      numRead += doReadAllStructuresFromPath(outStructures, entry, speciesDb, maxDepth, currentDepth + 1);
     }
   }
 
