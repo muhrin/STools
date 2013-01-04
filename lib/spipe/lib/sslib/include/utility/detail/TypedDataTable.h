@@ -13,6 +13,8 @@
 #include <functional>
 #include <sstream>
 
+#include <boost/iterator/indirect_iterator.hpp>
+
 namespace sstbx {
 namespace utility {
 
@@ -114,16 +116,28 @@ template <typename T>
 void TypedDataTable<Key>::getAscending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const
 {
   typedef detail::ColumnComparator<T, Key> Comparator;
+  typedef ::boost::indirect_iterator<SortedKeys::iterator> IndirectIterator;
 
   // Empty the container and copy all the current keys
   sortedKeys.clear();
+  sortedKeys.reserve(myTable.size());
+  SortedKeys::iterator insertPoint = sortedKeys.end();
   BOOST_FOREACH(const typename Table::value_type & entry, myTable)
   {
-    sortedKeys.push_back(entry.first);
+    if(get(entry.first, column))
+      insertPoint = sortedKeys.insert(insertPoint, entry.first) + 1;
+    else
+      insertPoint = sortedKeys.insert(insertPoint, entry.first);
   }
 
   // Sort using the custom comparator
-  ::std::sort(sortedKeys.begin(), sortedKeys.end(), Comparator(*this, column));
+  ::std::sort(sortedKeys.begin(), insertPoint, Comparator(*this, column));
+}
+
+template <typename Key>
+size_t TypedDataTable<Key>::size() const
+{
+  return myTable.size();
 }
 
 namespace detail {
@@ -155,10 +169,10 @@ bool ColumnComparator<T, TableKey>::operator()(const TableKey & key1, const Tabl
   const T * const v1 = myTable.get(key1, myColumn);
   const T * const v2 = myTable.get(key2, myColumn);
 
-  if(v1 && v2)
-    return *v1 < *v2;
+  if(!v1 || !v2)
+    return false; // Can't compare as we don't have one or more values
 
-  return key1 < key2;
+  return *v1 < *v2;
 }
 
 

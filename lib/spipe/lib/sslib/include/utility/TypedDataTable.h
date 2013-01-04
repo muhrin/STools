@@ -100,6 +100,7 @@ public:
   template <typename T>
   void getAscending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const;
 
+  size_t size() const;
 
 private:
   typedef ::sstbx::utility::HeterogeneousMap Row;
