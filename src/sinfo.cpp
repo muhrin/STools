@@ -108,9 +108,7 @@ int main(const int argc, char * argv[])
   {
     const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
     if(it != tokensMap.end())
-    {
       it->second->sort(sortedKeys, infoTable);
-    }
   }
 
   printInfo(infoTable, sortedKeys, tokensInfo, tokensMap, in);

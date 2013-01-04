@@ -23,8 +23,9 @@ EnergyToken::EnergyToken(
   const ::std::string & name,
   const ::std::string & symbol,
   const double relativeTo,
+  const ::std::string & defaultFormatString,
   const bool usePerAtom):
-TypedToken<double>(name, symbol),
+TypedToken<double>(name, symbol, defaultFormatString),
 myRelativeTo(relativeTo),
 myUsePerAtom(usePerAtom)
 { 
@@ -33,8 +34,9 @@ myUsePerAtom(usePerAtom)
 EnergyToken::EnergyToken(
   const ::std::string & name,
   const ::std::string & symbol,
+  const ::std::string & defaultFormatString,
   const bool usePerAtom):
-TypedToken<double>(name, symbol),
+TypedToken<double>(name, symbol, defaultFormatString),
 myRelativeTo(0.0),
 myUsePerAtom(usePerAtom)
 { 

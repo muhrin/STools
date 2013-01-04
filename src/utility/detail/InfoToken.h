@@ -20,8 +20,9 @@ namespace utility {
 template <typename T>
 TypedToken<T>::TypedToken(
   const ::std::string & name,
-  const ::std::string & symbol):
-InfoToken(symbol),
+  const ::std::string & symbol,
+  const ::std::string & defaultFormatString):
+InfoToken(symbol, defaultFormatString),
 myColumn(name)
 {}
 
@@ -69,8 +70,9 @@ template <typename T>
 StructurePropertyToken<T>::StructurePropertyToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  PropertyKey & propertyKey):
-TypedToken<T>(name, symbol),
+  PropertyKey & propertyKey,
+  const ::std::string & defaultFormatString):
+TypedToken<T>(name, symbol, defaultFormatString),
 myKey(propertyKey)
 {}
 
@@ -91,8 +93,9 @@ template <typename T, typename Getter>
 FunctionToken<T, Getter>::FunctionToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  Getter getter):
-TypedToken<T>(name, symbol),
+  Getter getter,
+  const ::std::string & defaultFormatString):
+TypedToken<T>(name, symbol, defaultFormatString),
 myGetter(getter)
 {}
 
@@ -108,10 +111,11 @@ template <typename T>
 makeStructurePropertyToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  ::sstbx::utility::Key<T> & propertyKey
+  ::sstbx::utility::Key<T> & propertyKey,
+  const ::std::string & defaultFormatString
 )
 {
-  return ::std::auto_ptr<InfoToken>(new StructurePropertyToken<T>(name, symbol, propertyKey));
+  return ::std::auto_ptr<InfoToken>(new StructurePropertyToken<T>(name, symbol, propertyKey, defaultFormatString));
 }
 
 template <typename T, typename Getter>
@@ -119,10 +123,11 @@ template <typename T, typename Getter>
 makeFunctionToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  Getter getter
+  Getter getter,
+  const ::std::string & defaultFormatString
 )
 {
-  return ::std::auto_ptr<InfoToken>(new FunctionToken<T, Getter>(name, symbol, getter));
+  return ::std::auto_ptr<InfoToken>(new FunctionToken<T, Getter>(name, symbol, getter, defaultFormatString));
 }
 
 }

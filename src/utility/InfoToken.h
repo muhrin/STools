@@ -35,7 +35,7 @@ public:
   typedef ::sstbx::utility::Column<TableKey> Column;
   typedef StructureInfoTable::SortedKeys SortedKeys;
 
-  InfoToken(const ::std::string & symbol);
+  InfoToken(const ::std::string & symbol, const ::std::string & defaultFormatString = "");
   virtual ~InfoToken() {}
 
   virtual ::std::string getName() const = 0;
@@ -47,10 +47,12 @@ public:
   virtual const Column & getColumn() const = 0;
 
   const ::std::string & getSymbol() const;
+  const ::std::string & getDefaultFormatString() const;
 
 private:
 
   const ::std::string mySymbol;
+  const ::std::string myDefaultFormatString;
 };
 
 template <typename T>
@@ -64,7 +66,8 @@ public:
 
   TypedToken(
     const ::std::string & name,
-    const ::std::string & symbol);
+    const ::std::string & symbol,
+    const ::std::string & defaultFormatString = "");
 
   virtual ::std::string getName() const;
   virtual bool insert(
@@ -94,7 +97,8 @@ public:
   StructurePropertyToken(
     const ::std::string & name,
     const ::std::string & symbol,
-    PropertyKey & propertyKey);
+    PropertyKey & propertyKey,
+    const ::std::string & defaultFormatString);
 
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;
@@ -112,7 +116,8 @@ public:
   FunctionToken(
     const ::std::string & name,
     const ::std::string & symbol,
-    Getter getter);
+    Getter getter,
+    const ::std::string & formatString = "");
 
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;
@@ -129,7 +134,8 @@ template <typename T>
 makeStructurePropertyToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  ::sstbx::utility::Key<T> & propertyKey
+  ::sstbx::utility::Key<T> & propertyKey,
+  const ::std::string & defaultFormatString = ""
 );
 
 template <typename T, typename Getter>
@@ -137,7 +143,8 @@ template <typename T, typename Getter>
 makeFunctionToken(
   const ::std::string & name,
   const ::std::string & symbol,
-  Getter getter
+  Getter getter,
+  const ::std::string & defaultFormatString = ""
 );
 
 }
