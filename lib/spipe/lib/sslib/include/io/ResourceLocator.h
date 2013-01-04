@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <ostream>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -60,6 +61,13 @@ ResourceLocator absolute(const ResourceLocator & loc);
 ResourceLocator relative(const ResourceLocator & to);
 
 ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & to);
+
+::std::ostream & operator <<(::std::ostream & os, const ResourceLocator & loc);
+
+inline bool operator<(const ResourceLocator & lhs, const ResourceLocator & rhs)
+{
+  return lhs.string() < rhs.string();
+}
 
 }
 }

@@ -127,5 +127,11 @@ ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & t
   return ResourceLocator(io::make_relative(from.path(), to.path()), to.id());
 }
 
+::std::ostream & operator <<(::std::ostream & os, const ResourceLocator & loc)
+{
+  os << loc.string();
+  return os;
+}
+
 }
 }
