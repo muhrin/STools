@@ -55,6 +55,7 @@ set(tests_Source_Files__utility
   utility/HeterogeneousMapTest.cpp
   utility/MultiIdxTest.cpp
   utility/MultiIdxRangeTest.cpp
+  utility/MultiRangeTest.cpp
   utility/PermutationRangeTest.cpp
   utility/StructureComparatorsTest.cpp
 )

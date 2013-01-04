@@ -147,6 +147,8 @@ set(sslib_Header_Files__utility
   include/utility/MultiArray.h
   include/utility/MultiIdx.h
   include/utility/MultiIdxRange.h
+  include/utility/MultiIterator.h
+  include/utility/MultiRange.h
   include/utility/NamedProperty.h
   include/utility/PermutationRange.h
   include/utility/PromotableType.h
@@ -166,6 +168,8 @@ set(sslib_Header_Files__utility__detail
   include/utility/detail/TypedDataTable.h
   include/utility/detail/GenericBufferedComparator.h
   include/utility/detail/HeterogeneousMap.h
+  include/utility/detail/MultiIterator.h
+  include/utility/detail/MultiRange.h
   include/utility/detail/SharedHandle.h
   include/utility/detail/UniqueStructureSet.h
 )
