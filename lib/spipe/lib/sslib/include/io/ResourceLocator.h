@@ -45,6 +45,8 @@ public:
 
   ResourceLocator & operator =(const ResourceLocator & rhs);
 
+  ResourceLocator & makeRelative(const ::boost::filesystem::path & from);
+
 private:
 
   static const ::std::string ID_DELIMITER;

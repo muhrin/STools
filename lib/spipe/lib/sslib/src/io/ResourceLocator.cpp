@@ -105,6 +105,13 @@ ResourceLocator & ResourceLocator::operator =(const ResourceLocator & rhs)
   return *this;
 }
 
+ResourceLocator &
+ResourceLocator::makeRelative(const ::boost::filesystem::path & from)
+{
+  myPath = make_relative(from, myPath);
+  return *this;
+}
+
 ResourceLocator absolute(const ResourceLocator & loc)
 {
   return ResourceLocator(io::absolute(loc.path()), loc.id());
