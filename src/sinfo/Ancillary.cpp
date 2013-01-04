@@ -43,11 +43,25 @@ const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
 const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $v$ $e$ $re$ $sg$ $tf$\\n");
 
+::std::string mapEnvToOptionName(const ::std::string & envVariable)
+{
+  if(envVariable == "SINFO_INFO_STRING")
+    return "info-string";
+  else if(envVariable == "SINFO_KEY")
+    return "key";
+  else if(envVariable == "SINFO_FREE_MODE")
+    return "free-mode";
+  else if(envVariable == "SINFO_NO_HEADER")
+    return "no-header";
+
+  return "";
+}
+
 Result::Value
 processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap)
 {
   const ::std::string exeName(argv[0]);
-  ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, ".");
+  ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, ::boost::filesystem3::current_path().string());
 
   ::std::stringstream tokensDescription;
   BOOST_FOREACH(const TokensMap::const_reference token, tokensMap)
@@ -79,6 +93,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::store(po::parse_environment(desc, mapEnvToOptionName), vm);
 
     // Deal with help first, otherwise missing required parameters will cause exception
     if(vm.count("help"))
@@ -146,11 +161,15 @@ CustomisableTokens generateTokens(TokensMap & map)
   addToken(map, utility::makeFunctionToken<double>("Volume", "v", utility::functions::getVolume, "%.2f"));
   addToken(map, TokenPtr(new utility::EnergyToken("Energy/atom", "ea", "%.4f", true)));
   addToken(map, utility::makeFunctionToken<unsigned int>("N atoms", "na", utility::functions::getNumAtoms));
-  addToken(map, utility::makeStructurePropertyToken("Spgroup", "sg", structure_properties::general::SPACEGROUP_SYMBOL));
-  addToken(map, utility::makeStructurePropertyToken("Spgroup no.", "sgn", structure_properties::general::SPACEGROUP_NUMBER));
+  
+  addToken(map, utility::makeFunctionToken< ::std::string>("Spgroup", "sg", utility::functions::getSpaceGroupSymbol, "%|_|"));
+  addToken(map, utility::makeFunctionToken<unsigned int>("Spgroup no.", "sgn", utility::functions::getSpaceGroupNumber, "%|_|"));
+
   addToken(map, utility::makeStructurePropertyToken("Energy", "e", structure_properties::general::ENERGY_INTERNAL, "%.4f"));
   addToken(map, utility::makeStructurePropertyToken("Pressure", "p", structure_properties::general::PRESSURE_INTERNAL, "%.4f"));
   addToken(map, utility::makeStructurePropertyToken("Times found", "tf", structure_properties::searching::TIMES_FOUND));
+
+  addToken(map, utility::makeFunctionToken< ::sstbx::io::ResourceLocator>("File", "f", utility::functions::getRelativeLoadPath, "%|-|"));
 
   return customisable;
 }

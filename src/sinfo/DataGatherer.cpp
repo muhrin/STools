@@ -23,7 +23,8 @@ namespace ssc = ::sstbx::common;
 namespace structure_properties = ssc::structure_properties;
 
 DataGatherer::DataGatherer():
-myLowestEnergy(::std::numeric_limits<double>::min())
+myLowestEnergy(::std::numeric_limits<double>::max()),
+myLowestEnergyPerAtom(::std::numeric_limits<double>::max())
 {}
 
 void DataGatherer::gather(const ssc::Structure & structure)
@@ -39,7 +40,7 @@ void DataGatherer::gather(const ssc::Structure & structure)
 ::boost::optional<double> DataGatherer::getLowestEnergy() const
 {
   ::boost::optional<double> lowest;
-  if(myLowestEnergy != ::std::numeric_limits<double>::min())
+  if(myLowestEnergy != ::std::numeric_limits<double>::max())
     lowest.reset(myLowestEnergy);
   return lowest;
 }
@@ -47,7 +48,7 @@ void DataGatherer::gather(const ssc::Structure & structure)
 ::boost::optional<double> DataGatherer::getLowestEnergyPerAtom() const
 {
   ::boost::optional<double> lowest;
-  if(myLowestEnergyPerAtom != ::std::numeric_limits<double>::min())
+  if(myLowestEnergyPerAtom != ::std::numeric_limits<double>::max())
     lowest.reset(myLowestEnergyPerAtom);
   return lowest;
 }

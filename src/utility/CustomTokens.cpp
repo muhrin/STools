@@ -8,12 +8,18 @@
 // INCLUDES //////////////////////////////////
 #include "utility/CustomTokens.h"
 
+// From SSTbx
+#include <analysis/SpaceGroup.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
+#include <io/BoostFilesystem.h>
 
 // NAMESPACES ////////////////////////////////
 
+namespace fs = ::boost::filesystem;
+namespace ssa = ::sstbx::analysis;
 namespace ssc = ::sstbx::common;
+namespace ssio = ::sstbx::io;
 namespace structure_properties = ssc::structure_properties;
 
 namespace stools {
@@ -55,11 +61,12 @@ EnergyToken::doGetValue(const ::sstbx::common::Structure & structure ) const
 
   if(energy)
     relativeEnergy.reset(
-    myUsePerAtom ? *energy / structure.getNumAtoms() : *energy
+    (myUsePerAtom ? *energy / structure.getNumAtoms() : *energy)
     - myRelativeTo);
 
   return relativeEnergy;
 }
+
 
 namespace functions {
 
@@ -100,6 +107,61 @@ OptionalDouble getEnergyPerAtom(const ssc::Structure & structure)
 OptionalUInt getNumAtoms(const ::sstbx::common::Structure & structure)
 {
   return structure.getNumAtoms();
+}
+
+::boost::optional< ::std::string>
+getSpaceGroupSymbol(const ::sstbx::common::Structure & structure)
+{
+  ::boost::optional< ::std::string> spgroup;
+
+  const ::std::string * const spgroupSymbol = structure.getProperty(structure_properties::general::SPACEGROUP_SYMBOL);
+
+  if(spgroupSymbol)
+    spgroup.reset(*spgroupSymbol);
+  else if(structure.getUnitCell())
+  {
+    // Try to figure it out
+    ssa::space_group::SpacegroupInfo sgInfo;
+    ssa::space_group::getSpacegroupInfo(sgInfo, structure);
+    spgroup.reset(sgInfo.iucSymbol);
+  }
+
+  return spgroup;
+}
+
+::boost::optional<unsigned int>
+getSpaceGroupNumber(const ::sstbx::common::Structure & structure)
+{
+  ::boost::optional<unsigned int> spgroup;
+
+  const unsigned int * const spgroupNumber = structure.getProperty(structure_properties::general::SPACEGROUP_NUMBER);
+
+  if(spgroupNumber)
+    spgroup.reset(*spgroupNumber);
+  else if(structure.getUnitCell())
+  {
+    // Try to figure it out
+    ssa::space_group::SpacegroupInfo sgInfo;
+    ssa::space_group::getSpacegroupInfo(sgInfo, structure);
+    spgroup.reset(sgInfo.number);
+  }
+
+  return spgroup;
+}
+
+::boost::optional<ssio::ResourceLocator>
+getRelativeLoadPath(const ::sstbx::common::Structure & structure)
+{
+  ::boost::optional<ssio::ResourceLocator> loadLocator;
+
+  const ssio::ResourceLocator * const absPath = structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH);
+  if(absPath)
+  {
+    loadLocator.reset(*absPath);
+    loadLocator->makeRelative(fs::path());
+  }
+
+  return loadLocator;
 }
 
 }

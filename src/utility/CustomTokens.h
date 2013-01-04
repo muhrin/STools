@@ -12,10 +12,17 @@
 // INCLUDES /////////////////////////////////////////////
 #include "utility/InfoToken.h"
 
+#include <io/ResourceLocator.h>
+
+#include <boost/filesystem.hpp>
+
 // FORWARD DECLARES ////////////////////////////////
 namespace sstbx {
 namespace common {
 class Structure;
+}
+namespace io {
+class ResourceLocator;
 }
 }
 
@@ -57,6 +64,9 @@ namespace functions {
 ::boost::optional<double> getVolume(const ::sstbx::common::Structure & structure);
 ::boost::optional<double> getEnergyPerAtom(const ::sstbx::common::Structure & structure);
 ::boost::optional<unsigned int> getNumAtoms(const ::sstbx::common::Structure & structure);
+::boost::optional< ::std::string> getSpaceGroupSymbol(const ::sstbx::common::Structure & structure);
+::boost::optional<unsigned int> getSpaceGroupNumber(const ::sstbx::common::Structure & structure);
+::boost::optional< ::sstbx::io::ResourceLocator> getRelativeLoadPath(const ::sstbx::common::Structure & structure);
 }
 
 }
