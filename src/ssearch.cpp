@@ -53,6 +53,8 @@
 #include <common/StructureData.h>
 #include <common/UtilityFunctions.h>
 
+// Local
+#include "input/YamlKeywords.h"
 #include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
 
@@ -69,6 +71,7 @@ namespace ssf   = ::sstbx::factory;
 namespace ssio  = ::sstbx::io;
 namespace ssp   = ::sstbx::potential;
 namespace ssu   = ::sstbx::utility;
+namespace yaml_kw = ::stools::input::yaml_kw;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -88,10 +91,46 @@ struct InputType
   enum Value { UNKNOWN, RANDOM_STRUCTURES, SEED_STRUCTURES };
 };
 
+struct RunConfiguration
+{
+  RunConfiguration(ssc::AtomSpeciesDatabase & speciesDb_):
+    speciesDb(speciesDb_),
+    paramRange(8),
+    potentialSpecies(2),
+    stoichMaxAtoms(0)
+  {}
+
+  ssc::AtomSpeciesDatabase & speciesDb;
+  InputType::Value inputType;
+  ::boost::scoped_ptr<sp::SpStartBlock> searchStartBlock;
+
+  ::boost::scoped_ptr<ssbc::StructureDescription> strDesc;
+
+  ::boost::scoped_ptr<sp::SpStartBlock> paramSweepBlock;
+  bool sweepMode;
+  sp::common::ParamRange paramRange;
+  double betaDiagonal;
+  ::std::vector<ssc::AtomSpeciesId::Value> potentialSpecies;
+
+  ::std::vector<ssc::AtomSpeciesId::Value> stoichSpecies;
+  unsigned int stoichMaxAtoms;
+  ::boost::scoped_ptr< ::spipe::blocks::StoichiometrySearch> stoichSearchBlock;
+};
+
 // CONSTANTS /////////////////////////////////
 static const double DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS = 5000;
 static const double DEFAULT_OPTIMISATION_MAX_ITERS = 10000;
 static const double DEFAULT_POT_CUTOFF = 2.5;
+
+// FUNCTIONS ////////////////////////////////
+int parseInput(RunConfiguration & config, const InputOptions & in);
+
+bool requiredNode(const YAML::Node & parent, const ::std::string & childName);
+
+::std::vector<ssc::AtomSpeciesId> getSpeciesFromString(
+  const ::std::string & speciesString,
+  const ssc::AtomSpeciesDatabase & speciesDb
+);
 
 ::sstbx::potential::SimplePairPotential::CombiningRule
 getCombiningRuleFromString(const ::std::string & str);
@@ -105,16 +144,11 @@ int processPotParams(
 
 int main(const int argc, char * argv[])
 {
-  namespace kw    = ssf::sslib_yaml_keywords;
   using ::arma::Mat;
   using ::arma::Col;
   using ::arma::vec;
   using ::arma::endr;
 
-  typedef boost::tokenizer<boost::char_separator<char> > Tok;
-  const boost::char_separator<char> tokSep(" \t");
-
-  const ::std::string KW_SEED_STRUCTURES("seedStructures");
 
   // Program options
   InputOptions in;
@@ -122,19 +156,6 @@ int main(const int argc, char * argv[])
   int result = processCommandLineArgs(in, argc, argv);
   if(result != 0)
     return result;
-
-  // Do potential parameters ////////////////////////////////
-  sp::common::ParamRange paramRange(8);
-  double betaDiagonal;
-  result = processPotParams(paramRange, betaDiagonal, in);
-  if(result != 0)
-    return result;
-
-  bool doingSweep = false;
-  for(size_t i = 0; i < paramRange.nSteps.n_rows; ++i)
-  {
-    doingSweep |= paramRange.nSteps(i) != 1;
-  }
 
   // Generate the pipeline
   typedef sp::SpSingleThreadedEngine Engine;
@@ -144,67 +165,14 @@ int main(const int argc, char * argv[])
   Engine pipeEngine;
   RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
 
+  // Generate the run configuration
+  RunConfiguration config(runner->memory().global().getSpeciesDatabase());
+  result = parseInput(config, in);
+  if(result != 0)
+    return result;
+
   ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
   ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
-
-  ssc::AtomSpeciesDatabase & speciesDb = runner->memory().global().getSpeciesDatabase();
-
-  // Do atom species ///////////////////////////////////////
-  if(in.potSpecies.size() != 2)
-  {
-    ::std::cout << "There must be 2 potential species specified\n";
-    return 1;
-  }
-
-  ::std::vector< ssc::AtomSpeciesId::Value > potentialSpecies(2);
-  potentialSpecies[0] = speciesDb.getIdFromSymbol(in.potSpecies[0]);
-  potentialSpecies[1] = speciesDb.getIdFromSymbol(in.potSpecies[1]);
-  paramRange.from(6) = potentialSpecies[0].ordinal();
-  paramRange.from(7) = potentialSpecies[1].ordinal();
-
-  ssf::SsLibFactoryYaml factory(speciesDb);
-
-  ssbc::StructureDescriptionPtr strDesc;
-  ::std::string seedStructures;
-  InputType::Value inputType = InputType::UNKNOWN;
-  try
-  {
-    YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
-
-    if(loadedNode[kw::RANDOM_STRUCTURE])
-    {
-      inputType = InputType::RANDOM_STRUCTURES;
-      strDesc = factory.createStructureDescription(loadedNode[kw::RANDOM_STRUCTURE]);
-    }
-    else if(loadedNode[KW_SEED_STRUCTURES])
-    {
-      inputType = InputType::SEED_STRUCTURES;
-      seedStructures = loadedNode[KW_SEED_STRUCTURES].as< ::std::string>();
-    }
-
-    if(inputType == InputType::UNKNOWN)
-    {
-      ::std::cout << "No input structure type found in input file\n";
-      return 1;
-    }
-  }
-  catch(const ssf::FactoryError & e)
-  {
-    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
-    return 1;
-  }
-
-  // Set up the search starting block
-  ::boost::scoped_ptr<sp::SpStartBlock> searchStartBlock;
-  if(inputType == InputType::RANDOM_STRUCTURES)
-  {
-    // Random structure
-    searchStartBlock.reset(new sp::blocks::RandomStructure(in.numRandomStructures, sp::blocks::RandomStructure::StructureDescPtr(strDesc.release())));
-  }
-  else if(inputType == InputType::SEED_STRUCTURES)
-  {
-    searchStartBlock.reset(new sp::blocks::LoadSeedStructures(speciesDb, seedStructures, false));
-  }
 
   // Niggli reduction
   sp::blocks::NiggliReduction niggli;
@@ -212,25 +180,25 @@ int main(const int argc, char * argv[])
   // Geometry optimise
   ::arma::mat epsilon;
 	epsilon.set_size(2, 2);
-	epsilon << paramRange.from(0) << paramRange.from(1) << endr
-			<< paramRange.from(1) << paramRange.from(2) << endr;
+	epsilon << config.paramRange.from(0) << config.paramRange.from(1) << endr
+			<< config.paramRange.from(1) << config.paramRange.from(2) << endr;
 
 	::arma::mat sigma;
 	sigma.set_size(2, 2);
-	sigma << paramRange.from(3) << paramRange.from(4) << endr
-			<< paramRange.from(4) << paramRange.from(5) << endr;
+	sigma << config.paramRange.from(3) << config.paramRange.from(4) << endr
+			<< config.paramRange.from(4) << config.paramRange.from(5) << endr;
 
 	::arma::mat beta;
 	beta.set_size(2, 2);
-	beta << betaDiagonal << 1 << endr
-			<< 1 << betaDiagonal << endr;
+	beta << config.betaDiagonal << 1 << endr
+			<< 1 << config.betaDiagonal << endr;
 
   const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
 
   ssp::SimplePairPotential pp(
-    speciesDb,
+    config.speciesDb,
     2,
-    potentialSpecies,
+    config.potentialSpecies,
     epsilon,
     sigma,
     in.potCutoff,
@@ -249,7 +217,7 @@ int main(const int argc, char * argv[])
   initialOptimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS));
 
   // For seed structure pre-optimise only the lattice
-  if(inputType == InputType::SEED_STRUCTURES)
+  if(config.inputType == InputType::SEED_STRUCTURES)
     initialOptimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
 
   sp::blocks::ParamPotentialGo goPressure(pp, optimiser, initialOptimisationParams, false);
@@ -278,18 +246,31 @@ int main(const int argc, char * argv[])
   sp::blocks::LowestFreeEnergy lowestE;
 
   // Put it all together
-  *searchStartBlock |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
+  *config.searchStartBlock |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
 
-  ::boost::scoped_ptr<ParamSweepBlock> paramSweepBlock;
   sp::SpStartBlock * masterPipe;
-  if(doingSweep)
+  if(config.sweepMode)
   {
     // Configure parameter sweep pipeline
-    paramSweepBlock.reset(new ParamSweepBlock(paramRange, *searchStartBlock));
-    masterPipe = paramSweepBlock.get();
+    config.paramSweepBlock.reset(new sp::blocks::PotentialParamSweep(config.paramRange, *config.searchStartBlock));
+    masterPipe = config.paramSweepBlock.get();
   }
   else
-    masterPipe = searchStartBlock.get();
+    masterPipe = config.searchStartBlock.get();
+
+  if(config.stoichSpecies.size() == 2)
+  {
+    // Do a stoichiometry sweep
+    ssbc::StructureDescriptionPtr strDescPtr;
+
+    config.stoichSearchBlock.reset(new sp::blocks::StoichiometrySearch(
+      config.stoichSpecies[0],
+      config.stoichSpecies[1],
+      config.stoichMaxAtoms,
+      *masterPipe
+    ));
+    masterPipe = config.stoichSearchBlock.get();
+  }
 
   // Finally initialise and start whichever pipeline is the master
   runner->run(*masterPipe);
@@ -417,4 +398,128 @@ int processPotParams(
 
   // Everything went fine
   return 0;
+}
+
+
+int parseInput(RunConfiguration & config, const InputOptions & in)
+{
+  namespace sslib_yaml_kw = ssf::sslib_yaml_keywords;
+
+  config.inputType = InputType::UNKNOWN;
+  try
+  {
+    const YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
+    
+    ssf::SsLibFactoryYaml factory(config.speciesDb);
+
+    if(loadedNode[yaml_kw::STOICHIOMETRY_SEARCH])
+    {
+      const YAML::Node & stoichNode = loadedNode[yaml_kw::STOICHIOMETRY_SEARCH];
+      
+      if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS))
+        return 1;
+      if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__SPECIES))
+        return 1;
+
+      config.stoichMaxAtoms = stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS].as<unsigned int>();
+      config.stoichSpecies =
+        getSpeciesFromString(
+          stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__SPECIES].as< ::std::string>(),
+          config.speciesDb
+        );
+    }
+
+    if(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE])
+    {
+      config.inputType = InputType::RANDOM_STRUCTURES;
+      ssbc::StructureDescriptionPtr searchDesc = factory.createStructureDescription(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE]);
+
+      // Random structure
+      config.searchStartBlock.reset(new sp::blocks::RandomStructure(
+        in.numRandomStructures,
+        searchDesc)
+      );
+    }
+    else if(loadedNode[yaml_kw::SEED_STRUCTURES])
+    {
+      config.inputType = InputType::SEED_STRUCTURES;
+      const ::std::string seedStructures = loadedNode[yaml_kw::SEED_STRUCTURES].as< ::std::string>();
+
+      // Seed structures
+      config.searchStartBlock.reset(new sp::blocks::LoadSeedStructures(
+        config.speciesDb,
+        seedStructures,
+        false)
+      );
+    }
+    else
+    {
+      ::std::cerr << "No input structure type found in input file\n";
+      return 1;
+    }
+  }
+  catch(const ssf::FactoryError & e)
+  {
+    ::std::cerr << ::boost::diagnostic_information(e) << ::std::endl;
+    return 1;
+  }
+
+  // Do potential parameters ////////////////////////////////
+  const int result = processPotParams(config.paramRange, config.betaDiagonal, in);
+  if(result != 0)
+    return result;
+
+  // Turn on sweep mode if any of the parameters have a range (i.e. not single value)
+  config.sweepMode = false;
+  for(size_t i = 0; i < config.paramRange.nSteps.n_rows; ++i)
+  {
+    config.sweepMode |= config.paramRange.nSteps(i) != 1;
+  }
+
+  // Do atom species ///////////////////////////////////////
+  if(in.potSpecies.size() != 2)
+  {
+    ::std::cerr << "There must be 2 potential species specified\n";
+    return 1;
+  }
+
+  config.potentialSpecies[0] = config.speciesDb.getIdFromSymbol(in.potSpecies[0]);
+  config.potentialSpecies[1] = config.speciesDb.getIdFromSymbol(in.potSpecies[1]);
+  config.paramRange.from(6) = config.potentialSpecies[0].ordinal();
+  config.paramRange.from(7) = config.potentialSpecies[1].ordinal();
+
+  return 0;
+}
+
+bool requiredNode(const YAML::Node & parent, const ::std::string & childName)
+{
+  if(!parent[childName])
+  {
+    ::std::cerr << "Couldn't find required node: " << childName;
+    return false;
+  }
+  return true;
+}
+
+::std::vector<ssc::AtomSpeciesId> getSpeciesFromString(
+  const ::std::string & speciesString,
+  const ssc::AtomSpeciesDatabase & speciesDb
+)
+{
+  typedef boost::tokenizer<boost::char_separator<char> > Tok;
+  const boost::char_separator<char> tokSep(" ");
+
+  ::std::vector<ssc::AtomSpeciesId> species;
+
+  Tok tok(speciesString, tokSep);
+
+  ssc::AtomSpeciesId::Value id;
+  BOOST_FOREACH(const ::std::string & symbol, tok)
+  {
+     id = speciesDb.getIdFromSymbol(symbol);
+     if(id != ssc::AtomSpeciesId::DUMMY)
+       species.push_back(id);
+  }
+
+  return species;
 }

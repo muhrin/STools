@@ -18,6 +18,9 @@
 
 #include <armadillo>
 
+// From SSTbx
+#include <build_cell/StructureDescription.h>
+#include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
 
@@ -41,8 +44,7 @@ class SharedData
 {
 public:
 
-  typedef ::boost::shared_ptr<sstbx::build_cell::StructureDescription> StructureDescriptionPtr;
-  typedef ::boost::shared_ptr<const sstbx::build_cell::StructureDescription> ConstStructureDescriptionPtr;
+  typedef ::sstbx::build_cell::StructureDescriptionPtr StructureDescriptionPtr;
 
   static const char DIR_SUBSTRING_DELIMITER[];
 
@@ -76,15 +78,12 @@ public:
   /*/
   const ::boost::filesystem::path & getOutputFileStem() const;
 
-  StructureDescriptionPtr getStructureDescription();
-  ConstStructureDescriptionPtr getStructureDescription() const;
+  ::sstbx::build_cell::StructureDescription * getStructureDescription();
+  const ::sstbx::build_cell::StructureDescription * getStructureDescription() const;
   void setStructureDescription(StructureDescriptionPtr description);
 
   ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
   const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
-
-
-  ::std::string                       outputFilename;
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 

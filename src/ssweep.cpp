@@ -44,7 +44,8 @@
 #include <common/UtilityFunctions.h>
 #include <utility/PipeDataInitialisation.h>
 
-// Local //
+// Local
+#include "input/YamlKeywords.h"
 #include "utility/BoostCapabilities.h"
 
 // MACROS ////////////////////////////////////

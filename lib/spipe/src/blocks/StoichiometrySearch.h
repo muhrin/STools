@@ -22,6 +22,7 @@
 // From SSTbx
 #include <build_cell/RandomUnitCell.h>
 #include <build_cell/StructureDescription.h>
+#include <build_cell/Types.h>
 #include <common/AtomSpeciesId.h>
 #include <io/BoostFilesystem.h>
 #include <utility/MultiIdxRange.h>
@@ -58,7 +59,8 @@ struct SpeciesParameter
   size_t                                maxNum;
 };
 
-class StoichiometrySearch : public SpStartBlock, public SpFinishedSink
+class StoichiometrySearch : public SpStartBlock, public SpFinishedSink,
+  ::boost::noncopyable
 {
 public:
   typedef ::std::vector<SpeciesParameter> SpeciesParamters;
@@ -67,13 +69,19 @@ public:
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
-    SpStartBlock &        subpipe);
+    SpStartBlock &        subpipe,
+    ::sstbx::build_cell::StructureDescriptionPtr structureDescription = 
+      ::sstbx::build_cell::StructureDescriptionPtr()
+    );
 
   StoichiometrySearch(
     const SpeciesParamters & speciesParameters,
     const size_t       maxAtoms,
     const double       atomsRadius,
-    SpStartBlock &     subpipe);
+    SpStartBlock &     subpipe,
+    ::sstbx::build_cell::StructureDescriptionPtr structureDescription = 
+      ::sstbx::build_cell::StructureDescriptionPtr()
+    );
 
   // From Block ////////
   virtual void pipelineInitialising();
@@ -111,9 +119,10 @@ private:
     const ::sstbx::common::AtomSpeciesDatabase & atomsDb
   );
 
+  ::sstbx::build_cell::StructureDescriptionPtr newStructureDescription() const;
+
   SpStartBlock &  mySubpipe;
   SpChildRunnerPtr mySubpipeRunner;
-
 
   // Use this to write out our table data
   ::spipe::utility::DataTableSupport    myTableSupport;
@@ -124,6 +133,7 @@ private:
 	::std::vector<StructureDataTyp *>		  myBuffer;
 
   SpeciesParamters                      mySpeciesParameters;
+  ::sstbx::build_cell::StructureDescriptionPtr myStructureDescription;
 };
 
 }

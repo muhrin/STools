@@ -74,14 +74,14 @@ const ::boost::filesystem::path & SharedData::getOutputFileStem() const
   return myOutputFileStem;
 }
 
-SharedData::StructureDescriptionPtr SharedData::getStructureDescription()
+ssbc::StructureDescription * SharedData::getStructureDescription()
 {
-  return structureDescription;
+  return structureDescription.get();
 }
 
-SharedData::ConstStructureDescriptionPtr SharedData::getStructureDescription() const
+const ssbc::StructureDescription * SharedData::getStructureDescription() const
 {
-  return structureDescription;
+  return structureDescription.get();
 }
 
 void SharedData::setStructureDescription(StructureDescriptionPtr description)

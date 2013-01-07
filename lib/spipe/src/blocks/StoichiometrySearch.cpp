@@ -46,10 +46,12 @@ StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value  species1,
   const ::sstbx::common::AtomSpeciesId::Value  species2,
   const size_t maxAtoms,
-  SpStartBlock & subpipe):
+  SpStartBlock & subpipe,
+  ssbc::StructureDescriptionPtr structureDescription):
 SpBlock("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
-mySubpipe(subpipe)
+mySubpipe(subpipe),
+myStructureDescription(structureDescription)
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
@@ -59,12 +61,14 @@ StoichiometrySearch::StoichiometrySearch(
   const SpeciesParamters & speciesParameters,
   const size_t       maxAtoms,
   const double       atomsRadius,
-  SpStartBlock &   sweepPipe):
+  SpStartBlock &   sweepPipe,
+  ssbc::StructureDescriptionPtr structureDescription):
 SpBlock("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 mySubpipe(sweepPipe),
-myTableSupport(fs::path("stoich.dat"))
+myTableSupport(fs::path("stoich.dat")),
+myStructureDescription(structureDescription)
 {}
 
 void StoichiometrySearch::pipelineInitialising()
@@ -99,11 +103,8 @@ void StoichiometrySearch::start()
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;
 
-    // Set the current structure description in our subpipline
-    StrDescPtr structureDescription(
-      new ::sstbx::build_cell::StructureDescription(ssbc::ConstUnitCellBlueprintPtr(new ssbc::RandomUnitCell()))
-    );
-    sweepPipeData.setStructureDescription(structureDescription);
+    // Create a new structure description
+    ssbc::StructureDescriptionPtr structureDescription = newStructureDescription();
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
@@ -135,6 +136,9 @@ void StoichiometrySearch::start()
         stoichStringStream << "-";
 
     } // End loop over atoms
+
+    // Transfer ownership to the pipeline
+    sweepPipeData.setStructureDescription(structureDescription);
 
     // Append the species ratios to the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
@@ -260,6 +264,17 @@ void StoichiometrySearch::updateTable(
       lexical_cast<string>(numAtomsOfSpecies));
 
   } // End loop over atoms
+}
+
+::sstbx::build_cell::StructureDescriptionPtr
+StoichiometrySearch::newStructureDescription() const
+{
+  // Can't copy for now - no support!
+  //// Either make a copy of the description we've been given or generate a new blank description
+  //if(myStructureDescription.get())
+  //  return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription(*myStructureDescription));
+  //else
+    return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription());
 }
 
 }

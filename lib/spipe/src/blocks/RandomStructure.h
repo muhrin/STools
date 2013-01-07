@@ -21,6 +21,7 @@
 // From SSTbx
 #include <build_cell/IStructureGenerator.h>
 #include <build_cell/StructureDescription.h>
+#include <build_cell/Types.h>
 
 #include <pipelib/pipelib.h>
 
@@ -42,22 +43,18 @@ class RandomStructure : public virtual SpStartBlock, public virtual SpPipeBlock,
 {
 public:
 
-  typedef ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription> StructureDescPtr;
+  typedef ::sstbx::build_cell::StructureDescriptionPtr StructureDescriptionPtr;
 
 	RandomStructure(
     const unsigned int numToGenerate,
-    const StructureDescPtr & structureDescription = StructureDescPtr()
+    StructureDescriptionPtr structureDescription = StructureDescriptionPtr()
   );
 
   RandomStructure(
     const float atomsMultiplierGenerate,
-    const StructureDescPtr & structureDescription = StructureDescPtr()
+    StructureDescriptionPtr structureDescription = StructureDescriptionPtr()
   );
 
-
-  // From Block ////////
-  virtual void pipelineStarting();
-  // End from Block ////
 
   // From StartBlock ///
 	virtual void start();
@@ -70,15 +67,9 @@ public:
 private:
   typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
-  virtual void initDescriptions();
+  const ::sstbx::build_cell::StructureDescription * getStructureDescription() const;
 
-  double setRadii() const;
-
-  /** Should the block use the structure description found in shared data */
-  const bool  myUseSharedDataStructureDesc;
-
-  StructureDescPtr       myStructureDescription;
-
+  StructureDescriptionPtr myStructureDescription;
 	const StructureGeneratorPtr myStructureGenerator;
   const bool myFixedNumGenerate;
   const unsigned int myNumToGenerate;

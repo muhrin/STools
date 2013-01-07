@@ -111,7 +111,8 @@ int main(const int argc, char * argv[])
       it->second->sort(sortedKeys, infoTable);
   }
 
-  printInfo(infoTable, sortedKeys, tokensInfo, tokensMap, in);
+  const size_t numToPrint = in.printTop == PRINT_ALL ? sortedKeys.size() : ::std::min(sortedKeys.size(), (size_t)in.printTop);
+  printInfo(infoTable, sortedKeys, tokensInfo, tokensMap, in, numToPrint);
 
   return 0;
 }

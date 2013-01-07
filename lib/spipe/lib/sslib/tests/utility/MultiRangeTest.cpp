@@ -15,15 +15,15 @@
 
 #include <utility/MultiRange.h>
 
-namespace ssu = ::sstbx::utility;
+//namespace ssu = ::sstbx::utility;
 
 BOOST_AUTO_TEST_CASE(IntegerMultiIndexTest)
 {
-  typedef ssu::MultiRange<int, ::boost::forward_traversal_tag, int, ::std::ptrdiff_t>::AnyIterator AnyIterator;
+  //typedef ssu::MultiRange<int, ::boost::forward_traversal_tag, int, ::std::ptrdiff_t>::AnyIterator AnyIterator;
 
-  ssu::MultiRange<int, ::boost::forward_traversal_tag, int, ::std::ptrdiff_t> range;
+  //ssu::MultiRange<int, ::boost::forward_traversal_tag, int, ::std::ptrdiff_t> range;
 
-  ::std::vector<int> testVector;
+  //::std::vector<int> testVector;
 
-  range.pushBack(testVector);
+  //range.pushBack(testVector);
 }
