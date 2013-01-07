@@ -73,7 +73,7 @@ myStructureDescription(structureDescription)
 
 void StoichiometrySearch::pipelineInitialising()
 {
-  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".stoich");
+  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".stoich");
   myTableSupport.registerRunner(*getRunner());
 }
 
@@ -89,7 +89,6 @@ void StoichiometrySearch::start()
   using ::boost::lexical_cast;
   using ::std::string;
 
-  SharedDataType & sweepPipeData = mySubpipeRunner->memory().shared();
   const ssc::AtomSpeciesDatabase & atomsDb = getRunner()->memory().global().getSpeciesDatabase();
 
   // Start looping over the possible stoichiometries
@@ -99,6 +98,10 @@ void StoichiometrySearch::start()
   const ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
   {
+    // Need to get the shared data each time as it may have been reset after each
+    // run of the pipe
+    SharedDataType & sweepPipeData = mySubpipeRunner->memory().shared();
+
     totalAtoms = currentIdx.sum();
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;

@@ -53,10 +53,13 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 
 	  // Create the path to store the structure
     fs::path p(shared.getOutputPath(*getRunner()));
-    if(!myWriteMultiStructure || !rwMan.getDefaultWriter()->multiStructureSupport())
-    {
+
+    // Should all the structures be stored in one file or seaprate files?
+    if(myWriteMultiStructure && rwMan.getDefaultWriter()->multiStructureSupport())
+      p /= shared.getOutputFileStem();
+    else
       p /= fs::path(structure->getName());
-    }
+
     ssio::ResourceLocator saveLocation(p, structure->getName());
   	
     if(!rwMan.writeStructure(*data.getStructure(), saveLocation, getRunner()->memory().global().getSpeciesDatabase()))

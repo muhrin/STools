@@ -60,7 +60,7 @@ void PotentialParamSweep::pipelineInitialising()
 	// Set the parameters in the shared data
   getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = myParamRange;
 
-  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string()
+  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string()
     + "." + POTPARAMS_FILE_EXTENSION
   );
   myTableSupport.registerRunner(*getRunner());

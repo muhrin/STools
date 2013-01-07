@@ -96,7 +96,7 @@ private:
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
-  StructureDescriptionPtr structureDescription;
+  StructureDescriptionPtr myStructureDescription;
   ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;
   ::boost::filesystem::path             myOutputFileStem;
