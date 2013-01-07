@@ -75,7 +75,14 @@ void SslibReaderWriter::writeStructure(
   if(fs::exists(filepath))
   {
     strFile.open(filepath, ::std::ios_base::in | ::std::ios_base::out);
-    doc = YAML::Load(strFile);
+    try
+    {
+      doc = YAML::Load(strFile);
+    }
+    catch(const YAML::Exception & /*e*/)
+    {
+      // The file is dodgy, so happily overwrite it
+    }
     // Go back to the start of the file
     strFile.clear(); // Clear the EoF flag
     strFile.seekg(0, ::std::ios::beg);
@@ -115,7 +122,16 @@ common::types::StructurePtr SslibReaderWriter::readStructure(
   const io::StructureYamlGenerator generator(speciesDb);
 
   const fs::path filepath(locator.path());
-  YAML::Node doc = YAML::LoadFile(filepath.string());
+  YAML::Node doc;
+  try
+  {
+    doc = YAML::LoadFile(filepath.string());
+  }
+  catch(const YAML::Exception & /*e*/)
+  {
+    // Couldn't read the file
+    return structure;
+  }
 
   ::std::string locatorId = locator.id();
   if(locatorId.empty())
@@ -159,7 +175,15 @@ size_t SslibReaderWriter::readStructures(
     const io::StructureYamlGenerator generator(speciesDb);
 
     const fs::path filepath(locator.path());
-    const YAML::Node doc = YAML::LoadFile(filepath.string());
+    YAML::Node doc;
+    try
+    {
+      doc = YAML::LoadFile(filepath.string());
+    }
+    catch(const YAML::Exception & /*e*/)
+    {
+      return 0;
+    }
 
     common::types::StructurePtr structure;
     ::std::string structureId;
