@@ -10,6 +10,7 @@
 
 // INCLUDES ///////////////////
 
+#include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "build_cell/AtomGroupDescription.h"
@@ -22,7 +23,7 @@
 namespace sstbx {
 namespace build_cell {
 
-class StructureDescription : public AtomGroupDescription
+class StructureDescription : public AtomGroupDescription, ::boost::noncopyable
 {
 public:
   typedef boost::ptr_vector<StructureConstraintDescription> ConstraintsContainer;

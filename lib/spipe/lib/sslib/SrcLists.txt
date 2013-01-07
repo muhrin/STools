@@ -23,6 +23,7 @@ set(sslib_Source_Files__build_cell
   src/build_cell/StructureConstraintDescription.cpp
   src/build_cell/StructureDescription.cpp
   src/build_cell/StructureDescriptionMap.cpp
+  src/build_cell/StructureGenerator.cpp
   src/build_cell/VisitorGroup.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})

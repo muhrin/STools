@@ -27,10 +27,8 @@ class AtomGroupDescription;
 }
 }
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 
 class AtomsDescription : public IAtomConstrainable
 {
@@ -40,13 +38,13 @@ public:
 
 	AtomsDescription();
 	AtomsDescription(
-    const ::sstbx::common::AtomSpeciesId::Value elementType,
-    const size_t elementCount = 1);
+    const common::AtomSpeciesId::Value species,
+    const size_t count = 1);
 	virtual ~AtomsDescription() {}
 
-	const ::sstbx::common::AtomSpeciesId::Value & getSpecies() const;
+	const common::AtomSpeciesId::Value & getSpecies() const;
 
-	void setElementType(const ::sstbx::common::AtomSpeciesId::Value species);
+	void setElementType(const common::AtomSpeciesId::Value species);
 
 	size_t getCount() const;
 	void setCount(const size_t newCount);

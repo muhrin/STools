@@ -23,6 +23,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/IAtomConstrainable.h
   include/build_cell/IConstraintDescription.h
   include/build_cell/IStructureGenerator.h
+  include/build_cell/IStructureFragmentGenerator.h
   include/build_cell/IUnitCellBlueprint.h
   include/build_cell/RandomAtomPositioner.h
   include/build_cell/RandomUnitCell.h
@@ -31,6 +32,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/StructureDescription.h
   include/build_cell/StructureDescriptionMap.h
   include/build_cell/StructureDescriptionVisitor.h
+  include/build_cell/StructureGenerator.h
   include/build_cell/StructureGenerationOutcome.h
   include/build_cell/Types.h
   include/build_cell/VisitorGroup.h

@@ -78,7 +78,7 @@ class MultiRangeIterator :
   >
 {
   typedef MultiRange<Value, Traversal, Reference, Difference> MultiRangeType;
-  typedef typename MultiRange<Value, Traversal, Reference, Difference>::AnyIterator AnyIterator;
+  typedef typename MultiRangeType::AnyIterator AnyIterator;
 public:
   typedef ::std::vector<AnyIterator> Iterators;
 
