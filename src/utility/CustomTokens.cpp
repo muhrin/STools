@@ -158,7 +158,7 @@ getRelativeLoadPath(const ::sstbx::common::Structure & structure)
   if(absPath)
   {
     loadLocator.reset(*absPath);
-    loadLocator->makeRelative(fs::path());
+    loadLocator->makeRelative(fs::current_path());
   }
 
   return loadLocator;

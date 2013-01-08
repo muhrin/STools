@@ -38,79 +38,86 @@ namespace ssu = ::sstbx::utility;
 
 RandomStructure::RandomStructure(
   const unsigned int numToGenerate,
-  const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
+  StructureDescriptionPtr structureDescription
+):
 SpBlock("Generate Random structures"),
 myNumToGenerate(numToGenerate),
 myAtomsMultiplierGenerate(0.0),
 myFixedNumGenerate(true),
 myStructureGenerator(new ssbc::DefaultCrystalGenerator(true /*use extrusion method*/)),
-myStructureDescription(structureDescription),
-myUseSharedDataStructureDesc(!structureDescription.get())
+myStructureDescription(structureDescription)
 {
 }
 
 RandomStructure::RandomStructure(
   const float atomsMultiplierGenerate,
-  const ::boost::shared_ptr<const ::sstbx::build_cell::StructureDescription > & structureDescription):
+  StructureDescriptionPtr structureDescription
+):
 SpBlock("Generate Random structures"),
 myNumToGenerate(0),
 myAtomsMultiplierGenerate(atomsMultiplierGenerate),
 myFixedNumGenerate(false),
 myStructureGenerator(new ssbc::DefaultCrystalGenerator(true /*use extrusion method*/)),
-myStructureDescription(structureDescription),
-myUseSharedDataStructureDesc(!structureDescription.get())
+myStructureDescription(structureDescription)
 {
-}
-
-void RandomStructure::pipelineStarting()
-{
-  // TODO: Put structure description initialisation stuff here
 }
 
 void RandomStructure::start()
 {
 	using ::spipe::common::StructureData;
-  unsigned int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
-	
-  float totalAtomsGenerated = 0.0;
-  initDescriptions();
-  for(size_t i = 0; i < numToGenerate; ++i)
+
+  const ssbc::StructureDescription * const strDesc = getStructureDescription();
+
+  if(strDesc)
   {
-	  // Create the random structure
-    ssc::StructurePtr str = myStructureGenerator->generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
+    unsigned int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
+  	
+    float totalAtomsGenerated = 0.0;
 
-	  if(str.get())
-	  {
-      StructureData & data = getRunner()->createData();
-		  data.setStructure(str);
+    for(size_t i = 0; i < numToGenerate; ++i)
+    {
+	    // Create the random structure
+      ssc::StructurePtr str = myStructureGenerator->generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
 
-		  // Build up the name
-			std::stringstream ss;
-			ss << ssu::generateUniqueName() << "-" << i;
-			data.getStructure()->setName(ss.str());
+	    if(str.get())
+	    {
+        StructureData & data = getRunner()->createData();
+		    data.setStructure(str);
 
-      if(!myFixedNumGenerate)
-      {
-        totalAtomsGenerated += static_cast<float>(str->getNumAtoms());
-        numToGenerate = static_cast<unsigned int>(std::ceil(
-          myAtomsMultiplierGenerate * totalAtomsGenerated /
-          static_cast<float>(i))
-          );
-      }
+		    // Build up the name
+			  std::stringstream ss;
+			  ss << ssu::generateUniqueName() << "-" << i;
+			  data.getStructure()->setName(ss.str());
 
-		  // Send it down the pipe
-		  out(data);
-	  }
-  }	
+        if(!myFixedNumGenerate)
+        {
+          totalAtomsGenerated += static_cast<float>(str->getNumAtoms());
+          numToGenerate = static_cast<unsigned int>(std::ceil(
+            myAtomsMultiplierGenerate * totalAtomsGenerated /
+            static_cast<float>(i))
+            );
+        }
+
+		    // Send it down the pipe
+		    out(data);
+	    }
+    }
+  }
 }
 
 
 void RandomStructure::in(::spipe::common::StructureData & data)
 {
-  initDescriptions();
+  const ssbc::StructureDescription * const strDesc = getStructureDescription();
+
+  if(!strDesc)
+  {
+    out(data);
+    return;
+  }
 
 	// Create the random structure
-  ssc::StructurePtr str = myStructureGenerator->generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
+  ssc::StructurePtr str = myStructureGenerator->generateStructure(*strDesc, getRunner()->memory().global().getSpeciesDatabase());
 
 	if(str.get())
 	{
@@ -131,20 +138,20 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		getRunner()->dropData(data);
 }
 
-void RandomStructure::initDescriptions()
+const ::sstbx::build_cell::StructureDescription *
+RandomStructure::getStructureDescription() const
 {
-  const common::SharedData & sharedDat = getRunner()->memory().shared();
-  if(myUseSharedDataStructureDesc)
+  const ssbc::StructureDescription * strDesc = NULL;
+  if(myStructureDescription.get())
+    strDesc = myStructureDescription.get();
+  else
   {
-    if(sharedDat.getStructureDescription())
-    {
-      myStructureDescription = sharedDat.getStructureDescription();
-    }
-    else
-    {
-      // TODO: Throw some kind of exception, or emit error
-    }
+    // Try finding one in shared memory
+    if(getRunner())
+      strDesc = getRunner()->memory().shared().getStructureDescription();
   }
+
+  return strDesc;
 }
 
 }

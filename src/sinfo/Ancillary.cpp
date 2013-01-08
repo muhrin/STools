@@ -79,12 +79,14 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       "\nOptions");
     desc.add_options()
       ("help", "Show help message")
-      ("info-string,s", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
+      ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
       ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("re"), "sort token")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
       ("recursive,r", po::value<bool>(&in.recursive)->default_value(false)->zero_tokens(), "descend into directories recursively")
+      ("summary,s", po::value<bool>(&in.summary)->default_value(false)->zero_tokens(), "summary only")
+      ("top,t", po::value<int>(&in.printTop)->default_value(PRINT_ALL), "print top n structures")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
     ;
 
@@ -122,13 +124,14 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
     }
   }
 
+  if(in.summary && in.printTop == -1)
+    in.printTop = 1;
+
   if(in.inputFiles.empty())
     in.inputFiles = DEFAULT_INPUT_FILES;
 
   // Everything we okay, so clean up the input
   utility::replaceControlSequences(in.infoString);
-
-
 
   return Result::SUCCESS;
 }
@@ -162,8 +165,8 @@ CustomisableTokens generateTokens(TokensMap & map)
   addToken(map, TokenPtr(new utility::EnergyToken("Energy/atom", "ea", "%.4f", true)));
   addToken(map, utility::makeFunctionToken<unsigned int>("N atoms", "na", utility::functions::getNumAtoms));
   
-  addToken(map, utility::makeFunctionToken< ::std::string>("Spgroup", "sg", utility::functions::getSpaceGroupSymbol, "%|_|"));
-  addToken(map, utility::makeFunctionToken<unsigned int>("Spgroup no.", "sgn", utility::functions::getSpaceGroupNumber, "%|_|"));
+  addToken(map, utility::makeFunctionToken< ::std::string>("Spgroup", "sg", utility::functions::getSpaceGroupSymbol, "%|-|"));
+  addToken(map, utility::makeFunctionToken<unsigned int>("Spgroup no.", "sgn", utility::functions::getSpaceGroupNumber, "%|-|"));
 
   addToken(map, utility::makeStructurePropertyToken("Energy", "e", structure_properties::general::ENERGY_INTERNAL, "%.4f"));
   addToken(map, utility::makeStructurePropertyToken("Pressure", "p", structure_properties::general::PRESSURE_INTERNAL, "%.4f"));
@@ -305,10 +308,11 @@ getRequiredTokens(
 
 void printInfoFreeMode(
   const StructureInfoTable & infoTable,
-  const SortedKeys & orderedKeys,
+  const SortedKeys & structures,
   const TokensInfo & tokensInfo,
   const TokensMap & tokensMap,
-  const InputOptions & in)
+  const InputOptions & in,
+  const size_t numToPrint)
 {
   ::boost::format formatter;
   try
@@ -322,11 +326,11 @@ void printInfoFreeMode(
     return;
   }
 
-  BOOST_FOREACH(const ssc::Structure * const structure, orderedKeys)
+  for(size_t row = 0; row < numToPrint; ++row)
   {
     BOOST_FOREACH(const ::std::string & token, tokensInfo.tokenStrings)
     {
-      if(!tokensMap.at(token).getColumn().feedFormatter(formatter, infoTable, structure))
+      if(!tokensMap.at(token).getColumn().feedFormatter(formatter, infoTable, structures[row]))
       {
         formatter % in.emptyString;
       }
@@ -340,7 +344,8 @@ void printInfoColumnMode(
   const SortedKeys & structures,
   const TokensInfo & tokensInfo,
   const TokensMap & tokensMap,
-  const InputOptions & in)
+  const InputOptions & in,
+  const size_t numToPrint)
 {
   ::boost::format formatter;
   try
@@ -394,7 +399,7 @@ void printInfoColumnMode(
   }
 
   // Now go through and print everything
-  for(size_t row = 0; row < structures.size(); ++row)
+  for(size_t row = 0; row < numToPrint; ++row)
   {
     for(size_t col = 0; col < numColumns; ++col)
     {
@@ -415,7 +420,8 @@ void printInfo(
   const SortedKeys & orderedKeys,
   const TokensInfo & tokensInfo,
   const TokensMap & tokensMap,
-  const InputOptions & in)
+  const InputOptions & in,
+  const size_t numToPrint)
 {
   if(tokensInfo.tokenStrings.empty())
     return;
@@ -423,9 +429,14 @@ void printInfo(
     return;
 
   if(in.freeMode)
-    printInfoFreeMode(infoTable, orderedKeys, tokensInfo, tokensMap, in);
+    printInfoFreeMode(infoTable, orderedKeys, tokensInfo, tokensMap, in, numToPrint);
   else
-    printInfoColumnMode(infoTable, orderedKeys, tokensInfo, tokensMap, in);
+    printInfoColumnMode(infoTable, orderedKeys, tokensInfo, tokensMap, in, numToPrint);
+
+  if(in.summary)
+  {
+    ::std::cout << "Total structures: " << infoTable.size() << ::std::endl;
+  }
 }
 
 }

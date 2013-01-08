@@ -12,6 +12,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "build_cell/AtomGroupDescription.h"
 #include "build_cell/IUnitCellBlueprint.h"

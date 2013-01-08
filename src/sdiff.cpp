@@ -167,7 +167,7 @@ int main(const int argc, char * argv[])
 
   size_t lastLoaded, totalLoaded = 0;
   ssio::ResourceLocator locator;
-  BOOST_FOREACH(::std::string & locatorString, in.inputFiles)
+  BOOST_FOREACH(const ::std::string & locatorString, in.inputFiles)
   {
     if(!locator.set(locatorString))
     {
@@ -226,7 +226,7 @@ void preprocessStructure(
   const InputOptions & options)
 {
   // Make sure we know where we loaded the file from
-  if(structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH))
+  if(!structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH))
     structure.setProperty(structure_properties::io::LAST_ABS_FILE_PATH, ssio::absolute(loadLocation));
 
   if(!options.dontUsePrimitive)

@@ -15,7 +15,7 @@
 
 #include <utility/MultiRange.h>
 
-namespace ssu = ::sstbx::utility;
+//namespace ssu = ::sstbx::utility;
 
 
 BOOST_AUTO_TEST_CASE(IntegerMultiIndexTest)

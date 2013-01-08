@@ -46,10 +46,12 @@ StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value  species1,
   const ::sstbx::common::AtomSpeciesId::Value  species2,
   const size_t maxAtoms,
-  SpStartBlock & subpipe):
+  SpStartBlock & subpipe,
+  ssbc::StructureDescriptionPtr structureDescription):
 SpBlock("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
-mySubpipe(subpipe)
+mySubpipe(subpipe),
+myStructureDescription(structureDescription)
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
@@ -59,17 +61,19 @@ StoichiometrySearch::StoichiometrySearch(
   const SpeciesParamters & speciesParameters,
   const size_t       maxAtoms,
   const double       atomsRadius,
-  SpStartBlock &   sweepPipe):
+  SpStartBlock &   sweepPipe,
+  ssbc::StructureDescriptionPtr structureDescription):
 SpBlock("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 mySubpipe(sweepPipe),
-myTableSupport(fs::path("stoich.dat"))
+myTableSupport(fs::path("stoich.dat")),
+myStructureDescription(structureDescription)
 {}
 
 void StoichiometrySearch::pipelineInitialising()
 {
-  myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".stoich");
+  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".stoich");
   myTableSupport.registerRunner(*getRunner());
 }
 
@@ -85,7 +89,6 @@ void StoichiometrySearch::start()
   using ::boost::lexical_cast;
   using ::std::string;
 
-  SharedDataType & sweepPipeData = mySubpipeRunner->memory().shared();
   const ssc::AtomSpeciesDatabase & atomsDb = getRunner()->memory().global().getSpeciesDatabase();
 
   // Start looping over the possible stoichiometries
@@ -95,15 +98,16 @@ void StoichiometrySearch::start()
   const ssu::MultiIdxRange<unsigned int> stoichRange = getStoichRange();
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
   {
+    // Need to get the shared data each time as it may have been reset after each
+    // run of the pipe
+    SharedDataType & sweepPipeData = mySubpipeRunner->memory().shared();
+
     totalAtoms = currentIdx.sum();
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;
 
-    // Set the current structure description in our subpipline
-    StrDescPtr structureDescription(
-      new ::sstbx::build_cell::StructureDescription(ssbc::ConstUnitCellBlueprintPtr(new ssbc::RandomUnitCell()))
-    );
-    sweepPipeData.setStructureDescription(structureDescription);
+    // Create a new structure description
+    ssbc::StructureDescriptionPtr structureDescription = newStructureDescription();
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
@@ -135,6 +139,9 @@ void StoichiometrySearch::start()
         stoichStringStream << "-";
 
     } // End loop over atoms
+
+    // Transfer ownership to the pipeline
+    sweepPipeData.setStructureDescription(structureDescription);
 
     // Append the species ratios to the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
@@ -260,6 +267,17 @@ void StoichiometrySearch::updateTable(
       lexical_cast<string>(numAtomsOfSpecies));
 
   } // End loop over atoms
+}
+
+::sstbx::build_cell::StructureDescriptionPtr
+StoichiometrySearch::newStructureDescription() const
+{
+  // Can't copy for now - no support!
+  //// Either make a copy of the description we've been given or generate a new blank description
+  //if(myStructureDescription.get())
+  //  return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription(*myStructureDescription));
+  //else
+    return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription());
 }
 
 }

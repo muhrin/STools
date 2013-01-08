@@ -7,6 +7,12 @@ set(stools_Header_Files__
 )
 source_group("Header Files" FILES ${stools_Header_Files__})
 
+## stools/input
+set(stools_Header_Files__input
+  input/YamlKeywords.h
+)
+source_group("Header Files\\input" FILES ${stools_Header_Files__input})
+
 ## stools/utility
 set(stools_Header_Files__utility
   utility/BoostCapabilities.h
@@ -33,6 +39,7 @@ source_group("Header Files\\utility\\detail" FILES ${stools_Header_Files__utilit
 
 set(stools_Files
   ${stools_Header_Files__}
+  ${stools_Header_Files__input}
   ${stools_Header_Files__utility}
   ${stools_Source_Files__utility}
   ${stools_Header_Files__utility__detail}

@@ -74,19 +74,19 @@ const ::boost::filesystem::path & SharedData::getOutputFileStem() const
   return myOutputFileStem;
 }
 
-SharedData::StructureDescriptionPtr SharedData::getStructureDescription()
+ssbc::StructureDescription * SharedData::getStructureDescription()
 {
-  return structureDescription;
+  return myStructureDescription.get();
 }
 
-SharedData::ConstStructureDescriptionPtr SharedData::getStructureDescription() const
+const ssbc::StructureDescription * SharedData::getStructureDescription() const
 {
-  return structureDescription;
+  return myStructureDescription.get();
 }
 
 void SharedData::setStructureDescription(StructureDescriptionPtr description)
 {
-  structureDescription = description;
+  myStructureDescription = description;
 }
 
 ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
@@ -102,7 +102,7 @@ const ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase() const
 void SharedData::reset()
 {
   // Reset everything
-  structureDescription.reset();
+  myStructureDescription.reset();
   objectsStore.clear();
   dataTable.clear();
   myOutputDir.clear();

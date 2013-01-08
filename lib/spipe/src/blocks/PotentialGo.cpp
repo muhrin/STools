@@ -65,7 +65,7 @@ void PotentialGo::pipelineInitialising()
 {
   if(myWriteOutput)
   {
-    myTableSupport.setFilename(getRunner()->memory().global().getOutputFileStem().string() + ".geomopt");
+    myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".geomopt");
   }
   myTableSupport.registerRunner(*getRunner());
 }

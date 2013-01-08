@@ -44,6 +44,7 @@ typedef StructureInfoTable::SortedKeys SortedKeys;
 // CONSTATNS ////////////////////////////////////
 extern const ::std::string VAR_BRACKET;
 extern const ::std::string VAR_FORMAT;
+const int PRINT_ALL = -1;
 
 // ENUMS /////////////////////////////////////////
 struct Result
@@ -61,6 +62,8 @@ struct InputOptions
   bool freeMode;
   bool noHeader;
   bool recursive;
+  bool summary;
+  int printTop; // Print top n structures (-1 for all)
 };
 
 struct CustomisableTokens
@@ -100,7 +103,8 @@ void printInfo(
   const SortedKeys & orderedKeys,
   const TokensInfo & tokensInfo,
   const TokensMap & tokensMap,
-  const InputOptions & in);
+  const InputOptions & in,
+  const size_t numToPrint);
 
 }
 }
