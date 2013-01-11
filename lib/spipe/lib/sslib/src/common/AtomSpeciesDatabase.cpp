@@ -18,13 +18,18 @@ namespace common {
 
 AtomSpeciesDatabase::AtomSpeciesDatabase()
 {
-  setAll(AtomSpeciesId::H, "H", "Hydrogen");
-  setAll(AtomSpeciesId::LI, "Li", "Lithium");
-  setAll(AtomSpeciesId::BE, "Be", "Beryllium");
-  setAll(AtomSpeciesId::B, "B", "Boron");
-  setAll(AtomSpeciesId::C, "C", "Carbon");
-	setAll(AtomSpeciesId::NA, "Na", "Sodium");
-	setAll(AtomSpeciesId::CL, "Cl", "Chlorine");
+  setAll(AtomSpeciesId::H,    "H",  "Hydrogen",   0.25);
+  setAll(AtomSpeciesId::HE,   "He", "Helium",     0.28);
+  setAll(AtomSpeciesId::LI,   "Li", "Lithium",    1.45);
+  setAll(AtomSpeciesId::BE,   "Be", "Beryllium",  1.05);
+  setAll(AtomSpeciesId::B,    "B",  "Boron",      0.85);
+  setAll(AtomSpeciesId::C,    "C",  "Carbon",     0.7);
+  setAll(AtomSpeciesId::N,    "N",  "Nitrogen",   0.65);
+  setAll(AtomSpeciesId::O,    "O",  "Oxygen",     0.6);
+  setAll(AtomSpeciesId::F,    "F",  "Flourine",   0.5);
+  setAll(AtomSpeciesId::NE,   "NE", "Neon",       0.58);
+	setAll(AtomSpeciesId::NA,   "Na", "Sodium",     1.8);
+	setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
 }
 
 const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId::Value id) const
@@ -85,10 +90,12 @@ void AtomSpeciesDatabase::setRadius(const AtomSpeciesId::Value id, const double 
 void AtomSpeciesDatabase::setAll(
   AtomSpeciesId::Value id,
 	const ::std::string & symbol,
-	const ::std::string & name)
+	const ::std::string & name,
+  const double radius)
 {
 	setSymbol(id, symbol);
 	setName(id, name);
+  setRadius(id, radius);
 }
 
 

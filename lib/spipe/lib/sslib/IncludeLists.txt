@@ -12,30 +12,25 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 set(sslib_Header_Files__build_cell
   include/build_cell/AbstractConstraintDescription.h
   include/build_cell/AtomConstraintDescription.h
-  include/build_cell/AtomGroupDescription.h
   include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
+  include/build_cell/AtomsGenerator.h
+  include/build_cell/BuildAtomInfo.h
   include/build_cell/ConstraintDescriptionId.h
-  include/build_cell/ConstStructureDescriptionVisitor.h
-  include/build_cell/ConstVisitorGroup.h
-  include/build_cell/DefaultCrystalGenerator.h
-  include/build_cell/DistanceConstraintChecker.h
+  include/build_cell/GenerationOutcome.h
   include/build_cell/IAtomConstrainable.h
   include/build_cell/IConstraintDescription.h
   include/build_cell/IStructureGenerator.h
-  include/build_cell/IStructureFragmentGenerator.h
-  include/build_cell/IUnitCellBlueprint.h
-  include/build_cell/RandomAtomPositioner.h
-  include/build_cell/RandomUnitCell.h
+  include/build_cell/IFragmentGenerator.h
+  include/build_cell/IUnitCellGenerator.h
+  include/build_cell/RandomUnitCellGenerator.h
+  include/build_cell/Sphere.h
+  include/build_cell/StructureBuild.h
   include/build_cell/StructureBuilder.h
+  include/build_cell/StructureContents.h
   include/build_cell/StructureConstraintDescription.h
-  include/build_cell/StructureDescription.h
-  include/build_cell/StructureDescriptionMap.h
-  include/build_cell/StructureDescriptionVisitor.h
-  include/build_cell/StructureGenerator.h
   include/build_cell/StructureGenerationOutcome.h
   include/build_cell/Types.h
-  include/build_cell/VisitorGroup.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
@@ -43,6 +38,7 @@ source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
 set(sslib_Header_Files__common
   include/common/Atom.h
+  include/common/AtomGroup.h
   include/common/AtomSpeciesDatabase.h
   include/common/AtomSpeciesId.h
   include/common/AtomSpeciesInfo.h
@@ -93,6 +89,7 @@ set(sslib_Header_Files__factory
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
 
 set(sslib_Header_Files__io
+  include/io/AtomYamlFormatParser.h
   include/io/BoostFilesystem.h
   include/io/IStructureReader.h
   include/io/IStructureWriter.h
@@ -178,6 +175,7 @@ set(sslib_Header_Files__utility__detail
 source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
 
 set(sslib_Header_Files__
+  include/OptionalTypes.h
   include/SSLibConfig.h.in
   ${PROJECT_BINARY_DIR}/include/SSLibConfig.h
   include/SSLibAssert.h

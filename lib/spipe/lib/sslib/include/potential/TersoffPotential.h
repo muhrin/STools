@@ -171,8 +171,8 @@ bool TersoffPotential<FloatType>::evalPotential(
         }
         else
         {
-          fC = 0.5 - 0.5 * sin(Constants::PI * (dRIJ - myR) / myD);
-          ddrf_C = -0.25 * Constants::PI * cos(Constants::PI * (dRIJ - myR) / myD);
+          fC = 0.5 - 0.5 * sin(constants::PI * (dRIJ - myR) / myD);
+          ddrf_C = -0.25 * constants::PI * cos(constants::PI * (dRIJ - myR) / myD);
         }
 
         // Calculate the repulsive and attractive parts

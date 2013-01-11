@@ -28,39 +28,42 @@ typedef ::std::string     KwTyp;
 /* A list of the keywords used in the yaml sslib input files
 /**/
 // General
-static const KwTyp TYPE                  = "type";
-static const KwTyp VALUE                 = "value";
-static const KwTyp DEFAULT               = "default";
-static const KwTyp MIN                   = "min";
-static const KwTyp MAX                   = "max";
+static const KwTyp ATOMS    = "atoms";
+static const KwTyp DEFAULT  = "default";
+static const KwTyp MIN      = "min";
+static const KwTyp MAX      = "max";
+static const KwTyp POS      = "pos";
+static const KwTyp RADIUS   = "radius";
+static const KwTyp SPEC     = "spec";
+static const KwTyp TYPE     = "type";
+static const KwTyp VALUE    = "value";
+static const KwTyp VOL      = "vol";
+
 
 // Structure description ///
 static const KwTyp STRUCTURE                      = "structure";
 static const KwTyp STRUCTURES                     = "structures";
-static const KwTyp STRUCTURE__ATOM_INFO_FORMAT    = "atomInfoFormat";
-static const KwTyp STRUCTURE__ATOM_DEFAULTS       = "atomDefaults";
-static const KwTyp STRUCTURE__ATOMS               = "atoms";
+static const KwTyp STRUCTURE__ATOMS_FORMAT        = "atomsFormat";
+static const KwTyp STRUCTURE__ATOMS               = ATOMS;
 static const KwTyp STRUCTURE__ATOMS__INFO         = "info";
-static const KwTyp STRUCTURE__ATOMS__SPEC         = "spec";
-static const KwTyp STRUCTURE__ATOMS__POS          = "pos";
+static const KwTyp STRUCTURE__ATOMS__SPEC         = SPEC;
+static const KwTyp STRUCTURE__ATOMS__POS          = POS;
+static const KwTyp STRUCTURE__ATOMS__RADIUS       = RADIUS;
 static const KwTyp STRUCTURE__CELL                = "cell";
 static const KwTyp STRUCTURE__CELL__ABC           = "abc";
-static const KwTyp STRUCTURE__CELL__VOL           = "vol";
+static const KwTyp STRUCTURE__CELL__VOL           = VOL;
 static const KwTyp STRUCTURE__NAME                = "name";
 static const KwTyp STRUCTURE__PROPERTIES          = "properties";
 
 // Random structure ///////////////
 static const KwTyp RANDOM_STRUCTURE                       = "randomStructure";
-static const KwTyp RANDOM_STRUCTURE__ATOM_RADII           = "atomRadii";
-static const KwTyp RANDOM_STRUCTURE__ATOMS__RADIUS        = "radius";
-static const KwTyp RANDOM_STRUCTURE__ATOMS__POS           = STRUCTURE__ATOMS__POS;
-
-static const KwTyp STR_DESC__ATOMS       = STRUCTURE__ATOMS;
-static const KwTyp STR_DESC__ATOMS__SPEC = "spec";
-static const KwTyp STR_DESC__ATOMS__N    = "n";
-
-static const KwTyp STR_GENERATOR                    = "strGenerator";
-static const KwTyp STR_GENERATOR__TYPE___DEFAULT    = DEFAULT;
+static const KwTyp RANDOM_STRUCTURE__ATOMS_RADII          = "atomsRadii";
+static const KwTyp RANDOM_STRUCTURE__ATOMS                = ATOMS;
+static const KwTyp RANDOM_STRUCTURE__ATOMS__SPEC          = SPEC;
+static const KwTyp RANDOM_STRUCTURE__ATOMS__RADIUS        = RADIUS;
+static const KwTyp RANDOM_STRUCTURE__ATOMS__POS           = POS;
+static const KwTyp RANDOM_STRUCTURE__ATOMS__GEN_SPHERE    = "genSphere";
+static const KwTyp RANDOM_STRUCTURE__ATOMS__GROUP         = "group";
 
 // Unit cell ////////////////////////////////
 static const KwTyp CELL                       = "cell";
@@ -69,7 +72,7 @@ static const KwTyp CELL__ABC                  = "abc";
 // Random unit cell /////////////////////////
 static const KwTyp RANDOM_CELL                      = "randomCell";
 static const KwTyp RANDOM_CELL__ABC                 = CELL__ABC;
-static const KwTyp RANDOM_CELL__VOL                 = "vol";
+static const KwTyp RANDOM_CELL__VOL                 = VOL;
 static const KwTyp RANDOM_CELL__VOL_DELTA           = "volDelta";
 static const KwTyp RANDOM_CELL__ANGLES              = "angles";
 static const KwTyp RANDOM_CELL__ANGLES__MIN         = MIN;
@@ -98,6 +101,12 @@ static const KwTyp STR_COMPARATOR__TYPE___SORTED_DIST = "sortedDist";
 static const KwTyp STR_WRITER             = "strWriter";
 static const KwTyp STR_WRITER__TYPE___RES = "res";
 
+// SPHERE
+
+static const KwTyp SPHERE = "sphere";
+static const KwTyp SPHERE__POS    = POS;
+static const KwTyp SPHERE__RADIUS = RADIUS;
+static const KwTyp SPHERE__VOL    = VOL;
 
 }
 }

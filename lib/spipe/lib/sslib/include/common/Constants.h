@@ -16,18 +16,19 @@
 
 namespace sstbx {
 namespace common {
+namespace constants {
 
-class Constants
-{
-public:
-	static const double PI;
-	static const double DEG_TO_RAD;
-	static const double RAD_TO_DEG;
+extern const double PI;
+extern const double DEG_TO_RAD;
+extern const double RAD_TO_DEG;
 
-private:
+extern const double ONE_HALF;
+extern const double ONE_THIRD;
+extern const double THREE_FOURTHS;
+extern const double FOUR_THIRDS;
 
-};
-
-}}
+}
+}
+}
 
 #endif /* CONSTANTS_H */

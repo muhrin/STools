@@ -24,9 +24,9 @@ myNotifiee(NULL)
 
 
 template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee>::SharedHandle(const Id id, Notifiee & notifiee):
+SharedHandle<Id, Notifiee>::SharedHandle(const Id id, Notifiee * notifiee):
 myId(new Id(id)),
-myNotifiee(&notifiee)
+myNotifiee(notifiee)
 {}
 
 template <typename Id, class Notifiee>
@@ -43,7 +43,8 @@ SharedHandle<Id, Notifiee>::~SharedHandle()
   {
     Id id(*myId);
     myId.reset();
-    myNotifiee->handleReleased(id);
+    if(myNotifiee)
+      myNotifiee->handleReleased(id);
   }
 }
 
@@ -94,7 +95,8 @@ void SharedHandle<Id, Notifiee>::release()
   {
     Id id(*myId);
     myId.reset();
-    myNotifiee->handleReleased(id);
+    if(myNotifiee)
+      myNotifiee->handleReleased(id);
   }
   myId.reset();
   myNotifiee = NULL;

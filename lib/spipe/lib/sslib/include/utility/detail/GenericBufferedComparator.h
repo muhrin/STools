@@ -58,7 +58,7 @@ GenericBufferedComparator<ComparatorTyp>::generateComparisonData(
   const sstbx::common::Structure & structure)
 {
   HandleId id = generateHandleId();
-  ComparisonDataHandle handle(id, *this);
+  ComparisonDataHandle handle(id, this);
   myComparisonData.insert(id, myComparator.generateComparisonData(structure).release());
   return handle;
 }

@@ -24,6 +24,7 @@ source_group("Source Files\\analysis" FILES ${tests_Source_Files__analysis})
 
 set(tests_Source_Files__build_cell
   build_cell/AtomExtruderTest.cpp
+  build_cell/StructureBuilderTest.cpp
 )
 source_group("Source Files\\build_cell" FILES ${tests_Source_Files__build_cell})
 

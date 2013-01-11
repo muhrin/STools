@@ -37,6 +37,19 @@ namespace structure_properties = common::structure_properties;
 
 StructureYamlGenerator::StructureYamlGenerator(const common::AtomSpeciesDatabase & speciesDb):
 mySpeciesDb(speciesDb)
+{
+  AtomsFormat format;
+  const YAML::Node null;
+  format.push_back(FormatEntry(kw::STRUCTURE__ATOMS__SPEC, null));
+  format.push_back(FormatEntry(kw::STRUCTURE__ATOMS__POS, null));
+  myAtomInfoParser.setFormat(format);
+}
+
+StructureYamlGenerator::StructureYamlGenerator(
+  const common::AtomSpeciesDatabase & speciesDb,
+  const AtomYamlFormatParser::AtomsFormat & format):
+mySpeciesDb(speciesDb),
+myAtomInfoParser(format)
 {}
 
 YAML::Node
@@ -119,17 +132,23 @@ YAML::Node StructureYamlGenerator::generateNode(
 {
   using namespace utility::cart_coords_enum;
 
-  YAML::Node atomNode;
+  AtomYamlFormatParser::AtomInfo atomInfo;
 
-  // Species
-  const ::std::string * const species = mySpeciesDb.getSymbol(atom.getSpecies());
-  if(species)
-    atomNode[kw::STRUCTURE__ATOMS__SPEC] = *species;
+  BOOST_FOREACH(const FormatEntry & entry, myAtomInfoParser.getFormat())
+  {
+    if(entry.first == kw::STRUCTURE__ATOMS__SPEC)
+    {
+      const ::std::string * const species = mySpeciesDb.getSymbol(atom.getSpecies());
+      if(species)
+        atomInfo[kw::STRUCTURE__ATOMS__SPEC] = *species;
+    }
+    else if(entry.first == kw::STRUCTURE__ATOMS__POS)
+      atomInfo[kw::STRUCTURE__ATOMS__POS] = atom.getPosition();
+    else if(entry.first == kw::STRUCTURE__ATOMS__RADIUS)
+      atomInfo[kw::STRUCTURE__ATOMS__RADIUS] = atom.getRadius();
+  }
 
-  // Position
-  atomNode[kw::STRUCTURE__ATOMS__POS] = atom.getPosition();
-
-  return atomNode;
+  return myAtomInfoParser.generateNode(atomInfo);
 }
 
 bool StructureYamlGenerator::addProperty(

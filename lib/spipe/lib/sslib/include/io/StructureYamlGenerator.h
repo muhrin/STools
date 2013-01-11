@@ -14,6 +14,7 @@
 
 #include "common/Types.h"
 #include "common/StructureProperties.h"
+#include "io/AtomYamlFormatParser.h"
 
 namespace sstbx {
 
@@ -29,7 +30,15 @@ namespace io {
 class StructureYamlGenerator
 {
 public:
+
+  typedef AtomYamlFormatParser::FormatEntry FormatEntry;
+  typedef AtomYamlFormatParser::AtomsFormat AtomsFormat;
+
   StructureYamlGenerator(const common::AtomSpeciesDatabase & speciesDb);
+  StructureYamlGenerator(
+    const common::AtomSpeciesDatabase & speciesDb,
+    const AtomsFormat & atomsFormat
+  );
 
   YAML::Node generateNode(const common::Structure & structure) const;
 
@@ -50,6 +59,8 @@ private:
     const YAML::Node & propertiesNode) const;
 
   const common::AtomSpeciesDatabase & mySpeciesDb;
+
+  AtomYamlFormatParser myAtomInfoParser;
 
 };
 

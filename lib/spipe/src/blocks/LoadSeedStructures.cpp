@@ -182,7 +182,7 @@ double LoadSeedStructures::getTotalAtomicVolume(
     }
   }
 
-  volume *= (4.0 / 3.0) * ssc::Constants::PI;
+  volume *= (4.0 / 3.0) * ssc::constants::PI;
   return volume;
 }
 

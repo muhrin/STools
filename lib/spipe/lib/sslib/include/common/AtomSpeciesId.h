@@ -27,10 +27,15 @@ public:
 
   static const Enumerator DUMMY;
   static const Enumerator H;
+  static const Enumerator HE;
   static const Enumerator LI;
   static const Enumerator BE;
   static const Enumerator B;
   static const Enumerator C;
+  static const Enumerator N;
+  static const Enumerator O;
+  static const Enumerator F;
+  static const Enumerator NE;
   static const Enumerator NA;
   static const Enumerator CL;
   static const Enumerator CUSTOM_1;

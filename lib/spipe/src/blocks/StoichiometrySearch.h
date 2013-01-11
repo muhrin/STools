@@ -20,7 +20,7 @@
 #include <pipelib/pipelib.h>
 
 // From SSTbx
-#include <build_cell/RandomUnitCell.h>
+#include <build_cell/RandomUnitCellGenerator.h>
 #include <build_cell/StructureDescription.h>
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesId.h>

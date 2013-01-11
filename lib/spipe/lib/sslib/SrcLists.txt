@@ -11,25 +11,21 @@ source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
 set(sslib_Source_Files__build_cell
   src/build_cell/AbstractConstraintDescription.cpp
   src/build_cell/AtomConstraintDescription.cpp
-  src/build_cell/AtomGroupDescription.cpp
   src/build_cell/AtomExtruder.cpp
   src/build_cell/AtomsDescription.cpp
-  src/build_cell/ConstVisitorGroup.cpp
-  src/build_cell/DefaultCrystalGenerator.cpp
-  src/build_cell/DistanceConstraintChecker.cpp
-  src/build_cell/RandomAtomPositioner.cpp
-  src/build_cell/RandomUnitCell.cpp
+  src/build_cell/AtomsGenerator.cpp
+  src/build_cell/BuildAtomInfo.cpp
+  src/build_cell/RandomUnitCellGenerator.cpp
+  src/build_cell/Sphere.cpp
+  src/build_cell/StructureBuild.cpp
   src/build_cell/StructureBuilder.cpp
   src/build_cell/StructureConstraintDescription.cpp
-  src/build_cell/StructureDescription.cpp
-  src/build_cell/StructureDescriptionMap.cpp
-  src/build_cell/StructureGenerator.cpp
-  src/build_cell/VisitorGroup.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 
 set(sslib_Source_Files__common
   src/common/Atom.cpp
+  src/common/AtomGroup.cpp
   src/common/AtomSpeciesDatabase.cpp
   src/common/AtomSpeciesId.cpp
   src/common/AtomSpeciesInfo.cpp
@@ -68,6 +64,7 @@ set(sslib_Source_Files__factory
 source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 
 set(sslib_Source_Files__io
+  src/io/AtomYamlFormatParser.cpp
   src/io/BoostFilesystem.cpp
   src/io/ResourceLocator.cpp
   src/io/ResReaderWriter.cpp

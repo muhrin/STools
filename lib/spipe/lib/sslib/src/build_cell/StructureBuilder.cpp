@@ -1,84 +1,91 @@
 /*
- * StructureBuilder.cpp
+ * StructureBuilder.h
  *
  *  Created on: Nov 10, 2011
  *      Author: Martin Uhrin
  */
 
-// INCLUDES //////////////////////////////////////
+
+// INCLUDES /////////////////
 #include "build_cell/StructureBuilder.h"
 
-#include "build_cell/AtomsDescription.h"
-#include "build_cell/StructureDescription.h"
-#include "build_cell/StructureDescriptionMap.h"
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Constants.h"
+#include "build_cell/GenerationOutcome.h"
+#include "build_cell/IFragmentGenerator.h"
+#include "build_cell/IUnitCellGenerator.h"
+#include "build_cell/StructureBuild.h"
+#include "build_cell/StructureContents.h"
 #include "common/Structure.h"
 
 namespace sstbx {
 namespace build_cell {
 
-StructureBuilder::StructureBuilder(const common::AtomSpeciesDatabase & speciesDb):
-  mySpeciesDb(speciesDb)
-{}
-
-common::StructurePtr
-StructureBuilder::buildStructure(const StructureDescription & description, DescriptionMapPtr & outDescriptionMap)
+GenerationOutcome
+StructureBuilder::generateStructure(common::StructurePtr & structureOut, const common::AtomSpeciesDatabase & speciesDb) const
 {
-	// Create a new blank structure
-  common::StructurePtr structure(new common::Structure());
-  outDescriptionMap.reset(new StructureDescriptionMap(description, *structure.get()));
+  GenerationOutcome outcome;
 
-  myAtomsVolume = 0.0;
+  typedef ::std::pair<const IFragmentGenerator *, IFragmentGenerator::GenerationTicket> GeneratorAndTicket;
+  ::std::vector<GeneratorAndTicket> generationInfo;
+  generationInfo.reserve(myGenerators.size());
 
-  myCurrentPair.first = structure.get();
-  myCurrentPair.second = outDescriptionMap.get();
-
-  description.traversePreorder(*this);
-
-  // Reset the current structure pair
-  myCurrentPair.first = NULL;
-  myCurrentPair.second = NULL;
-
-  return structure;
-}
-
-bool StructureBuilder::visitAtom(const AtomsDescription & atomDescription)
-{
-  const size_t numAtoms = atomDescription.getCount();
-  ::boost::optional<double> optionalRadius;
-
-  // See if the description contains a radius
-  optionalRadius = atomDescription.getRadius();
-  if(!optionalRadius)
+  // First find out what the generators want to put in the structure
+  StructureContents contents;
+  BOOST_FOREACH(const IFragmentGenerator & generator, myGenerators)
   {
-    // The user hasn't specified a radius so try to get a default on from the databaase
-    optionalRadius = mySpeciesDb.getRadius(atomDescription.getSpecies());
+    const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
+    generationInfo.push_back(GeneratorAndTicket(&generator, ticket));
+
+    contents += generator.getGenerationContents(ticket, speciesDb);
+  }
+  // TODO: Sort fragment generators by volume (largest first)
+
+  structureOut.reset(new common::Structure());
+  StructureBuild structureBuild(*structureOut, contents);
+
+  // Do we need to create a unit cell?
+  if(myUnitCellGenerator.get())
+  {
+    common::UnitCellPtr cell;
+    outcome = myUnitCellGenerator->generateCell(cell, contents);
+    
+    if(!outcome.success())
+      return outcome;
+
+    if(cell.get())
+      structureOut->setUnitCell(cell);
+    else
+    {
+      outcome.setFailure("Unit cell generator failed to generate unit cell");
+      return outcome;
+    }
   }
 
-  double radius;
-  for(size_t i = 0; i < atomDescription.getCount(); ++i)
+  BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
   {
-    common::Atom & atom = myCurrentPair.first->newAtom(atomDescription.getSpecies());
-
-    if(optionalRadius)
-      atom.setRadius(*optionalRadius);
-
-    radius = atom.getRadius();
-
-    myAtomsVolume += 1.333333 * common::Constants::PI * radius * radius * radius;
-
-    // Finally store the atom and description pair
-    myCurrentPair.second->insert(atomDescription.getParent(), &atomDescription, &atom);
+    outcome = generatorAndTicket.first->generateFragment(
+      structureBuild,
+      generatorAndTicket.second,
+      speciesDb
+    );
+    
+    if(!outcome.success())
+      return outcome;
   }
 
-  return true;
+  // TODO: Check global constraints
+
+  outcome.setSuccess();
+  return outcome;
 }
 
-double StructureBuilder::getAtomsVolume() const
+void StructureBuilder::setUnitCellGenerator(UnitCellGeneratorPtr unitCellGenerator)
 {
-  return myAtomsVolume;
+  myUnitCellGenerator = unitCellGenerator;
+}
+
+const IUnitCellGenerator * StructureBuilder::getUnitCellGenerator() const
+{
+  return myUnitCellGenerator.get();
 }
 
 }

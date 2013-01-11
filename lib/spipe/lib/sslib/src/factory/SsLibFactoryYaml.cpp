@@ -25,12 +25,14 @@
 // Local includes
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/AtomConstraintDescription.h"
-#include "build_cell/DefaultCrystalGenerator.h"
-#include "build_cell/RandomUnitCell.h"
+#include "build_cell/AtomsGenerator.h"
+#include "build_cell/RandomUnitCellGenerator.h"
+#include "build_cell/StructureBuilder.h"
 #include "build_cell/StructureConstraintDescription.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
 #include "factory/FactoryError.h"
+#include "io/AtomYamlFormatParser.h"
 #include "io/ResReaderWriter.h"
 #include "utility/IndexingEnums.h"
 #include "utility/SortedDistanceComparator.h"
@@ -57,88 +59,15 @@ const boost::char_separator<char> tokSep(" \t");
 
 SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
 myAtomSpeciesDb(atomSpeciesDb)
-{
-  // All the possible options that can go in a structure atom info node
-  myStructureAtomInfoSet.insert(kw::STRUCTURE__ATOMS__SPEC);
-  myStructureAtomInfoSet.insert(kw::STRUCTURE__ATOMS__POS);
-
-  myDefaultStructureAtomsInfoFormat.push_back(AtomsInfoEntry(kw::STRUCTURE__ATOMS__SPEC, OptionalString()));
-  myDefaultStructureAtomsInfoFormat.push_back(AtomsInfoEntry(kw::STRUCTURE__ATOMS__POS, OptionalString()));
-}
+{}
 
 common::StructurePtr
 SsLibFactoryYaml::createStructure(const YAML::Node & structureNode) const
 {
-  ::std::string sValue;
-
   common::StructurePtr structure(new common::Structure());
 
-  // Unit cell //////////////////////////
-  if(structureNode[kw::STRUCTURE__CELL])
-  {
-    structure->setUnitCell(createUnitCell(structureNode[kw::STRUCTURE__CELL]));
-  }
 
-  // Atoms ////////////////////////////
-
-  // First get any atom defaults if they exist
-  YAML::Node atomDefaults;
-  if(structureNode[kw::STRUCTURE__ATOM_DEFAULTS])
-  {
-    atomDefaults = structureNode[kw::STRUCTURE__ATOM_DEFAULTS];
-  }
-
-  AtomsInfoFormat atomInfoFormat;
-  if(structureNode[kw::STRUCTURE__ATOM_INFO_FORMAT])
-  {
-    const YAML::Node & formatNode = structureNode[kw::STRUCTURE__ATOM_INFO_FORMAT];
-
-    parseAtomsInfoFormat(formatNode, myStructureAtomInfoSet, atomInfoFormat);
-  }
-  else
-  {
-    atomInfoFormat = myDefaultStructureAtomsInfoFormat;
-  }
-
-  if(structureNode[kw::STRUCTURE__ATOMS])
-  {
-    const YAML::Node & atomsNode = structureNode[kw::STRUCTURE__ATOMS];
-
-    if(atomsNode.IsSequence())
-    {
-      common::AtomSpeciesId::Value species;
-      ::arma::vec3 pos;
-
-      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
-      {
-        if(atomNode.IsSequence())
-        {
-          //for(size_t i = 0; i < atomInfoFormat; ++i)
-          //{
-          //  
-          //}
-        }
-
-
-        // Get the species
-        if(!atomNode[kw::STRUCTURE__ATOMS__SPEC])
-        {
-          BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING) << NodeName(kw::STRUCTURE__ATOMS__SPEC));
-        }
-        const YAML::Node & type = atomNode[kw::STRUCTURE__ATOMS__SPEC];
-
-        species = myAtomSpeciesDb.getIdFromSymbol(type.as< ::std::string>());
-
-        // TODO: Get the position
-
-        structure->newAtom(species);
-      }
-    }
-    else
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
-  }
+  // TODO: Use StructureYamlGenerator here
 
   return structure;
 }
@@ -158,12 +87,12 @@ SsLibFactoryYaml::createUnitCell(const YAML::Node & cellNode) const
   return cell;
 }
 
-ssbc::UnitCellBlueprintPtr
-SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
+ssbc::RandomUnitCellPtr
+SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node) const
 {
   using namespace utility::cell_params_enum;
 
-  ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCell());
+  ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCellGenerator());
 
   if(node[kw::RANDOM_CELL__ABC])
   {
@@ -237,11 +166,11 @@ SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node)
     }
   }
 
-  return (ssbc::UnitCellBlueprintPtr)cell;
+  return cell;
 }
 
-ssbc::StructureDescriptionPtr
-SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
+ssbc::IStructureGeneratorPtr
+SsLibFactoryYaml::createStructureGenerator(const YAML::Node & node)
 {
   //// Make sure we have a structure description node
   //if(node.Scalar() != kw::STR_DESC)
@@ -249,36 +178,15 @@ SsLibFactoryYaml::createStructureDescription(const YAML::Node & node)
   //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
   //}
 
-  ssbc::StructureDescriptionPtr strDescription(new ssbc::StructureDescription());
+  ssbc::IStructureGeneratorPtr generator;
 
-  const OptionalDouble atomsRadii = getNodeChildValueAs<double>(node, kw::RANDOM_STRUCTURE__ATOM_RADII);
-
-  // Atoms //
-  if(node[kw::STR_DESC__ATOMS])
+  if(node[kw::RANDOM_STRUCTURE])
   {
-    const YAML::Node & atomsNode = node[kw::STR_DESC__ATOMS];
-
-    if(atomsNode.IsSequence())
-    {
-      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
-      {
-        strDescription->addChild(createAtomsDescription(atomNode, atomsRadii));
-      }
-    }
-    else
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
-  }
-
-  // Unit cell
-  if(node[kw::RANDOM_CELL])
-  {
-    strDescription->setUnitCell((ssbc::ConstUnitCellBlueprintPtr)createRandomCellGenerator(node[kw::RANDOM_CELL]));
+    generator = createStructureBuilder(node[kw::RANDOM_STRUCTURE]);
   }
 
   // Assign the pointer so the caller gets the object
-  return strDescription;
+  return generator;
 }
 
 ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
@@ -463,40 +371,6 @@ void SsLibFactoryYaml::checkKeyword(
     throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING);
 }
 
-build_cell::AtomsDescriptionPtr
-SsLibFactoryYaml::createAtomsDescription(const YAML::Node & descNode, OptionalDouble atomsRadii) const
-{
-  std::string sValue;
-  unsigned int nAtoms = 1;
-  ssc::AtomSpeciesId::Value  specId;
-
-  if(descNode[kw::STRUCTURE__ATOMS__SPEC])
-  {
-    sValue = descNode[kw::STRUCTURE__ATOMS__SPEC].as< ::std::string>();
-    OptionalAtomSpeciesCount atomSpeciesCount = parseAtomTypeString(sValue);
-    if(atomSpeciesCount)
-    {
-      specId = atomSpeciesCount->first;
-      nAtoms = atomSpeciesCount->second;
-    }
-  }
-
-  build_cell::AtomsDescriptionPtr atomsDescription(new build_cell::AtomsDescription(specId, nAtoms));
-
-  // If there is a default atoms radii first set that and then try to see if there
-  // is a specific one for this atom
-  if(atomsRadii)
-    atomsDescription->setRadius(*atomsRadii);
-
-  if(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS])
-  {
-    atomsDescription->setRadius(descNode[kw::RANDOM_STRUCTURE__ATOMS__RADIUS].as<double>());
-  }
-
-
-  return atomsDescription;
-}
-
 
 ssbc::StructureConstraintDescription *
 SsLibFactoryYaml::createStructureConstraintDescription(const YAML::Node & descNode) const
@@ -554,76 +428,154 @@ SsLibFactoryYaml::parseAtomTypeString(const ::std::string & atomSpecString) cons
   return atomSpeciesCount;
 }
 
-void SsLibFactoryYaml::parseAtomsInfoFormat(
-  const YAML::Node & infoNode,
-  const AtomsInfoSet & allowedValues,
-  AtomsInfoFormat & formatOut) const
+SsLibFactoryYaml::StructureContentType::Value
+SsLibFactoryYaml::getStructureContentType(const YAML::Node & node) const
 {
-  if(infoNode.IsSequence())
-  {
-    BOOST_FOREACH(const YAML::Node & entryNode, infoNode)
-    {
-      formatOut.push_back(parseAtomsInfoFormatEntry(entryNode, allowedValues));
-    }
-  }
-  else
-  {
-    BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-  }
+  if(node[kw::STRUCTURE__ATOMS__SPEC] || node.IsSequence())
+    return StructureContentType::ATOMS;
+  if(node[kw::RANDOM_STRUCTURE__ATOMS__GROUP])
+    return StructureContentType::GROUP;
+
+  return StructureContentType::UNKNOWN;
 }
 
-SsLibFactoryYaml::AtomsInfoEntry
-SsLibFactoryYaml::parseAtomsInfoFormatEntry(
-  const YAML::Node & entryNode,
-  const AtomsInfoSet & allowedValues) const
+build_cell::AtomsDescriptionPtr
+SsLibFactoryYaml::createAtomsDescription(
+  const YAML::Node & descNode,
+  const io::AtomYamlFormatParser & parser,
+  const AtomsDefaults & defaults) const
 {
-  AtomsInfoEntry entry;
-  ::std::string entryName;
-  ::std::string defaultValue;
+  std::string sValue;
 
-  if(entryNode.IsScalar())
+  io::AtomYamlFormatParser::AtomInfo atomsInfo;
+  if(!parser.parse(atomsInfo, descNode))
   {
-    entryName = ::boost::trim_copy(entryNode.as< ::std::string>());
+    // TODO: Throw exception
+  }
+  io::AtomYamlFormatParser::AtomInfo::const_iterator it, end = atomsInfo.end();
 
-    // Check that the entry is one of the allowed values
-    if(allowedValues.find(entryName) == allowedValues.end())
+  unsigned int nAtoms = defaults.count;
+  ssc::AtomSpeciesId::Value species;
+  if(defaults.species)
+    species = *defaults.species;
+
+
+  it = atomsInfo.find(kw::STRUCTURE__ATOMS__SPEC);
+  if(it != end)
+  {
+    sValue = it->second.as< ::std::string>();
+    OptionalAtomSpeciesCount atomSpeciesCount = parseAtomTypeString(sValue);
+    if(atomSpeciesCount)
     {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+      species = atomSpeciesCount->first;
+      nAtoms = atomSpeciesCount->second;
+    }
+  }
+
+  build_cell::AtomsDescriptionPtr atomsDescription(new build_cell::AtomsDescription(species, nAtoms));
+
+  // If there is a default atoms radii first set that and then try to see if there
+  // is a specific one for this atom
+  if(defaults.radius)
+    atomsDescription->setRadius(*defaults.radius);
+
+  it = atomsInfo.find(kw::RANDOM_STRUCTURE__ATOMS__RADIUS);
+  if(it != end)
+  {
+    atomsDescription->setRadius(it->second.as<double>());
+  }
+
+
+  return atomsDescription;
+}
+
+build_cell::StructureBuilderPtr
+SsLibFactoryYaml::createStructureBuilder(const YAML::Node & node) const
+{
+  build_cell::StructureBuilderPtr builder(new ssbc::StructureBuilder());
+
+  const OptionalDouble atomsRadii = getNodeChildValueAs<double>(node, kw::RANDOM_STRUCTURE__ATOMS_RADII);
+
+  io::AtomYamlFormatParser atomsFormatParser;
+  if(node[kw::STRUCTURE__ATOMS_FORMAT])
+    atomsFormatParser.updateFormat(node[kw::STRUCTURE__ATOMS_FORMAT]);
+
+  // Generators 
+  if(node[kw::RANDOM_STRUCTURE__ATOMS])
+  {
+    // Try creating the default atoms generator
+    {
+      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(node, atomsFormatParser);
+      if(atomsGenerator.get())
+        builder->addGenerator(atomsGenerator);
     }
 
-    entry.first = entryName;
-  }
-  else if(entryNode.IsMap())
-  {
-    if(entryNode.size() == 1)
+    const YAML::Node & atomsNode = node[kw::RANDOM_STRUCTURE__ATOMS];
+
+    // Now look for other generators
+    BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
     {
-      const YAML::const_iterator it = entryNode.begin();
-
-      entryName = ::boost::trim_copy(it->first.as< ::std::string>());
-
-      // Check that the entry is one of the allowed values
-      if(allowedValues.find(entryName) == allowedValues.end())
+      if(getStructureContentType(atomNode) == StructureContentType::GROUP)
       {
-        BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(atomNode, atomsFormatParser);
+        if(atomsGenerator.get())
+          builder->addGenerator(atomsGenerator);
       }
+    }
+  }
 
-      defaultValue = ::boost::trim_copy(it->second.as< ::std::string>());
+  // Unit cell
+  if(node[kw::RANDOM_CELL])
+    builder->setUnitCellGenerator(createRandomCellGenerator(node[kw::RANDOM_CELL]));
 
-      // Add it into the format info with no default value
-      entry.first = entryName;
-      entry.second = defaultValue;
+  return builder;
+}
+
+build_cell::AtomsGeneratorPtr
+SsLibFactoryYaml::createAtomsGenerator(
+  const YAML::Node & node,
+  const io::AtomYamlFormatParser & atomsFormatParser,
+  AtomsDefaults defaults
+) const
+{
+  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator());
+
+  if(node[kw::RANDOM_STRUCTURE__ATOMS_RADII])
+    defaults.radius = node[kw::RANDOM_STRUCTURE__ATOMS_RADII].as<double>();
+
+  ///////////
+  // Atoms
+  if(node[kw::RANDOM_STRUCTURE__ATOMS])
+  {
+    const YAML::Node & atomsNode = node[kw::RANDOM_STRUCTURE__ATOMS];
+
+    if(atomsNode.IsSequence())
+    {
+      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
+      {
+        if(getStructureContentType(atomNode) == StructureContentType::ATOMS)
+          atomsGenerator->addAtoms(*createAtomsDescription(atomNode, atomsFormatParser, defaults));
+      }
     }
     else
+      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
+  }
+
+  if(node[kw::RANDOM_STRUCTURE__ATOMS__GEN_SPHERE])
+  {
+    try
+    {
+      atomsGenerator->setGenerationSphere(
+        node[kw::RANDOM_STRUCTURE__ATOMS__GEN_SPHERE].as<build_cell::Sphere>()
+      );
+    }
+    catch(const YAML::Exception & /*exception*/)
     {
       BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
     }
   }
-  else
-  {
-    BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-  }
 
-  return entry;
+  return atomsGenerator;
 }
 
 }

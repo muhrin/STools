@@ -15,7 +15,8 @@
 
 #include <armadillo>
 
-#include <build_cell/RandomUnitCell.h>
+#include <build_cell/GenerationOutcome.h>
+#include <build_cell/RandomUnitCellGenerator.h>
 #include <common/Atom.h>
 #include <common/OrthoCellDistanceCalculator.h>
 #include <common/ReferenceDistanceCalculator.h>
@@ -192,7 +193,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 #endif
   const size_t numAttempts = 100;
 
-  ::ssbc::RandomUnitCell randomCell;
+  ::ssbc::RandomUnitCellGenerator randomCell;
 
   double cutoff;
   ::std::vector<double> referenceDists, univDist;
@@ -205,7 +206,11 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     univDist.clear(); univVecs.clear();
 
     ssc::Structure structure;
-    structure.setUnitCell(randomCell.generateCell());
+    {
+      ssc::UnitCellPtr cell;
+      BOOST_REQUIRE(randomCell.generateCell(cell).success());
+      structure.setUnitCell(cell);
+    }
 
     for(size_t i = 0; i < numAtoms; ++i)
       structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());

@@ -313,9 +313,9 @@ bool UnitCell::niggliReduce()
   double a     = myLatticeParams[A];
   double b     = myLatticeParams[B];
   double c     = myLatticeParams[C];
-  double alpha = myLatticeParams[ALPHA] * Constants::DEG_TO_RAD;
-  double beta  = myLatticeParams[BETA] * Constants::DEG_TO_RAD;
-  double gamma = myLatticeParams[GAMMA] * Constants::DEG_TO_RAD;
+  double alpha = myLatticeParams[ALPHA] * constants::DEG_TO_RAD;
+  double beta  = myLatticeParams[BETA] * constants::DEG_TO_RAD;
+  double gamma = myLatticeParams[GAMMA] * constants::DEG_TO_RAD;
 
   // Compute characteristic (step 0)
   double A    = a*a;
@@ -672,9 +672,9 @@ void UnitCell::initOrthoAndFracMatrices()
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
 
-  const double alphaRad = Constants::DEG_TO_RAD * myLatticeParams[ALPHA];
-  const double betaRad = Constants::DEG_TO_RAD * myLatticeParams[BETA];
-  const double gammaRad = Constants::DEG_TO_RAD * myLatticeParams[GAMMA];
+  const double alphaRad = constants::DEG_TO_RAD * myLatticeParams[ALPHA];
+  const double betaRad = constants::DEG_TO_RAD * myLatticeParams[BETA];
+  const double gammaRad = constants::DEG_TO_RAD * myLatticeParams[GAMMA];
 
 	myOrthoMtx.zeros();
 	// A - col 0
@@ -708,9 +708,9 @@ void UnitCell::initLatticeParams()
 	myLatticeParams[A] = std::sqrt(dot(a, a));
 	myLatticeParams[B] = std::sqrt(dot(b, b));
 	myLatticeParams[C] = std::sqrt(dot(c, c));
-	myLatticeParams[ALPHA] = acos(dot(b, c) / (myLatticeParams[B] * myLatticeParams[C])) * Constants::RAD_TO_DEG;
-	myLatticeParams[BETA] = acos(dot(a, c) / (myLatticeParams[A] * myLatticeParams[C])) * Constants::RAD_TO_DEG;
-	myLatticeParams[GAMMA] = acos(dot(a, b) / (myLatticeParams[A] * myLatticeParams[B])) * Constants::RAD_TO_DEG;
+	myLatticeParams[ALPHA] = acos(dot(b, c) / (myLatticeParams[B] * myLatticeParams[C])) * constants::RAD_TO_DEG;
+	myLatticeParams[BETA] = acos(dot(a, c) / (myLatticeParams[A] * myLatticeParams[C])) * constants::RAD_TO_DEG;
+	myLatticeParams[GAMMA] = acos(dot(a, b) / (myLatticeParams[A] * myLatticeParams[B])) * constants::RAD_TO_DEG;
 }
 
 

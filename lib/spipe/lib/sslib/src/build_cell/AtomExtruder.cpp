@@ -25,17 +25,37 @@ bool AtomExtruder::extrudeAtoms(
   const size_t maxIterations,
   const double tolerance) const
 {
+  return extrudeAtoms(structure, FixedAtoms(), maxIterations, tolerance);
+}
+
+bool AtomExtruder::extrudeAtoms(
+  common::Structure & structure,
+  const FixedAtoms & fixed,
+  const size_t maxIterations,
+  const double tolerance) const
+{
 
   const size_t numAtoms = structure.getNumAtoms();
 
-  ::std::vector<common::Atom *> atomsWithRadii;
+  Atoms atomsWithRadii;
+  FixedList allFixed;
 
+  FixedAtoms fixedRemaining(fixed);
+  FixedAtoms::iterator it;
   for(size_t i = 0; i < numAtoms; ++i)
   {
     common::Atom & atom = structure.getAtom(i);
     if(atom.getRadius() != 0.0)
     {
       atomsWithRadii.push_back(&atom);
+      it = fixedRemaining.find(i);
+      if(it == fixedRemaining.end())
+        allFixed.push_back(false);
+      else
+      {
+        allFixed.push_back(true);
+        fixedRemaining.erase(it);
+      }
     }
   }
 
@@ -55,12 +75,20 @@ bool AtomExtruder::extrudeAtoms(
 
   sepSqMtx = ::arma::symmatu(sepSqMtx);
 
-  return extrudeAtoms(structure.getDistanceCalculator(), atomsWithRadii, sepSqMtx, tolerance, maxIterations);
+  return extrudeAtoms(
+    structure.getDistanceCalculator(),
+    atomsWithRadii,
+    allFixed,
+    sepSqMtx,
+    tolerance,
+    maxIterations
+  );
 }
 
 bool AtomExtruder::extrudeAtoms(
   const common::DistanceCalculator & distanceCalc,
   ::std::vector<common::Atom *> & atoms,
+  const FixedList & fixedList,
   const ::arma::mat & sepSqMtx,
   const double tolerance,
   const size_t maxIterations) const
@@ -76,9 +104,12 @@ bool AtomExtruder::extrudeAtoms(
   ::arma::mat sepSqDistances(numAtoms, numAtoms);
 
   double maxOverlapFractionSq;
+
   ::arma::vec dr; // The displacement vector to move each atom by
+  double prefactor; // Used tp adjust the displacement vector if either atom is fixed
   size_t i, j;
   bool success = false;
+
   for(size_t iters = 0; iters < maxIterations; ++iters)
   {
     // First loop over calculating separations and checking for overlap
@@ -89,6 +120,9 @@ bool AtomExtruder::extrudeAtoms(
       const ::arma::vec & posI = atoms[i]->getPosition();
       for(j = i + 1; j < numAtoms; ++j)
       {
+        if(fixedList[i] && fixedList[j])
+          continue; // Ignore case where both atoms are fixed
+
         const ::arma::vec & posJ = atoms[j]->getPosition();
 
         sepVectors[i][j]     = distanceCalc.getVecMinImg(posI, posJ);
@@ -96,9 +130,7 @@ bool AtomExtruder::extrudeAtoms(
 
         // Are they closer than the sum of the two radii?
         if(sepSqDistances(i, j) < sepSqMtx(i, j))
-        {
           maxOverlapFractionSq = ::std::max(maxOverlapFractionSq, (sepSqMtx(i, j) - sepSqDistances(i, j)) / sepSqMtx(i, j));
-        }
       }
     }
 
@@ -117,16 +149,25 @@ bool AtomExtruder::extrudeAtoms(
       {
         if(sepSqDistances(i, j) < sepSqMtx(i, j))
         {
+          if(fixedList[i] && fixedList[j])
+            continue;  // Both fixed, move one
+          else if(fixedList[i] || fixedList[j])
+            prefactor = 1.0; // Only one fixed, displace it by the full amount
+          else
+            prefactor = 0.5; // None fixed, shared displacement equally
+
           sep = sqrt(sepSqDistances(i, j));
           const ::arma::vec & posJ = atoms[j]->getPosition();
 
           sepDiff = sqrt(sepSqMtx(i, j)) - sep;
 
           // Generate the displacement vector
-          dr = 0.5 * sepDiff / sep * sepVectors[i][j];
-
-          atoms[i]->setPosition(posI - dr);
-          atoms[j]->setPosition(posJ + dr);
+          dr = prefactor * sepDiff / sep * sepVectors[i][j];
+          
+          if(!fixedList[i])
+            atoms[i]->setPosition(posI - dr);
+          if(!fixedList[j])
+            atoms[j]->setPosition(posJ + dr);
         }
       }
     }

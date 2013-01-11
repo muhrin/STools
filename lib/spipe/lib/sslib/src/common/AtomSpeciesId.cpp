@@ -15,10 +15,15 @@ namespace common {
 
 const AtomSpeciesId::Enumerator AtomSpeciesId::DUMMY;
 const AtomSpeciesId::Enumerator AtomSpeciesId::H;
+const AtomSpeciesId::Enumerator AtomSpeciesId::HE;
 const AtomSpeciesId::Enumerator AtomSpeciesId::LI;
 const AtomSpeciesId::Enumerator AtomSpeciesId::BE;
 const AtomSpeciesId::Enumerator AtomSpeciesId::B;
 const AtomSpeciesId::Enumerator AtomSpeciesId::C;
+const AtomSpeciesId::Enumerator AtomSpeciesId::N;
+const AtomSpeciesId::Enumerator AtomSpeciesId::O;
+const AtomSpeciesId::Enumerator AtomSpeciesId::F;
+const AtomSpeciesId::Enumerator AtomSpeciesId::NE;
 const AtomSpeciesId::Enumerator AtomSpeciesId::NA;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CL;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_1;

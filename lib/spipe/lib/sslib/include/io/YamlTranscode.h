@@ -21,6 +21,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 
+#include "build_cell/Sphere.h"
 #include "common/UnitCell.h"
 #include "factory/SsLibYamlKeywords.h"
 #include "io/IoFunctions.h"
@@ -43,36 +44,54 @@ struct ArmaTriangularMat
 }
 }
 
-// Converters
-
-
 // Some custom YAML converters
 namespace YAML {
 
-  //template<>
-  //struct convert< ::sstbx::common::Atom>
-  //{
-  //  static Node encode(const ::sstbx::common::Atom & atom)
-  //  {
-  //    namespace kw = ::sstbx::factory::sslib_yaml_keywords;
-  //    using namespace utility::cart_coords_enum;
+  // build_cell
 
-  //    YAML::Node atomNode;
+  // build_cell::Sphere
+  template<>
+  struct convert< ::sstbx::build_cell::Sphere>
+  {
+    static Node encode(const ::sstbx::build_cell::Sphere & sphere)
+    {
+      namespace kw = ::sstbx::factory::sslib_yaml_keywords;
 
-  //    // Species
-  //    const ::std::string * const species = mySpeciesDb.getSymbol(atom.getSpecies());
-  //    if(species)
-  //      atomNode[kw::STRUCTURE__ATOMS__SPEC] = *species;
+      Node node;
 
-  //    // Position
-  //    atomNode[kw::STRUCTURE__ATOMS__POS] = atom.getPosition();
+      node[kw::POS] = sphere.getPosition();
+      node[kw::RADIUS] = sphere.getRadius();
 
-  //    return atomNode;
+      return node;
+    }
 
-  //  }
+    static bool decode(const Node & node, ::sstbx::build_cell::Sphere & sphere)
+    {
+      namespace kw = ::sstbx::factory::sslib_yaml_keywords;
 
-  //}
+      try
+      {
+        if(node[kw::POS])
+          sphere.setPosition(node[kw::POS].as< ::arma::vec3>());
 
+        if(node[kw::RADIUS])
+          sphere.setRadius(node[kw::RADIUS].as<double>());
+
+        if(node[kw::VOL])
+          sphere.setRadius(::sstbx::build_cell::Sphere::radius(node[kw::VOL].as<double>()));
+      }
+      catch(const ::boost::bad_lexical_cast & /*exception*/)
+      {
+        return false;
+      }
+
+      return true;
+    }
+  };
+
+  // common
+
+  // common::UnitCell
   template<>
   struct convert< ::sstbx::common::UnitCell>
   {

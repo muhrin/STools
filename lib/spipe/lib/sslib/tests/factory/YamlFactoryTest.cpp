@@ -26,28 +26,23 @@ namespace ssf = ::sstbx::factory;
 
 namespace kw = ::sstbx::factory::sslib_yaml_keywords;
 
-BOOST_AUTO_TEST_CASE(StructureDescriptionTest)
+BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 {
-  // Settings ////////////////
+  //// Settings ////////////////
   const char simpleStructure[] = "RandomStructure.sslib";
 
   ssc::AtomSpeciesDatabase speciesDb;
 
   ssf::SsLibFactoryYaml factory(speciesDb);
 
-  YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
+  const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 
-  if(loadedNode[kw::RANDOM_STRUCTURE])
+  try
   {
-    const YAML::Node & strNode = loadedNode[kw::RANDOM_STRUCTURE];
-
-    try
-    {
-      ssbc::StructureDescriptionPtr strGen = factory.createStructureDescription(strNode);
-    }
-    catch(const ssf::FactoryError & e)
-    {
-      ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
-    }
+    ssbc::IStructureGeneratorPtr strGen = factory.createStructureGenerator(loadedNode);
+  }
+  catch(const ssf::FactoryError & e)
+  {
+    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
   }
 }

@@ -14,7 +14,8 @@
 #include <armadillo>
 
 #include <build_cell/AtomExtruder.h>
-#include <build_cell/RandomUnitCell.h>
+#include <build_cell/GenerationOutcome.h>
+#include <build_cell/RandomUnitCellGenerator.h>
 #include <common/Atom.h>
 #include <common/AtomSpeciesId.h>
 #include <common/Constants.h>
@@ -33,7 +34,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
   // SETTINGS ///////
   const size_t numStructures = 5, maxAtoms = 10;
 
-  ssbc::RandomUnitCell randomCell;
+  ssbc::RandomUnitCellGenerator randomCell;
   randomCell.setVolumeDelta(0.0);
 
   ssbc::AtomExtruder extruder;
@@ -53,9 +54,13 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     // Create a unit cell
     // Make the volume somewhat bigger than the space filled by the atoms
-    randomCell.setTargetVolume(2.0 * numAtoms * 4.0 / 3.0 * ssc::Constants::PI /* times r^3, but r=1 */);
+    randomCell.setTargetVolume(2.0 * numAtoms * 4.0 / 3.0 * ssc::constants::PI /* times r^3, but r=1 */);
 
-    structure.setUnitCell(randomCell.generateCell());
+    {
+      ssc::UnitCellPtr cell;
+      BOOST_REQUIRE(randomCell.generateCell(cell).success());
+      structure.setUnitCell(cell);
+    }
     const ssc::UnitCell * const cell = structure.getUnitCell();
 
     // Check that the volume is not NaN

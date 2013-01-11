@@ -33,7 +33,8 @@ public:
 	virtual void setAll(
     AtomSpeciesId::Value id,
 		const ::std::string & symbol,
-		const ::std::string & name);
+		const ::std::string & name,
+    const double radius);
 
   virtual const ::std::string * getName(const AtomSpeciesId::Value id) const;
   virtual void setName(const AtomSpeciesId::Value id, const ::std::string & name);

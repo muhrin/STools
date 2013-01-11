@@ -12,7 +12,8 @@
 
 #include <armadillo>
 
-#include <build_cell/RandomUnitCell.h>
+#include <build_cell/GenerationOutcome.h>
+#include <build_cell/RandomUnitCellGenerator.h>
 #include <common/UnitCell.h>
 #include <utility/StableComparison.h>
 
@@ -24,13 +25,14 @@ BOOST_AUTO_TEST_CASE(LongestDiagonal)
 {
   const size_t numUnitCells = 100;
 
-  ssbc::RandomUnitCell cellGen;
+  ssbc::RandomUnitCellGenerator cellGen;
 
   ::arma::vec3 A, B, C, combination, longest, diag;
   double lengthSq, maxLengthSq;
   for(size_t i = 0; i < numUnitCells; ++i)
   {
-    ssc::UnitCellPtr cell = cellGen.generateCell();
+    ssc::UnitCellPtr cell;
+    BOOST_REQUIRE(cellGen.generateCell(cell).success());
 
     // Get the longest cell vector
     A = cell->getAVec();

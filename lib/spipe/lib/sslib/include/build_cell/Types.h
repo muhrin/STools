@@ -16,18 +16,22 @@ namespace build_cell {
 
 // FORWARD DECLARES ////////////
 class AtomsDescription;
-class IUnitCellBlueprint;
-class RandomUnitCell;
-class StructureDescription;
+class AtomsGenerator;
+class IFragmentGenerator;
+class IStructureGenerator;
+class IUnitCellGenerator;
+class RandomUnitCellGenerator;
+class StructureBuilder;
+
 
 typedef UniquePtr<AtomsDescription>::Type AtomsDescriptionPtr;
+typedef UniquePtr<AtomsGenerator>::Type AtomsGeneratorPtr;
+typedef UniquePtr<IFragmentGenerator>::Type IFragmentGeneratorPtr;
+typedef UniquePtr<IUnitCellGenerator>::Type UnitCellGeneratorPtr;
+typedef UniquePtr<IStructureGenerator>::Type IStructureGeneratorPtr;
+typedef UniquePtr<RandomUnitCellGenerator>::Type RandomUnitCellPtr;
+typedef UniquePtr<StructureBuilder>::Type StructureBuilderPtr;
 
-typedef UniquePtr<StructureDescription>::Type StructureDescriptionPtr;
-
-typedef UniquePtr<IUnitCellBlueprint>::Type UnitCellBlueprintPtr;
-typedef UniquePtr<const IUnitCellBlueprint>::Type ConstUnitCellBlueprintPtr;
-
-typedef UniquePtr<RandomUnitCell>::Type RandomUnitCellPtr;
 
 }
 }

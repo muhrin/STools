@@ -26,7 +26,7 @@ class SharedHandle
 
 public:
   SharedHandle();
-  SharedHandle(const Id id, Notifiee & notifiee);
+  SharedHandle(const Id id, Notifiee * notifiee = NULL);
   SharedHandle(const SharedHandle & other);
   ~SharedHandle();
 

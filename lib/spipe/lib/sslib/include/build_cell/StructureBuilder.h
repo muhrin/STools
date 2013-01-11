@@ -8,49 +8,52 @@
 #ifndef STRUCTURE_BUILDER_H
 #define STRUCTURE_BUILDER_H
 
-// INCLUDES ////////////
-#include <boost/shared_ptr.hpp>
+// INCLUDES /////////////////////////////////
 
 #include "SSLib.h"
-#include "build_cell/ConstStructureDescriptionVisitor.h"
-#include "common/Types.h"
+
+#include <string>
+#include <utility>
+
+#include <boost/ptr_container/ptr_vector.hpp>
+
+#include "build_cell/IStructureGenerator.h"
+#include "build_cell/Types.h"
+
+// FORWARD DECLARES //////////////////////////
 
 namespace sstbx {
-namespace common {
-class AtomSpeciesDatabase;
-}
 namespace build_cell {
 
-class StructureDescription;
-class StructureDescriptionMap;
-
-class StructureBuilder : public ConstStructureDescriptionVisitor
+class StructureBuilder : public IStructureGenerator
 {
 public:
+  
+  virtual GenerationOutcome generateStructure(
+    common::StructurePtr & structureOut,
+    const common::AtomSpeciesDatabase & speciesDb
+  ) const;
 
-  typedef UniquePtr<StructureDescriptionMap>::Type DescriptionMapPtr;
+  void setUnitCellGenerator(UnitCellGeneratorPtr unitCellGenerator);
+  const IUnitCellGenerator * getUnitCellGenerator() const;
 
-  StructureBuilder(const common::AtomSpeciesDatabase & speciesDb);
-
-  common::StructurePtr buildStructure(
-    const StructureDescription & description,
-    DescriptionMapPtr & outDescriptionMap);
-
-  // From StructureDescriptionVisitor ///////////////////
-  virtual bool visitAtom(const AtomsDescription & description);
-  // End from StructureDescriptionVisitor ///////////////
-
-  double getAtomsVolume() const;
+  template <class T>
+  void addGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
 private:
 
-  typedef ::std::pair<common::Structure *, StructureDescriptionMap *> StructurePair;
-
-  const common::AtomSpeciesDatabase & mySpeciesDb;
-  StructurePair                       myCurrentPair;
-  double                              myAtomsVolume;
+  typedef ::boost::ptr_vector<IFragmentGenerator> Generators;
+  
+  UnitCellGeneratorPtr myUnitCellGenerator;
+  Generators myGenerators;
   
 };
+
+template <class T>
+void StructureBuilder::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
+{
+  myGenerators.push_back(generator.release());
+}
 
 }
 }
