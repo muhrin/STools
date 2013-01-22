@@ -107,7 +107,9 @@ void SslibReaderWriter::writeStructure(
 
   if(strFile.is_open())
   {
-    strFile << YAML::Dump(doc) << ::std::endl;
+    YAML::Emitter out;
+    out << doc;
+    strFile << out.c_str() << ::std::endl;
     strFile.close();
 
     str.setProperty(properties::io::LAST_ABS_FILE_PATH, uniqueLoc);
@@ -249,6 +251,7 @@ bool SslibReaderWriter::multiStructureSupport() const
 {
   return true;
 }
+
 
 }
 }

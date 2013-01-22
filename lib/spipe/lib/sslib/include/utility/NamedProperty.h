@@ -64,10 +64,10 @@ private:
 public:
 
   typedef ::boost::transform_iterator<
-    utility::TakeSecondDereferenced< ::std::string, NamedProperty<Container> *, NamedProperty<Container> & >,
+    utility::TakeSecondDereferenced<typename Properties::value_type, NamedProperty<Container> &>,
     typename Properties::iterator> iterator;
   typedef ::boost::transform_iterator<
-    utility::TakeSecondDereferenced< ::std::string, NamedProperty<Container> *, NamedProperty<Container> & >,
+    utility::TakeSecondDereferenced<const typename Properties::value_type, const NamedProperty<Container> &>,
     typename Properties::const_iterator> const_iterator;
 
   bool addProperty(NamedProperty<Container> & namedProperty);

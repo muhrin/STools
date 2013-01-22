@@ -11,6 +11,9 @@
 #include <set>
 
 #include <boost/foreach.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+
+#include "utility/TransformFunctions.h"
 
 // DEFINES /////////////////////////////////
 
@@ -23,6 +26,10 @@ namespace io {
 
 
 AtomYamlFormatParser::AtomYamlFormatParser()
+{}
+
+AtomYamlFormatParser::AtomYamlFormatParser(const AtomsFormat & format):
+myAtomsFormat(format)
 {}
 
 
@@ -96,9 +103,12 @@ bool AtomYamlFormatParser::parse(AtomInfo & atomInfo, const YAML::Node & atomNod
 
 YAML::Node AtomYamlFormatParser::generateNode(const AtomInfo & atomInfo) const
 {
+  typedef utility::TakeFirst<const FormatEntry> TakeFirst;
+  typedef boost::transform_iterator<TakeFirst, typename AtomsFormat::const_iterator> iterator;
   typedef ::std::set< ::std::string> EntriesSet;
+
   // First check if we can use the compact format or not
-  EntriesSet entries;
+  const EntriesSet entries(iterator(myAtomsFormat.begin()), iterator(myAtomsFormat.end()));
 
   bool compactFormat = true;
   EntriesSet::const_iterator end = entries.end();

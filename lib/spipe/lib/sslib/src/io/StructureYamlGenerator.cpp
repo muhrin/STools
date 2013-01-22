@@ -83,6 +83,8 @@ StructureYamlGenerator::generateNode(const ::sstbx::common::Structure & structur
 common::types::StructurePtr
 StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 {
+  typedef AtomYamlFormatParser::AtomInfo::iterator AtomInfoIterator;
+
   common::types::StructurePtr structure(new common::Structure());
 
   bool valid = true;
@@ -99,24 +101,36 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 
   if(node[kw::STRUCTURE__ATOMS] && node[kw::STRUCTURE__ATOMS].IsSequence())
   {
+    AtomYamlFormatParser::AtomInfo atomInfo;
+    AtomInfoIterator it;
     common::AtomSpeciesId::Value species;
     ::arma::vec3 pos;
     BOOST_FOREACH(const YAML::Node & atomNode, node[kw::STRUCTURE__ATOMS])
     {
-      if(atomNode[kw::STRUCTURE__ATOMS__SPEC])
+      if(myAtomInfoParser.parse(atomInfo, atomNode))
       {
-        species =
-          mySpeciesDb.getIdFromSymbol(atomNode[kw::STRUCTURE__ATOMS__SPEC].as< ::std::string>());
+        const AtomInfoIterator end = atomInfo.end();
+
+        it = atomInfo.find(kw::STRUCTURE__ATOMS__SPEC);
+        if(it != end)
+          species = mySpeciesDb.getIdFromSymbol(it->second.as< ::std::string>());
 
         if(species != common::AtomSpeciesId::DUMMY)
         {
           common::Atom & atom = structure->newAtom(species);
-          if(atomNode[kw::STRUCTURE__ATOMS__POS])
+          it = atomInfo.find(kw::STRUCTURE__ATOMS__POS);
+          if(it != end)
           {
-            pos = atomNode[kw::STRUCTURE__ATOMS__POS].as< ::arma::vec3>();
+            pos = it->second.as< ::arma::vec3>();
             atom.setPosition(pos);
           }
         }
+
+        atomInfo.clear(); // Clear so we can use next time around
+      }
+      else
+      {
+        // TODO: Emit error
       }
     }
   }

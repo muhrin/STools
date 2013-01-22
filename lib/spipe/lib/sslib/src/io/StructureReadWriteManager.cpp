@@ -21,6 +21,89 @@ namespace io {
 
 namespace fs = ::boost::filesystem;
 
+StructureReadWriteManager::WritersIterator
+StructureReadWriteManager::beginWriters()
+{
+  return WritersIterator(myWriters.begin());
+}
+
+StructureReadWriteManager::WritersConstIterator
+StructureReadWriteManager::beginWriters() const
+{
+  return WritersConstIterator(myWriters.begin());
+}
+
+StructureReadWriteManager::WritersIterator
+StructureReadWriteManager::endWriters()
+{
+  return WritersIterator(myWriters.end());
+}
+
+StructureReadWriteManager::WritersConstIterator
+StructureReadWriteManager::endWriters() const
+{
+  return WritersConstIterator(myWriters.end());
+}
+
+StructureReadWriteManager::WritersRange
+StructureReadWriteManager::writers()
+{
+  return WritersRange(beginWriters(), endWriters());
+}
+
+StructureReadWriteManager::WritersConstRange
+StructureReadWriteManager::writers() const
+{
+  return WritersConstRange(beginWriters(), endWriters());
+}
+
+size_t StructureReadWriteManager::numWriters() const
+{
+  return myWriters.size();
+}
+
+StructureReadWriteManager::ReadersIterator
+StructureReadWriteManager::beginReaders()
+{
+  return ReadersIterator(myReaders.begin());
+}
+
+StructureReadWriteManager::ReadersConstIterator
+StructureReadWriteManager::beginReaders() const
+{
+  return ReadersConstIterator(myReaders.begin());
+}
+
+StructureReadWriteManager::ReadersIterator
+StructureReadWriteManager::endReaders()
+{
+  return ReadersIterator(myReaders.end());
+}
+
+StructureReadWriteManager::ReadersConstIterator
+StructureReadWriteManager::endReaders() const
+{
+  return ReadersConstIterator(myReaders.end());
+}
+
+
+StructureReadWriteManager::ReadersRange
+StructureReadWriteManager::readers()
+{
+  return ReadersRange(beginReaders(), endReaders());
+}
+
+StructureReadWriteManager::ReadersConstRange
+StructureReadWriteManager::readers() const
+{
+  return ReadersConstRange(beginReaders(), endReaders());
+}
+
+size_t StructureReadWriteManager::numReaders() const
+{
+  return myReaders.size();
+}
+
 void StructureReadWriteManager::insertWriter(WriterPtr writer)
 {
   myWritersStore.push_back(writer.release());

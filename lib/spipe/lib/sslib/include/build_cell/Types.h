@@ -27,7 +27,7 @@ class StructureBuilder;
 typedef UniquePtr<AtomsDescription>::Type AtomsDescriptionPtr;
 typedef UniquePtr<AtomsGenerator>::Type AtomsGeneratorPtr;
 typedef UniquePtr<IFragmentGenerator>::Type IFragmentGeneratorPtr;
-typedef UniquePtr<IUnitCellGenerator>::Type UnitCellGeneratorPtr;
+typedef UniquePtr<IUnitCellGenerator>::Type IUnitCellGeneratorPtr;
 typedef UniquePtr<IStructureGenerator>::Type IStructureGeneratorPtr;
 typedef UniquePtr<RandomUnitCellGenerator>::Type RandomUnitCellPtr;
 typedef UniquePtr<StructureBuilder>::Type StructureBuilderPtr;

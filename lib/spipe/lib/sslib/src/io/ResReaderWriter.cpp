@@ -227,7 +227,7 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 	typedef boost::tokenizer<boost::char_separator<char> > Tok;
 	const boost::char_separator<char> sep(" \t");
 
-  bool foundTitle, foundCell, foundSfac;
+  bool foundTitle, foundSfac;
   if(strFile.is_open())
   {
     bool fileReadSuccessfully = true;
@@ -328,20 +328,19 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
     } // end for
 
     // We're expecting the CELL line
-    foundCell = false;
+    bool finishedCell = false;
     for(; // The previous for statement will have called one last getline
-      !foundCell && strFile.good();
+      !finishedCell && strFile.good();
       getline(strFile, line))
     {
       Tok toker(line, sep);
       Tok::iterator tokIt = toker.begin();
       if(*tokIt == "CELL")
       {
-        foundCell = true;
+        finishedCell = true;
 
         // Move the token on
         bool hasMore = ++tokIt != toker.end();
-
         if(hasMore)
         {
           // Set up the cell parameters
@@ -366,9 +365,11 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
           foundParams = foundParams && i == 6;
 
           str->setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
-        } // end if(hasMore)
-      } // end if(*tokIt == "CELL")
-    } // while !foundCell
+        } // if(hasMore)
+      } // if(*tokIt == "CELL")
+      else if(!tokIt->empty()) // There is another token, but it's not the cell
+        finishedCell = true; 
+    } // while !finishedCell
 
 
     // Look for SFAC line
@@ -458,7 +459,7 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
   } // end if(strFile.is_open())
 
 
-  if(!foundTitle || !foundCell || !foundSfac)
+  if(!foundTitle || !foundSfac)
     str.reset();
 
   return str;

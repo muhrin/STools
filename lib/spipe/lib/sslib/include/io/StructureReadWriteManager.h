@@ -17,6 +17,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/range/iterator_range.hpp>
 
 #include "common/Types.h"
 #include "io/IStructureReader.h"
@@ -40,10 +41,36 @@ namespace io {
 
 class StructureReadWriteManager : ::boost::noncopyable
 {
+  typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
+  typedef ::std::map< ::std::string, IStructureReader *> ReadersMap;
 public:
 
   typedef UniquePtr<IStructureWriter>::Type WriterPtr;
   typedef UniquePtr<IStructureReader>::Type ReaderPtr;
+  typedef WritersMap::iterator WritersIterator;
+  typedef WritersMap::const_iterator WritersConstIterator;
+  typedef ReadersMap::iterator ReadersIterator;
+  typedef ReadersMap::const_iterator ReadersConstIterator;
+  typedef ::boost::iterator_range<WritersIterator> WritersRange;
+  typedef ::boost::iterator_range<WritersConstIterator> WritersConstRange;
+  typedef ::boost::iterator_range<ReadersIterator> ReadersRange;
+  typedef ::boost::iterator_range<ReadersConstIterator> ReadersConstRange;
+
+  WritersIterator beginWriters();
+  WritersConstIterator beginWriters() const;
+  WritersIterator endWriters();
+  WritersConstIterator endWriters() const;
+  WritersRange writers();
+  WritersConstRange writers() const;
+  size_t numWriters() const;
+
+  ReadersIterator beginReaders();
+  ReadersConstIterator beginReaders() const;
+  ReadersIterator endReaders();
+  ReadersConstIterator endReaders() const;
+  ReadersRange readers();
+  ReadersConstRange readers() const;
+  size_t numReaders() const;
 
   template <class ReaderOrWriter>
   ReaderOrWriter & insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) readerOrWriter);
@@ -77,8 +104,6 @@ public:
 
 private:
 
-  typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
-  typedef ::std::map< ::std::string, IStructureReader *> ReadersMap;
   typedef ::boost::ptr_vector<IStructureWriter> WritersStore;
   typedef ::boost::ptr_vector<IStructureReader> ReadersStore;
 

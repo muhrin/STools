@@ -58,6 +58,7 @@ public:
 
   virtual bool multiStructureSupport() const;
 
+
 };
 
 }

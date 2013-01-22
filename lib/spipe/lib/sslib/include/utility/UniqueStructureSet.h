@@ -42,8 +42,8 @@ protected:
 
 public:
 
-  typedef utility::TakeFirst<Key, ComparisonDataHandle> TakeFirst;
-  typedef utility::TakeFirst<const Key, ComparisonDataHandle> TakeFirstConst;
+  typedef utility::TakeFirst<typename StructureMap::value_type> TakeFirst;
+  typedef utility::TakeFirst<const typename StructureMap::value_type> TakeFirstConst;
 
   typedef Key value_type;
   // Iterators ///

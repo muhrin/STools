@@ -33,9 +33,9 @@ public:
   typedef ::std::map< ::std::string, YAML::Node> AtomInfo;
 
   AtomYamlFormatParser();
+  explicit AtomYamlFormatParser(const AtomsFormat & atomsFormat);
   explicit AtomYamlFormatParser(const YAML::Node & formatNode);
-  explicit AtomYamlFormatParser(const AtomsFormat & format);
-
+  
   const AtomsFormat & getFormat() const;
   void setFormat(const AtomsFormat & format);
   bool updateFormat(const YAML::Node & formatNode);

@@ -50,7 +50,7 @@ public:
   /*                CL ( 0.5  1  )
   /* speciesMap(0 => Na, 1 => Cl)
   /**/
-  typedef SimplePairPotentialData::SpeciesList  SpeciesList;
+  typedef SimplePairPotentialData::SpeciesList SpeciesList;
   typedef SimplePairPotentialData DataType;
 
   /**
@@ -68,7 +68,7 @@ public:
     CUSTOM
   };
 
-  static const unsigned int MAX_INTERACTION_VECTORS = 5000;//10000;
+  static const unsigned int MAX_INTERACTION_VECTORS = 5000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
 
 	SimplePairPotential(

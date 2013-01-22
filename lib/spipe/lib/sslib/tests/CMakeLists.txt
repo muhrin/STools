@@ -46,6 +46,13 @@ set(tests_Input_Files__factory
   factory/RandomStructure.sslib
 )
 
+# tests/factory
+
+set(tests_Source_Files__io
+  io/ReaderWriterTest.cpp
+)
+source_group("Source Files\\io" FILES ${tests_Source_Files__io})
+
 ## tests/utility
 
 set(tests_Header_Files__utility
@@ -86,6 +93,7 @@ set(tests_Source_Files
   ${tests_Source_Files__build_cell}
   ${tests_Source_Files__common}
   ${tests_Source_Files__factory}
+  ${tests_Source_Files__io}
   ${tests_Source_Files__utility}
   ${tests_Source_Files__}
 )
