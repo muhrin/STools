@@ -20,8 +20,7 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/DefaultCrystalGenerator.h>
-#include <build_cell/StructureDescription.h>
+#include <build_cell/StructureBuilder.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <factory/FactoryError.h>
 #include <factory/SsLibFactoryYaml.h>
@@ -103,8 +102,6 @@ struct RunConfiguration
   ssc::AtomSpeciesDatabase & speciesDb;
   InputType::Value inputType;
   ::boost::scoped_ptr<sp::SpStartBlock> searchStartBlock;
-
-  ::boost::scoped_ptr<ssbc::StructureDescription> strDesc;
 
   ::boost::scoped_ptr<sp::SpStartBlock> paramSweepBlock;
   bool sweepMode;
@@ -261,8 +258,6 @@ int main(const int argc, char * argv[])
   if(config.stoichSpecies.size() == 2)
   {
     // Do a stoichiometry sweep
-    ssbc::StructureDescriptionPtr strDescPtr;
-
     config.stoichSearchBlock.reset(new sp::blocks::StoichiometrySearch(
       config.stoichSpecies[0],
       config.stoichSpecies[1],
@@ -432,12 +427,12 @@ int parseInput(RunConfiguration & config, const InputOptions & in)
     if(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE])
     {
       config.inputType = InputType::RANDOM_STRUCTURES;
-      ssbc::StructureDescriptionPtr searchDesc = factory.createStructureDescription(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE]);
+      ssbc::IStructureGeneratorPtr generator = factory.createStructureGenerator(loadedNode);
 
       // Random structure
       config.searchStartBlock.reset(new sp::blocks::RandomStructure(
         in.numRandomStructures,
-        searchDesc)
+        generator)
       );
     }
     else if(loadedNode[yaml_kw::SEED_STRUCTURES])

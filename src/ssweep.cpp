@@ -15,8 +15,7 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/DefaultCrystalGenerator.h>
-#include <build_cell/StructureDescription.h>
+#include <build_cell/StructureBuilder.h>
 #include <io/ResReaderWriter.h>
 #include <io/StructureReadWriteManager.h>
 #include <potential/SimplePairPotential.h>
