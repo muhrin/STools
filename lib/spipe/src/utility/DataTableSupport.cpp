@@ -80,7 +80,7 @@ void DataTableSupport::setFilename(const fs::path & filename)
   }
 }
 
-void DataTableSupport::notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunner> & evt)
+void DataTableSupport::notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunnerAccess> & evt)
 {
   if(evt.getNewState() == ::pipelib::PipelineState::RUNNING)
   {
@@ -95,6 +95,12 @@ void DataTableSupport::notify(const ::pipelib::event::PipeRunnerStateChanged<SpR
     if(myClearTableOnPipeFinish)
       myTable.clear();
   }
+}
+
+void DataTableSupport::notify(const ::pipelib::event::PipeRunnerDestroyed<SpRunnerAccess> & evt)
+{
+  if(myRunner == &evt.getRunner())
+    myRunner = NULL;
 }
 
 bool DataTableSupport::createWriter()

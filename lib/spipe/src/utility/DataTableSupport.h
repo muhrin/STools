@@ -48,7 +48,8 @@ public:
   void setFilename(const ::boost::filesystem::path & filename);
 
   // From IPipeListener /////////////////////
-  virtual void notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunner> & evt);
+  virtual void notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunnerAccess> & evt);
+  virtual void notify(const ::pipelib::event::PipeRunnerDestroyed<SpRunnerAccess> & evt);
   // End from IPipeListener /////////////////
 
 private:

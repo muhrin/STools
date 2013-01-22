@@ -19,7 +19,7 @@
 #include <armadillo>
 
 // From SSTbx
-#include <build_cell/StructureDescription.h>
+#include <build_cell/IStructureGenerator.h>
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
@@ -31,12 +31,6 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx {
-namespace build_cell {
-class StructureDescription;
-}
-}
-
 namespace spipe {
 namespace common {
 
@@ -44,7 +38,7 @@ class SharedData
 {
 public:
 
-  typedef ::sstbx::build_cell::StructureDescriptionPtr StructureDescriptionPtr;
+  typedef ::sstbx::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
   static const char DIR_SUBSTRING_DELIMITER[];
 
@@ -78,9 +72,10 @@ public:
   /*/
   const ::boost::filesystem::path & getOutputFileStem() const;
 
-  ::sstbx::build_cell::StructureDescription * getStructureDescription();
-  const ::sstbx::build_cell::StructureDescription * getStructureDescription() const;
-  void setStructureDescription(StructureDescriptionPtr description);
+  ::sstbx::build_cell::IStructureGenerator * getStructureGenerator();
+  const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
+  template <class T>
+  void setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
   ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
   const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
@@ -96,13 +91,18 @@ private:
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
-  StructureDescriptionPtr myStructureDescription;
+  IStructureGeneratorPtr myStructureGenerator;
   ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;
   ::boost::filesystem::path             myOutputFileStem;
 
 };
 
+template <class T>
+void SharedData::setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator)
+{
+  myStructureGenerator = generator;
+}
 
 }
 }

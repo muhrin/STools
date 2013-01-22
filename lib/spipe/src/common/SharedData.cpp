@@ -11,6 +11,7 @@
 #include <pipelib/pipelib.h>
 
 // From SSTbx
+#include <build_cell/IStructureGenerator.h>
 #include <utility/UtilFunctions.h>
 
 #include "common/GlobalData.h"
@@ -74,19 +75,14 @@ const ::boost::filesystem::path & SharedData::getOutputFileStem() const
   return myOutputFileStem;
 }
 
-ssbc::StructureDescription * SharedData::getStructureDescription()
+ssbc::IStructureGenerator * SharedData::getStructureGenerator()
 {
-  return myStructureDescription.get();
+  return myStructureGenerator.get();
 }
 
-const ssbc::StructureDescription * SharedData::getStructureDescription() const
+const ssbc::IStructureGenerator * SharedData::getStructureGenerator() const
 {
-  return myStructureDescription.get();
-}
-
-void SharedData::setStructureDescription(StructureDescriptionPtr description)
-{
-  myStructureDescription = description;
+  return myStructureGenerator.get();
 }
 
 ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
@@ -102,7 +98,7 @@ const ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase() const
 void SharedData::reset()
 {
   // Reset everything
-  myStructureDescription.reset();
+  myStructureGenerator.reset();
   objectsStore.clear();
   dataTable.clear();
   myOutputDir.clear();

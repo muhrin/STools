@@ -19,8 +19,6 @@
 #include <boost/variant.hpp>
 
 // From SSTbx
-#include <build_cell/IStructureGenerator.h>
-#include <build_cell/StructureDescription.h>
 #include <build_cell/Types.h>
 
 #include <pipelib/pipelib.h>
@@ -43,16 +41,16 @@ class RandomStructure : public virtual SpStartBlock, public virtual SpPipeBlock,
 {
 public:
 
-  typedef ::sstbx::build_cell::StructureDescriptionPtr StructureDescriptionPtr;
+  typedef ::sstbx::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
 	RandomStructure(
     const unsigned int numToGenerate,
-    StructureDescriptionPtr structureDescription = StructureDescriptionPtr()
+    IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr()
   );
 
   RandomStructure(
     const float atomsMultiplierGenerate,
-    StructureDescriptionPtr structureDescription = StructureDescriptionPtr()
+    IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr()
   );
 
 
@@ -67,10 +65,9 @@ public:
 private:
   typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
-  const ::sstbx::build_cell::StructureDescription * getStructureDescription() const;
+  const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
 
-  StructureDescriptionPtr myStructureDescription;
-	const StructureGeneratorPtr myStructureGenerator;
+	const IStructureGeneratorPtr myStructureGenerator;
   const bool myFixedNumGenerate;
   const unsigned int myNumToGenerate;
   const float myAtomsMultiplierGenerate;

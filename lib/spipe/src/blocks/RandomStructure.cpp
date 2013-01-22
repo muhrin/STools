@@ -15,8 +15,7 @@
 // From SSTbx
 #include <SSLib.h>
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/ConstStructureDescriptionVisitor.h>
-#include <build_cell/DefaultCrystalGenerator.h>
+#include <build_cell/GenerationOutcome.h>
 #include <build_cell/IStructureGenerator.h>
 #include <common/Constants.h>
 #include <common/Structure.h>
@@ -38,27 +37,25 @@ namespace ssu = ::sstbx::utility;
 
 RandomStructure::RandomStructure(
   const unsigned int numToGenerate,
-  StructureDescriptionPtr structureDescription
+  IStructureGeneratorPtr structureGenerator
 ):
 SpBlock("Generate Random structures"),
 myNumToGenerate(numToGenerate),
 myAtomsMultiplierGenerate(0.0),
 myFixedNumGenerate(true),
-myStructureGenerator(new ssbc::DefaultCrystalGenerator(true /*use extrusion method*/)),
-myStructureDescription(structureDescription)
+myStructureGenerator(structureGenerator)
 {
 }
 
 RandomStructure::RandomStructure(
   const float atomsMultiplierGenerate,
-  StructureDescriptionPtr structureDescription
+  IStructureGeneratorPtr structureGenerator
 ):
 SpBlock("Generate Random structures"),
 myNumToGenerate(0),
 myAtomsMultiplierGenerate(atomsMultiplierGenerate),
 myFixedNumGenerate(false),
-myStructureGenerator(new ssbc::DefaultCrystalGenerator(true /*use extrusion method*/)),
-myStructureDescription(structureDescription)
+myStructureGenerator(structureGenerator)
 {
 }
 
@@ -66,20 +63,21 @@ void RandomStructure::start()
 {
 	using ::spipe::common::StructureData;
 
-  const ssbc::StructureDescription * const strDesc = getStructureDescription();
+  const ssbc::IStructureGenerator * const generator = getStructureGenerator();
 
-  if(strDesc)
+  if(generator)
   {
     unsigned int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
   	
     float totalAtomsGenerated = 0.0;
-
+    ssbc::GenerationOutcome outcome;
     for(size_t i = 0; i < numToGenerate; ++i)
     {
 	    // Create the random structure
-      ssc::StructurePtr str = myStructureGenerator->generateStructure(*myStructureDescription, getRunner()->memory().global().getSpeciesDatabase());
+      ssc::StructurePtr str;
+      outcome = generator->generateStructure(str, getRunner()->memory().global().getSpeciesDatabase());
 
-	    if(str.get())
+	    if(outcome.success() && str.get())
 	    {
         StructureData & data = getRunner()->createData();
 		    data.setStructure(str);
@@ -108,18 +106,20 @@ void RandomStructure::start()
 
 void RandomStructure::in(::spipe::common::StructureData & data)
 {
-  const ssbc::StructureDescription * const strDesc = getStructureDescription();
+  const ssbc::IStructureGenerator * const generator = getStructureGenerator();
 
-  if(!strDesc)
+  if(!generator)
   {
     out(data);
     return;
   }
 
 	// Create the random structure
-  ssc::StructurePtr str = myStructureGenerator->generateStructure(*strDesc, getRunner()->memory().global().getSpeciesDatabase());
+  ssc::StructurePtr str;
+  const ssbc::GenerationOutcome outcome = 
+    generator->generateStructure(str, getRunner()->memory().global().getSpeciesDatabase());
 
-	if(str.get())
+	if(outcome.success() && str.get())
 	{
 		data.setStructure(str);
 
@@ -138,20 +138,20 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		getRunner()->dropData(data);
 }
 
-const ::sstbx::build_cell::StructureDescription *
-RandomStructure::getStructureDescription() const
+const ::sstbx::build_cell::IStructureGenerator *
+RandomStructure::getStructureGenerator() const
 {
-  const ssbc::StructureDescription * strDesc = NULL;
-  if(myStructureDescription.get())
-    strDesc = myStructureDescription.get();
+  const ssbc::IStructureGenerator * generator = NULL;
+  if(myStructureGenerator.get())
+    generator = myStructureGenerator.get();
   else
   {
     // Try finding one in shared memory
     if(getRunner())
-      strDesc = getRunner()->memory().shared().getStructureDescription();
+      generator = getRunner()->memory().shared().getStructureGenerator();
   }
 
-  return strDesc;
+  return generator;
 }
 
 }

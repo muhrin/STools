@@ -29,9 +29,6 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace sstbx {
-namespace build_cell {
-class StructureDescription;
-}
 namespace common {
 class AtomSpeciesDatabase;
 }

@@ -21,8 +21,6 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/StructureDescription.h>
-#include <build_cell/StructureDescriptionVisitor.h>
 #include <common/Structure.h>
 #include <potential/PotentialData.h>
 #include <potential/IGeomOptimiser.h>

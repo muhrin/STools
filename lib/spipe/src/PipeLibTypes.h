@@ -33,8 +33,8 @@ typedef common::GlobalData GlobalDataType;
 // Pipe blocks
 typedef pipelib::Block<StructureDataType, SharedDataType, GlobalDataType>        SpBlock;
 typedef pipelib::Barrier<StructureDataType, SharedDataType, GlobalDataType>      SpBarrier;
-typedef pipelib::FinishedSink<StructureDataType>                               SpFinishedSink;
-typedef SpFinishedSink::PipelineDataPtr                                       SpStructureDataPtr;
+typedef pipelib::FinishedSink<StructureDataType>                                 SpFinishedSink;
+typedef SpFinishedSink::PipelineDataPtr                                          SpStructureDataPtr;
 typedef pipelib::PipeBlock<StructureDataType, SharedDataType, GlobalDataType>    SpPipeBlock;
 typedef pipelib::StartBlock<StructureDataType, SharedDataType, GlobalDataType>   SpStartBlock;
 
@@ -53,7 +53,7 @@ typedef pipelib::MemoryAccess<SharedDataType, GlobalDataType>                   
 typedef pipelib::PipelineDataHandle                                           StructureDataHandle;
 
 // Event
-typedef pipelib::event::PipeRunnerListener<SpRunner>                          SpRunnerListener;
+typedef pipelib::event::PipeRunnerListener<SpRunnerAccess>                          SpRunnerListener;
 }
 
 #endif /* PIPE_LIB_TYPES_H */

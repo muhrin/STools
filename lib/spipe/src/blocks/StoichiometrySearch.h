@@ -20,8 +20,8 @@
 #include <pipelib/pipelib.h>
 
 // From SSTbx
+#include <build_cell/StructureBuilder.h>
 #include <build_cell/RandomUnitCellGenerator.h>
-#include <build_cell/StructureDescription.h>
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesId.h>
 #include <io/BoostFilesystem.h>
@@ -34,6 +34,9 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
+namespace build_cell {
+class AddOnStructureBuilder;
+}
 namespace common {
 class AtomSpeciesDatabase;
 }
@@ -63,25 +66,24 @@ class StoichiometrySearch : public SpStartBlock, public SpFinishedSink,
   ::boost::noncopyable
 {
 public:
-  typedef ::std::vector<SpeciesParameter> SpeciesParamters;
+  typedef ::sstbx::build_cell::StructureBuilderPtr StructureBuilderPtr;
+  typedef ::std::vector<SpeciesParameter> SpeciesParameters;
 
   StoichiometrySearch(
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
     SpStartBlock &        subpipe,
-    ::sstbx::build_cell::StructureDescriptionPtr structureDescription = 
-      ::sstbx::build_cell::StructureDescriptionPtr()
-    );
+    StructureBuilderPtr   structureBuilder = StructureBuilderPtr()
+  );
 
   StoichiometrySearch(
-    const SpeciesParamters & speciesParameters,
+    const SpeciesParameters & speciesParameters,
     const size_t       maxAtoms,
     const double       atomsRadius,
     SpStartBlock &     subpipe,
-    ::sstbx::build_cell::StructureDescriptionPtr structureDescription = 
-      ::sstbx::build_cell::StructureDescriptionPtr()
-    );
+    StructureBuilderPtr structureBuilder = StructureBuilderPtr()
+  );
 
   // From Block ////////
   virtual void pipelineInitialising();
@@ -97,9 +99,7 @@ public:
   // End from IDataSink /////////////////////////
 
 private:
-
   typedef ::spipe::StructureDataType                                        StructureDataTyp;
-  typedef ::boost::shared_ptr< ::sstbx::build_cell::StructureDescription>   StrDescPtr;
   typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter>           TableWriterPtr;
   typedef ::pipelib::PipeRunner<StructureDataTyp, SharedDataType, SharedDataType> RunnerType;
 
@@ -119,7 +119,7 @@ private:
     const ::sstbx::common::AtomSpeciesDatabase & atomsDb
   );
 
-  ::sstbx::build_cell::StructureDescriptionPtr newStructureDescription() const;
+  StructureBuilderPtr newStructureGenerator() const;
 
   SpStartBlock &  mySubpipe;
   SpChildRunnerPtr mySubpipeRunner;
@@ -132,8 +132,8 @@ private:
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataTyp *>		  myBuffer;
 
-  SpeciesParamters                      mySpeciesParameters;
-  ::sstbx::build_cell::StructureDescriptionPtr myStructureDescription;
+  SpeciesParameters                     mySpeciesParameters;
+  StructureBuilderPtr                   myStructureGenerator;
 };
 
 }

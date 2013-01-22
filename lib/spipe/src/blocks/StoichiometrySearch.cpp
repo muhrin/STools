@@ -14,7 +14,10 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/StructureDescription.h>
+#include <build_cell/AtomsGenerator.h>
+#include <build_cell/IFragmentGenerator.h>
+#include <build_cell/IStructureGenerator.h>
+#include <build_cell/StructureBuilder.h>
 #include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
@@ -43,32 +46,32 @@ namespace structure_properties = ssc::structure_properties;
 
 
 StoichiometrySearch::StoichiometrySearch(
-  const ::sstbx::common::AtomSpeciesId::Value  species1,
-  const ::sstbx::common::AtomSpeciesId::Value  species2,
+  const ::sstbx::common::AtomSpeciesId::Value species1,
+  const ::sstbx::common::AtomSpeciesId::Value species2,
   const size_t maxAtoms,
   SpStartBlock & subpipe,
-  ssbc::StructureDescriptionPtr structureDescription):
+  StructureBuilderPtr structureBuilder):
 SpBlock("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
 mySubpipe(subpipe),
-myStructureDescription(structureDescription)
+myStructureGenerator(structureBuilder)
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
   mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
 }
 
 StoichiometrySearch::StoichiometrySearch(
-  const SpeciesParamters & speciesParameters,
-  const size_t       maxAtoms,
-  const double       atomsRadius,
-  SpStartBlock &   sweepPipe,
-  ssbc::StructureDescriptionPtr structureDescription):
+  const SpeciesParameters & speciesParameters,
+  const size_t maxAtoms,
+  const double atomsRadius,
+  SpStartBlock & sweepPipe,
+  StructureBuilderPtr structureBuilder):
 SpBlock("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
 myMaxAtoms(maxAtoms),
 mySubpipe(sweepPipe),
 myTableSupport(fs::path("stoich.dat")),
-myStructureDescription(structureDescription)
+myStructureGenerator(structureBuilder)
 {}
 
 void StoichiometrySearch::pipelineInitialising()
@@ -107,7 +110,7 @@ void StoichiometrySearch::start()
       continue;
 
     // Create a new structure description
-    ssbc::StructureDescriptionPtr structureDescription = newStructureDescription();
+    StructureBuilderPtr builder = newStructureGenerator();
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
@@ -122,9 +125,9 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        structureDescription->addChild(ssbc::AtomsDescriptionPtr(
-          new ::sstbx::build_cell::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies)
-        ));
+        ssbc::AtomsGeneratorPtr atomsGenerator(new ssbc::AtomsGenerator());
+        atomsGenerator->addAtoms(ssbc::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies));
+        builder->addGenerator(atomsGenerator);
       }
 
       stoichStringStream << numAtomsOfSpecies;
@@ -141,7 +144,7 @@ void StoichiometrySearch::start()
     } // End loop over atoms
 
     // Transfer ownership to the pipeline
-    sweepPipeData.setStructureDescription(structureDescription);
+    sweepPipeData.setStructureGenerator(builder);
 
     // Append the species ratios to the output directory name
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
@@ -269,15 +272,13 @@ void StoichiometrySearch::updateTable(
   } // End loop over atoms
 }
 
-::sstbx::build_cell::StructureDescriptionPtr
-StoichiometrySearch::newStructureDescription() const
+StoichiometrySearch::StructureBuilderPtr
+StoichiometrySearch::newStructureGenerator() const
 {
-  // Can't copy for now - no support!
-  //// Either make a copy of the description we've been given or generate a new blank description
-  //if(myStructureDescription.get())
-  //  return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription(*myStructureDescription));
-  //else
-    return ssbc::StructureDescriptionPtr(new ssbc::StructureDescription());
+  if(myStructureGenerator.get())
+    return StructureBuilderPtr(new ssbc::StructureBuilder(*myStructureGenerator));
+  else
+    return StructureBuilderPtr(new ssbc::StructureBuilder());
 }
 
 }

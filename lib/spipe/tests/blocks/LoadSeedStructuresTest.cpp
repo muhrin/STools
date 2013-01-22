@@ -26,13 +26,13 @@ namespace blocks = ::spipe::blocks;
 
 class StructureSink : public ::spipe::SpFinishedSink
 {
+  typedef ::spipe::SpFinishedSink::PipelineDataPtr StructureDataPtr;
 public:
+
   StructureSink():myNumReceived(0) {}
 
-  void in(spipe::StructureDataType * const data)
-  {
-    ++myNumReceived;
-  }
+  void finished(StructureDataPtr data)
+  { ++myNumReceived; }
 
   unsigned int getNumReceived()
   { return myNumReceived; }
@@ -43,21 +43,20 @@ private:
 
 BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
 {
-  //TODO: port to new api
-/*  typedef ::pipelib::SingleThreadedEngine Engine;
+  typedef spipe::SpSingleThreadedEngine Engine;
+  typedef Engine::RunnerPtr RunnerPtr;
+
   ssc::AtomSpeciesDatabase db;
   StructureSink sink;
 
   blocks::LoadSeedStructures load(db, "structures/*.res");
 
-  pipe.setStartBlock(load);
-
   Engine engine;
-  SpPipeRunner runner = engine.create
-  pipe.setFinishedDataSink(sink);
-  pipe.initialise();
-  pipe.start();
+  RunnerPtr runner = engine.createRunner();
 
-  BOOST_REQUIRE(sink.getNumReceived() == 10);*/
+  runner->setFinishedDataSink(&sink);
+  runner->run(load);
+
+  BOOST_REQUIRE(sink.getNumReceived() == 10);
 }
 
