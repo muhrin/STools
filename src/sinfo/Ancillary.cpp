@@ -61,7 +61,7 @@ Result::Value
 processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap)
 {
   const ::std::string exeName(argv[0]);
-  ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, ::boost::filesystem3::current_path().string());
+  ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, fs::current_path().string());
 
   ::std::stringstream tokensDescription;
   BOOST_FOREACH(const TokensMap::const_reference token, tokensMap)
