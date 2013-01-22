@@ -104,7 +104,7 @@ bool AtomYamlFormatParser::parse(AtomInfo & atomInfo, const YAML::Node & atomNod
 YAML::Node AtomYamlFormatParser::generateNode(const AtomInfo & atomInfo) const
 {
   typedef utility::TakeFirst<const FormatEntry> TakeFirst;
-  typedef boost::transform_iterator<TakeFirst, typename AtomsFormat::const_iterator> iterator;
+  typedef boost::transform_iterator<TakeFirst, AtomsFormat::const_iterator> iterator;
   typedef ::std::set< ::std::string> EntriesSet;
 
   // First check if we can use the compact format or not

@@ -32,7 +32,7 @@ template <typename T, typename Reference>
 class TakeFirstDereferenced : public ::std::unary_function< T &, Reference>
 {
 public:
-  typename Reference operator() (T & pair) const
+  Reference operator() (T & pair) const
   { return *pair.first; }
 };
 
@@ -51,7 +51,7 @@ template <typename T, typename Reference>
 class TakeSecondDereferenced : public ::std::unary_function< T &, Reference>
 {
 public:
-  typename Reference operator() (T & pair) const
+  Reference operator() (T & pair) const
   { return *pair.second; }
 };
 

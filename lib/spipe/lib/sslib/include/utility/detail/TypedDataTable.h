@@ -116,12 +116,11 @@ template <typename T>
 void TypedDataTable<Key>::getAscending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const
 {
   typedef detail::ColumnComparator<T, Key> Comparator;
-  typedef ::boost::indirect_iterator<SortedKeys::iterator> IndirectIterator;
 
   // Empty the container and copy all the current keys
   sortedKeys.clear();
   sortedKeys.reserve(myTable.size());
-  SortedKeys::iterator insertPoint = sortedKeys.end();
+  typename SortedKeys::iterator insertPoint = sortedKeys.end();
   BOOST_FOREACH(const typename Table::value_type & entry, myTable)
   {
     if(get(entry.first, column))

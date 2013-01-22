@@ -526,7 +526,10 @@ SsLibFactoryYaml::createStructureBuilder(const YAML::Node & node) const
 
   // Unit cell
   if(node[kw::RANDOM_CELL])
-    builder->setUnitCellGenerator(createRandomCellGenerator(node[kw::RANDOM_CELL]));
+  {
+    build_cell::IUnitCellGeneratorPtr ucGen(createRandomCellGenerator(node[kw::RANDOM_CELL]));
+    builder->setUnitCellGenerator(ucGen);
+  }
 
   return builder;
 }
