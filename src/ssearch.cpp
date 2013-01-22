@@ -442,7 +442,6 @@ int parseInput(RunConfiguration & config, const InputOptions & in)
 
       // Seed structures
       config.searchStartBlock.reset(new sp::blocks::LoadSeedStructures(
-        config.speciesDb,
         seedStructures,
         false)
       );

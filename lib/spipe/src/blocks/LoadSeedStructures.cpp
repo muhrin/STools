@@ -18,6 +18,7 @@
 #include <common/Constants.h>
 #include <common/Structure.h>
 #include <io/IoFunctions.h>
+#include <io/ResourceLocator.h>
 #include <utility/UtilFunctions.h>
 
 // Local includes
@@ -40,20 +41,23 @@ namespace ssu = ::sstbx::utility;
 const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
 
 LoadSeedStructures::LoadSeedStructures(
-  const ssc::AtomSpeciesDatabase & atomSpeciesDb,
   const ::std::string & seedStructures,
   const bool tryToScaleVolumes):
 SpBlock("Load seed structures"),
-mySpeciesDb(atomSpeciesDb),
+mySeedStructuresString(seedStructures),
 myTryToScaleVolumes(tryToScaleVolumes)
+{}
+
+void LoadSeedStructures::pipelineInitialising()
 {
+  myStructures.clear();
+
   // First of all split the string up
   ::std::string entry;
-  std::stringstream stream(seedStructures);
+  std::stringstream stream(mySeedStructuresString);
   while(getline(stream, entry))
     processEntry(entry);
 }
-
 
 void LoadSeedStructures::start()
 {
@@ -88,10 +92,12 @@ int LoadSeedStructures::processEntry(const ::std::string & entry)
 {
   const EntryType type = entryType(entry);
 
-  if(type == FILE_PATH)
-    return processFilePath(fs::path(entry));
-  else if(type == FOLDER_PATH)
-    return processFolderPath(fs::path(entry));
+  if(type == FILE_PATH || type == FOLDER_PATH)
+  {
+    ssio::ResourceLocator loc;
+    loc.set(entry);
+    return processFileOrFolder(loc);
+  }
   else if(type == WILDCARD_PATH)
     return processWildcardEntry(entry);
 
@@ -110,38 +116,24 @@ int LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
   BOOST_FOREACH(const fs::path & entryPath, entryPaths)
   {
     if(fs::is_regular_file(entryPath))
-      numOut += processFilePath(entryPath);
+      numOut += processFileOrFolder(entryPath);
   }
 
   return numOut;
 }
 
-int LoadSeedStructures::processFilePath(const boost::filesystem::path & entryPath)
+int LoadSeedStructures::processFileOrFolder(const ::sstbx::io::ResourceLocator & loc)
 {
   // Try loading the file
-  const size_t numLoaded = myReader.readStructures(myStructures, entryPath, mySpeciesDb);
-  if(numLoaded > 0)
-    return (int)numLoaded;
-
-  return -1;
-}
-
-int LoadSeedStructures::processFolderPath(const boost::filesystem::path & entryPath)
-{
-  ::std::vector<fs::path> entryPaths;
-
-  if(!ssio::getWildcardPaths(".*\\.res", entryPaths, fs::current_path()))
+  const size_t numLoaded = getRunner()->memory().global().getStructureIo().readStructures(
+    myStructures,
+    loc,
+    getRunner()->memory().global().getSpeciesDatabase()
+  );
+  if(numLoaded == 0)
     return -1;
 
-  int numOut = 0;
-
-  BOOST_FOREACH(const fs::path & entryPath, entryPaths)
-  {
-    if(fs::is_regular_file(entryPath))
-      numOut += processFilePath(entryPath);
-  }
-
-  return numOut;
+  return static_cast<int>(numLoaded);
 }
 
 LoadSeedStructures::EntryType
@@ -150,12 +142,15 @@ LoadSeedStructures::entryType(const ::std::string & entry) const
   if(entry.find('*') != ::std::string::npos)
     return WILDCARD_PATH;
 
-  const fs::path entryPath(entry);
-  if(fs::exists(entryPath))
+  ssio::ResourceLocator entryLocator;
+  if(!entryLocator.set(entry))
+    return UNKNOWN;
+
+  if(fs::exists(entryLocator.path()))
   {
-    if(fs::is_regular_file(entryPath))
+    if(fs::is_regular_file(entryLocator.path()))
       return FILE_PATH;
-    else if(fs::is_directory(entryPath))
+    else if(fs::is_directory(entryLocator.path()))
       return FOLDER_PATH;
   }
 
@@ -172,9 +167,10 @@ double LoadSeedStructures::getTotalAtomicVolume(
 
   OptionalDouble radius;
   double dRadius, volume = 0.0;
+  const ssc::AtomSpeciesDatabase & speciesDb = getRunner()->memory().global().getSpeciesDatabase();
   BOOST_FOREACH(ssc::AtomSpeciesId::Value spec, species)
   {
-    radius = mySpeciesDb.getRadius(spec);
+    radius = speciesDb.getRadius(spec);
     if(radius)
     {
       dRadius = *radius;
@@ -182,7 +178,7 @@ double LoadSeedStructures::getTotalAtomicVolume(
     }
   }
 
-  volume *= (4.0 / 3.0) * ssc::constants::PI;
+  volume *= ssc::constants::FOUR_THIRDS * ssc::constants::PI;
   return volume;
 }
 

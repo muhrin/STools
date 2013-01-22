@@ -46,10 +46,9 @@ BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
   typedef spipe::SpSingleThreadedEngine Engine;
   typedef Engine::RunnerPtr RunnerPtr;
 
-  ssc::AtomSpeciesDatabase db;
   StructureSink sink;
 
-  blocks::LoadSeedStructures load(db, "structures/*.res");
+  blocks::LoadSeedStructures load("structures/*.res");
 
   Engine engine;
   RunnerPtr runner = engine.createRunner();

@@ -31,6 +31,9 @@ namespace common {
 class AtomSpeciesDatabase;
 class Structure;
 }
+namespace io {
+class ResourceLocator;
+}
 }
 
 namespace spipe {
@@ -51,11 +54,11 @@ public:
   /*
   /**/
   LoadSeedStructures(
-    const sstbx::common::AtomSpeciesDatabase & atomSpeciesDb,
     const ::std::string & seedStructures,
     const bool tryToScaleVolumes = true);
 
   // From StartBlock ///
+  virtual void pipelineInitialising();
 	virtual void start();
   // End from StartBlock
 
@@ -68,15 +71,13 @@ private:
 
   int processEntry(const ::std::string & entry);
   int processWildcardEntry(const ::std::string & entry);
-  int processFilePath(const boost::filesystem::path & entryPath);
-  int processFolderPath(const boost::filesystem::path & entryPath);
+  int processFileOrFolder(const ::sstbx::io::ResourceLocator & loc);
   EntryType entryType(const ::std::string & entry) const;
 
   double getTotalAtomicVolume(const ::sstbx::common::Structure & structure) const;
 
-  sstbx::io::ResReaderWriter  myReader;
+  const ::std::string         mySeedStructuresString;
   StructuresContainer         myStructures;
-  const ::sstbx::common::AtomSpeciesDatabase & mySpeciesDb;
   const bool                  myTryToScaleVolumes;
 };
 
