@@ -21,14 +21,16 @@
 #include "utility/IndexAdapters.h"
 #include "utility/MapEx.h"
 
-// FORWARD DECLARATIONS ////////////////////////////////////
+
 namespace sstbx {
+// FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
 class Structure;
 }
+namespace math {
+class RunningStats;
 }
 
-namespace sstbx {
 namespace utility {
 
 class SortedDistanceComparisonData
@@ -98,13 +100,22 @@ private:
 	static const size_t MAX_CELL_MULTIPLES;
 
   void calcProperties(
+    math::RunningStats & deltaStats,
     const DistancesVec & dist1,
     const StridedIndexAdapter<size_t> & adapt1,
     const DistancesVec & dist2,
-    const StridedIndexAdapter<size_t> & adapt2,
-    double & sqSum,
-    double & max,
-    unsigned int & runningComparedTotal) const;
+    const StridedIndexAdapter<size_t> & adapt2
+  ) const;
+
+  //void calcProperties(
+  //  math::RunningStats & deltaStats,
+  //  math::RunningStats & productStats,
+  //  math::RunningStats & dist2Stats,
+  //  const DistancesVec & dist1,
+  //  const StridedIndexAdapter<size_t> & adapt1,
+  //  const DistancesVec & dist2,
+  //  const StridedIndexAdapter<size_t> & adapt2
+  //) const;
 
   const bool myScaleVolumes;
   const bool myUsePrimitive;

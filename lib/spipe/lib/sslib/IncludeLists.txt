@@ -88,6 +88,8 @@ set(sslib_Header_Files__factory
 )
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
 
+## io
+
 set(sslib_Header_Files__io
   include/io/AtomYamlFormatParser.h
   include/io/BoostFilesystem.h
@@ -107,6 +109,14 @@ set(sslib_Header_Files__io__detail
   include/io/detail/StructureReadWriteManager.h
 )
 source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
+
+## math
+set(sslib_Header_Files__math
+  include/math/RunningStats.h
+)
+source_group("Header Files\\math" FILES ${sslib_Header_Files__math})
+
+## potential
 
 set(sslib_Header_Files__potential
   include/potential/FixedLatticeShapeConstraint.h
@@ -192,6 +202,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__factory}
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__io__detail}
+  ${sslib_Header_Files__math}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
   ${sslib_Header_Files__utility__detail}

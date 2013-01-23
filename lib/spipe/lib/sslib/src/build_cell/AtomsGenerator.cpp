@@ -12,7 +12,6 @@
 #include <boost/foreach.hpp>
 
 #include "build_cell/AtomsDescription.h"
-#include "build_cell/AtomExtruder.h"
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/StructureBuild.h"
 #include "build_cell/StructureContents.h"
@@ -106,8 +105,7 @@ AtomsGenerator::generateFragment(
     }
   }
 
-  AtomExtruder extruder;
-  if(extruder.extrudeAtoms(structure, build.getFixedSet()))
+  if(build.extrudeAtoms())
     outcome.setSuccess();
   else
     outcome.setFailure("Failed to extrude atoms, maybe the volume is too small.");

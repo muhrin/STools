@@ -18,6 +18,7 @@
 #include "common/DistanceCalculator.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
+#include "math/RunningStats.h"
 #include "utility/GenericBufferedComparator.h"
 #include "utility/Math.h"
 
@@ -172,9 +173,7 @@ double SortedDistanceComparator::compareStructures(
   IndexAdapter adapt1(leastCommonMultiple / dist1.numAtoms);
   IndexAdapter adapt2(leastCommonMultiple / dist2.numAtoms);
 
-  double max = ::std::numeric_limits<double>::min();
-  double sqSum = 0.0;
-  unsigned int totalCompared = 0;
+  ::sstbx::math::RunningStats stats;
   common::AtomSpeciesId::Value specI, specJ;
   for(size_t i = 0; i < numSpecies - 1; ++i)
   {
@@ -186,12 +185,11 @@ double SortedDistanceComparator::compareStructures(
     for(size_t j = i; j < numSpecies; ++j)
     {
       specJ = dist1.species[j];
-      calcProperties(*distMapI1(specJ), adapt1, *distMapI2(specJ), adapt2, sqSum, max, totalCompared);
+      calcProperties(stats, *distMapI1(specJ), adapt1, *distMapI2(specJ), adapt2);
     }
   }
 
-  return sqrt(sqSum / totalCompared);
-  //return max;
+  return stats.rms();
 }
 
 bool SortedDistanceComparator::areSimilar(
@@ -215,17 +213,15 @@ SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure 
 }
 
 void SortedDistanceComparator::calcProperties(
+  ::sstbx::math::RunningStats & stats,
   const SortedDistanceComparator::DistancesVec & dist1,
   const StridedIndexAdapter<size_t> & adapt1,
   const SortedDistanceComparator::DistancesVec & dist2,
-  const StridedIndexAdapter<size_t> & adapt2,
-  double & sqSum,
-  double & max,
-  unsigned int & runningComparedTotal) const
+  const StridedIndexAdapter<size_t> & adapt2) const
 {
   const size_t maxIdx = ::std::min(adapt1.inv(dist1.size()), adapt2.inv(dist2.size()));
 
-  double d1, d2, sum, delta;
+  double d1, d2, sum;
   for(size_t i = 0; i < maxIdx; ++i)
   {
     d1 = dist1[adapt1(i)];
@@ -236,12 +232,42 @@ void SortedDistanceComparator::calcProperties(
       std::cout << "Diff is: " << std::abs(d1 - d2) << std::endl;
 #endif
     sum = d1 + d2;
-    delta = sum > 0 ? std::abs(d1 - d2) / sum : 0;
-    max   = std::max(max, delta);
-    sqSum   += delta * delta;
+    if(sum > 0.0)
+      stats.insert(2.0 * ::std::abs(d1 - d2) / sum);
   }
-  runningComparedTotal += maxIdx;
 }
+
+//void SortedDistanceComparator::calcProperties(
+//  math::RunningStats & deltaStats,
+//  math::RunningStats & productStats,
+//  math::RunningStats & dist2Stats,
+//  const DistancesVec & dist1,
+//  const StridedIndexAdapter<size_t> & adapt1,
+//  const DistancesVec & dist2,
+//  const StridedIndexAdapter<size_t> & adapt2
+//) const
+//{
+//  const size_t maxIdx = ::std::min(adapt1.inv(dist1.size()), adapt2.inv(dist2.size()));
+//
+//  double d1, d2, sum, product;
+//  for(size_t i = 0; i < maxIdx; ++i)
+//  {
+//    d1 = dist1[adapt1(i)];
+//    d2 = dist2[adapt2(i)];
+//
+//#if SORTED_DIST_COMP_DEBUG
+//    if(std::abs(d1 - d2) > 1e-5)
+//      std::cout << "Diff is: " << std::abs(d1 - d2) << std::endl;
+//#endif
+//    sum = d1 + d2;
+//    if(sum > 0.0)
+//    {
+//      deltaStats.insert(::std::abs(d1 - d2) / sum);
+//      productStats.insert(d1 * d2);
+//
+//    }
+//  }
+//}
 
 }
 }

@@ -125,5 +125,10 @@ StructureBuild::FixedSet StructureBuild::getFixedSet() const
   return fixedSet;
 }
 
+bool StructureBuild::extrudeAtoms()
+{
+  return myAtomsExtruder.extrudeAtoms(myStructure, getFixedSet());
+}
+
 }
 }

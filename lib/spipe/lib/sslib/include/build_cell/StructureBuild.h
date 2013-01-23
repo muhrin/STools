@@ -15,6 +15,7 @@
 #include <set>
 
 #include "build_cell/BuildAtomInfo.h"
+#include "build_cell/AtomExtruder.h"
 
 namespace sstbx {
 namespace common {
@@ -64,6 +65,8 @@ public:
 
   FixedSet getFixedSet() const;
 
+  bool extrudeAtoms();
+
 private:
 
   typedef ::std::map<common::Atom *, BuildAtomInfo> AtomInfoMap;
@@ -72,7 +75,7 @@ private:
   const StructureContents & myIntendedContents;
   AtomInfoMap myAtomsInfo;
   double myClusterRadius;
-
+  AtomExtruder myAtomsExtruder;
 };
 
 }

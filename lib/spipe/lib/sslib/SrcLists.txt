@@ -1,4 +1,4 @@
-# analysis
+## analysis
 
 set(sslib_Source_Files__analysis
   src/analysis/SpaceGroup.cpp
@@ -6,7 +6,7 @@ set(sslib_Source_Files__analysis
 )
 source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
 
-# build_cell
+## build_cell
 
 set(sslib_Source_Files__build_cell
   src/build_cell/AbstractConstraintDescription.cpp
@@ -22,6 +22,8 @@ set(sslib_Source_Files__build_cell
   src/build_cell/StructureConstraintDescription.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
+
+## common
 
 set(sslib_Source_Files__common
   src/common/Atom.cpp
@@ -41,6 +43,8 @@ set(sslib_Source_Files__common
   src/common/Utils.cpp
 )
 source_group("Source Files\\common" FILES ${sslib_Source_Files__common})
+
+## common/event
 
 set(sslib_Source_Files__common__event
 )
@@ -63,6 +67,8 @@ set(sslib_Source_Files__factory
 )
 source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 
+## io
+
 set(sslib_Source_Files__io
   src/io/AtomYamlFormatParser.cpp
   src/io/BoostFilesystem.cpp
@@ -74,6 +80,15 @@ set(sslib_Source_Files__io
   src/io/IoFunctions.cpp
 )
 source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
+
+## math
+
+set(sslib_Source_Files__math
+  src/math/RunningStats.cpp
+)
+source_group("Source Files\\math" FILES ${sslib_Source_Files__math})
+
+## potential
 
 set(sslib_Source_Files__potential
   src/potential/FixedLatticeShapeConstraint.cpp
@@ -109,6 +124,7 @@ set(sslib_Source_Files
   ${sslib_Source_Files__common__event}
   ${sslib_Source_Files__factory}
   ${sslib_Source_Files__io}
+  ${sslib_Source_Files__math}
   ${sslib_Source_Files__potential}
   ${sslib_Source_Files__utility}
   ${sslib_Source_Files__}
