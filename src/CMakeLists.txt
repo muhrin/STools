@@ -284,7 +284,7 @@ target_link_libraries(ssweep
   
 ## Installation #####
 
-INSTALL(TARGETS sconvert sdiff sinfo ssearch ssweep
+INSTALL(TARGETS sconvert sdiff sinfo ssearch ssweep smeasure
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
