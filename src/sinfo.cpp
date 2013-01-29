@@ -14,15 +14,17 @@
 #include <common/Types.h>
 #include <common/UnitCell.h>
 #include <io/ResourceLocator.h>
+#include <io/StructureReadWriteManager.h>
 
 // From StructurePipe
-#include <io/StructureReadWriteManager.h>
 #include <utility/PipeDataInitialisation.h>
+
+// stools_common 
+#include <utility/CustomTokens.h>
 
 // My includes //
 #include "sinfo/Ancillary.h"
 #include "sinfo/DataGatherer.h"
-#include "utility/CustomTokens.h"
 
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;

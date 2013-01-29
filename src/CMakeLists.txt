@@ -45,6 +45,19 @@ set(stools_Files
   ${stools_Header_Files__utility__detail}
 )
 
+add_library(stools_common
+  ${stools_Files}
+)
+
+add_dependencies(stools_common sslib spipe)
+
+# Libraries we need to link to
+target_link_libraries(stools_common
+  ${Boost_LIBRARIES}
+  sslib
+  spipe
+)
+
 ##############################################
 ## sconvert: Convert structure file formats ##
 ##############################################
@@ -58,23 +71,47 @@ set(stools_Source_Files__sconvert
 source_group("Source Files" FILES ${stools_Source_Files__sconvert})
 
 set(stools_Files__sconvert
-  ${stools_Files}
   ${stools_Header_Files__sconvert}
   ${stools_Source_Files__sconvert}
 )
 
 add_executable(sconvert
-  ${stools_Files}
   ${stools_Files__sconvert}
 )
 
-add_dependencies(sconvert sslib spipe)
+add_dependencies(sconvert stools_common)
 
 # Libraries we need to link to
 target_link_libraries(sconvert
-  ${Boost_LIBRARIES}
-  sslib
-  spipe
+  stools_common
+)
+
+#############################################
+## sdiff: Structural difference calculator ##
+#############################################
+set(stools_Header_Files__sdiff
+)
+source_group("Header Files" FILES ${stools_Header_Files__sdiff})
+
+set(stools_Source_Files__sdiff
+  sdiff.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__sdiff})
+
+set(stools_Files__sdiff
+  ${stools_Header_Files__sdiff}
+  ${stools_Source_Files__sdiff}
+)
+
+add_executable(sdiff
+  ${stools_Files__sdiff}
+)
+
+add_dependencies(sdiff stools_common)
+
+# Libraries we need to link to
+target_link_libraries(sdiff
+  stools_common
 )
 
 
@@ -96,17 +133,14 @@ set(stools_Files__sgroup
 )
 
 add_executable(sgroup
-  ${stools_Files}
   ${stools_Files__sgroup}
 )
 
-add_dependencies(sgroup sslib)
+add_dependencies(sgroup stools_common)
 
 # Libraries we need to link to
 target_link_libraries(sgroup
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  sslib
+  stools_common
 )
 
 ########################################
@@ -126,26 +160,50 @@ set(stools_Source_Files__sinfo
 source_group("Source Files\\sinfo" FILES ${stools_Source_Files__sinfo})
 
 set(stools_Files__sinfo
-  ${stools_Files}
   ${stools_Header_Files__sinfo}
   ${stools_Source_Files__sinfo}
   sinfo.cpp
 )
 
 add_executable(sinfo
-  ${stools_Files}
   ${stools_Files__sinfo}
 )
 
-add_dependencies(sinfo sslib spipe)
+add_dependencies(sinfo stools_common)
 
 # Libraries we need to link to
 target_link_libraries(sinfo
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  sslib
-  spipe
+  stools_common
 )
+
+############################################
+## smeasure: Structural measurements tool ##
+############################################
+set(stools_Header_Files__smeasure
+)
+source_group("Header Files" FILES ${stools_Header_Files__smeasure})
+
+set(stools_Source_Files__smeasure
+  smeasure.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__smeasure})
+
+set(stools_Files__smeasure
+  ${stools_Header_Files__smeasure}
+  ${stools_Source_Files__smeasure}
+)
+
+add_executable(smeasure
+  ${stools_Files__smeasure}
+)
+
+add_dependencies(smeasure stools_common)
+
+# Libraries we need to link to
+target_link_libraries(smeasure
+  stools_common
+)
+
 
 #######################################
 ## ssearch: General structure search ##
@@ -161,24 +219,19 @@ set(stools_Source_Files__ssearch
 source_group("Source Files" FILES ${stools_Source_Files__ssearch})
 
 set(stools_Files__ssearch
-  ${stools_Files}
   ${stools_Header_Files__ssearch}
   ${stools_Source_Files__ssearch}
 )
 
 add_executable(ssearch
-  ${stools_Files}
   ${stools_Files__ssearch}
 )
 
-add_dependencies(ssearch spipe)
+add_dependencies(ssearch stools_common)
 
 # Libraries we need to link to
 target_link_libraries(ssearch
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  spipe
+  stools_common
 )
 
 ###############################################
@@ -195,58 +248,19 @@ set(stools_Source_Files__ssweep
 source_group("Source Files" FILES ${stools_Source_Files__ssweep})
 
 set(stools_Files__ssweep
-  ${stools_Files}
   ${stools_Header_Files__ssweep}
   ${stools_Source_Files__ssweep}
 )
 
 add_executable(ssweep
-  ${stools_Files}
   ${stools_Files__ssweep}
 )
 
-add_dependencies(ssweep spipe)
+add_dependencies(ssweep stools_common)
 
 # Libraries we need to link to
 target_link_libraries(ssweep
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  spipe
-)
-
-
-#############################################
-## sdiff: Structural difference calculator ##
-#############################################
-set(stools_Header_Files__sdiff
-)
-source_group("Header Files" FILES ${stools_Header_Files__sdiff})
-
-set(stools_Source_Files__sdiff
-  sdiff.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__sdiff})
-
-set(stools_Files__sdiff
-  ${stools_Files}
-  ${stools_Header_Files__sdiff}
-  ${stools_Source_Files__sdiff}
-)
-
-add_executable(sdiff
-  ${stools_Files}
-  ${stools_Files__sdiff}
-)
-
-add_dependencies(sdiff spipe)
-
-# Libraries we need to link to
-target_link_libraries(sdiff
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  ${SPGLIB_LIBRARIES}
-  spipe
+  stools_common
 )
 
 

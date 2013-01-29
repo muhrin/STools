@@ -21,17 +21,16 @@
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 
-// Local includes
-#include "utility/CustomTokens.h"
-#include "utility/InfoToken.h"
-#include "utility/StringParsing.h"
-#include "utility/TerminalFunctions.h"
-
-// NAMESPACES ////////////////////////////////
+// stools_common includes
+#include <utility/CustomTokens.h>
+#include <utility/InfoToken.h>
+#include <utility/StringParsing.h>
+#include <utility/TerminalFunctions.h>
 
 namespace stools {
 namespace sinfo {
 
+// NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
 namespace ssc = ::sstbx::common;
