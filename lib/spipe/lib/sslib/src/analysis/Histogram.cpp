@@ -76,7 +76,7 @@ void Histogram::print(::std::ostream & os) const
   {
     for(size_t col = 0; col < numBins; ++col)
     {
-      if(myBins[col] > row)
+      if(myBins[col] >= row)
         ::std::cout << "*";
       else
         ::std::cout << " ";
