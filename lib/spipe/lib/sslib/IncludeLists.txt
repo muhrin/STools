@@ -2,6 +2,7 @@
 ## analysis
 
 set(sslib_Header_Files__analysis
+  include/analysis/Histogram.h
   include/analysis/SpaceGroup.h
   include/analysis/VoronoiMap.h
 )
