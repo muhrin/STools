@@ -86,8 +86,8 @@ template <class ReaderOrWriter>
 ReaderOrWriter & StructureReadWriteManager::insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) readerOrWriter)
 {
   return detail::DoInsert<ReaderOrWriter,
-    ::boost::is_convertible<ReaderOrWriter *, IStructureReader *>::value,
-    ::boost::is_convertible<ReaderOrWriter *, IStructureWriter *>::value >::insert(*this, readerOrWriter);
+    ::boost::is_base_of<IStructureReader, ReaderOrWriter>::value,
+    ::boost::is_base_of<IStructureWriter, ReaderOrWriter>::value >::insert(*this, readerOrWriter);
 }
 
 }
