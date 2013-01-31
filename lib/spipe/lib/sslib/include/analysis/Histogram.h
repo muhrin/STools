@@ -76,10 +76,14 @@ double Histogram::estimateBinWidth(
   const size_t maxBins
 )
 {
+  if(first == last)
+    return 0.0;
+
   ::std::vector<double> values(first, last);
   ::std::sort(values.begin(), values.end());
 
   ::sstbx::math::RunningStats diffStats;
+  diffStats.insert(values[0]); // Put in the first point to account for 0->values[i]
   for(size_t i = 0; i < values.size() - 1; ++i)
   {
     diffStats.insert(values[i + 1] - values[i]);
