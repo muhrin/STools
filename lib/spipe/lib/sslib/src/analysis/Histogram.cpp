@@ -37,11 +37,11 @@ size_t Histogram::numBins() const
   return myBins.size();
 }
 
-unsigned int Histogram::getValue(const size_t binIndex) const
+unsigned int Histogram::getFrequency(const size_t bin) const
 {
-  SSLIB_ASSERT(binIndex < myBins.size());
+  SSLIB_ASSERT(bin < myBins.size());
 
-  return myBins[binIndex];
+  return myBins[bin];
 }
 
 Histogram::iterator Histogram::begin()
@@ -74,6 +74,7 @@ void Histogram::print(::std::ostream & os) const
   unsigned int largestValue = myBins[fullest];
   for(unsigned int row = largestValue; row > 0; --row)
   {
+    ::std::cout << "|";
     for(size_t col = 0; col < numBins; ++col)
     {
       if(myBins[col] >= row)
@@ -83,6 +84,12 @@ void Histogram::print(::std::ostream & os) const
     }
     ::std::cout << ::std::endl;
   }
+  // Draw the x-axis
+  ::std::cout << "O";
+  for(unsigned int col = 0; col < numBins; ++col)
+    ::std::cout << "-";
+  ::std::cout << ::std::endl;
+
   ::std::cout << "0 to " << myBinWidth * static_cast<double>(numBins) <<
     numBins << " bin width: " << myBinWidth << ::std::endl;
     

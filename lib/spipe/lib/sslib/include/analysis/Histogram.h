@@ -11,7 +11,10 @@
 // INCLUDES ////////////
 #include "SSLib.h"
 
+#include <limits>
 #include <ostream>
+
+#include <math/RunningStats.h>
 
 // DEFINITION ///////////////////////
 
@@ -28,12 +31,22 @@ public:
   typedef Bins::iterator iterator;
   typedef Bins::const_iterator const_iterator;
 
+  template <class InputIterator>
+  static double estimateBinWidth(
+    InputIterator first,
+    const InputIterator last,
+    const double targetMeanFrequency = 2.0,
+    const size_t maxBins = ::std::numeric_limits<size_t>::max()
+  );
+
   Histogram(const double binWidth);
 
   void insert(const double value);
+  template <class InputIterator>
+  void insert(InputIterator first, const InputIterator last);
   void clear();
   size_t numBins() const;
-  unsigned int getValue(const size_t binIndex) const;
+  unsigned int getFrequency(const size_t bin) const;
 
   iterator begin();
   const_iterator begin() const;
@@ -54,6 +67,33 @@ private:
   Bins myBins;
 
 };
+
+template <class InputIterator>
+double Histogram::estimateBinWidth(
+  InputIterator first,
+  const InputIterator last,
+  const double targetMeanFrequency,
+  const size_t maxBins
+)
+{
+  ::std::vector<double> values(first, last);
+  ::std::sort(values.begin(), values.end());
+
+  ::sstbx::math::RunningStats diffStats;
+  for(size_t i = 0; i < values.size() - 1; ++i)
+  {
+    diffStats.insert(values[i + 1] - values[i]);
+  }
+  const double maxBinsWidth = values.back() / static_cast<double>(maxBins);
+  return ::std::max(diffStats.mean() * targetMeanFrequency, maxBinsWidth);
+}
+
+template <class InputIterator>
+void Histogram::insert(InputIterator first, const InputIterator last)
+{
+  for(;first != last; ++first)
+    insert(first);
+}
 
 }
 }
