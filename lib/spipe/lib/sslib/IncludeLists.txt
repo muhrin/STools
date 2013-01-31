@@ -102,6 +102,7 @@ set(sslib_Header_Files__io
   include/io/StructureYamlGenerator.h
   include/io/StructureReadWriteManager.h
   include/io/IoFunctions.h
+  include/io/XyzReaderWriter.h
   include/io/YamlTranscode.h
 )
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})

@@ -51,6 +51,7 @@ namespace properties = common::structure_properties;
 namespace kw = factory::sslib_yaml_keywords;
 
 const unsigned int SslibReaderWriter::DIGITS_AFTER_DECIMAL = 8;
+const ::std::string SslibReaderWriter::DEFAULT_EXTENSION("sslib");
 
 void SslibReaderWriter::writeStructure(
 	common::Structure & str,
