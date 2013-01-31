@@ -13,6 +13,7 @@
 #include <io/StructureReadWriteManager.h>
 #include <io/ResReaderWriter.h>
 #include <io/SslibReaderWriter.h>
+#include <io/XyzReaderWriter.h>
 
 // From local
 #include "common/GlobalData.h"
@@ -31,7 +32,8 @@ void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
 {
   rwMan.insert(::sstbx::makeUniquePtr(new ssio::ResReaderWriter()));
   rwMan.insert(::sstbx::makeUniquePtr(new ssio::SslibReaderWriter()));
-  rwMan.setDefaultWriter("sslib");
+  rwMan.insert(::sstbx::makeUniquePtr(new ssio::XyzReaderWriter()));
+  rwMan.setDefaultWriter(ssio::SslibReaderWriter::DEFAULT_EXTENSION);
 }
 
 sp::SpEngine::RunnerPtr generateRunnerInitDefault(sp::SpEngine & engine)
