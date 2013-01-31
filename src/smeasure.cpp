@@ -196,19 +196,17 @@ double calculateBinWidth(const ssc::Structure & structure, const AtomPairs & pai
 {
   const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
 
+  ::std::vector<double> distances;
+
   // First calculate the maximum distance
   double maxDist = 0.0;
   BOOST_FOREACH(const AtomPair & pair, pairs)
   {
-    maxDist = ::std::max(
-      distCalc.getDistMinImg(structure.getAtom(pair.first), structure.getAtom(pair.second)),
-      maxDist
-    );
+    distances.push_back(distCalc.getDistMinImg(structure.getAtom(pair.first), structure.getAtom(pair.second)));
   }
 
   // Calculate the bin width
-  return 30 * maxDist / static_cast<double>(pairs.size());
-
+  return ssa::Histogram::estimateBinWidth(distances.begin(), distances.end(), 2.0, 80);
 }
 
 void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, const InputOptions & in)
@@ -228,7 +226,7 @@ void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, cons
 
   // Print the histogram values
   for(size_t i = 0; i < hist.numBins(); ++i)
-    ::std::cout << i << ": " << hist.getValue(i) << ::std::endl;
+    ::std::cout << i << ": " << hist.getFrequency(i) << ::std::endl;
 
   if(in.histogramShowGraph)
     ::std::cout << hist << ::std::endl;
