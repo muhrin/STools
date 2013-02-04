@@ -109,7 +109,7 @@ void LowestFreeEnergy::newLowest(StructureData & structure, const double energy)
   const double cutoff = getEnergyCutoff();
 
   // Go from the end erasing all entries greater than the new cutoff
-  Structures::const_reverse_iterator it;
+  Structures::reverse_iterator it;
 
   // Erasing using reverse iterator is a bit annoying
   // see: http://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator
