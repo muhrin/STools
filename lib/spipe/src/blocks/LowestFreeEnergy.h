@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <map>
+
 #include <boost/noncopyable.hpp>
 
 #include <pipelib/pipelib.h>
@@ -28,7 +30,8 @@ class LowestFreeEnergy : public SpBarrier, ::boost::noncopyable
 {
 public:
 
-	LowestFreeEnergy();
+	LowestFreeEnergy(const size_t keepTopN = 1);
+  LowestFreeEnergy(const double keepTopEnergyPercentage);
 
   // From Block /////////////////
 	virtual void in(spipe::common::StructureData & data);
@@ -40,7 +43,18 @@ public:
   // End from Barrier //////////////
 
 private:
-	::spipe::common::StructureData * myLowest;
+  typedef ::spipe::common::StructureData StructureData;
+  typedef ::std::map<double, StructureData *> Structures;
+
+  void keep(StructureData & structure, const double energy);
+  void newLowest(StructureData & structure, const double energy);
+  double getEnergyCutoff() const;
+
+  const bool myKeepTopNMode;
+  const size_t myKeepTopN;
+  const double myKeepTopEnergyPercentage;
+
+  Structures myStructures;
 };
 
 }

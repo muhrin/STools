@@ -19,6 +19,7 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem unit_test_framew
 
 set(tests_Source_Files__blocks
   blocks/LoadSeedStructuresTest.cpp
+  blocks/LowestFreeEnergyTest.cpp
   blocks/StoichiometrySearchTest.cpp
 )
 source_group("Source Files\\blocks" FILES ${tests_Source_Files__blocks})
