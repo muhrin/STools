@@ -22,13 +22,18 @@
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/Types.h>
-#include <io/ResReaderWriter.h>
+#include <io/ResourceLocator.h>
+#include <io/StructureReadWriteManager.h>
+
+// From StructurePipe
+#include <utility/PipeDataInitialisation.h>
 
 // My includes //
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
+namespace sp = ::spipe;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 namespace ssa = ::sstbx::analysis;
@@ -78,22 +83,28 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
+  ssio::StructureReadWriteManager rwMan;
+  sp::utility::initStructureRwManDefault(rwMan);
 
   ssc::AtomSpeciesDatabase speciesDb;
-  ssio::ResReaderWriter resReader;
   ssio::StructuresContainer loadedStructures;
+  ssio::ResourceLocator structureLocator;
   ssa::space_group::SpacegroupInfo sgInfo;
 
-  BOOST_FOREACH(::std::string & pathString, in.inputFiles)
+  BOOST_FOREACH(const ::std::string & inputFile, in.inputFiles)
   {
-    fs::path strPath(pathString);
-    if(!fs::exists(strPath))
+    if(!structureLocator.set(inputFile))
     {
-      ::std::cerr << "File " << strPath << " does not exist.  Skipping" << ::std::endl;
+      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping." << ::std::endl;
+      continue;
+    }
+    if(!fs::exists(structureLocator.path()))
+    {
+      ::std::cerr << "File " << inputFile << " does not exist.  Skipping." << ::std::endl;
       continue;
     }
 
-    if(resReader.readStructures(loadedStructures, strPath, speciesDb) > 0)
+    if(rwMan.readStructures(loadedStructures, structureLocator, speciesDb) > 0)
     {
       BOOST_FOREACH(const ssc::Structure & structure, loadedStructures)
       {
