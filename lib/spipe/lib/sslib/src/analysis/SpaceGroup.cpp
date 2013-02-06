@@ -47,6 +47,7 @@ bool getSpacegroupInfo(
   ::arma::mat posMtx;
   structure.getAtomPositions(posMtx);
   cell->cartsToFracInplace(posMtx);
+  cell->wrapVecsFracInplace(posMtx);
   for(size_t i = 0; i < numAtoms; ++i)
   {
     for(size_t j = 0; j < 3; ++j)
