@@ -172,9 +172,8 @@ int main(const int argc, char * argv[])
 	beta << betaDiagonal << 1 << endr
 			<< 1 << betaDiagonal << endr;
 
-  ssp::SimplePairPotential pp(
+  ssp::IPotentialPtr pp(new ssp::SimplePairPotential(
     speciesDb,
-    2,
     potentialSpecies,
     epsilon,
     sigma,
@@ -183,7 +182,7 @@ int main(const int argc, char * argv[])
     12,
     6,
     ssp::SimplePairPotential::CUSTOM
-  );
+  ));
   ssp::TpsdGeomOptimiser optimiser(pp);
 
   ssp::OptimisationSettings optimisationParams;
@@ -192,9 +191,9 @@ int main(const int argc, char * argv[])
   pressureMtx.diag().fill(in.optimisationPressure);
   optimisationParams.setExternalPressure(pressureMtx);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, optimisationParams, false);
+  sp::blocks::ParamPotentialGo goPressure(optimiser, optimisationParams, false);
 
-  sp::blocks::ParamPotentialGo go(pp, optimiser, true);
+  sp::blocks::ParamPotentialGo go(optimiser, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;

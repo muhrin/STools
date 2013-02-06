@@ -26,9 +26,9 @@
 
 // DEFINES //////////////////////////////////////////////
 
-// FORWARD DECLARATIONS ////////////////////////////////////
-
 namespace sstbx {
+
+// FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
 class UnitCell;
 }
@@ -38,14 +38,17 @@ class TpsdGeomOptimiser : public IGeomOptimiser
 {
 public:
 
+  typedef ::sstbx::UniquePtr<IPotential>::Type PotentialPtr;
+
 	static const unsigned int DEFAULT_MAX_STEPS;
 	static const double	DEFAULT_TOLERANCE;
 
 	TpsdGeomOptimiser(
-		const IPotential & potential,
+		PotentialPtr potential,
 		const double tolerance = DEFAULT_TOLERANCE);
 
 	// IGeomOptimiser interface //////////////////////////////
+  virtual IPotential * getPotential();
   virtual const IPotential * getPotential() const;
 
 	virtual bool optimise(
@@ -83,7 +86,7 @@ private:
 
   bool cellReasonable(const common::UnitCell & unitCell) const;
 
-	const IPotential & myPotential;
+	PotentialPtr myPotential;
 
 	const double myTolerance;
 };

@@ -20,7 +20,8 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace sstbx { namespace potential {
+namespace sstbx {
+namespace potential {
 
 class IParameterisable
 {

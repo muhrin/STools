@@ -32,6 +32,12 @@ myOptimise(optimise_),
 myExternalPressure(externalPressure_)
 {}
 
+void OptimisationSettings::setPressure(const double pressure)
+{
+  myExternalPressure.zeros();
+  myExternalPressure.diag().fill(pressure);
+}
+
 void OptimisationSettings::setExternalPressure(const ::arma::mat33 & pressure)
 {
   myExternalPressure = pressure;

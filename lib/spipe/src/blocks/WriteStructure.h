@@ -36,7 +36,10 @@ namespace blocks {
 class WriteStructure : public SpPipeBlock, ::boost::noncopyable
 {
 public:
-	WriteStructure(const bool writeMultiStructure = true);
+
+  static const bool WRITE_MULTI_DEFAULT;
+
+	WriteStructure(const bool writeMultiStructure = WRITE_MULTI_DEFAULT);
 
   // From PipeBlock ////
   virtual void in(StructureDataType & data);

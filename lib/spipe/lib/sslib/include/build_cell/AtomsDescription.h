@@ -47,8 +47,8 @@ public:
   const OptionalDouble & getRadius() const;
   void setRadius(const OptionalDouble radius);
 
-  const OptionalVec3 & getPosition() const;
-  void setPosition(const OptionalVec3 & pos);
+  const OptionalArmaVec3 & getPosition() const;
+  void setPosition(const OptionalArmaVec3 & pos);
 
 	//// From IAtomConstrainable /////////////////
 	//virtual const AtomConstraintDescription *
@@ -66,7 +66,7 @@ private:
 
   ::sstbx::common::AtomSpeciesId::Value	mySpecies;
   OptionalDouble myRadius;
-  OptionalVec3 myPosition;
+  OptionalArmaVec3 myPosition;
 	size_t myCount;
 
 	/**

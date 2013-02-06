@@ -32,6 +32,8 @@ namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 namespace ssu = ::sstbx::utility;
 
+const bool WriteStructure::WRITE_MULTI_DEFAULT = true;
+
 WriteStructure::WriteStructure(const bool writeMultiStructure):
 SpBlock("Write structures"),
 myWriteMultiStructure(writeMultiStructure)

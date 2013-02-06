@@ -42,19 +42,39 @@ namespace ssp = ::sstbx::potential;
 namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
-	const sstbx::potential::IGeomOptimiser & optimiser,
-  const bool                               writeOutput):
+	sstbx::potential::IGeomOptimiser & optimiser,
+  const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput)
 {}
 
 PotentialGo::PotentialGo(
-	const sstbx::potential::IGeomOptimiser & optimiser,
+  ::sstbx::potential::IGeomOptimiser & optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
-  const bool                               writeOutput):
+  const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
+myWriteOutput(writeOutput),
+myOptimisationParams(optimisationParams)
+{}
+
+PotentialGo::PotentialGo(
+	sstbx::potential::IGeomOptimiserPtr optimiser,
+  const bool writeOutput):
+SpBlock("Potential geometry optimisation"),
+myOwnedOptimiser(optimiser),
+myOptimiser(*myOwnedOptimiser.get()),
+myWriteOutput(writeOutput)
+{}
+
+PotentialGo::PotentialGo(
+	sstbx::potential::IGeomOptimiserPtr optimiser,
+  const ::sstbx::potential::OptimisationSettings & optimisationParams,
+  const bool writeOutput):
+SpBlock("Potential geometry optimisation"),
+myOwnedOptimiser(optimiser),
+myOptimiser(*myOwnedOptimiser.get()),
 myWriteOutput(writeOutput),
 myOptimisationParams(optimisationParams)
 {}
@@ -87,6 +107,16 @@ void PotentialGo::in(spipe::common::StructureData & data)
     // The structure failed to geometry optimise properly so drop it
     getRunner()->dropData(data);
   }
+}
+
+ssp::IGeomOptimiser & PotentialGo::getOptimiser()
+{
+  return myOptimiser;
+}
+
+::spipe::utility::DataTableSupport & PotentialGo::getTableSupport()
+{
+  return myTableSupport;
 }
 
 void PotentialGo::copyOptimisationResults(

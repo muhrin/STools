@@ -192,9 +192,8 @@ int main(const int argc, char * argv[])
 
   const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
 
-  ssp::SimplePairPotential pp(
+  ssp::IPotentialPtr pp(new ssp::SimplePairPotential(
     config.speciesDb,
-    2,
     config.potentialSpecies,
     epsilon,
     sigma,
@@ -203,7 +202,7 @@ int main(const int argc, char * argv[])
     12,
     6,
     combRule
-  );
+  ));
   ssp::TpsdGeomOptimiser optimiser(pp);
 
   ssp::OptimisationSettings initialOptimisationParams;
@@ -217,11 +216,11 @@ int main(const int argc, char * argv[])
   if(config.inputType == InputType::SEED_STRUCTURES)
     initialOptimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
 
-  sp::blocks::ParamPotentialGo goPressure(pp, optimiser, initialOptimisationParams, false);
+  sp::blocks::ParamPotentialGo goPressure(optimiser, initialOptimisationParams, false);
 
   ssp::OptimisationSettings optimisationParams;
   optimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_OPTIMISATION_MAX_ITERS));
-  sp::blocks::ParamPotentialGo go(pp, optimiser, optimisationParams, true);
+  sp::blocks::ParamPotentialGo go(optimiser, optimisationParams, true);
 
   // Remove duplicates
   ssu::SortedDistanceComparator comparator;

@@ -63,15 +63,20 @@ const double TpsdGeomOptimiser::MAX_STEPSIZE = 0.2;
 
 
 TpsdGeomOptimiser::TpsdGeomOptimiser(
-	const IPotential & potential,
+	PotentialPtr potential,
   const double tolerance):
 myPotential(potential),
 myTolerance(tolerance)
 {}
 
+IPotential * TpsdGeomOptimiser::getPotential()
+{
+	return myPotential.get();
+}
+
 const IPotential * TpsdGeomOptimiser::getPotential() const
 {
-	return &myPotential;
+	return myPotential.get();
 }
 
 bool TpsdGeomOptimiser::optimise(
@@ -88,7 +93,7 @@ bool TpsdGeomOptimiser::optimise(
 	PotentialData & data,
   const OptimisationSettings & options) const
 {
-  ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential.createEvaluator(structure);
+  ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential->createEvaluator(structure);
 
   common::UnitCell * const unitCell = structure.getUnitCell();
 

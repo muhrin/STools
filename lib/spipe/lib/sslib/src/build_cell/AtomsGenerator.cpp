@@ -151,7 +151,7 @@ AtomsGenerator::generatePosition(const AtomsDescription & atom, const StructureB
   // Default is not fixex
   position.second = false;
 
-  OptionalVec3 optionalPosition;
+  OptionalArmaVec3 optionalPosition;
 
   optionalPosition = atom.getPosition();
   if(optionalPosition)

@@ -12,10 +12,12 @@
 #include <boost/lexical_cast.hpp>
 
 // From SSTbx
+#include <SSLibAssert.h> // TEMP !
 #include <common/Structure.h>
 #include <potential/PotentialData.h>
 #include <potential/IGeomOptimiser.h>
 #include <potential/IParameterisable.h>
+#include <potential/IPotential.h>
 
 #include "common/PipeFunctions.h"
 #include "common/StructureData.h"
@@ -33,23 +35,42 @@ namespace common = ::spipe::common;
 namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IParameterisable & paramPotential,
-	const ::sstbx::potential::IGeomOptimiser & optimiser,
-  const bool                  writeOutput):
+	::sstbx::potential::IGeomOptimiser & optimiser,
+  const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, writeOutput),
-myParamPotential(paramPotential)
-{}
+PotentialGo(optimiser, writeOutput)
+{
+  init();
+}
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IParameterisable & paramPotential,
-	const ::sstbx::potential::IGeomOptimiser & optimiser,
+	::sstbx::potential::IGeomOptimiser & optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
-  const bool                  writeOutput):
+  const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, optimisationParams, writeOutput),
-myParamPotential(paramPotential)
-{}
+PotentialGo(optimiser, optimisationParams, writeOutput)
+{
+  init();
+}
+
+ParamPotentialGo::ParamPotentialGo(
+	::sstbx::potential::IGeomOptimiserPtr optimiser,
+  const bool writeOutput):
+SpBlock("Parameterised potential geometry optimisation"),
+PotentialGo(optimiser, writeOutput)
+{
+  init();
+}
+
+ParamPotentialGo::ParamPotentialGo(
+	::sstbx::potential::IGeomOptimiserPtr optimiser,
+  const ::sstbx::potential::OptimisationSettings & optimisationParams,
+  const bool writeOutput):
+SpBlock("Parameterised potential geometry optimisation"),
+PotentialGo(optimiser, optimisationParams, writeOutput)
+{
+  init();
+}
 
 void ParamPotentialGo::pipelineStarting()
 {
@@ -72,11 +93,20 @@ void ParamPotentialGo::pipelineStarting()
     );
 
     // Add a note to the table with the current parameter string
-    myTableSupport.getTable().addTableNote("params: " + myParamPotential.getParamString());
+    getTableSupport().getTable().addTableNote("params: " + myParamPotential->getParamString());
   }
 
   // Call the parent to let them deal with the starting event too
   PotentialGo::pipelineStarting();
+}
+
+void ParamPotentialGo::init()
+{
+  SSLIB_ASSERT_MSG(
+    getOptimiser().getPotential() != NULL && getOptimiser().getPotential()->getParameterisable() != NULL,
+    "Must use geometry optimiser with parameterisable potential."
+  );
+  myParamPotential = getOptimiser().getPotential()->getParameterisable();
 }
 
 void ParamPotentialGo::copyOptimisationResults(
@@ -94,9 +124,9 @@ arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
 {
 	using ::std::string;
 
-	myParamPotential.setParams(params);
+	myParamPotential->setParams(params);
 
-  const arma::vec actualParams = myParamPotential.getParams();
+  const arma::vec actualParams = myParamPotential->getParams();
 
   return actualParams;
 }

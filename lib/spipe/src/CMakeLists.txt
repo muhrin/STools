@@ -44,7 +44,6 @@ set(spipe_Header_Files__common
   common/CommonData.h
   common/GlobalData.h
   common/PipeBuilder.h
-  common/PipeFactoryYaml.h
   common/PipeFunctions.h
   common/SharedData.h
   common/StructureData.h
@@ -58,7 +57,6 @@ set(spipe_Source_Files__common
   common/CommonData.cpp
   common/GlobalData.cpp
   common/PipeBuilder.cpp
-  common/PipeFactoryYaml.cpp
   common/PipeFunctions.cpp
   common/SharedData.cpp
   common/StructureData.cpp
@@ -67,6 +65,18 @@ set(spipe_Source_Files__common
   common/YamlInputObjectIteratorAdapter.cpp
 )
 source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
+
+## spipe/factory/
+
+set(spipe_Header_Files__factory
+    factory/SPipeFactoryYaml.h
+)
+source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
+
+set(spipe_Source_Files__factory
+    factory/SPipeFactoryYaml.cpp
+)
+source_group("Source Files\\utility" FILES ${spipe_Source_Files__factory})
 
 ## spipe/utility/
 
@@ -106,6 +116,7 @@ source_group("Source Files" FILES ${spipe_Source_Files__})
 set(spipe_Header_Files
   ${spipe_Header_Files__blocks}
   ${spipe_Header_Files__common}
+  ${spipe_Header_Files__factory}
   ${spipe_Header_Files__utility}
   ${spipe_Header_Files__}
 )
@@ -113,6 +124,7 @@ set(spipe_Header_Files
 set(spipe_Source_Files
   ${spipe_Source_Files__blocks}
   ${spipe_Source_Files__common}
+  ${spipe_Source_Files__factory}
   ${spipe_Source_Files__utility}
   ${spipe_Source_Files__}
 )

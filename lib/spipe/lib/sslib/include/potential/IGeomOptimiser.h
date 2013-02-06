@@ -43,6 +43,7 @@ public:
   /* geometry optimisers need to have a potential in which case NULL
   /* will be returned.
   /**/
+  virtual IPotential * getPotential() = 0;
   virtual const IPotential * getPotential() const = 0;
 
   // TODO: Allow return value to give some indication of the reason for the failure!

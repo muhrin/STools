@@ -34,6 +34,7 @@
 #include "factory/FactoryError.h"
 #include "io/AtomYamlFormatParser.h"
 #include "io/ResReaderWriter.h"
+#include "potential/Types.h"
 #include "utility/IndexingEnums.h"
 #include "utility/SortedDistanceComparator.h"
 
@@ -170,7 +171,7 @@ SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node) const
 }
 
 ssbc::IStructureGeneratorPtr
-SsLibFactoryYaml::createStructureGenerator(const YAML::Node & node)
+SsLibFactoryYaml::createStructureGenerator(const YAML::Node & node) const
 {
   //// Make sure we have a structure description node
   //if(node.Scalar() != kw::STR_DESC)
@@ -189,99 +190,98 @@ SsLibFactoryYaml::createStructureGenerator(const YAML::Node & node)
   return generator;
 }
 
-ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
+SsLibFactoryYaml::PotentialPtr
+SsLibFactoryYaml::createPotential(const YAML::Node & node) const
 {
-  //// Make sure we have a potential node
-  //if(node.Scalar() != kw::POTENTIAL)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  PotentialPtr pot;
 
-  ssp::IPotential * pot = NULL;
+  const OptionalString potType = getNodeChildValueAs< ::std::string>(node, kw::POTENTIAL__TYPE);
+  if(!potType) // If no type then we can't construct the potential
+    return pot;
 
-  // First check that we have the keywords that we require in this node
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string potType = node[kw::TYPE].as< ::std::string>();
-
-  if(potType == kw::POTENTIAL__TYPE___PAIR_POT)
+  if(*potType == kw::POTENTIAL__TYPE___LENNARD_JONES)
   {
-    // Check all the required keywords are there for the pair potential
-    checkKeyword(kw::POTENTIAL__PAIR_POT__E, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__S, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__CUT, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__B, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__POW, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__COMB, node);
+    // Get the species list
+    AtomSpeciesIdVector speciesVec(myAtomSpeciesDb);
+    ::boost::optional<AtomSpeciesIdVector> species(speciesVec);
+    if(!getChildNodeValue(species, node, kw::POTENTIAL__LENNARD_JONES__SPECIES))
+      return pot;
 
-    // Let's build it up one by one
-    const ArmaTriangularMat epsilon  = node[kw::POTENTIAL__PAIR_POT__E].as<ArmaTriangularMat>();
-    const ArmaTriangularMat sigma    = node[kw::POTENTIAL__PAIR_POT__S].as<ArmaTriangularMat>();
-    double                  cutoff   = node[kw::POTENTIAL__PAIR_POT__CUT].as<double>();
-    const ArmaTriangularMat beta     = node[kw::POTENTIAL__PAIR_POT__B].as<ArmaTriangularMat>();
-    const ::arma::vec       pow      = node[kw::POTENTIAL__PAIR_POT__POW].as< ::arma::vec>();
-    const ssp::SimplePairPotential::CombiningRule comb =
-      node[kw::POTENTIAL__PAIR_POT__COMB].as<ssp::SimplePairPotential::CombiningRule>();
+    // Build up the potential parameters one by one
+    OptionalArmaTriangularMat epsilon;
+    if(!getChildNodeValue(epsilon, node, kw::POTENTIAL__LENNARD_JONES__EPS))
+      return pot;
 
-    const size_t numSpecies = epsilon.mat.n_rows;
+    OptionalArmaTriangularMat sigma;
+    if(!getChildNodeValue(sigma, node, kw::POTENTIAL__LENNARD_JONES__SIG))
+      return pot;
 
-    if((numSpecies != sigma.mat.n_rows) || (numSpecies != beta.mat.n_rows))
-    {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
-    }
+    OptionalArmaTriangularMat beta;
+    if(!getChildNodeValue(beta, node, kw::POTENTIAL__LENNARD_JONES__BETA))
+      return pot;
 
-    // TODO: HACK!! Fix this to read in the real values
-    const ::std::vector<ssc::AtomSpeciesId> species;
+    OptionalArmaVec pow;
+    if(!getChildNodeValue(pow, node, kw::POTENTIAL__LENNARD_JONES__POW))
+      return pot;
 
-    pot = new ssp::SimplePairPotential(
+    OptionalDouble cutoff;
+    if(!getChildNodeValue(cutoff, node, kw::POTENTIAL__LENNARD_JONES__CUT))
+      return pot;
+
+    ::boost::optional<ssp::SimplePairPotential::CombiningRule> comb;
+    if(!getChildNodeValue(comb, node, kw::POTENTIAL__LENNARD_JONES__COMB))
+      return pot;
+
+    const size_t numSpecies = (*epsilon)->n_rows;
+
+    if((numSpecies != (*sigma)->n_rows) || (numSpecies != (*beta)->n_rows))
+      return pot;
+
+    pot.reset(new ssp::SimplePairPotential(
       myAtomSpeciesDb,
-      numSpecies,
-      species,
-      epsilon.mat,
-      sigma.mat,
-      cutoff,
-      beta.mat,
-      pow(0),
-      pow(1),
-      comb
-    );
-
-    myPotentials.push_back(pot);
+      **species,
+      **epsilon,
+      **sigma,
+      *cutoff,
+      **beta,
+      (*pow)(0),
+      (*pow)(1),
+      *comb
+    ));
   }
-  else
-  {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD) << ProblemValue(potType);
-  }
-
-
 
   return pot;
-
 }
 
 
 
-ssp::IGeomOptimiser * SsLibFactoryYaml::createGeometryOptimiser(const YAML::Node & node)
+SsLibFactoryYaml::GeomOptimiserPtr
+SsLibFactoryYaml::createGeometryOptimiser(const YAML::Node & node) const
 {
-  checkKeyword(kw::TYPE, node);
+  GeomOptimiserPtr opt;
 
-  ssp::IGeomOptimiser * opt = NULL;
+  OptionalString type;
+  if(!getChildNodeValue(type, node, kw::OPTIMISER__TYPE))
+    return opt;
 
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  if(type == kw::OPTIMISER__TYPE___TPSD)
+  if(*type == kw::OPTIMISER__TYPE___TPSD)
   {
-    checkKeyword(kw::POTENTIAL, node);
+    // Have to have a potential with this optimiser
+    if(!node[kw::OPTIMISER__POTENTIAL])
+      return opt;
+    potential::IPotentialPtr potential = createPotential(node[kw::OPTIMISER__POTENTIAL]);
+    if(!potential.get())
+      return opt;
 
-    ssp::IPotential * pp = createPotential(node[kw::POTENTIAL]);
+    const ::boost::optional<double> tolerance(
+      getNodeChildValueAs<double>(node, kw::OPTIMISER__TPSD__TOL)
+    );
 
-    if(pp)
-    {
-      opt = new ssp::TpsdGeomOptimiser(*pp);
-    }
+    if(tolerance)
+      opt.reset(new ssp::TpsdGeomOptimiser(potential, *tolerance));
+    else
+      opt.reset(new ssp::TpsdGeomOptimiser(potential));
   }
-
-  myOptimisers.push_back(opt);
 
   return opt;
 }

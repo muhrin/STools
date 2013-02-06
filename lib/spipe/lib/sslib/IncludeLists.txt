@@ -135,6 +135,7 @@ set(sslib_Header_Files__potential
   include/potential/TersoffPotential.h
   include/potential/TersoffPotentialData.h
   include/potential/TpsdGeomOptimiser.h
+  include/potential/Types.h
 )
 source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 

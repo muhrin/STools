@@ -83,12 +83,12 @@ void AtomsDescription::setRadius(const OptionalDouble radius)
   myRadius = radius;
 }
 
-const OptionalVec3 & AtomsDescription::getPosition() const
+const OptionalArmaVec3 & AtomsDescription::getPosition() const
 {
   return myPosition;
 }
 
-void AtomsDescription::setPosition(const OptionalVec3 & pos)
+void AtomsDescription::setPosition(const OptionalArmaVec3 & pos)
 {
   myPosition = pos;
 }

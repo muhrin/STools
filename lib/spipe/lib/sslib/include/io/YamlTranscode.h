@@ -16,16 +16,19 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 
 #include "build_cell/Sphere.h"
+#include "common/AtomSpeciesDatabase.h"
 #include "common/UnitCell.h"
 #include "factory/SsLibYamlKeywords.h"
 #include "io/IoFunctions.h"
 #include "potential/SimplePairPotential.h"
+#include "potential/OptimisationSettings.h"
 #include "utility/IndexingEnums.h"
 
 // NAMESPACES ////////////////////////////////
@@ -36,9 +39,42 @@ namespace factory {
 /** The id type used by elements in a yaml document */
 typedef ::std::string     KwTyp;
 
-struct ArmaTriangularMat
+template <typename T>
+struct TypeWrapper
+{
+  T & operator *() { return value; }
+  const T & operator *() const { return value; }
+  T * operator ->() { return &value; }
+  const T * operator ->() const { return &value; }
+  T value;
+};
+
+
+typedef TypeWrapper< ::arma::mat> ArmaTriangularMat;
+/*struct ArmaTriangularMat
 {
   ::arma::mat mat;
+};*/
+
+template <typename T>
+struct VectorAsString : TypeWrapper< ::std::vector<T> >
+{};
+
+struct AtomSpeciesId : public TypeWrapper<common::AtomSpeciesId::Value>
+{
+  AtomSpeciesId(const common::AtomSpeciesDatabase & _speciesDb):
+  speciesDb(_speciesDb) {}
+
+  const common::AtomSpeciesDatabase & speciesDb;
+};
+
+struct AtomSpeciesIdVector : public VectorAsString<common::AtomSpeciesId::Value>
+{
+  AtomSpeciesIdVector() {}
+  explicit AtomSpeciesIdVector(const common::AtomSpeciesDatabase & _speciesDb):
+  speciesDb(&_speciesDb) {}
+
+  const common::AtomSpeciesDatabase * speciesDb;
 };
 
 }
@@ -46,6 +82,42 @@ struct ArmaTriangularMat
 
 // Some custom YAML converters
 namespace YAML {
+
+  // std
+  template <typename T>
+  struct convert< ::sstbx::factory::VectorAsString<T> >
+  {
+    static Node encode(const ::sstbx::factory::VectorAsString<T> & vector)
+    {
+      Node node;
+      BOOST_FOREACH(const T & value, *vector)
+      {
+        node.push_back(value);
+      }
+      return node;
+    }
+
+    static bool decode(const Node & node, ::sstbx::factory::VectorAsString<T> & vector)
+    {
+      if(!node.IsSequence())
+        return false;
+
+      vector->clear();
+      BOOST_FOREACH(const Node & value, node)
+      {
+        try
+        {
+          vector->push_back(value.as<T>());
+        }
+        catch(const YAML::TypedBadConversion<double> & /*e*/)
+        {
+          return false;
+        }
+      }
+
+      return true;
+    }
+  };
 
   // build_cell
 
@@ -158,6 +230,104 @@ namespace YAML {
     }
   };
 
+  // factory
+
+  // factory::AtomSpeciesId
+  template<>
+  struct convert< ::sstbx::factory::AtomSpeciesId>
+  {
+    static Node encode(const ::sstbx::factory::AtomSpeciesId & rhs)
+    {
+      Node node;
+      const ::std::string * const symbol = rhs.speciesDb.getSymbol(*rhs);
+
+      if(symbol)
+        node = *symbol;
+
+      return node;
+    }
+
+    static bool decode(const Node & node, ::sstbx::factory::AtomSpeciesId & rhs)
+    {
+      *rhs = rhs.speciesDb.getIdFromSymbol(node.Scalar());
+      return true;
+    }
+  };
+
+  // factory::AtomSpeciesVector
+  template<>
+  struct convert< ::sstbx::factory::AtomSpeciesIdVector>
+  {
+    static Node encode(const ::sstbx::factory::AtomSpeciesIdVector & rhs)
+    {
+      Node node;
+      BOOST_FOREACH(const ::sstbx::common::AtomSpeciesId speciesId, *rhs)
+      {
+        const ::std::string * const symbol = rhs.speciesDb->getSymbol(speciesId);
+        if(symbol)
+          node.push_back(*symbol);
+        else
+          node.push_back("");
+      }
+      return node;
+    }
+
+    static bool decode(const Node & node, ::sstbx::factory::AtomSpeciesIdVector & rhs)
+    {
+      if(!node.IsSequence())
+        return false;
+
+      ::sstbx::common::AtomSpeciesDatabase speciesDb;
+      rhs->clear();
+      BOOST_FOREACH(const YAML::Node & value, node)
+      {
+        rhs->push_back(speciesDb.getIdFromSymbol(value.Scalar()));
+      }
+      
+      return true;
+    }
+  };
+
+  // potential
+
+  // potential::OptimisationSettings
+  template<>
+  struct convert< ::sstbx::potential::OptimisationSettings>
+  {
+    static Node encode(const ::sstbx::potential::OptimisationSettings & rhs)
+    {
+      namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+      Node node;
+      // TODO
+
+
+      return node;
+     }
+
+    static bool decode(const Node& node, ::sstbx::potential::OptimisationSettings & rhs)
+    {
+      namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+      if(!node.IsMap())
+        return false;
+
+      // TODO: Finish
+
+      if(node[kw::OPTIMISATION_SETTINGS__PRESSURE])
+      {
+        try
+        {
+          rhs.setPressure(node[kw::OPTIMISATION_SETTINGS__PRESSURE].as<double>());
+        }
+        catch(const YAML::TypedBadConversion< ::sstbx::potential::OptimisationSettings> & /*e*/)
+        { return false; }
+      }
+
+      return true;
+    }
+  };
+
+  // potential::SimplePairPotential::CombiningRule
+
   // Simple pair potential combining rules
   template<>
   struct convert< ::sstbx::potential::SimplePairPotential::CombiningRule>
@@ -245,12 +415,10 @@ namespace YAML {
     static Node encode(const ::sstbx::factory::ArmaTriangularMat & rhs)
     {
       Node node;
-      for(size_t i = 0; i < rhs.mat.n_rows; ++i)
+      for(size_t i = 0; i < rhs->n_rows; ++i)
       {
-        for(size_t j = i; j < rhs.mat.n_cols; ++j)
-        {
-          node.push_back(rhs.mat(i, j));
-        }
+        for(size_t j = i; j < rhs->n_cols; ++j)
+          node.push_back((*rhs)(i, j));
       }
       return node;
      }
@@ -270,17 +438,17 @@ namespace YAML {
       if(iTot != nElements)
         return false;
 
-      rhs.mat.set_size(iSize, iSize);
+      rhs->set_size(iSize, iSize);
       size_t k = 0;
       for(size_t i = 0; i < iSize; ++i)
       {
         for(size_t j = i; j < iSize; ++j)
         {
-          rhs.mat(i, j) = node[k].as<double>();
+          (*rhs)(i, j) = node[k].as<double>();
           ++k;
         }
       }
-      rhs.mat = ::arma::symmatu(rhs.mat);
+      (*rhs) = ::arma::symmatu(*rhs);
 
       return true;
     }

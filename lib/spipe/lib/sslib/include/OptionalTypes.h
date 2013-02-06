@@ -25,7 +25,16 @@ namespace sstbx {
 typedef ::boost::optional<double> OptionalDouble;
 typedef ::boost::optional< ::std::string> OptionalString;
 typedef ::boost::optional<unsigned int> OptionalUInt;
-typedef ::boost::optional< ::arma::vec3> OptionalVec3;
+typedef ::boost::optional< ::arma::vec3> OptionalArmaVec3;
+typedef ::boost::optional< ::arma::vec> OptionalArmaVec;
+
+template <typename T>
+struct OptionalVector
+{
+  typedef ::boost::optional< ::std::vector<T> > Type;
+private:
+  OptionalVector() {}
+};
 
 }
 

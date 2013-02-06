@@ -24,10 +24,14 @@ const double SimplePairPotential::RADIUS_FACTOR = 0.5 * ::std::pow(2, 1.0/6.0);
 
 const double SimplePairPotential::MIN_SEPARATION_SQ = 1e-20;
 
+unsigned int SimplePairPotential::numParams(const unsigned int numSpecies)
+{
+  return 0;
+}
+
 
 SimplePairPotential::SimplePairPotential(
   common::AtomSpeciesDatabase & atomSpeciesDb,
-	const size_t 				          numSpecies,
   const SpeciesList &           speciesList,
 	const ::arma::mat &		        epsilon,
 	const ::arma::mat &		        sigma,
@@ -38,7 +42,7 @@ SimplePairPotential::SimplePairPotential(
   const CombiningRule           combiningRule):
 	myName("Simple pair potential"),
   myAtomSpeciesDb(atomSpeciesDb),
-	myNumSpecies(numSpecies),
+	myNumSpecies(speciesList.size()),
   mySpeciesList(speciesList),
 	myEpsilon(epsilon),
 	mySigma(sigma),
@@ -484,6 +488,10 @@ SimplePairPotential::createEvaluator(const sstbx::common::Structure & structure)
   return ::boost::shared_ptr<IPotentialEvaluator>(new Evaluator(*this, structure, data));
 }
 
+IParameterisable * SimplePairPotential::getParameterisable()
+{
+  return this;
+}
 
 
 void SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const

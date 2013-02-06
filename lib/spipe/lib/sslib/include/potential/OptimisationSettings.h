@@ -48,12 +48,14 @@ public:
   OptimisationSettings(const Optimise optimise_);
   OptimisationSettings(const Optimise optimise_, const ::arma::mat33 & externalPressure_);
 
+  void setPressure(const double pressure);
   void setExternalPressure(const ::arma::mat33 & pressure);
   const ::arma::mat33 & getExternalPressure() const;
 
-  void setOptimise(const Optimise & optimise);
   Optimise getOptimise() const;
+  void setOptimise(const Optimise & optimise);
 
+  const OptionalUint & getMaxInteractions() const;
   void setMaxIterations(const OptionalUint & maxIters);
   OptionalUint getMaxIterations() const;
 
@@ -71,7 +73,6 @@ public:
     const common::Structure & structure,
     const ::arma::mat & currentPos,
     ::arma::mat & deltaPos) const;
-
 
 private:
 

@@ -82,16 +82,24 @@ static const KwTyp RANDOM_CELL__LENGTHS__MIN        = MIN;
 static const KwTyp RANDOM_CELL__LENGTHS__MAX        = MAX;
 static const KwTyp RANDOM_CELL__LENGTHS__MAX_RATIO  = "maxRatio";
 
-static const KwTyp POTENTIAL                    = "potential";
-static const KwTyp POTENTIAL__TYPE___PAIR_POT   = "pairPot";
-static const KwTyp POTENTIAL__PAIR_POT__E       = "e";
-static const KwTyp POTENTIAL__PAIR_POT__S       = "s";
-static const KwTyp POTENTIAL__PAIR_POT__CUT     = "cut";
-static const KwTyp POTENTIAL__PAIR_POT__B       = "b";
-static const KwTyp POTENTIAL__PAIR_POT__POW     = "pow";
-static const KwTyp POTENTIAL__PAIR_POT__COMB    = "comb";
+static const KwTyp POTENTIAL                        = "potential";
+static const KwTyp POTENTIAL__TYPE                  = TYPE;
+static const KwTyp POTENTIAL__TYPE___LENNARD_JONES  = "lennardJones";
+static const KwTyp POTENTIAL__LENNARD_JONES__CUT    = "cut";
+static const KwTyp POTENTIAL__LENNARD_JONES__EPS    = "eps";
+static const KwTyp POTENTIAL__LENNARD_JONES__SIG    = "sig";
+static const KwTyp POTENTIAL__LENNARD_JONES__BETA   = "beta";
+static const KwTyp POTENTIAL__LENNARD_JONES__POW    = "pow";
+static const KwTyp POTENTIAL__LENNARD_JONES__SPECIES= "species";
+static const KwTyp POTENTIAL__LENNARD_JONES__COMB   = "comb";
 
-static const KwTyp OPTIMISER__TYPE___TPSD       = "tpsd";
+static const KwTyp OPTIMISER                  = "optimiser";
+static const KwTyp OPTIMISER__TYPE            = TYPE;
+static const KwTyp OPTIMISER__TYPE___TPSD     = "tpsd";
+static const KwTyp OPTIMISER__TPSD__TOL       = "tol";
+static const KwTyp OPTIMISER__POTENTIAL       = "potential";
+
+static const KwTyp OPTIMISATION_SETTINGS__PRESSURE = "pressure";
 
 static const KwTyp STR_SET                = "strSet";
 
@@ -102,7 +110,6 @@ static const KwTyp STR_WRITER             = "strWriter";
 static const KwTyp STR_WRITER__TYPE___RES = "res";
 
 // SPHERE
-
 static const KwTyp SPHERE = "sphere";
 static const KwTyp SPHERE__POS    = POS;
 static const KwTyp SPHERE__RADIUS = RADIUS;

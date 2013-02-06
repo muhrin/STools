@@ -59,8 +59,10 @@ namespace factory {
 class SsLibFactoryYaml : ::boost::noncopyable
 {
 public:
-
+  typedef UniquePtr<potential::IGeomOptimiser>::Type GeomOptimiserPtr;
+  typedef UniquePtr<potential::IPotential>::Type PotentialPtr;
   typedef UniquePtr<utility::UniqueStructureSet<> >::Type UniqueStructureSetPtr;
+  
 
   enum ErrorCode
   {
@@ -77,9 +79,9 @@ public:
   common::StructurePtr                  createStructure(const YAML::Node & structureNode) const;
   common::UnitCellPtr                   createUnitCell(const YAML::Node & cellNode) const;
   build_cell::RandomUnitCellPtr         createRandomCellGenerator(const YAML::Node & desc) const;
-  build_cell::IStructureGeneratorPtr    createStructureGenerator(const YAML::Node & desc);
-  potential::IPotential *               createPotential(const YAML::Node & desc);
-  potential::IGeomOptimiser *           createGeometryOptimiser(const YAML::Node & desc);
+  build_cell::IStructureGeneratorPtr    createStructureGenerator(const YAML::Node & desc) const;
+  GeomOptimiserPtr                      createGeometryOptimiser(const YAML::Node & desc) const;
+  PotentialPtr                          createPotential(const YAML::Node & node) const;
   utility::IStructureComparator *       createStructureComparator(const YAML::Node & node);
   UniqueStructureSetPtr                 createStructureSet(const YAML::Node & desc);
   io::IStructureWriter *                createStructureWriter(const YAML::Node & node);
@@ -92,6 +94,7 @@ private:
   typedef ::boost::optional<YAML::Node> OptionalNode;
   typedef ::boost::optional<const YAML::Node> OptionalConstNode;
   typedef ::boost::optional<common::AtomSpeciesId::Value> OptionalSpecies;
+  typedef ::boost::optional<factory::ArmaTriangularMat> OptionalArmaTriangularMat;
 
   template <typename T>
   struct OptionalMinMax : ::boost::noncopyable
@@ -136,10 +139,17 @@ private:
   OptionalAtomSpeciesCount parseAtomTypeString(const ::std::string & atomSpecString) const;
 
   template <typename T>
-  ::boost::optional<T> getNodeChildValueAs(const YAML::Node & node, const ::std::string & childName, const bool required = false) const;
+  ::boost::optional<T> getNodeChildValueAs(const YAML::Node & node, const ::std::string & childName) const;
 
   template <typename T>
-  typename OptionalMinMax<T>::Type getMinMax(const YAML::Node & parentNode, const MinMaxRequire::Value requiredFlag = MinMaxRequire::NEITHER) const;
+  bool getChildNodeValue(
+    ::boost::optional<T> & value,
+    const YAML::Node & node,
+    const ::std::string & childName
+  ) const;
+
+  template <typename T>
+  typename OptionalMinMax<T>::Type getMinMax(const YAML::Node & parentNode) const;
 
   StructureContentType::Value getStructureContentType(const YAML::Node & node) const;
   build_cell::AtomsDescriptionPtr createAtomsDescription(
@@ -154,11 +164,9 @@ private:
     AtomsDefaults detauls = AtomsDefaults()
   ) const;
 
-  common::AtomSpeciesDatabase &   myAtomSpeciesDb;
+  common::AtomSpeciesDatabase & myAtomSpeciesDb;
 
   ::boost::ptr_vector< ::sstbx::io::IStructureWriter>                          myStructureWriters;
-  ::boost::ptr_vector< ::sstbx::potential::IGeomOptimiser>                     myOptimisers;
-  ::boost::ptr_vector< ::sstbx::potential::IPotential>                         myPotentials;
   ::boost::ptr_vector< ::sstbx::utility::IStructureComparator >                myStructureComparators;
 
 };
@@ -170,48 +178,56 @@ typedef ::boost::error_info<struct TagValue, ::std::string>                     
 
 template <typename T>
 ::boost::optional<T>
-SsLibFactoryYaml::getNodeChildValueAs(const YAML::Node & node, const ::std::string & childName, const bool required) const
+SsLibFactoryYaml::getNodeChildValueAs(
+  const YAML::Node & node,
+  const ::std::string & childName
+) const
 {
   ::boost::optional<T> childValue;
   if(node[childName])
   {
     const YAML::Node & childNode = node[childName];
-    if(!childNode.IsScalar())
+    if(childNode.IsScalar())
     {
-      BOOST_THROW_EXCEPTION(FactoryError() <<
-        ErrorType(MALFORMED_VALUE) <<
-        NodeName(childName) <<
-        ProblemValue(childNode.as< ::std::string>()));
+      try { childValue.reset(childNode.as<T>()); }
+      catch(const YAML::TypedBadConversion<T> & /*e*/)  {}
     }
-    try
-    {
-      childValue.reset(childNode.as<T>());
-    }
-    catch(YAML::TypedBadConversion<double> e)
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() <<
-        ErrorType(MALFORMED_VALUE) <<
-        NodeName(childName) <<
-        ProblemValue(childNode.as< ::std::string>()));
-    }
-  }
-  else if(required)
-  {
-    BOOST_THROW_EXCEPTION(FactoryError() <<
-      ErrorType(REQUIRED_KEYWORD_MISSING) <<
-      NodeName(childName));
   }
   return childValue;
 }
 
 template <typename T>
+bool SsLibFactoryYaml::getChildNodeValue(
+  ::boost::optional<T> & value,
+  const YAML::Node & node,
+  const ::std::string & childName
+) const
+{
+  bool valueFound = false;
+  if(node[childName])
+  {
+    const YAML::Node & childNode = node[childName];
+    if(childNode.IsScalar())
+    {
+      try
+      {
+        value.reset(childNode.as<T>());
+        valueFound = true;
+      }
+      catch(const YAML::TypedBadConversion<T> & /*e*/)  {}
+    }
+  }
+  return valueFound;
+}
+
+template <typename T>
 typename SsLibFactoryYaml::OptionalMinMax<T>::Type
-SsLibFactoryYaml::getMinMax(const YAML::Node & parentNode, const SsLibFactoryYaml::MinMaxRequire::Value requiredFlag) const
+SsLibFactoryYaml::getMinMax(const YAML::Node & parentNode) const
 {
   typename OptionalMinMax<T>::Type minMax;
 
-  minMax.first  = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MIN, (requiredFlag & MinMaxRequire::MIN) != 0);
-  minMax.second = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MAX, (requiredFlag & MinMaxRequire::MAX) != 0);
+  minMax.first  = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MIN);
+  minMax.second = getNodeChildValueAs<T>(parentNode, sslib_yaml_keywords::MAX);
 
   return minMax;
 }

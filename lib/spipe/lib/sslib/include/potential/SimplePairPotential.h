@@ -71,9 +71,10 @@ public:
   static const unsigned int MAX_INTERACTION_VECTORS = 5000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
 
+  static unsigned int numParams(const unsigned int numSpecies);
+
 	SimplePairPotential(
     common::AtomSpeciesDatabase & atomSpeciesDb,
-		const size_t 				          numSpecies,
     const SpeciesList &           speciesList,
 		const ::arma::mat &		        epsilon,
 		const ::arma::mat &		        sigma,
@@ -100,6 +101,7 @@ public:
   // From IPotential /////////////
   virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const;
   virtual ::boost::shared_ptr< IPotentialEvaluator > createEvaluator(const sstbx::common::Structure & structure) const;
+  virtual IParameterisable * getParameterisable();
   // End from IPotential /////////
 
   bool evaluate(const common::Structure & structure, SimplePairPotentialData & data) const;
