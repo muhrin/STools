@@ -44,17 +44,20 @@ private:
 BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
 {
   typedef spipe::SpSingleThreadedEngine Engine;
+  typedef spipe::SpPipe Pipe;
   typedef Engine::RunnerPtr RunnerPtr;
 
   StructureSink sink;
 
-  blocks::LoadSeedStructures load("structures/*.res");
+  Pipe pipe;
+  blocks::LoadSeedStructures * const load = pipe.addBlock(new blocks::LoadSeedStructures("structures/*.res"));
+  pipe.setStartBlock(load);
 
   Engine engine;
   RunnerPtr runner = engine.createRunner();
 
   runner->setFinishedDataSink(&sink);
-  runner->run(load);
+  runner->run(pipe);
 
   BOOST_REQUIRE(sink.getNumReceived() == 10);
 }

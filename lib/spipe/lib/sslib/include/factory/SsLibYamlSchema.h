@@ -1,0 +1,280 @@
+/*
+ * SsLibYamlSchema.h
+ *
+ *
+ *  Created on: May 29, 2012
+ *      Author: Martin Uhrin
+ */
+
+#ifndef SSLIB_YAML_SCHEMA_H
+#define SSLIB_YAML_SCHEMA_H
+
+// INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
+
+#ifdef SSLIB_USE_YAML
+
+#include "factory/SsLibElements.h"
+#include "potential/TpsdGeomOptimiser.h"
+#include "utility/SortedDistanceComparator.h"
+#include "yaml/Transcode.h"
+#include "yaml_schema/YamlSchema.h"
+
+// DEFINES //////////////////////////////////////////////
+
+namespace sstbx {
+namespace factory {
+
+// TYPEDEFS //////////////////////////////////////
+
+///////////////////////////////////////////////////////////
+// CUSTOM MAPS
+///////////////////////////////////////////////////////////
+typedef yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> > SchemaDoubleList;
+
+// OPTIMISERS ////////////////////////////////////////////////
+struct Tpsd : public yaml_schema::SchemaHeteroMap
+{
+  Tpsd()
+  {
+    addScalarEntry("tol", TOLERANCE)->element()
+      ->defaultValue(potential::TpsdGeomOptimiser::DEFAULT_TOLERANCE);
+    addScalarEntry("maxSteps", MAX_STEPS)->element()
+      ->defaultValue(potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
+  }
+};
+
+struct Optimiser : public yaml_schema::SchemaHeteroMap
+{
+  Optimiser()
+  {
+    addEntry("tpsd", TPSD, (new yaml_schema::SchemaHeteroMap));
+    utility::HeterogeneousMap defaultOptimiser;
+    defaultOptimiser[TPSD];
+    defaultValue(defaultOptimiser);
+  }
+};
+
+// POTENTIALS ////////////////////////////////////////////////
+
+struct LennardJones : public yaml_schema::SchemaHeteroMap
+{
+  LennardJones()
+  {
+    addEntry(
+      "spec",
+      SPECIES_LIST,
+      new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >
+    )->required();
+
+    addEntry(
+      "eps",
+      LJ_EPSILON,
+      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
+    )->required();
+
+    addEntry(
+      "sig",
+      LJ_SIGMA,
+      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
+    )->required();
+
+    addEntry(
+      "beta",
+      LJ_BETA,
+      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
+    )->required();
+
+    addScalarEntry("pow", LJ_POWERS)->required();
+
+    addEntry(
+      "combining",
+      POT_COMBINING,
+      (new yaml_schema::SchemaScalar<potential::CombiningRule::Value>)->defaultValue(potential::CombiningRule::NONE));
+
+    addScalarEntry("cut", CUTOFF)->element()->defaultValue(2.5);
+  }
+};
+
+struct Potential : public yaml_schema::SchemaHeteroMap
+{
+  Potential()
+  {
+    addEntry("lennardJones", LENNARD_JONES, new LennardJones());
+  }
+};
+
+// STRUCTURE //////////////////////////////////////
+struct AtomsDataMap : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  AtomsDataMap()
+  {
+    addScalarEntry("spec", SPECIES)->required();
+  }
+};
+
+typedef yaml_schema::SchemaList<yaml_schema::SchemaScalar< ::std::string> > AtomsDataListSchema;
+typedef yaml_schema::SchemaListMap<AtomsDataListSchema, AtomsDataMap> AtomsDataSchema;
+typedef yaml_schema::SchemaList<AtomsDataSchema> AtomsListSchema;
+
+struct Structure : public yaml_schema::SchemaHeteroMap
+{
+  Structure()
+  {
+    addEntry("atoms", ATOMS, new AtomsListSchema());
+  }
+};
+
+// STRUCTURE BUILDER //////////////////////////////
+
+namespace builder {
+
+struct GenSphere : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  GenSphere()
+  {
+    addScalarEntry("radius", RADIUS)->required();
+    addScalarEntry("pos", POSITION)->element()
+      ->defaultValue(::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("shell", SHELL_THICKNESS);
+  };
+};
+
+struct GenBox : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  GenBox()
+  {
+    addScalarEntry("pos", POSITION)->element()
+      ->defaultValue(::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("shell", SHELL_THICKNESS);
+    addScalarEntry("width", WIDTH)->required();
+    addScalarEntry("height", HEIGHT)->required();
+    addScalarEntry("depth", DEPTH)->required();
+  };
+};
+
+struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  UnitCellBuilder()
+  {
+    addEntry("abc", UNIT_CELL_BUILDER_ABC,
+      (new yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> >)->length(6));
+    addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
+    addScalarEntry("lengths", UNIT_CELL_BUILDER_LENGTHS);
+    addScalarEntry("angles", UNIT_CELL_BUILDER_ANGLES);
+  }
+};
+
+struct SimpleAtomsDataMap : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  SimpleAtomsDataMap()
+  {
+    addScalarEntry("spec", SPECIES);
+    addScalarEntry("radius", RADIUS);
+  }
+};
+
+typedef yaml_schema::SchemaListMap<
+  yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
+  SimpleAtomsDataMap
+> SimpleAtomsListEntrySchema;
+
+typedef yaml_schema::SchemaList<SimpleAtomsListEntrySchema> SimpleAtomsListSchema;
+
+struct AtomsGroup : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  AtomsGroup()
+  {
+    addEntry("genSphere", GEN_SPHERE, new GenSphere());
+    addEntry("genBox", GEN_BOX, new GenBox());
+    addEntry("atoms", ATOMS, new SimpleAtomsListSchema())->required();
+    addScalarEntry("atomsRadius", ATOM_RADIUS);
+  }
+};
+
+struct ExtendedAtomsDataMap : SimpleAtomsDataMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  ExtendedAtomsDataMap()
+  {
+    addScalarEntry("spec", SPECIES);
+    addEntry("group", ATOMS_GROUP, new AtomsGroup());
+  }
+};
+
+typedef yaml_schema::SchemaListMap<
+  yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
+  ExtendedAtomsDataMap
+> ExtendedAtomsListEntrySchema;
+
+typedef yaml_schema::SchemaList<ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
+
+struct Builder : public yaml_schema::SchemaHeteroMap
+{
+  Builder()
+  {
+    addEntry(
+      "atomsFormat",
+      ATOMS_FORMAT,
+      new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >()
+    );
+    addScalarEntry("atomsRadius", ATOM_RADIUS);
+    addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
+    addEntry("genSphere", GEN_SPHERE, new GenSphere());
+    addEntry("genBox", GEN_BOX, new GenBox());
+    addEntry("unitCell", UNIT_CELL_BUILDER, new UnitCellBuilder());
+  }
+};
+
+} // namespace builder
+
+// STRUCTURE COMPARATORS //////////////////////////
+
+struct SortedDistance : public yaml_schema::SchemaHeteroMap
+{
+  SortedDistance()
+  {
+    addScalarEntry("tol", TOLERANCE)->element()
+      ->defaultValue(utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
+    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()
+      ->defaultValue(false);
+    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()
+      ->defaultValue(true);
+  }
+};
+
+struct Comparator : public yaml_schema::SchemaHeteroMap
+{
+  Comparator()
+  {
+    addEntry("sortedDist", SORTED_DISTANCE, new SortedDistance());
+
+    // Defaults
+    utility::HeterogeneousMap comparatorDefault;
+    comparatorDefault[SORTED_DISTANCE];
+    defaultValue(comparatorDefault);
+  }
+};
+
+// UNIT CELL //////////////////////////////////////////
+
+struct UnitCell : public yaml_schema::SchemaHeteroMap
+{
+  UnitCell()
+  {
+    addEntry("abc", ABC, (new SchemaDoubleList())->length(6)->required());
+  }
+};
+
+}
+}
+
+#endif /* SSLIB_YAML_SCHEMA_H */
+
+#endif /* SSLIB_USE_YAML */

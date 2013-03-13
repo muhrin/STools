@@ -10,7 +10,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <build_cell/Types.h>
+#include <build_cell/BuildCellFwd.h>
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/AtomsGenerator.h>
 #include <build_cell/IUnitCellGenerator.h>

@@ -11,16 +11,15 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 ## build_cell
 
 set(sslib_Header_Files__build_cell
-  include/build_cell/AbstractConstraintDescription.h
-  include/build_cell/AtomConstraintDescription.h
   include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
   include/build_cell/AtomsGenerator.h
   include/build_cell/BuildAtomInfo.h
-  include/build_cell/ConstraintDescriptionId.h
+  include/build_cell/BuildCellFwd.h
   include/build_cell/GenerationOutcome.h
-  include/build_cell/IAtomConstrainable.h
-  include/build_cell/IConstraintDescription.h
+  include/build_cell/GenBox.h
+  include/build_cell/GenSphere.h
+  include/build_cell/IGeneratorShape.h
   include/build_cell/IStructureGenerator.h
   include/build_cell/IFragmentGenerator.h
   include/build_cell/IUnitCellGenerator.h
@@ -29,9 +28,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/StructureBuild.h
   include/build_cell/StructureBuilder.h
   include/build_cell/StructureContents.h
-  include/build_cell/StructureConstraintDescription.h
   include/build_cell/StructureGenerationOutcome.h
-  include/build_cell/Types.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
@@ -68,30 +65,26 @@ source_group("Header Files\\common\\event" FILES ${sslib_Header_Files__common__e
 ## factory
 
 set(sslib_Header_Files__factory
-  include/factory/AbstractInputObject.h
   include/factory/FactoryError.h
-  include/factory/IInputObject.h
-  include/factory/ISchemaElementInstance.h
-  include/factory/Scalar.h
-  include/factory/SchemaAnon.h
-  include/factory/SchemaDoc.h
-  include/factory/SchemaElement.h
-  include/factory/SchemaList.h
-  include/factory/SchemaMap.h
-  include/factory/SchemaMapSingle.h
-  include/factory/SchemaObjectUid.h
-  include/factory/SchemaScalarValue.h
-  include/factory/SchemaScalarValueAny.h
-  include/factory/SchemaScalarValueLiteral.h
+  include/factory/FactoryFwd.h
+  include/factory/GenShapeFactory.h
   include/factory/SsLibElements.h
   include/factory/SsLibFactoryYaml.h
   include/factory/SsLibYamlKeywords.h
+  include/factory/SsLibYamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})
+
+## factory/detail
+
+set(sslib_Header_Files__factory__detail
+)
+source_group("Header Files\\factory\\detail" FILES ${sslib_Header_Files__factory__detail})
 
 ## io
 
 set(sslib_Header_Files__io
+  include/io/AtomFormatParser.h
   include/io/AtomYamlFormatParser.h
   include/io/BoostFilesystem.h
   include/io/IStructureReader.h
@@ -103,11 +96,11 @@ set(sslib_Header_Files__io
   include/io/StructureReadWriteManager.h
   include/io/IoFunctions.h
   include/io/XyzReaderWriter.h
-  include/io/YamlTranscode.h
 )
 source_group("Header Files\\io" FILES ${sslib_Header_Files__io})
 
 set(sslib_Header_Files__io__detail
+  include/io/detail/AtomFormatParser.h
   include/io/detail/StructureReadWriteManager.h
 )
 source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
@@ -121,6 +114,7 @@ source_group("Header Files\\math" FILES ${sslib_Header_Files__math})
 ## potential
 
 set(sslib_Header_Files__potential
+  include/potential/CombiningRules.h
   include/potential/FixedLatticeShapeConstraint.h
   include/potential/GenericPotentialEvaluator.h
   include/potential/IGeomOptimiser.h
@@ -138,6 +132,8 @@ set(sslib_Header_Files__potential
   include/potential/Types.h
 )
 source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
+
+## utility
 
 set(sslib_Header_Files__utility
   include/utility/DistanceMatrixComparator.h
@@ -172,20 +168,71 @@ set(sslib_Header_Files__utility
   include/utility/TypedDataTable.h
   include/utility/UniqueStructureSet.h
   include/utility/UtilFunctions.h
+  include/utility/UtilityFwd.h
 )
 source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
+
+## utility/detail
 
 set(sslib_Header_Files__utility__detail
   include/utility/detail/NamedProperty.h
   include/utility/detail/TypedDataTable.h
   include/utility/detail/GenericBufferedComparator.h
   include/utility/detail/HeterogeneousMap.h
+  include/utility/detail/HeterogeneousMapKey.h
   include/utility/detail/MultiIterator.h
   include/utility/detail/MultiRange.h
   include/utility/detail/SharedHandle.h
   include/utility/detail/UniqueStructureSet.h
 )
 source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility__detail})
+
+## yaml
+
+set(sslib_Header_Files__yaml
+  include/yaml/HelperTypes.h
+  include/yaml/Transcode.h
+  include/yaml/TranscodeBuildCell.h
+  include/yaml/TranscodeCommon.h
+  include/yaml/TranscodeFactory.h
+  include/yaml/TranscodeGeneral.h
+  include/yaml/TranscodeIo.h
+  include/yaml/TranscodePotential.h
+)
+source_group("Header Files\\yaml" FILES ${sslib_Header_Files__yaml})
+
+## yaml/detail
+
+set(sslib_Header_Files__yaml__detail
+  include/yaml/detail/TranscodeGeneral.h
+)
+source_group("Header Files\\yaml\\detail" FILES ${sslib_Header_Files__yaml__detail})
+
+## yaml_schema
+
+set(sslib_Header_Files__yaml_schema
+  include/yaml_schema/SchemaFundamental.h
+  include/yaml_schema/SchemaList.h
+  include/yaml_schema/SchemaMap.h
+  include/yaml_schema/SchemaParse.h
+  include/yaml_schema/SchemaScalar.h
+  include/yaml_schema/SchemaVariant.h
+  include/yaml_schema/SchemaWrapper.h
+  include/yaml_schema/YamlSchema.h
+)
+source_group("Header Files\\yaml_schema" FILES ${sslib_Header_Files__yaml_schema})
+
+## yaml_schema/detail
+
+set(sslib_Header_Files__yaml_schema__detail
+  include/yaml_schema/detail/SchemaElement.h
+  include/yaml_schema/detail/SchemaFundamental.h
+  include/yaml_schema/detail/SchemaList.h
+  include/yaml_schema/detail/SchemaMap.h
+  include/yaml_schema/detail/SchemaVariant.h
+  include/yaml_schema/detail/SchemaWrapper.h
+)
+source_group("Header Files\\yaml_schema\\detail" FILES ${sslib_Header_Files__yaml_schema__detail})
 
 set(sslib_Header_Files__
   include/OptionalTypes.h
@@ -203,12 +250,17 @@ set(sslib_Header_Files
   ${sslib_Header_Files__common}
   ${sslib_Header_Files__common__event}
   ${sslib_Header_Files__factory}
+  ${sslib_Header_Files__factory__detail}
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__io__detail}
   ${sslib_Header_Files__math}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
   ${sslib_Header_Files__utility__detail}
+  ${sslib_Header_Files__yaml}
+  ${sslib_Header_Files__yaml__detail}
+  ${sslib_Header_Files__yaml_schema}
+  ${sslib_Header_Files__yaml_schema__detail}
   ${sslib_Header_Files__}
 )
 

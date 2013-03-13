@@ -26,7 +26,7 @@ namespace build_cell {
 
 AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
 myAtoms(toCopy.myAtoms),
-myGenerationSphere(toCopy.myGenerationSphere)
+myGenShape(toCopy.myGenShape->clone())
 {}
 
 size_t AtomsGenerator::numAtoms() const
@@ -64,14 +64,14 @@ void AtomsGenerator::eraseAtoms(AtomsGenerator::iterator pos)
   myAtoms.erase(pos);
 }
 
-const AtomsGenerator::OptionalSphere & AtomsGenerator::getGenerationSphere() const
+const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
 {
-  return myGenerationSphere;
+  return myGenShape.get();
 }
 
-void AtomsGenerator::setGenerationSphere(const OptionalSphere & sphere)
+void AtomsGenerator::setGeneratorShape(GenShapePtr shape)
 {
-  myGenerationSphere = sphere;
+  myGenShape = shape;
 }
 
 GenerationOutcome
@@ -162,8 +162,8 @@ AtomsGenerator::generatePosition(const AtomsDescription & atom, const StructureB
   }
   else
   {
-    if(myGenerationSphere)
-      position.first = myGenerationSphere->randomPoint();
+    if(myGenShape.get())
+      position.first = myGenShape->randomPoint();
     else
       position.first = build.getRandomPoint();
   }

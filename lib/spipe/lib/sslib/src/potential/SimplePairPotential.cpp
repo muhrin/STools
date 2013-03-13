@@ -39,7 +39,7 @@ SimplePairPotential::SimplePairPotential(
 	const ::arma::mat &		        beta,
 	const double 			            m,
 	const double    			        n,
-  const CombiningRule           combiningRule):
+  const CombiningRule::Value    combiningRule):
 	myName("Simple pair potential"),
   myAtomSpeciesDb(atomSpeciesDb),
 	myNumSpecies(speciesList.size()),
@@ -52,6 +52,13 @@ SimplePairPotential::SimplePairPotential(
   myCutoffFactor(cutoffFactor),
   myCombiningRule(combiningRule)
 {
+  SSLIB_ASSERT(myNumSpecies == myEpsilon.n_rows);
+  SSLIB_ASSERT(myEpsilon.is_square());
+  SSLIB_ASSERT(myNumSpecies == mySigma.n_rows);
+  SSLIB_ASSERT(mySigma.is_square());
+  SSLIB_ASSERT(myNumSpecies == myBeta.n_rows);
+  SSLIB_ASSERT(myBeta.is_square());
+
   applyCombiningRule();
 	initCutoff(myCutoffFactor);
   updateSpeciesDb();
@@ -89,41 +96,8 @@ void SimplePairPotential::initCutoff(double cutoff)
 
 void SimplePairPotential::applyCombiningRule()
 {
-  if(myCombiningRule == LORENTZ || myCombiningRule == LORENTZ_BERTHELOT)
-  {
-    // Apply the Lorenz combining rule
-	  for(size_t i = 0; i < myNumSpecies - 1; ++i)
-	  {
-		  for(size_t j = i + 1; j < myNumSpecies; ++j)
-		  {
-			  mySigma(i, j) = mySigma(j, i) = 0.5 * (mySigma(i, i) + mySigma(j, j));
-		  }
-	  }
-  }
-  if(myCombiningRule == BERTHELOT || myCombiningRule == LORENTZ_BERTHELOT)
-  {
-    // Apply the Berthelot combining rule
-	  for(size_t i = 0; i < myNumSpecies - 1; ++i)
-	  {
-		  for(size_t j = i + 1; j < myNumSpecies; ++j)
-		  {
-			  myEpsilon(i, j) = myEpsilon(j, i) = std::sqrt(myEpsilon(i, i) * myEpsilon(j, j));
-		  }
-	  }
-  }
-  if(myCombiningRule == CUSTOM)
-  {
-    double sum = 0.0;
-    // Apply the Berthelot combining rule
-	  for(size_t i = 0; i < myNumSpecies - 1; ++i)
-	  {
-		  for(size_t j = i + 1; j < myNumSpecies; ++j)
-		  {
-        sum = myEpsilon(i, i) + myEpsilon(j, j);
-			  myEpsilon(i, j) = myEpsilon(j, i) = std::sqrt(16 - sum * sum);
-		  }
-	  }
-  }
+  applyEnergyRule(myEpsilon, myCombiningRule);
+  applySizeRule(mySigma, myCombiningRule);
 }
 
 

@@ -18,19 +18,12 @@
 #include "common/Structure.h"
 #include "utility/IBufferedComparator.h"
 #include "utility/TransformFunctions.h"
-
+#include "utility/UtilityFwd.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
-namespace utility {
-class IStructureComparator;
-}
-}
-
 
 namespace sstbx {
 namespace utility {
-
 namespace detail {
 
 template <typename Key>
@@ -41,7 +34,6 @@ protected:
   typedef ::std::map<Key, ComparisonDataHandle> StructureMap;
 
 public:
-
   typedef utility::TakeFirst<typename StructureMap::value_type> TakeFirst;
   typedef utility::TakeFirst<const typename StructureMap::value_type> TakeFirstConst;
 
@@ -57,7 +49,8 @@ public:
 
   typedef std::pair<Key, bool> ReturnPair;
 
-  UniqueStructureSetBase(const IStructureComparator & comparator);
+  explicit UniqueStructureSetBase(IStructureComparatorPtr comparator);
+  explicit UniqueStructureSetBase(const IStructureComparator & comparator);
 
   // Iterators /////////////////////////
   iterator begin();
@@ -94,6 +87,11 @@ protected:
   MapInsertReturn insertStructure(const Key & key, common::Structure & correspondingStructure);
 
 private:
+
+  // WARNING: Order is important.  When using initialiser list the order of declaration
+  // will be used (not the order of the list itself).  Therefore the owned comparator must
+  // come first, then the comparator.
+  IStructureComparatorPtr myOwnedComparator;
   const Comparator myComparator;
   StructureMap myStructures;
 };
@@ -119,7 +117,8 @@ public:
 
   typedef typename StructureMap::size_type size_type;
 
-  UniqueStructureSet(const IStructureComparator & comparator);
+  explicit UniqueStructureSet(IStructureComparatorPtr comparator);
+  explicit UniqueStructureSet(const IStructureComparator & comparator);
 
   // Modifiers ///////////////////////////
   insert_return_type insert(const Key & key, common::Structure & correspondingStructure);
@@ -148,7 +147,8 @@ public:
   typedef StructureMap::size_type size_type;
   typedef std::pair<Key, bool> ReturnPair;
 
-  UniqueStructureSet(const IStructureComparator & comparator);
+  explicit UniqueStructureSet(IStructureComparatorPtr comparator);
+  explicit UniqueStructureSet(const IStructureComparator & comparator);
 
   // Modifiers ///////////////////////////
   insert_return_type insert(common::Structure * structure);

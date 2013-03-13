@@ -35,25 +35,6 @@ namespace common = ::spipe::common;
 namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IGeomOptimiser & optimiser,
-  const bool writeOutput):
-SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, writeOutput)
-{
-  init();
-}
-
-ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IGeomOptimiser & optimiser,
-  const ::sstbx::potential::OptimisationSettings & optimisationParams,
-  const bool writeOutput):
-SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, optimisationParams, writeOutput)
-{
-  init();
-}
-
-ParamPotentialGo::ParamPotentialGo(
 	::sstbx::potential::IGeomOptimiserPtr optimiser,
   const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),

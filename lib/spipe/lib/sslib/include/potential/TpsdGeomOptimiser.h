@@ -43,9 +43,13 @@ public:
 	static const unsigned int DEFAULT_MAX_STEPS;
 	static const double	DEFAULT_TOLERANCE;
 
-	TpsdGeomOptimiser(
-		PotentialPtr potential,
-		const double tolerance = DEFAULT_TOLERANCE);
+	TpsdGeomOptimiser(PotentialPtr potential);
+
+  double getTolerance() const;
+  void setTolerance(const double tolerance);
+
+  unsigned int getMaxSteps() const;
+  void setMaxSteps(const unsigned int maxSteps);
 
 	// IGeomOptimiser interface //////////////////////////////
   virtual IPotential * getPotential();
@@ -65,7 +69,6 @@ public:
 	bool optimise(
     common::Structure &   structure,
     IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
 		const double          eTol,
     const OptimisationSettings & options) const;
 
@@ -73,7 +76,6 @@ public:
     common::Structure &   structure,
     common::UnitCell &    unitCell,
     IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
 		const double          eTol,
     const OptimisationSettings & options) const;
 
@@ -88,7 +90,8 @@ private:
 
 	PotentialPtr myPotential;
 
-	const double myTolerance;
+	double myTolerance;
+  unsigned int myMaxSteps;
 };
 
 }

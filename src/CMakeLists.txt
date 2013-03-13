@@ -7,6 +7,18 @@ set(stools_Header_Files__
 )
 source_group("Header Files" FILES ${stools_Header_Files__})
 
+## stools/factory
+set(stools_Header_Files__factory
+  factory/StFactory.h
+  factory/YamlSchema.h
+)
+source_group("Header Files\\factory" FILES ${stools_Header_Files__factory})
+
+set(stools_Source_Files__factory
+  factory/StFactory.cpp
+)
+source_group("Source Files\\factory" FILES ${stools_Source_Files__factory})
+
 ## stools/input
 set(stools_Header_Files__input
   input/YamlKeywords.h
@@ -40,6 +52,8 @@ source_group("Header Files\\utility\\detail" FILES ${stools_Header_Files__utilit
 set(stools_Files
   ${stools_Header_Files__}
   ${stools_Header_Files__input}
+  ${stools_Header_Files__factory}
+  ${stools_Source_Files__factory}
   ${stools_Header_Files__utility}
   ${stools_Source_Files__utility}
   ${stools_Header_Files__utility__detail}
@@ -56,6 +70,34 @@ target_link_libraries(stools_common
   ${Boost_LIBRARIES}
   sslib
   spipe
+)
+
+#################################
+## sbuild: Build a structure   ##
+#################################
+set(stools_Header_Files__sbuild
+)
+source_group("Header Files" FILES ${stools_Header_Files__sbuild})
+
+set(stools_Source_Files__sbuild
+  sbuild.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__sbuild})
+
+set(stools_Files__sbuild
+  ${stools_Header_Files__sbuild}
+  ${stools_Source_Files__sbuild}
+)
+
+add_executable(sbuild
+  ${stools_Files__sbuild}
+)
+
+add_dependencies(sbuild stools_common)
+
+# Libraries we need to link to
+target_link_libraries(sbuild
+  stools_common
 )
 
 ##############################################

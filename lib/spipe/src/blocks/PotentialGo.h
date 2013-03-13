@@ -47,17 +47,6 @@ class PotentialGo : public SpPipeBlock, ::boost::noncopyable
 public:
 
 	PotentialGo(
-    ::sstbx::potential::IGeomOptimiser & optimiser,
-    const bool writeOutput = true
-  );
-
-	PotentialGo(
-    ::sstbx::potential::IGeomOptimiser & optimiser,
-    const ::sstbx::potential::OptimisationSettings & optimisationParams,
-    const bool writeOutput = true
-  );
-
-	PotentialGo(
     ::sstbx::potential::IGeomOptimiserPtr optimiser,
     const bool writeOutput = true
   );
@@ -95,8 +84,7 @@ protected:
   const ::sstbx::potential::OptimisationSettings  myOptimisationParams;
 
 private:
-  sstbx::potential::IGeomOptimiser & myOptimiser;
-	const sstbx::potential::IGeomOptimiserPtr myOwnedOptimiser;
+	const sstbx::potential::IGeomOptimiserPtr myOptimiser;
 
   // Use a table to store data about structure that are being optimised
   ::spipe::utility::DataTableSupport myTableSupport;

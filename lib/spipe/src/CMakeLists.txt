@@ -48,8 +48,6 @@ set(spipe_Header_Files__common
   common/SharedData.h
   common/StructureData.h
   common/UtilityFunctions.h
-  common/YamlInputObjectAdapter.h
-  common/YamlInputObjectIteratorAdapter.h
 )
 source_group("Header Files\\common" FILES ${spipe_Header_Files__common})
 
@@ -61,22 +59,24 @@ set(spipe_Source_Files__common
   common/SharedData.cpp
   common/StructureData.cpp
   common/UtilityFunctions.cpp
-  common/YamlInputObjectAdapter.cpp
-  common/YamlInputObjectIteratorAdapter.cpp
 )
 source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
 
 ## spipe/factory/
 
 set(spipe_Header_Files__factory
-    factory/SPipeFactoryYaml.h
+  factory/MapEntries.h
+  factory/Factory.h
+  factory/YamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
 
 set(spipe_Source_Files__factory
-    factory/SPipeFactoryYaml.cpp
+  factory/MapEntries.cpp
+  factory/Factory.cpp
+  factory/YamlSchema.cpp
 )
-source_group("Source Files\\utility" FILES ${spipe_Source_Files__factory})
+source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 
 ## spipe/utility/
 

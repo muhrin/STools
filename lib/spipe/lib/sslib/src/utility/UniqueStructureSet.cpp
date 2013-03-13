@@ -12,6 +12,10 @@
 namespace sstbx {
 namespace utility {
 
+UniqueStructureSet<common::Structure *>::UniqueStructureSet(IStructureComparatorPtr comparator):
+detail::UniqueStructureSetBase<common::Structure *>(comparator)
+{}
+
 UniqueStructureSet<common::Structure *>::UniqueStructureSet(const IStructureComparator & comparator):
 detail::UniqueStructureSetBase<common::Structure *>(comparator)
 {}

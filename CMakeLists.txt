@@ -16,7 +16,6 @@ project(STools)
 # Custom paths to libraries #########
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
-set(QHULL_ROOT "" CACHE FILEPATH "Path to qhull library")
 
 
 ## End configuration options ###########################

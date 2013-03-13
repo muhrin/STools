@@ -88,29 +88,33 @@ private:
 BOOST_AUTO_TEST_CASE(LowestFreeEnergyTest)
 {
   typedef spipe::SpSingleThreadedEngine Engine;
+  typedef spipe::SpPipe Pipe;
   typedef Engine::RunnerPtr RunnerPtr;
 
   // SETTINGS /////////////
   const unsigned int NUM_TO_KEEP    = 2;
   const unsigned int NUM_STRUCTURES = 10;
 
-  StructuresSender send(NUM_STRUCTURES);
-
-  blocks::LowestFreeEnergy lowestEnergy(NUM_TO_KEEP);
-  StructureSink sink;
+  Pipe pipe;
+  StructuresSender * const send = pipe.addBlock(new StructuresSender(NUM_STRUCTURES));
+  blocks::LowestFreeEnergy * const lowestEnergy = pipe.addBlock(new blocks::LowestFreeEnergy(NUM_TO_KEEP));
 
   // Set up the pipe
-  send |= lowestEnergy;
+  pipe.setStartBlock(send);
+  pipe.connect(send, lowestEnergy);
+
+  StructureSink sink;
+
 
   Engine engine;
   RunnerPtr runner = engine.createRunner();
   runner->setFinishedDataSink(&sink);
-  runner->run(send);
+  runner->run(pipe);
 
   BOOST_REQUIRE(sink.getNumReceived() == NUM_TO_KEEP);
   // Now try again to make sure it is resetting itself correctly
   sink.reset();
-  runner->run(send);
+  runner->run(pipe);
   BOOST_REQUIRE(sink.getNumReceived() == NUM_TO_KEEP);
 }
 

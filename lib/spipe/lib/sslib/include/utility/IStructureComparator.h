@@ -13,6 +13,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "utility/UtilityFwd.h"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
 namespace common {
@@ -23,10 +25,8 @@ class IBufferedComparator;
 }
 }
 
-namespace sstbx
-{
-namespace utility
-{
+namespace sstbx {
+namespace utility {
 
 class IStructureComparator
 {

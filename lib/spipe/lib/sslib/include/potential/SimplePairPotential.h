@@ -27,6 +27,7 @@
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
 #include "common/Utils.h"
+#include "potential/CombiningRules.h"
 #include "potential/GenericPotentialEvaluator.h"
 #include "potential/IParameterisable.h"
 #include "potential/IPotential.h"
@@ -53,21 +54,6 @@ public:
   typedef SimplePairPotentialData::SpeciesList SpeciesList;
   typedef SimplePairPotentialData DataType;
 
-  /**
-  /* Combining rules for setting off-diagonal length/energy scale terms. See
-  /* http://www.sklogwiki.org/SklogWiki/index.php/Combining_rules
-  /* for good reference.
-  /* If a rule is being used it will overwrite any off diagonal parameters.
-  /**/
-  enum CombiningRule
-  {
-    NONE,
-    LORENTZ,
-    BERTHELOT,
-    LORENTZ_BERTHELOT,
-    CUSTOM
-  };
-
   static const unsigned int MAX_INTERACTION_VECTORS = 5000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
 
@@ -82,7 +68,7 @@ public:
 		const ::arma::mat &	          beta,
 		const double  			          m,
 		const double 	  		          n,
-    const CombiningRule           combiningRule = NONE);
+    const CombiningRule::Value    combiningRule = CombiningRule::NONE);
 
 	virtual const ::std::string & getName() const;
 
@@ -138,7 +124,7 @@ private:
 	/** The powers of the sigma/r terms in the potential */
 	double				myN, myM;
 
-  CombiningRule myCombiningRule;
+  CombiningRule::Value myCombiningRule;
 
   ::arma::mat 	rCutoff;
   ::arma::mat 	rCutoffSq;

@@ -42,14 +42,6 @@ namespace blocks {
 class ParamPotentialGo : public PotentialGo
 {
 public:
-  ParamPotentialGo(
-		::sstbx::potential::IGeomOptimiser & optimiser,
-    const bool writeOutput = true);
-
-	ParamPotentialGo(
-		::sstbx::potential::IGeomOptimiser & optimiser,
-    const ::sstbx::potential::OptimisationSettings & optimisationParams,
-    const bool                  writeOutput = true);
 
 	ParamPotentialGo(
 		::sstbx::potential::IGeomOptimiserPtr optimiser,

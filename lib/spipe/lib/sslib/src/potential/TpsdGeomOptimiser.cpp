@@ -8,7 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "potential/TpsdGeomOptimiser.h"
 
-
 #include "SSLib.h"
 #include "common/UnitCell.h"
 #include "potential/OptimisationSettings.h"
@@ -62,12 +61,31 @@ const double TpsdGeomOptimiser::MAX_STEPSIZE = 0.2;
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
 
-TpsdGeomOptimiser::TpsdGeomOptimiser(
-	PotentialPtr potential,
-  const double tolerance):
+TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential):
 myPotential(potential),
-myTolerance(tolerance)
+myTolerance(DEFAULT_TOLERANCE),
+myMaxSteps(DEFAULT_MAX_STEPS)
 {}
+
+double TpsdGeomOptimiser::getTolerance() const
+{
+  return myTolerance;
+}
+
+void TpsdGeomOptimiser::setTolerance(const double tolerance)
+{
+  myTolerance = tolerance;
+}
+
+unsigned int TpsdGeomOptimiser::getMaxSteps() const
+{
+  return myMaxSteps;
+}
+
+void TpsdGeomOptimiser::setMaxSteps(const unsigned int maxSteps)
+{
+  myMaxSteps = maxSteps;
+}
 
 IPotential * TpsdGeomOptimiser::getPotential()
 {
@@ -96,7 +114,13 @@ bool TpsdGeomOptimiser::optimise(
   ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential->createEvaluator(structure);
 
   common::UnitCell * const unitCell = structure.getUnitCell();
-
+  OptimisationSettings localSettings = options;
+  
+  if(!localSettings.maxSteps)
+    localSettings.maxSteps.reset(myMaxSteps);
+  if(!localSettings.pressure)
+    localSettings.pressure.reset(::arma::eye< ::arma::mat>(3, 3));
+  
   bool outcome;
   if(unitCell)
   {
@@ -104,7 +128,6 @@ bool TpsdGeomOptimiser::optimise(
       structure,
       *unitCell,
       *evaluator,
-      options.getMaxIterations() ? *options.getMaxIterations() : DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
       options
     );
@@ -114,7 +137,6 @@ bool TpsdGeomOptimiser::optimise(
 	  outcome = optimise(
       structure,
       *evaluator,
-      options.getMaxIterations() ? *options.getMaxIterations() : DEFAULT_MAX_STEPS,
       DEFAULT_TOLERANCE,
       options
     );
@@ -129,12 +151,14 @@ bool TpsdGeomOptimiser::optimise(
 bool TpsdGeomOptimiser::optimise(
   common::Structure &   structure,
   IPotentialEvaluator & evaluator,
-	const size_t maxSteps,
 	const double eTol,
   const OptimisationSettings & settings) const
 {
+  SSLIB_ASSERT(settings.maxSteps.is_initialized());
+  SSLIB_ASSERT(settings.pressure.is_initialized());
+
   // Set up the external pressure
-  ::arma::mat33 pressureMtx = settings.getExternalPressure();
+  ::arma::mat33 pressureMtx = *settings.pressure;
   const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
@@ -164,7 +188,7 @@ bool TpsdGeomOptimiser::optimise(
 
 	// Set the initial step size so get mooving
 	double step = eTol * 1e8;
-	for(size_t i = 0; !converged && i < maxSteps; ++i)
+	for(size_t i = 0; !converged && i < *settings.maxSteps; ++i)
 	{
 		h0 = h;
 		f0 = data.forces;
@@ -224,16 +248,18 @@ bool TpsdGeomOptimiser::optimise(
   common::Structure &   structure,
   common::UnitCell &    unitCell,
   IPotentialEvaluator & evaluator,
-	const size_t maxSteps,
 	const double eTol,
   const OptimisationSettings & settings) const
 {
+  SSLIB_ASSERT(settings.maxSteps.is_initialized());
+  SSLIB_ASSERT(settings.pressure.is_initialized());
+
 #if TPSD_GEOM_OPTIMISER_DEBUG
   TpsdGeomOptimiserDebugger debugger;
 #endif
 
   // Set up the external pressure
-  ::arma::mat33 pressureMtx = settings.getExternalPressure();
+  ::arma::mat33 pressureMtx = *settings.pressure;
   const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
@@ -269,7 +295,7 @@ bool TpsdGeomOptimiser::optimise(
   size_t numLastEvaluationsWithProblem = 0;
 	// Set the initial step size so get mooving
 	double step = eTol * 1e8;
-	for(unsigned int i = 0; !converged && i < maxSteps; ++i)
+	for(unsigned int i = 0; !converged && i < *settings.maxSteps; ++i)
 	{
 		h0 = h;
 		f0 = data.forces;
@@ -314,7 +340,7 @@ bool TpsdGeomOptimiser::optimise(
 		deltaF	= data.forces - f0;
 
     xg = gg = 0.0;
-    if(settings.getOptimise() & OptimisationSettings::ATOMS)
+    if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
     {
 		  // The accu function will do the sum of all elements
 		  // and the % operator does the Shure product i.e.
@@ -324,7 +350,7 @@ bool TpsdGeomOptimiser::optimise(
     }
 
 		deltaS	= s - s0;
-    if(settings.getOptimise() & OptimisationSettings::LATTICE)
+    if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
 		  xg		+= accu(deltaLatticeCar % deltaS);
 		  gg		+= accu(deltaS % deltaS);
@@ -334,7 +360,7 @@ bool TpsdGeomOptimiser::optimise(
 		if(fabs(xg) > 0.0)
       step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
 
-    if(settings.getOptimise() & OptimisationSettings::ATOMS)
+    if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
     {
 		  // Move the particles on by a step, saving the old positions
 		  deltaPos		= step * data.forces;
@@ -345,18 +371,14 @@ bool TpsdGeomOptimiser::optimise(
     unitCell.cartsToFracInplace(data.pos);
     unitCell.wrapVecsFracInplace(data.pos);
 
-    if(settings.getOptimise() & OptimisationSettings::LATTICE)
+    if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
 		  // Move on cell vectors to relax strain
 		  deltaLatticeCar = step * (s - pressureMtx * latticeCar);
       settings.applyLatticeConstraints(structure, latticeCar, deltaLatticeCar);
 		  latticeCar += deltaLatticeCar;
 
-      try
-      {
-		    unitCell.setOrthoMtx(latticeCar);
-      }
-      catch(const std::runtime_error & /*exception*/)
+      if(!unitCell.setOrthoMtx(latticeCar))
       {
         // The unit cell matrix has become singular
         converged = false;

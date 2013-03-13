@@ -17,6 +17,8 @@
 
 #include <armadillo>
 
+#include <OptionalTypes.h>
+
 #include "common/Types.h"
 #include "potential/OptimisationConstraint.h"
 
@@ -28,36 +30,25 @@ namespace potential {
 // FORWARD DECLARATIONS ////////////////////////////////////
 class OptimisationConstraint;
 
-class OptimisationSettings
+struct OptimisationSettings
 {
-public:
-
   typedef ::boost::ptr_list<OptimisationConstraint> Constraints;
   typedef Constraints::iterator ConstraintsIterator;
   typedef Constraints::const_iterator ConstConstraintsIterator;
-  typedef ::boost::optional<unsigned int> OptionalUint;
 
-  enum Optimise
+  struct Optimise
   {
-    ATOMS             = 0x01, // 000
-    LATTICE           = 0x02, // 010
-    ATOMS_AND_LATTICE = 0x03  // 011
+    enum Value
+    {
+      ATOMS             = 0x01, // 000
+      LATTICE           = 0x02, // 010
+      ATOMS_AND_LATTICE = 0x03  // 011
+    };
   };
 
-  OptimisationSettings();
-  OptimisationSettings(const Optimise optimise_);
-  OptimisationSettings(const Optimise optimise_, const ::arma::mat33 & externalPressure_);
-
-  void setPressure(const double pressure);
-  void setExternalPressure(const ::arma::mat33 & pressure);
-  const ::arma::mat33 & getExternalPressure() const;
-
-  Optimise getOptimise() const;
-  void setOptimise(const Optimise & optimise);
-
-  const OptionalUint & getMaxInteractions() const;
-  void setMaxIterations(const OptionalUint & maxIters);
-  OptionalUint getMaxIterations() const;
+  ::sstbx::OptionalUInt maxSteps;  // Max geom-optimisation steps
+  ::sstbx::OptionalArmaMat33 pressure;
+  ::boost::optional<Optimise::Value> optimisationType;
 
   void insertConstraint(OptimisationConstraint & constraint);
   ConstraintsIterator beginConstraints();
@@ -76,11 +67,7 @@ public:
 
 private:
 
-  Optimise myOptimise;
-  ::arma::mat33 myExternalPressure;
   Constraints myConstraints;
-  OptionalUint myMaxIterations;
-
 };
 
 

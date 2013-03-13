@@ -37,7 +37,7 @@ const ::std::string PotentialParamSweep::POTPARAMS_FILE_EXTENSION("potparams");
 
 PotentialParamSweep::PotentialParamSweep(
   const common::ParamRange & paramRange,
-	SpStartBlockTyp & sweepPipeline):
+	SubpipePtr sweepPipeline):
 SpBlock("Potential param sweep"),
 myParamRange(paramRange),
 mySweepPipeline(sweepPipeline),
@@ -101,7 +101,7 @@ void PotentialParamSweep::start()
 
 void PotentialParamSweep::runnerAttached(SpRunnerSetup & setup)
 {
-  mySubpipeRunner = setup.createChildRunner(mySweepPipeline);
+  mySubpipeRunner = setup.createChildRunner(*mySweepPipeline);
 	// Set outselves to collect any finished data from the sweep pipeline
 	mySubpipeRunner->setFinishedDataSink(this);
 }

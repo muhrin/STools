@@ -31,6 +31,7 @@
 #include <potential/TpsdGeomOptimiser.h>
 #include <utility/SortedDistanceComparator.h>
 #include <utility/UniqueStructureSet.h>
+#include <yaml_schema/SchemaParse.h>
 
 #include <pipelib/pipelib.h>
 
@@ -56,6 +57,8 @@
 #include "input/YamlKeywords.h"
 #include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
+#include "factory/StFactory.h"
+#include "factory/YamlSchema.h"
 
 // MACROS ////////////////////////////////////
 
@@ -70,6 +73,7 @@ namespace ssf   = ::sstbx::factory;
 namespace ssio  = ::sstbx::io;
 namespace ssp   = ::sstbx::potential;
 namespace ssu   = ::sstbx::utility;
+namespace ssys  = ::sstbx::yaml_schema;
 namespace yaml_kw = ::stools::input::yaml_kw;
 
 // CLASSES //////////////////////////////////
@@ -129,9 +133,6 @@ bool requiredNode(const YAML::Node & parent, const ::std::string & childName);
   const ssc::AtomSpeciesDatabase & speciesDb
 );
 
-::sstbx::potential::SimplePairPotential::CombiningRule
-getCombiningRuleFromString(const ::std::string & str);
-
 int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int processPotParams(
@@ -151,148 +152,141 @@ int main(const int argc, char * argv[])
   InputOptions in;
 
   int result = processCommandLineArgs(in, argc, argv);
-  if(result != 0)
-    return result;
+  //if(result != 0)
+  //  return result;
 
-  // Generate the pipeline
-  typedef sp::SpSingleThreadedEngine Engine;
-  typedef Engine::RunnerPtr RunnerPtr;
-  typedef spb::PotentialParamSweep ParamSweepBlock;
-
-  Engine pipeEngine;
-  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-
-  // Generate the run configuration
-  RunConfiguration config(runner->memory().global().getSpeciesDatabase());
-  result = parseInput(config, in);
-  if(result != 0)
-    return result;
-
-  ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
-  ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
-
-  // Niggli reduction
-  sp::blocks::NiggliReduction niggli;
-
-  // Geometry optimise
-  ::arma::mat epsilon;
-	epsilon.set_size(2, 2);
-	epsilon << config.paramRange.from(0) << config.paramRange.from(1) << endr
-			<< config.paramRange.from(1) << config.paramRange.from(2) << endr;
-
-	::arma::mat sigma;
-	sigma.set_size(2, 2);
-	sigma << config.paramRange.from(3) << config.paramRange.from(4) << endr
-			<< config.paramRange.from(4) << config.paramRange.from(5) << endr;
-
-	::arma::mat beta;
-	beta.set_size(2, 2);
-	beta << config.betaDiagonal << 1 << endr
-			<< 1 << config.betaDiagonal << endr;
-
-  const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
-
-  ssp::IPotentialPtr pp(new ssp::SimplePairPotential(
-    config.speciesDb,
-    config.potentialSpecies,
-    epsilon,
-    sigma,
-    in.potCutoff,
-    beta,
-    12,
-    6,
-    combRule
-  ));
-  ssp::TpsdGeomOptimiser optimiser(pp);
-
-  ssp::OptimisationSettings initialOptimisationParams;
-  ::arma::mat33 pressureMtx;
-  pressureMtx.zeros();
-  pressureMtx.diag().fill(in.optimisationPressure);
-  initialOptimisationParams.setExternalPressure(pressureMtx);
-  initialOptimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS));
-
-  // For seed structure pre-optimise only the lattice
-  if(config.inputType == InputType::SEED_STRUCTURES)
-    initialOptimisationParams.setOptimise(ssp::OptimisationSettings::LATTICE);
-
-  sp::blocks::ParamPotentialGo goPressure(optimiser, initialOptimisationParams, false);
-
-  ssp::OptimisationSettings optimisationParams;
-  optimisationParams.setMaxIterations(static_cast<unsigned int>(DEFAULT_OPTIMISATION_MAX_ITERS));
-  sp::blocks::ParamPotentialGo go(optimiser, optimisationParams, true);
-
-  // Remove duplicates
-  ssu::SortedDistanceComparator comparator;
-  sp::blocks::RemoveDuplicates remDuplicates(comparator);
-
-  // Determine space group
-  sp::blocks::DetermineSpaceGroup sg;
-
-  // Write structures
-  sp::blocks::WriteStructure write1;
-
-  // Barrier
-  sp::SpSimpleBarrier barrier;
-
-  // Write structures 2
-  sp::blocks::WriteStructure write2;
-
-  // Get the lowest free energy
-  sp::blocks::LowestFreeEnergy lowestE;
-
-  // Put it all together
-  *config.searchStartBlock |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
-
-  sp::SpStartBlock * masterPipe;
-  if(config.sweepMode)
+  ssys::SchemaParse parse;
+  const YAML::Node searchNode = YAML::LoadFile(in.structurePath);
+  stools::factory::Search searchSchema;
+  ssu::HeterogeneousMap schemaOptions;
+  searchSchema.nodeToValue(parse, schemaOptions, searchNode, true);
+  if(parse.hasErrors())
   {
-    // Configure parameter sweep pipeline
-    config.paramSweepBlock.reset(new sp::blocks::PotentialParamSweep(config.paramRange, *config.searchStartBlock));
-    masterPipe = config.paramSweepBlock.get();
-  }
-  else
-    masterPipe = config.searchStartBlock.get();
-
-  if(config.stoichSpecies.size() == 2)
-  {
-    // Do a stoichiometry sweep
-    config.stoichSearchBlock.reset(new sp::blocks::StoichiometrySearch(
-      config.stoichSpecies[0],
-      config.stoichSpecies[1],
-      config.stoichMaxAtoms,
-      *masterPipe
-    ));
-    masterPipe = config.stoichSearchBlock.get();
+    parse.printErrors();
+    return 1;
   }
 
-  // Finally initialise and start whichever pipeline is the master
-  runner->run(*masterPipe);
-}
+  ssc::AtomSpeciesDatabase speciesDb;
 
-::sstbx::potential::SimplePairPotential::CombiningRule
-getCombiningRuleFromString(const ::std::string & str)
-{
-  ::sstbx::potential::SimplePairPotential::CombiningRule rule = ::sstbx::potential::SimplePairPotential::NONE;
+  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  ::stools::factory::Factory factory(speciesDb);
 
-  if(str == "lorentz")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::LORENTZ;
-  }
-  else if(str == "berthelot")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::BERTHELOT;
-  }
-  else if(str == "lorentz_berthelot")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::LORENTZ_BERTHELOT;
-  }
-  else if(str == "custom")
-  {
-    rule = ::sstbx::potential::SimplePairPotential::CUSTOM;
-  }
+  PipePtr pipe;
+  factory.createSearchPipe(pipe, schemaOptions);
 
-  return rule;
+ // // Generate the pipeline
+ // typedef sp::SpSingleThreadedEngine Engine;
+ // typedef Engine::RunnerPtr RunnerPtr;
+ // typedef spb::PotentialParamSweep ParamSweepBlock;
+
+ // Engine pipeEngine;
+ // RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
+
+ // // Generate the run configuration
+ // RunConfiguration config(runner->memory().global().getSpeciesDatabase());
+ // result = parseInput(config, in);
+ // if(result != 0)
+ //   return result;
+
+ // ::boost::scoped_ptr<sp::SpStartBlock> potparamsSweepPipe;
+ // ::boost::scoped_ptr<sp::SpStartBlock> randomSearchPipeOwned;
+
+ // // Niggli reduction
+ // sp::blocks::NiggliReduction niggli;
+
+ // // Geometry optimise
+ // ::arma::mat epsilon;
+	//epsilon.set_size(2, 2);
+	//epsilon << config.paramRange.from(0) << config.paramRange.from(1) << endr
+	//		<< config.paramRange.from(1) << config.paramRange.from(2) << endr;
+
+	//::arma::mat sigma;
+	//sigma.set_size(2, 2);
+	//sigma << config.paramRange.from(3) << config.paramRange.from(4) << endr
+	//		<< config.paramRange.from(4) << config.paramRange.from(5) << endr;
+
+	//::arma::mat beta;
+	//beta.set_size(2, 2);
+	//beta << config.betaDiagonal << 1 << endr
+	//		<< 1 << config.betaDiagonal << endr;
+
+ // const ssp::SimplePairPotential::CombiningRule combRule = getCombiningRuleFromString(in.potCombiningRule);
+
+ // ssp::IPotentialPtr pp(new ssp::SimplePairPotential(
+ //   config.speciesDb,
+ //   config.potentialSpecies,
+ //   epsilon,
+ //   sigma,
+ //   in.potCutoff,
+ //   beta,
+ //   12,
+ //   6,
+ //   combRule
+ // ));
+ // ssp::TpsdGeomOptimiser optimiser(pp);
+
+ // ssp::OptimisationSettings initialOptimisationParams;
+ // ::arma::mat33 pressureMtx;
+ // initialOptimisationParams.pressure = ::arma::zeros< ::arma::mat>(3, 3);
+ // initialOptimisationParams.pressure->diag().fill(in.optimisationPressure);
+ // initialOptimisationParams.maxSteps = static_cast<unsigned int>(DEFAULT_INITIAL_OPTIMISATION_MAX_ITERS);
+
+ // // For seed structure pre-optimise only the lattice
+ // if(config.inputType == InputType::SEED_STRUCTURES)
+ //   initialOptimisationParams.optimisationType = ssp::OptimisationSettings::Optimise::LATTICE;
+
+ // sp::blocks::ParamPotentialGo goPressure(optimiser, initialOptimisationParams, false);
+
+ // ssp::OptimisationSettings optimisationParams;
+ // optimisationParams.maxSteps = static_cast<unsigned int>(DEFAULT_OPTIMISATION_MAX_ITERS);
+ // sp::blocks::ParamPotentialGo go(optimiser, optimisationParams, true);
+
+ // // Remove duplicates
+ // ssu::SortedDistanceComparator comparator;
+ // sp::blocks::RemoveDuplicates remDuplicates(comparator);
+
+ // // Determine space group
+ // sp::blocks::DetermineSpaceGroup sg;
+
+ // // Write structures
+ // sp::blocks::WriteStructure write1;
+
+ // // Barrier
+ // sp::SpSimpleBarrier barrier;
+
+ // // Write structures 2
+ // sp::blocks::WriteStructure write2;
+
+ // // Get the lowest free energy
+ // sp::blocks::LowestFreeEnergy lowestE;
+
+ // // Put it all together
+ // *config.searchStartBlock |= niggli |= goPressure |= go |= remDuplicates |= sg |= write1 |= barrier |= write2 |= lowestE;
+
+ // sp::SpStartBlock * masterPipe;
+ // if(config.sweepMode)
+ // {
+ //   // Configure parameter sweep pipeline
+ //   config.paramSweepBlock.reset(new sp::blocks::PotentialParamSweep(config.paramRange, *config.searchStartBlock));
+ //   masterPipe = config.paramSweepBlock.get();
+ // }
+ // else
+ //   masterPipe = config.searchStartBlock.get();
+
+ // if(config.stoichSpecies.size() == 2)
+ // {
+ //   // Do a stoichiometry sweep
+ //   config.stoichSearchBlock.reset(new sp::blocks::StoichiometrySearch(
+ //     config.stoichSpecies[0],
+ //     config.stoichSpecies[1],
+ //     config.stoichMaxAtoms,
+ //     *masterPipe
+ //   ));
+ //   masterPipe = config.stoichSearchBlock.get();
+ // }
+
+ // // Finally initialise and start whichever pipeline is the master
+ // runner->run(*masterPipe);
 }
 
 int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
@@ -399,87 +393,87 @@ int parseInput(RunConfiguration & config, const InputOptions & in)
 {
   namespace sslib_yaml_kw = ssf::sslib_yaml_keywords;
 
-  config.inputType = InputType::UNKNOWN;
-  try
-  {
-    const YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
-    
-    ssf::SsLibFactoryYaml factory(config.speciesDb);
+  //config.inputType = InputType::UNKNOWN;
+  //try
+  //{
+  //  const YAML::Node loadedNode = YAML::LoadFile(in.structurePath);
+  //  
+  //  ssf::SsLibFactoryYaml factory(config.speciesDb);
 
-    if(loadedNode[yaml_kw::STOICHIOMETRY_SEARCH])
-    {
-      const YAML::Node & stoichNode = loadedNode[yaml_kw::STOICHIOMETRY_SEARCH];
-      
-      if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS))
-        return 1;
-      if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__SPECIES))
-        return 1;
+  //  if(loadedNode[yaml_kw::STOICHIOMETRY_SEARCH])
+  //  {
+  //    const YAML::Node & stoichNode = loadedNode[yaml_kw::STOICHIOMETRY_SEARCH];
+  //    
+  //    if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS))
+  //      return 1;
+  //    if(!requiredNode(stoichNode, yaml_kw::STOICHIOMETRY_SEARCH__SPECIES))
+  //      return 1;
 
-      config.stoichMaxAtoms = stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS].as<unsigned int>();
-      config.stoichSpecies =
-        getSpeciesFromString(
-          stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__SPECIES].as< ::std::string>(),
-          config.speciesDb
-        );
-    }
+  //    config.stoichMaxAtoms = stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__MAX_ATOMS].as<unsigned int>();
+  //    config.stoichSpecies =
+  //      getSpeciesFromString(
+  //        stoichNode[yaml_kw::STOICHIOMETRY_SEARCH__SPECIES].as< ::std::string>(),
+  //        config.speciesDb
+  //      );
+  //  }
 
-    if(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE])
-    {
-      config.inputType = InputType::RANDOM_STRUCTURES;
-      ssbc::IStructureGeneratorPtr generator = factory.createStructureGenerator(loadedNode);
+  //  if(loadedNode[sslib_yaml_kw::RANDOM_STRUCTURE])
+  //  {
+  //    config.inputType = InputType::RANDOM_STRUCTURES;
+  //    ssbc::IStructureGeneratorPtr generator = factory.createStructureGenerator(loadedNode);
 
-      // Random structure
-      config.searchStartBlock.reset(new sp::blocks::RandomStructure(
-        in.numRandomStructures,
-        generator)
-      );
-    }
-    else if(loadedNode[yaml_kw::SEED_STRUCTURES])
-    {
-      config.inputType = InputType::SEED_STRUCTURES;
-      const ::std::string seedStructures = loadedNode[yaml_kw::SEED_STRUCTURES].as< ::std::string>();
+  //    // Random structure
+  //    config.searchStartBlock.reset(new sp::blocks::RandomStructure(
+  //      in.numRandomStructures,
+  //      generator)
+  //    );
+  //  }
+  //  else if(loadedNode[yaml_kw::SEED_STRUCTURES])
+  //  {
+  //    config.inputType = InputType::SEED_STRUCTURES;
+  //    const ::std::string seedStructures = loadedNode[yaml_kw::SEED_STRUCTURES].as< ::std::string>();
 
-      // Seed structures
-      config.searchStartBlock.reset(new sp::blocks::LoadSeedStructures(
-        seedStructures,
-        false)
-      );
-    }
-    else
-    {
-      ::std::cerr << "No input structure type found in input file\n";
-      return 1;
-    }
-  }
-  catch(const ssf::FactoryError & e)
-  {
-    ::std::cerr << ::boost::diagnostic_information(e) << ::std::endl;
-    return 1;
-  }
+  //    // Seed structures
+  //    config.searchStartBlock.reset(new sp::blocks::LoadSeedStructures(
+  //      seedStructures,
+  //      false)
+  //    );
+  //  }
+  //  else
+  //  {
+  //    ::std::cerr << "No input structure type found in input file\n";
+  //    return 1;
+  //  }
+  //}
+  //catch(const ssf::FactoryError & e)
+  //{
+  //  ::std::cerr << ::boost::diagnostic_information(e) << ::std::endl;
+  //  return 1;
+  //}
 
-  // Do potential parameters ////////////////////////////////
-  const int result = processPotParams(config.paramRange, config.betaDiagonal, in);
-  if(result != 0)
-    return result;
+  //// Do potential parameters ////////////////////////////////
+  //const int result = processPotParams(config.paramRange, config.betaDiagonal, in);
+  //if(result != 0)
+  //  return result;
 
-  // Turn on sweep mode if any of the parameters have a range (i.e. not single value)
-  config.sweepMode = false;
-  for(size_t i = 0; i < config.paramRange.nSteps.n_rows; ++i)
-  {
-    config.sweepMode |= config.paramRange.nSteps(i) != 1;
-  }
+  //// Turn on sweep mode if any of the parameters have a range (i.e. not single value)
+  //config.sweepMode = false;
+  //for(size_t i = 0; i < config.paramRange.nSteps.n_rows; ++i)
+  //{
+  //  config.sweepMode |= config.paramRange.nSteps(i) != 1;
+  //}
 
-  // Do atom species ///////////////////////////////////////
-  if(in.potSpecies.size() != 2)
-  {
-    ::std::cerr << "There must be 2 potential species specified\n";
-    return 1;
-  }
+  //// Do atom species ///////////////////////////////////////
+  //if(in.potSpecies.size() != 2)
+  //{
+  //  ::std::cerr << "There must be 2 potential species specified\n";
+  //  return 1;
+  //}
 
-  config.potentialSpecies[0] = config.speciesDb.getIdFromSymbol(in.potSpecies[0]);
-  config.potentialSpecies[1] = config.speciesDb.getIdFromSymbol(in.potSpecies[1]);
-  config.paramRange.from(6) = config.potentialSpecies[0].ordinal();
-  config.paramRange.from(7) = config.potentialSpecies[1].ordinal();
+  //config.potentialSpecies[0] = config.speciesDb.getIdFromSymbol(in.potSpecies[0]);
+  //config.potentialSpecies[1] = config.speciesDb.getIdFromSymbol(in.potSpecies[1]);
+  //config.paramRange.from(6) = config.potentialSpecies[0].ordinal();
+  //config.paramRange.from(7) = config.potentialSpecies[1].ordinal();
 
   return 0;
 }

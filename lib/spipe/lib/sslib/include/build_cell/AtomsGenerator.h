@@ -12,9 +12,11 @@
 
 #include "SSLib.h"
 
+#include <boost/noncopyable.hpp> // TODO: TEMP
+
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
-#include "build_cell/Sphere.h"
+#include "build_cell/IGeneratorShape.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -22,7 +24,7 @@ namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
 
-class AtomsGenerator : public IFragmentGenerator
+class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
   typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
   typedef ::std::vector<AtomsDescription> Atoms;
@@ -30,7 +32,7 @@ public:
   typedef IFragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::iterator iterator;
   typedef Atoms::const_iterator const_iterator;
-  typedef ::boost::optional<Sphere> OptionalSphere;
+  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   AtomsGenerator() {}
   AtomsGenerator(const AtomsGenerator & toCopy);
@@ -44,8 +46,8 @@ public:
   iterator addAtoms(const AtomsDescription & atoms);
   void eraseAtoms(iterator pos);
 
-  const OptionalSphere & getGenerationSphere() const;
-  void setGenerationSphere(const OptionalSphere & shere);
+  const IGeneratorShape * getGeneratorShape() const;
+  void setGeneratorShape(GenShapePtr shere);
   
   // From IFragmentGenerator ////////
   virtual GenerationOutcome generateFragment(
@@ -73,7 +75,7 @@ private:
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
   Atoms myAtoms;
-  OptionalSphere myGenerationSphere;
+  GenShapePtr myGenShape;
   
 };
 

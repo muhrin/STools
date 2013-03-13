@@ -30,7 +30,7 @@ class Structure;
 namespace potential {
 struct PotentialData;
 class IPotential;
-class OptimisationSettings;
+struct OptimisationSettings;
 
 class IGeomOptimiser
 {

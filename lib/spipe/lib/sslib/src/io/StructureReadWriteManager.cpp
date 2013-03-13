@@ -178,7 +178,17 @@ bool StructureReadWriteManager::writeStructure(
       return false; // don't know which output format to use
   }
 
-	const WritersMap::const_iterator it = myWriters.find(ext);
+  return writeStructure(str, locator, atomSpeciesDb, ext);
+}
+
+bool StructureReadWriteManager::writeStructure(
+  common::Structure & str,
+  ResourceLocator locator,
+  const common::AtomSpeciesDatabase & atomSpeciesDb,
+  const ::std::string & fileType) const
+{
+	// TODO: Add status return value to this method
+	const WritersMap::const_iterator it = myWriters.find(fileType);
 
 	if(it == myWriters.end())
 		return false; // unknown extension
@@ -243,6 +253,17 @@ size_t StructureReadWriteManager::readStructures(
   }
   else
     return 0;
+}
+
+const IStructureWriter * StructureReadWriteManager::getWriter(
+  const ::std::string & ext) const
+{
+  const WritersMap::const_iterator it = myWriters.find(ext);
+
+	if(it == myWriters.end())
+		return NULL; // unknown extension
+
+  return it->second;
 }
 
 bool StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)

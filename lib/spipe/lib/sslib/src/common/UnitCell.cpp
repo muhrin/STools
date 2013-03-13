@@ -79,12 +79,14 @@ const ::arma::mat33 & UnitCell::getOrthoMtx() const
   return myOrthoMtx;
 }
 
-const void UnitCell::setOrthoMtx(const ::arma::mat33 & orthoMtx)
+bool UnitCell::setOrthoMtx(const ::arma::mat33 & orthoMtx)
 {
-	init(orthoMtx);
+	if(!init(orthoMtx))
+    return false;
 
   if(myStructure)
     myStructure->unitCellChanged();
+  return true;
 }
 
 const ::arma::mat33 & UnitCell::getFracMtx() const
@@ -633,7 +635,7 @@ void UnitCell::setStructure(const Structure * const structure)
   myStructure = structure;
 }
 
-void UnitCell::init(
+bool UnitCell::init(
 	const double a, const double b, const double c,
 	const double alpha, const double beta, const double gamma)
 {
@@ -645,6 +647,9 @@ void UnitCell::init(
   SSLIB_ASSERT_MSG(abs(beta-gamma) <= alpha, "Non-physical lattice parameters supplied - require that abs(beta-gamma) < alpha");
   SSLIB_ASSERT_MSG(abs(gamma-alpha) <= beta, "Non-physical lattice parameters supplied - require that abs(gamma-alpha) < beta");
 
+  double oldLatticeParams[6];
+  memcpy(oldLatticeParams, myLatticeParams, sizeof(double) * 6);
+
 	myLatticeParams[A] = a;
 	myLatticeParams[B] = b;
 	myLatticeParams[C] = c;
@@ -652,22 +657,35 @@ void UnitCell::init(
 	myLatticeParams[BETA]  = beta;
 	myLatticeParams[GAMMA] = gamma;
 	
-	initOrthoAndFracMatrices();
+	if(!initOrthoAndFracMatrices())
+  {
+    // roll-back changes
+    memcpy(myLatticeParams, oldLatticeParams, sizeof(double) * 6);
+    return false;
+  }
 	initRest();
+  return true;
 }
 
 
-void UnitCell::init(const ::arma::mat33 & orthoMtx)
+bool UnitCell::init(const ::arma::mat33 & orthoMtx)
 {
-	myOrthoMtx	= orthoMtx;
-	myFracMtx	= arma::inv(orthoMtx);
-
-	initLatticeParams();
-	initRest();
+  try
+  {
+	  myFracMtx	= arma::inv(orthoMtx); // throws if orthoMtx is singular
+	  myOrthoMtx	= orthoMtx;
+	  initLatticeParams();
+	  initRest();
+  }
+  catch(const ::std::runtime_error & /*e*/)
+  {
+    return false;
+  }
+  return true;
 }
 
 
-void UnitCell::initOrthoAndFracMatrices()
+bool UnitCell::initOrthoAndFracMatrices()
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
@@ -675,6 +693,8 @@ void UnitCell::initOrthoAndFracMatrices()
   const double alphaRad = constants::DEG_TO_RAD * myLatticeParams[ALPHA];
   const double betaRad = constants::DEG_TO_RAD * myLatticeParams[BETA];
   const double gammaRad = constants::DEG_TO_RAD * myLatticeParams[GAMMA];
+
+  const ::arma::mat33 oldOrthoMtx = myOrthoMtx;
 
 	myOrthoMtx.zeros();
 	// A - col 0
@@ -691,7 +711,16 @@ void UnitCell::initOrthoAndFracMatrices()
 		myOrthoMtx(Y, C) * myOrthoMtx(Y, C)
   );
 
-	myFracMtx = inv(myOrthoMtx);
+  try
+  {
+	  myFracMtx = inv(myOrthoMtx);
+  }
+  catch(const ::std::runtime_error & /*e*/)
+  {
+    myOrthoMtx = oldOrthoMtx; // rollback changes
+    return false;
+  }
+  return true;
 }
 
 

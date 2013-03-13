@@ -30,8 +30,8 @@ class LowestFreeEnergy : public SpBarrier, ::boost::noncopyable
 {
 public:
 
-	LowestFreeEnergy(const size_t keepTopN = 1);
-  LowestFreeEnergy(const double keepTopEnergyPercentage);
+	explicit LowestFreeEnergy(const size_t keepTopN = 1);
+  explicit LowestFreeEnergy(const double keepTopEnergyPercentage);
 
   // From Block /////////////////
 	virtual void in(spipe::common::StructureData & data);

@@ -1,5 +1,5 @@
-randomStructure:
 
+builder:
   genSphere:
     radius: 10
   atomsFormat: [spec]
@@ -7,15 +7,15 @@ randomStructure:
     - [2 Na]
     - [Na]
     - group:
-      genSphere:
-        pos: 4 4 4
-        radius: 2
-      atomsRadii: 1
-      atoms:
-        - [2 Na]
+        genSphere:
+          pos: 4 4 4
+          radius: 2
+        atomsRadius: 1
+        atoms:
+          - [2 Na]
 
-  randomCell:
-    params:     [10, 10, 10, 90, 90, 90]
+  unitCell:
+    params:     10 10 10 90 90 90
     angles:
       min:      10
       max:      135
@@ -25,20 +25,19 @@ randomStructure:
       maxRatio: 2
       
 structure:
-
   atomDefaults:
     spec: Na
     radius: 10
   atomsFormat: [spec, pos]
   atoms:
-    - info: [Na, [0 0 0]]
+    - info: [Na, 0 0 0]
       radius: 
-    - [Cl, [0.5, 0.5, 0.5]]
-    - [Cl, [0.5, 0.5, 0.5]]
-    - [Cl, [0.5, 0.5, 0.5]]
-    - [Cl, [0.5, 0.5, 0.5]]
-    - [Cl, [0.5, 0.5, 0.5]]
-    - [Cl, [0.5, 0.5, 0.5]]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
     
   cell:
-    abc: [2, 2, 2, 60, 120, 90]
+    abc: 2 2 2 60 120 90

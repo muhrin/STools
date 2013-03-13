@@ -20,7 +20,7 @@
 
 // From SSTbx
 #include <build_cell/IStructureGenerator.h>
-#include <build_cell/Types.h>
+#include <build_cell/BuildCellFwd.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
 

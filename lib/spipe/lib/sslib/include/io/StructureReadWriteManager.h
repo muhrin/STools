@@ -86,8 +86,14 @@ public:
 	
 	bool writeStructure(
 		common::Structure & str,
-		ResourceLocator path,
+		ResourceLocator locator,
     const common::AtomSpeciesDatabase & atomSpeciesDb) const;
+
+  bool writeStructure(
+    common::Structure & str,
+    ResourceLocator locator,
+    const common::AtomSpeciesDatabase & atomSpeciesDb,
+    const ::std::string & fileType) const;
 
   common::types::StructurePtr readStructure(
     const ResourceLocator & locator,
@@ -98,6 +104,8 @@ public:
     const ResourceLocator & locator,
     const common::AtomSpeciesDatabase & speciesDb,
     const int maxDepth = 1) const;
+
+  const IStructureWriter * getWriter(const ::std::string & extension) const;
 
   bool setDefaultWriter(const ::std::string & extension);
   const IStructureWriter * getDefaultWriter() const;

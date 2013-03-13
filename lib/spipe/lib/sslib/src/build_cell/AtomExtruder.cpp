@@ -96,7 +96,10 @@ bool AtomExtruder::extrudeAtoms(
   typedef ::boost::multi_array< ::arma::vec, 2> array_type;
   typedef array_type::index index;
 
-  const size_t numAtoms = atoms.size();
+  const int numAtoms = static_cast<int>(atoms.size());
+  if(numAtoms == 0)
+    return true;
+
   const double toleranceSq = tolerance * tolerance;
   double sep, sepDiff;
   
@@ -107,7 +110,7 @@ bool AtomExtruder::extrudeAtoms(
 
   ::arma::vec dr; // The displacement vector to move each atom by
   double prefactor; // Used tp adjust the displacement vector if either atom is fixed
-  size_t i, j;
+  int i, j;
   bool success = false;
 
   for(size_t iters = 0; iters < maxIterations; ++iters)

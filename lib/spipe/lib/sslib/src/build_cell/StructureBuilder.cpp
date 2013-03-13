@@ -93,57 +93,5 @@ const IUnitCellGenerator * StructureBuilder::getUnitCellGenerator() const
   return myUnitCellGenerator.get();
 }
 
-AddOnStructureBuilder::AddOnStructureBuilder(const IStructureGenerator & generator):
-myGenerator(generator)
-{}
-
-GenerationOutcome
-AddOnStructureBuilder::generateStructure(
-  common::StructurePtr & structureOut,
-  const common::AtomSpeciesDatabase & speciesDb
-) const
-{
-  GenerationOutcome outcome;
-
-  typedef ::std::pair<const IFragmentGenerator *, IFragmentGenerator::GenerationTicket> GeneratorAndTicket;
-  ::std::vector<GeneratorAndTicket> generationInfo;
-  generationInfo.reserve(myGenerators.size());
-
-  // First find out what the generators want to put in the structure
-  StructureContents contents;
-  BOOST_FOREACH(const IFragmentGenerator & generator, myGenerators)
-  {
-    const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
-    generationInfo.push_back(GeneratorAndTicket(&generator, ticket));
-
-    contents += generator.getGenerationContents(ticket, speciesDb);
-  }
-  // TODO: Sort fragment generators by volume (largest first)
-
-
-  outcome = myGenerator.generateStructure(structureOut, speciesDb);
-  if(!outcome.success())
-    return outcome;
-  
-  StructureBuild structureBuild(*structureOut, contents);
-
-  BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
-  {
-    outcome = generatorAndTicket.first->generateFragment(
-      structureBuild,
-      generatorAndTicket.second,
-      speciesDb
-    );
-    
-    if(!outcome.success())
-      return outcome;
-  }
-
-  // TODO: Check global constraints
-
-  outcome.setSuccess();
-  return outcome;
-}
-
 }
 }

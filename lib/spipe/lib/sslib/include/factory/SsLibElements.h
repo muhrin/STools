@@ -10,83 +10,90 @@
 #define SSLIB_ELEMENTS_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <string>
 
-#include <boost/shared_ptr.hpp>
+#include <boost/variant.hpp>
+
+#include <armadillo>
+
+#include "build_cell/Sphere.h"
+#include "common/AtomSpeciesId.h"
+#include "io/AtomFormatParser.h"
+#include "factory/FactoryFwd.h"
+#include "potential/SimplePairPotential.h"
+#include "utility/HeterogeneousMap.h"
 
 // DEFINES //////////////////////////////////////////////
 
 namespace sstbx {
+namespace common {
+class UnitCell;
+}
 namespace factory {
 
-class SchemaList;
-class SchemaMap;
-class SchemaMapSingle;
+///////////////////////////////////////////////////////////
+// MAP KEYS
+///////////////////////////////////////////////////////////
+
+// GENERAL /////////////////////////////////////////////////
+extern utility::Key< ::arma::vec3> POSITION;
+extern utility::Key<double> RADIUS;
+extern utility::Key<double> TOLERANCE;
+extern utility::Key<double> CUTOFF;
+
+// OPTIMISERS //////////////////////////////////////////////
+extern utility::Key<utility::HeterogeneousMap> OPTIMISER;
+extern utility::Key<utility::HeterogeneousMap> TPSD;
+extern utility::Key<double> PRESSURE;
+extern utility::Key<int> MAX_STEPS;
+
+// POTENTIALS //////////////////////////////////////////////
+extern utility::Key<utility::HeterogeneousMap> POTENTIAL;
+extern utility::Key<utility::HeterogeneousMap> LENNARD_JONES;
+
+extern utility::Key<factory::AtomSpeciesIdVector> SPECIES_LIST;
+extern utility::Key< ::arma::mat> LJ_EPSILON;
+extern utility::Key< ::arma::mat> LJ_SIGMA;
+extern utility::Key< ::arma::mat> LJ_BETA;
+extern utility::Key< ::arma::vec> LJ_POWERS;
+extern utility::Key<potential::CombiningRule::Value> POT_COMBINING;
+
+// STRUCTURE //////////////////////////////////////
+extern utility::Key<utility::HeterogeneousMap> STRUCTURE;
+extern utility::Key<AtomsDataEntryList> ATOMS;
+extern utility::Key<AtomSpeciesCount> SPECIES;
+extern utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
+
+// STRUCTURE BUILDER //////////////////////////////
+extern utility::Key<utility::HeterogeneousMap> BUILDER;
+extern utility::Key<double> ATOM_RADIUS;
+extern utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
+extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
+extern utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;
+extern utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
+extern utility::Key<MinMax> UNIT_CELL_BUILDER_ANGLES;
+extern utility::Key<MinMax> UNIT_CELL_BUILDER_LENGTHS;
+// Shape generators
+extern utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
+extern utility::Key<utility::HeterogeneousMap> GEN_BOX;
+extern utility::Key<double> SHELL_THICKNESS;
+extern utility::Key<double> WIDTH;
+extern utility::Key<double> HEIGHT;
+extern utility::Key<double> DEPTH;
+
+// STRUCTURE COMPARATORS //////////////////////////
+extern utility::Key<utility::HeterogeneousMap> COMPARATOR;
+extern utility::Key<utility::HeterogeneousMap> SORTED_DISTANCE;
+extern utility::Key<bool> SORTED_DISTANCE__VOLUME_AGNOSTIC;
+extern utility::Key<bool> SORTED_DISTANCE__USE_PRIMITIVE;
+
+// UNIT CELL //////////////////////////////////////
+extern utility::Key<common::UnitCell> UNIT_CELL;
+extern utility::Key< ::std::vector<double> > ABC;
 
 
-// FORWARD DECLARATIONS ////////////////////////////////////
+} // factory
+} // sstbx
 
-class SsLibElements
-{
-public:
-
-  typedef ::boost::shared_ptr<SchemaList>     ListPtr;
-  typedef ::boost::shared_ptr<SchemaMap>      MapPtr;
-  typedef ::boost::shared_ptr<SchemaMapSingle>   ScalarPtr;
-
-
-  SsLibElements();
-
-  // Generic number of things i.e. +ve integer
-  ScalarPtr   n;
-
-  // Atom description
-  MapPtr      atomDesc;
-  ScalarPtr   atomSpec;
-  ListPtr     atomsDescList;
-
-  // Cell description
-  MapPtr      cellDesc;
-  ListPtr     cellDescParams;
-  ScalarPtr   cellDescVol;
-
-  // Structure description
-  MapPtr      strDesc;
-
-  // Structure constraints
-  ListPtr     strDescConstraintsList;
-  MapPtr      strDescConstraintTyp;
-  struct strDescConstraintTyps
-  {
-  } strDescConstraintTyps;
-
-  // Structure generator
-  MapPtr      strGenerator;
-  MapPtr      strGeneratorTyp;
-  struct strGeneratorTyps
-  {
-    MapPtr  _default;
-  } strGeneratorTyps;
-
-  // Cell generator
-  MapPtr      cellGenerator;
-  MapPtr      cellGeneratorTyp;
-  struct cellGeneratorTyps
-  {
-    MapPtr    _default;
-  } cellGeneratorTyps;
-
-  // Potential
-  MapPtr      potential;
-  MapPtr      potentialTyp;
-  struct potentialTyps
-  {
-    MapPtr pairPot;
-  } potentialTyps;
-
-
-};
-}
-}
-
-#endif /* SSLIB_ELEMENTS_h */
+#endif /* SSLIB_ELEMENTS_H */
 
