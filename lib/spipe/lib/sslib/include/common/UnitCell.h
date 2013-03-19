@@ -9,6 +9,8 @@
 #define UNIT_CELL_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLibTypes.h"
+
 #include <armadillo>
 
 #include <boost/noncopyable.hpp>

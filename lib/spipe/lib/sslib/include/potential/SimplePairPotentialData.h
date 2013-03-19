@@ -33,7 +33,7 @@ struct SimplePairPotentialData : public PotentialData
   /*                CL ( 0.5  1  )
   /* speciesMap(0 => Na, 1 => Cl)
   /**/
-  typedef ::std::vector< ::sstbx::common::AtomSpeciesId::Value>  SpeciesList;
+  typedef ::std::vector<common::AtomSpeciesId::Value>  SpeciesList;
 
   /**
   /* Any atoms that are not being considered by the potential will be labelled with this.
@@ -44,8 +44,7 @@ struct SimplePairPotentialData : public PotentialData
     const sstbx::common::Structure & structure,
     const SpeciesList &              speciesList);
 
-	std::vector<int>				species;
-
+	std::vector<int> species;
 };
 
 

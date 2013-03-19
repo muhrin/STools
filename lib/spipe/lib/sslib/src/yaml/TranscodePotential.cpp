@@ -59,7 +59,7 @@ bool convert<ssp::OptimisationSettings>::decode(
 
 // Simple pair potential combining rules
 Node convert<ssp::CombiningRule::Value>::encode(
-  const ssp::CombiningRule::Value & rhs)
+  const Rule::Value & rhs)
 {
   Node node;
   node = ssp::getStringFromRule(rhs);  
@@ -67,7 +67,7 @@ Node convert<ssp::CombiningRule::Value>::encode(
 }
 
 bool convert<ssp::CombiningRule::Value>::decode(
-  const Node& node, ssp::CombiningRule::Value & rhs)
+  const Node& node, Rule::Value & rhs)
 {
   if(!node.IsScalar())
     return false;

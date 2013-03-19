@@ -38,6 +38,7 @@ class Factory
 {
 public:
   typedef ::sstbx::UniquePtr<SpBlock>::Type BlockPtr;
+  typedef ::sstbx::UniquePtr<SpPipe>::Type PipePtr;
   typedef ::sstbx::utility::HeterogeneousMap OptionsMap;
 
   Factory(::sstbx::common::AtomSpeciesDatabase & speciesDb):
@@ -48,6 +49,7 @@ public:
   bool createLowestEnergyBlock(BlockPtr & blockOut, const OptionsMap & options) const;
   bool createNiggliReduceBlock(BlockPtr & blockOut) const;
   bool createParamPotentialGeomOptimiseBlock(BlockPtr & blockOut, const OptionsMap & options) const;
+  bool createParamSweepBlock(BlockPtr & blockOut, const OptionsMap & options, PipePtr subPipe) const;
   bool createPotentialGeomOptimiseBlock(
     BlockPtr & blockOut,
     const OptionsMap & optimiserOptions,

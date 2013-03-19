@@ -18,11 +18,13 @@ message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 set(CGAL_ROOT "" CACHE FILEPATH "Path to CGAL library")
+set(LAPACK_ROOT "" CACHE FILEPATH "Path to LAPACK library")
 
 # Build options ###
 set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
 set(SSLIB_USE_YAML TRUE CACHE BOOL "SSLib should use YAML for input")
 set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as convex hulls")
+set(SSLIB_USE_LAPACK TRUE CACHE BOOL "Enable functionality that uses LAPACK")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/SSLibConfig.h.in"
@@ -41,6 +43,7 @@ set(CMAKE_PREFIX_PATH
   "${BOOST_ROOT}"
   "${ARMADILLO_ROOT}"
   "${CGAL_ROOT}"
+  "${LAPACK_ROOT}"
 )
 
 #
@@ -48,6 +51,16 @@ set(CMAKE_PREFIX_PATH
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
 find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+
+#
+# LAPACK #
+if(SSLIB_USE_LAPACK)
+  set(BLA_STATIC ON)
+  find_package(LAPACK REQUIRED)
+  if(NOT LAPACK_FOUND)
+    message(STATUS "LAPACK Not found")
+  endif(NOT LAPACK_FOUND)
+endif(SSLIB_USE_LAPACK)
 
 #
 # Armadillo #
@@ -130,6 +143,12 @@ if(SSLIB_USE_YAML)
     ${YAML_CPP_LIBRARIES}
   )
 endif(SSLIB_USE_YAML)
+
+if(SSLIB_USE_LAPACK)
+  target_link_libraries(sslib
+    ${LAPACK_LIBRARIES}
+  )
+endif(SSLIB_USE_LAPACK)
 
 
 ###########

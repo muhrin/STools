@@ -33,6 +33,38 @@ namespace spf = sp::factory;
 namespace ssf = ::sstbx::factory;
 namespace ssp = ::sstbx::potential;
 
+bool Factory::createBuildPipe(PipePtr & pipeOut, const OptionsMap & options) const
+{
+  const OptionsMap * const randomStructureOptions = options.find(spf::RANDOM_STRUCTURE);
+
+  if(!randomStructureOptions)
+    return false;
+
+  spf::Factory::BlockPtr block;
+  if(!mySpFactory.createRandomStructureBlock(block, *randomStructureOptions))
+    return false;
+
+  PipePtr pipe(new sp::SpPipe());
+
+  // Keep track of the last block so we can connect everything up
+  sp::SpBlock * lastBlock = pipe->addBlock(block.release());
+  pipe->setStartBlock(lastBlock->asStartBlock());
+
+  const OptionsMap * const outputOptions = options.find(spf::WRITE_STRUCTURES);
+  if(outputOptions)
+  {
+    if(mySpFactory.createWriteStructuresBlock(block, *outputOptions))
+    {
+      lastBlock = addAndConnect(*pipe, lastBlock, block.release());
+    }
+    else
+      return false;
+  }
+
+  pipeOut = pipe;
+  return true;
+}
+
 bool
 Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
 {
@@ -102,6 +134,38 @@ Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
   lastBlock = addAndConnect(*pipe, lastBlock, new spb::LowestFreeEnergy(static_cast<unsigned int>(1)));
 
   pipeOut = pipe;
+  return true;
+}
+
+bool Factory::createSearchPipeExtended(PipePtr & pipeOut, const OptionsMap & options) const
+{
+  const OptionsMap * const paramSweepOptions = options.find(spf::PARAM_SWEEP);
+
+  // Create a search pipe
+  PipePtr searchPipe;
+  if(!createSearchPipe(searchPipe, options))
+    return false;
+
+  // Are we doing a parameter sweep
+  if(paramSweepOptions)
+  {
+    // Create the param sweep pipe
+    PipePtr paramSweepPipe(new sp::SpPipe());
+
+    spf::Factory::BlockPtr block;
+    // Try creating the parameter sweep block
+    if(!mySpFactory.createParamSweepBlock(block, *paramSweepOptions, searchPipe))
+      return false;
+
+    // Keep track of the last block so we can connect everything up
+    sp::SpBlock * lastBlock = paramSweepPipe->addBlock(block.release());
+    paramSweepPipe->setStartBlock(lastBlock->asStartBlock());
+    
+    pipeOut = paramSweepPipe;
+  }
+  else
+    pipeOut = searchPipe; // Only doing search, so search pipe is the 'main' pipe
+
   return true;
 }
 

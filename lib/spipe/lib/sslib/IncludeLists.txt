@@ -23,12 +23,15 @@ set(sslib_Header_Files__build_cell
   include/build_cell/IStructureGenerator.h
   include/build_cell/IFragmentGenerator.h
   include/build_cell/IUnitCellGenerator.h
+  include/build_cell/PointGroups.h
   include/build_cell/RandomUnitCellGenerator.h
   include/build_cell/Sphere.h
   include/build_cell/StructureBuild.h
   include/build_cell/StructureBuilder.h
   include/build_cell/StructureContents.h
   include/build_cell/StructureGenerationOutcome.h
+  include/build_cell/SymmetryFunctions.h
+  include/build_cell/SymmetryGroup.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
@@ -107,9 +110,16 @@ source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 
 ## math
 set(sslib_Header_Files__math
+  include/math/Random.h
   include/math/RunningStats.h
 )
 source_group("Header Files\\math" FILES ${sslib_Header_Files__math})
+
+## math/detail
+set(sslib_Header_Files__math__detail
+  include/math/detail/Random.h
+)
+source_group("Header Files\\math\\detail" FILES ${sslib_Header_Files__math__detail})
 
 ## potential
 
@@ -254,6 +264,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__io}
   ${sslib_Header_Files__io__detail}
   ${sslib_Header_Files__math}
+  ${sslib_Header_Files__math__detail}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
   ${sslib_Header_Files__utility__detail}

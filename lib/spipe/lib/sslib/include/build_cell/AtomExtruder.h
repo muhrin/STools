@@ -10,6 +10,8 @@
 #define ATOM_EXTRUDER_H
 
 // INCLUDES ////////////
+#include "SSLib.h"
+
 #include <set>
 #include <vector>
 
@@ -57,6 +59,12 @@ private:
     const double tolerance,
     const size_t maxIterations) const;
 
+  double calcMaxOverlapFractionSq(
+    const common::DistanceCalculator & distanceCalc,
+    const ::std::vector<common::Atom *> & atoms,
+    const FixedList & fixedList,
+    const ::arma::mat & sepSqMtx) const;
+    
 };
 
 }

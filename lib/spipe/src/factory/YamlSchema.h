@@ -34,16 +34,6 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct LowestEnergy : ::sstbx::yaml_schema::SchemaHeteroMap
-{
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
-  LowestEnergy()
-  {
-    addScalarEntry("keepWithin", KEEP_WITHIN)->element()->defaultValue(0.1);
-    addScalarEntry("keepTop", KEEP_TOP);
-  }
-};
-
 struct GeomOptimise : ::sstbx::yaml_schema::SchemaHeteroMap
 {
   typedef ::sstbx::utility::HeterogeneousMap BindingType;
@@ -63,7 +53,30 @@ struct GeomOptimise : ::sstbx::yaml_schema::SchemaHeteroMap
   }
 };
 
-struct RandomStructure : ::sstbx::factory::builder::Builder
+struct LowestEnergy : public ::sstbx::yaml_schema::SchemaHeteroMap
+{
+  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  LowestEnergy()
+  {
+    addScalarEntry("keepWithin", KEEP_WITHIN)->element()->defaultValue(0.1);
+    addScalarEntry("keepTop", KEEP_TOP);
+  }
+};
+
+struct ParamSweep : public ::sstbx::yaml_schema::SchemaHeteroMap
+{
+  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  ParamSweep()
+  {
+    addEntry(
+      "range",
+      PARAM_RANGE,
+      new ::sstbx::yaml_schema::SchemaWrapper< ::sstbx::yaml::VectorAsString< ::std::string> >
+    )->required();
+  }
+};
+
+struct RandomStructure : public ::sstbx::factory::builder::Builder
 {
   typedef ::sstbx::utility::HeterogeneousMap BindingType;
   RandomStructure()
@@ -72,7 +85,7 @@ struct RandomStructure : ::sstbx::factory::builder::Builder
   }
 };
 
-struct RemoveDuplicates : ::sstbx::yaml_schema::SchemaHeteroMap
+struct RemoveDuplicates : public ::sstbx::yaml_schema::SchemaHeteroMap
 {
   typedef ::sstbx::utility::HeterogeneousMap BindingType;
   RemoveDuplicates()

@@ -36,17 +36,13 @@
 
 // FUNCTIONS ////////////////////////////////////////
 
-namespace sstbx { namespace common {
-
-double randDouble();
-
-double randDouble(const double to);
-
-double randDouble(const double from, const double to);
+namespace sstbx {
+namespace common {
 
 ProcessId getProcessId();
 
-}}
+}
+}
 
 
 #endif /* UTILS_H_ */

@@ -276,37 +276,6 @@ target_link_libraries(ssearch
   stools_common
 )
 
-###############################################
-## ssweep: Potential and stoichiometry sweep ##
-###############################################
-
-set(stools_Header_Files__ssweep
-)
-source_group("Header Files" FILES ${stools_Header_Files__ssweep})
-
-set(stools_Source_Files__ssweep
-  ssweep.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__ssweep})
-
-set(stools_Files__ssweep
-  ${stools_Header_Files__ssweep}
-  ${stools_Source_Files__ssweep}
-)
-
-add_executable(ssweep
-  ${stools_Files__ssweep}
-)
-
-add_dependencies(ssweep stools_common)
-
-# Libraries we need to link to
-target_link_libraries(ssweep
-  stools_common
-)
-
-
-
 ##################
 ## StructureMap ##
 ##################
@@ -326,7 +295,7 @@ target_link_libraries(ssweep
   
 ## Installation #####
 
-INSTALL(TARGETS sconvert sdiff sinfo ssearch ssweep smeasure
+INSTALL(TARGETS sconvert sdiff sinfo ssearch smeasure
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

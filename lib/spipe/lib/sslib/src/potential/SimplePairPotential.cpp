@@ -21,7 +21,6 @@ namespace potential {
 // Using 0.5 prefactor as 2^(1/6) s is the equilibrium separation of the centres.
 // i.e. the diameter
 const double SimplePairPotential::RADIUS_FACTOR = 0.5 * ::std::pow(2, 1.0/6.0);
-
 const double SimplePairPotential::MIN_SEPARATION_SQ = 1e-20;
 
 unsigned int SimplePairPotential::numParams(const unsigned int numSpecies)
@@ -109,48 +108,50 @@ const ::std::string & SimplePairPotential::getName() const
 
 size_t SimplePairPotential::getNumParams() const
 {
-  // 2 (eps/sig) * n * (n + 1) / 2 + n(species) = n(n + 2)
-  return (myNumSpecies * (myNumSpecies + 2));
+  // epsilon: n(n + 1) / 2
+  // sigma: n(n + 1) / 2
+  // beta: n(n + 1) / 2
+  // m-n: 2
+  return 3 * myNumSpecies * (myNumSpecies + 1) / 2 + 2;
 }
 
 
-::arma::vec SimplePairPotential::getParams() const
+IParameterisable::PotentialParams
+SimplePairPotential::getParams() const
 {
-	::arma::vec params(getNumParams());
+	IParameterisable::PotentialParams params(getNumParams());
 
   size_t idx = 0;
 
 	// Epsilon
 	for(size_t i = 0; i < myNumSpecies; ++i)
-	{
-		for(size_t j = i; j < myNumSpecies; ++j, ++idx)
-		{
-			params(idx) = myEpsilon(i, j);
-		}
+  {
+		for(size_t j = i; j < myNumSpecies; ++j)
+			params[idx++] = myEpsilon(i, j);
 	}
 	// Sigma
 	for(size_t i = 0; i < myNumSpecies; ++i)
 	{
-		for(size_t j = i; j < myNumSpecies; ++j, ++idx)
-		{
-			params(idx) = mySigma(i, j);
-		}
+		for(size_t j = i; j < myNumSpecies; ++j)
+			params[idx++] = mySigma(i, j);
 	}
-  for(size_t i = 0; i < myNumSpecies; ++i, ++idx)
+  // Beta
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    params(idx) = mySpeciesList[i].ordinal();
+    for(size_t j = i; j < myNumSpecies; ++j)
+			params[idx++] = myBeta(i, j);
   }
+  // N-M
+  params[idx++] = myN;
+  params[idx++] = myM;
 
 	return params;
 }
 
 
-void SimplePairPotential::setParams(const ::arma::vec & params)
+void SimplePairPotential::setParams(const IParameterisable::PotentialParams & params)
 {
-	if(params.n_rows != getNumParams())
-	{
-		throw "setParams called with wrong number of parameters";
-	}
+  SSLIB_ASSERT_MSG(params.size() == getNumParams(), "Called setParams with wrong number of parameters");
 
   size_t idx = 0;
 
@@ -158,167 +159,38 @@ void SimplePairPotential::setParams(const ::arma::vec & params)
 	for(size_t i = 0; i < myNumSpecies; ++i)
 	{
 		for(size_t j = i; j < myNumSpecies; ++j, ++idx)
-		{
-			myEpsilon(i, j) = params(idx);
-		}
+			myEpsilon(i, j) = params[idx];
 	}
   myEpsilon = arma::symmatu(myEpsilon);
 
 	// Sigma
 	for(size_t i = 0; i < myNumSpecies; ++i)
-	{
+  {
 		for(size_t j = i; j < myNumSpecies; ++j, ++idx)
-		{
-			mySigma(i, j) = params(idx);
-		}
+			mySigma(i, j) = params[idx];
   }
   mySigma = arma::symmatu(mySigma);
+
+	// Beta
+	for(size_t i = 0; i < myNumSpecies; ++i)
+  {
+		for(size_t j = i; j < myNumSpecies; ++j, ++idx)
+			myBeta(i, j) = params[idx];
+  }
+  myBeta = arma::symmatu(myBeta);
+
+  myN = params[idx++];
+  myM = params[idx++];
 
   applyCombiningRule();
 
   // Initialise the cutoff matrices
   initCutoff(myCutoffFactor);
 
-  // Set the species list
-  for(size_t i = 0; i < myNumSpecies; ++i, ++idx)
-  {
-    mySpeciesList[i] = *::sstbx::common::AtomSpeciesId::values().operator[]((int)params[idx]);
-  }
-
 	// Reset the parameter string
 	myParamString.clear();
   // Update the species database
   updateSpeciesDb();
-}
-
-
-std::pair<arma::vec, bool>
-SimplePairPotential::getParamsFromString(const std::string & str) const
-{
-  using boost::trim;
-  using boost::lexical_cast;
-  using boost::bad_lexical_cast;
-  using std::string;
-
-  // Set up our tokenizer to split around space and tab
-	typedef boost::tokenizer<boost::char_separator<char> > Tok;
-	const boost::char_separator<char> sep(" \t");
-
-  std::pair<arma::vec, bool> result;
-  result.second = false;
-
-  // Look for parameter indicators
-  size_t nPos = str.find("n:");
-  size_t ePos = str.find("e:");
-  size_t sPos = str.find("s:");
-
-  // Check to see if they were all gound
-  if(nPos != string::npos && ePos != string::npos && sPos != string::npos)
-  {
-    // Try to get n
-    bool foundN = false;
-    unsigned int nSpecies = 0;
-    try
-    {
-      string nStr = str.substr(nPos + 2, ePos - nPos - 2);
-      trim(nStr);
-      nSpecies = lexical_cast<unsigned int>(nStr);
-      foundN = true;
-    }
-    catch(const bad_lexical_cast &)
-    {
-      foundN = true;
-    }
-
-    if(foundN)
-    { 
-      // Calculate the number of parameters for sigma/epsilon
-      const unsigned int nTotal = nSpecies * (nSpecies + 1);  // Guaranteed to be even
-      const unsigned int nEach  = nTotal / 2;                 // Safe to divide by 2
-      result.first.set_size(nTotal);
-
-      // Try to get epsilon
-      const string eString = str.substr(ePos + 2, sPos - ePos - 2);
-      Tok eToker(eString, sep);
-
-      bool foundE = true;
-      unsigned int i = 0;
-      for(Tok::const_iterator eIt = eToker.begin();
-        i < nEach && eIt != eToker.end();
-        ++i, ++eIt)
-      {
-        try
-        {
-          result.first(i) = lexical_cast<double>(*eIt);
-        }
-        catch(const bad_lexical_cast &)
-        {
-          foundE = false;
-          break;
-        }
-      }
-      foundE &= i == nEach;
-
-      if(foundE)
-      { 
-        // Try to get sigma
-        const string sString = str.substr(sPos + 2);
-        Tok sToker(sString, sep);
-
-        bool foundS = true;
-        unsigned int i = nEach;
-        for(Tok::iterator sIt = sToker.begin();
-          i < nTotal && sIt != sToker.end();
-          ++i, ++sIt)
-        {
-          try
-          {
-            result.first(i) = lexical_cast<double>(*sIt);
-          }
-          catch(const bad_lexical_cast &)
-          {
-            foundS = false;
-            break;
-          }
-        }
-        foundS &= i == nTotal;
-        
-        if(foundS)
-          result.second = true;
-
-      } // end if(foundE)
-    } // end if(foundN)
-  } // end if n, s, e tokens found
-  return result;
-}
-
-
-const ::std::string & SimplePairPotential::getParamString() const
-{
-	if(myParamString.empty())
-	{
-		::std::stringstream ss;
-		ss << "n: " << myNumSpecies << " e:";
-		// Epsilon
-		for(size_t i = 0; i < myNumSpecies; ++i)
-		{
-			for(size_t j = i; j < myNumSpecies; ++j)
-			{
-				ss << " " << myEpsilon(i, j);
-			}
-		}
-		ss << " s:";
-		// Sigma
-		for(size_t i = 0; i < myNumSpecies; ++i)
-		{
-			for(size_t j = i; j < myNumSpecies; ++j)
-			{
-				ss << " " << mySigma(i, j);
-			}
-		}
-		myParamString = ss.str();
-	}
-	return myParamString;
 }
 
 bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePairPotentialData & data) const

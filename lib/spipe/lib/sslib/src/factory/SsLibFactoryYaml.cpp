@@ -359,7 +359,7 @@ SsLibFactoryYaml::createAtomsDescription(
     myAtomSpeciesDb.getIdFromSymbol(speciesAndCount->species);
   atomsDescription.reset(new build_cell::AtomsDescription(species, speciesAndCount->count));
 
-  ::boost::optional<double> radius = parser.getValue(ATOM_RADIUS, atomsEntry);
+  ::boost::optional<double> radius = parser.getValue(RADIUS, atomsEntry);
   if(radius)
     atomsDescription->setRadius(*radius);
 
@@ -379,9 +379,9 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   }
 
   {
-    const double * const atomsRadius = map.find(ATOM_RADIUS);
+    const double * const atomsRadius = map.find(RADIUS);
     if(atomsRadius)
-      atomsFormatParser.setDefault(ATOM_RADIUS, *atomsRadius);
+      atomsFormatParser.setDefault(RADIUS, *atomsRadius);
   }
 
   // Generators
@@ -430,9 +430,9 @@ SsLibFactoryYaml::createAtomsGenerator(
 
   // Check if there is a 'global' radius
   {
-    const double * const radius = map.find(ATOM_RADIUS);
+    const double * const radius = map.find(RADIUS);
     if(radius)
-      parser.setDefault(ATOM_RADIUS, *radius);
+      parser.setDefault(RADIUS, *radius);
   }
 
   ///////////

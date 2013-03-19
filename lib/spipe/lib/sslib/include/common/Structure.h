@@ -76,6 +76,7 @@ public:
   size_t clearAtoms();
 
   void getAtomPositions(::arma::mat & posMtx) const;
+  void getAtomPositions(::arma::subview<double> & posMtx) const;
   void setAtomPositions(const ::arma::mat & posMtx);
 
   void getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
@@ -117,6 +118,8 @@ private:
 
   inline void unitCellChanged() const
   { myDistanceCalculator.unitCellChanged(); }
+
+  void updatePosBuffer() const;
 
 	/** The name of this structure, set by calling code */
 	std::string		  myName;

@@ -7,6 +7,7 @@
 
 // INCLUDES //////////////////////////////////
 #include "utility/UtilFunctions.h"
+#include "math/Random.h"
 
 #include <sstream>
 
@@ -24,7 +25,7 @@ namespace utility {
   result.resize(length);
 
   for(size_t i = 0; i < length; i++)
-    result[i] = charset[rand() % charset.length()];
+    result[i] = charset[math::rand(static_cast<int>(charset.length()))];
 
   return result;
 }

@@ -19,6 +19,7 @@ namespace common {
 namespace constants {
 
 const double PI(3.141592653589793238462643383279502884197);
+const double TWO_PI(2.0 * PI);
 const double DEG_TO_RAD(PI/180.0);
 const double RAD_TO_DEG(180.0/PI);
 

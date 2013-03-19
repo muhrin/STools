@@ -18,9 +18,11 @@
 #include "blocks/LowestFreeEnergy.h"
 #include "blocks/NiggliReduction.h"
 #include "blocks/ParamPotentialGo.h"
+#include "blocks/PotentialParamSweep.h"
 #include "blocks/RandomStructure.h"
 #include "blocks/RemoveDuplicates.h"
 #include "blocks/WriteStructure.h"
+#include "common/CommonData.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 #include "factory/MapEntries.h"
@@ -67,6 +69,22 @@ bool Factory::createLowestEnergyBlock(BlockPtr & blockOut, const OptionsMap & op
 bool Factory::createNiggliReduceBlock(BlockPtr & blockOut) const
 {
   blockOut.reset(new blocks::NiggliReduction());
+  return true;
+}
+
+bool Factory::createParamSweepBlock(
+  BlockPtr & blockOut,
+  const OptionsMap & options,
+  PipePtr subPipe
+) const
+{
+  const ::std::vector< ::std::string> * const paramStrings = options.find(PARAM_RANGE);
+  if(!paramStrings)
+    return false;
+  common::ParamRange paramRange;
+  paramRange.fromStrings(*paramStrings);
+
+  blockOut.reset(new blocks::PotentialParamSweep(paramRange, subPipe));
   return true;
 }
 

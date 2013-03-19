@@ -12,9 +12,12 @@
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/IFragmentGenerator.h"
 #include "build_cell/IUnitCellGenerator.h"
+#include "build_cell/PointGroups.h"
 #include "build_cell/StructureBuild.h"
 #include "build_cell/StructureContents.h"
+#include "build_cell/SymmetryGroup.h"
 #include "common/Structure.h"
+#include "utility/IndexingEnums.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -46,6 +49,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
 
   structureOut.reset(new common::Structure());
   StructureBuild structureBuild(*structureOut, contents);
+  structureBuild.setSymmetryGroup(StructureBuild::SymmetryGroupPtr(new C3v));
 
   // Do we need to create a unit cell?
   if(myUnitCellGenerator.get())
@@ -77,6 +81,10 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
       return outcome;
   }
 
+  outcome = generateSymmetry(structureBuild);
+  if(!outcome.success())
+    return outcome;
+
   // TODO: Check global constraints
 
   outcome.setSuccess();
@@ -91,6 +99,54 @@ void StructureBuilder::setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenera
 const IUnitCellGenerator * StructureBuilder::getUnitCellGenerator() const
 {
   return myUnitCellGenerator.get();
+}
+
+GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) const
+{
+  using namespace utility::cart_coords_enum; // Pull in X Y Z as 0 1 2
+
+  SSLIB_ASSERT(build.getStructure().getNumAtoms() == build.getNumAtomInfos());
+
+  GenerationOutcome outcome;
+  if(!build.getSymmetryGroup())
+    return outcome.setSuccess();
+
+  common::Structure & structure = build.getStructure();
+  const common::UnitCell * const unitCell = structure.getUnitCell();
+  const SymmetryGroup & group = *build.getSymmetryGroup();
+
+  for(StructureBuild::AtomInfoIterator it = build.beginAtomInfo(),
+    end = build.endAtomInfo(); it != end; ++it)
+  {
+    const BuildAtomInfo::OpMask & opMask = it->getOpMask();
+    for(size_t op = 1 /*skip identity*/; op < group.numOps(); ++op)
+    {
+      if(opMask[op])
+      {
+        // Get the operator matrix
+        ::arma::mat44 op(group.getOp(op));
+
+        if(unitCell) // Transform the translation from fractional to absolute      
+          op.col(3).rows(X, Z) = trans(unitCell->getOrthoMtx() * op.col(3).rows(X, Z));
+
+        common::Atom & oldAtom = it->getAtom(0);
+        ::arma::vec4 oldPosition;
+        oldPosition.rows(X, Z) = oldAtom.getPosition();
+        oldPosition(3) = 1.0; // <- To make symmetry translation work correctly
+        // Apply the operator
+        const ::arma::vec4 newPosition = op * oldPosition;
+
+        // Make a copy of the old atom
+        common::Atom & newAtom = structure.newAtom(oldAtom);
+        // Set the new position
+        newAtom.setPosition(::arma::vec3(newPosition.rows(X, Z)));
+
+        // Tell the build that this is a copy of the old atom
+        build.addAtom(newAtom, *it);
+      }
+    }
+  }
+  return outcome.setSuccess();
 }
 
 }

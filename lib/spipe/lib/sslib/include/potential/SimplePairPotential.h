@@ -75,11 +75,8 @@ public:
 	// From IParameterisable ////////////////////////////////////////
 
 	virtual size_t getNumParams() const;
-	virtual const ::std::string & getParamString() const;
-	virtual ::arma::vec getParams() const;
-	virtual void setParams(const ::arma::vec & params);
-  virtual std::pair<arma::vec, bool>
-    getParamsFromString(const std::string & str) const;
+  virtual IParameterisable::PotentialParams getParams() const;
+	virtual void setParams(const IParameterisable::PotentialParams & params);
 
 	// End IParameterisable //////////////////////////////////////////
 
@@ -115,7 +112,7 @@ private:
 
 	/** Potential parameters */
 	size_t					myNumSpecies;
-  SpeciesList     mySpeciesList;
+  const SpeciesList mySpeciesList;
 	::arma::mat			myEpsilon;
 	::arma::mat			mySigma;
 	::arma::mat			myBeta;

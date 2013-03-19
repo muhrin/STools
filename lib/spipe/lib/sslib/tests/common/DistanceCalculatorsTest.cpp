@@ -25,12 +25,14 @@
 #include <common/UniversalCrystalDistanceCalculator.h>
 #include <common/UnitCell.h>
 #include <common/Utils.h>
+#include <math/Random.h>
 #include <utility/StableComparison.h>
 
 //#define DIST_TEST_MANUAL_DEBUG
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
+namespace ssm = ::sstbx::math;
 namespace ssu = ::sstbx::utility;
 
 
@@ -62,9 +64,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
     ssc::Structure structure;
     structure.setUnitCell(ssc::UnitCellPtr(new ssc::UnitCell(
-      ssc::randDouble(0.1, 5) * cellDim,
-      ssc::randDouble(0.1, 5) * cellDim, 
-      ssc::randDouble(0.1, 5) * cellDim, 90.0, 90.0, 90.0)));
+      ssm::rand(0.1, 5.0) * cellDim,
+      ssm::rand(0.1, 5.0) * cellDim, 
+      ssm::rand(0.1, 5.0) * cellDim, 90.0, 90.0, 90.0)));
 
     for(size_t i = 0; i < numAtoms; ++i)
       structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());
@@ -77,7 +79,7 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
 
-    cutoff = ssc::randDouble(0.0, maxCutoff);
+    cutoff = ssm::rand(0.0, maxCutoff);
 
     t0 = time(NULL);
 
@@ -221,7 +223,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
 
-    cutoff = ssc::randDouble() * maxCutoff;
+    cutoff = ssm::rand<double>() * maxCutoff;
 
     for(size_t i = 0; i < numAtoms; ++i)
     {

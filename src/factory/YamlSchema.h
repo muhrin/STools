@@ -39,7 +39,14 @@ struct Build : public ::sstbx::yaml_schema::SchemaHeteroMap
   {
     namespace spf = ::spipe::factory;
 
-    addEntry("randomStructures", spf::RANDOM_STRUCTURE, new spf::blocks::RandomStructure())->required();
+    ::sstbx::utility::HeterogeneousMap randStructureDefault;
+    randStructureDefault[spf::NUM] = 1;
+
+    addEntry(
+      "randomStructures",
+      spf::RANDOM_STRUCTURE,
+      (new spf::blocks::RandomStructure())->defaultValue(randStructureDefault)
+    )->required();
     addEntry("output", spf::WRITE_STRUCTURES, new spf::blocks::WriteStructure());
 
     // Defaults
@@ -56,6 +63,11 @@ struct Search : public ::sstbx::yaml_schema::SchemaHeteroMap
   {
     namespace spf = ::spipe::factory;
 
+    addEntry(
+      "paramSweep",
+      spf::PARAM_SWEEP,
+      new spf::blocks::ParamSweep()
+    );
     addEntry(
       "randomStructures",
       spf::RANDOM_STRUCTURE,

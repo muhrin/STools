@@ -13,8 +13,6 @@
 
 #include <boost/program_options.hpp>
 
-#include <armadillo>
-
 #include <yaml-cpp/yaml.h>
 
 // From SSTbx
@@ -88,7 +86,7 @@ int main(const int argc, char * argv[])
   ::stools::factory::Factory factory(speciesDb);
 
   PipePtr pipe;
-  factory.createSearchPipe(pipe, buildOptions);
+  factory.createBuildPipe(pipe, buildOptions);
 
   // Now run the pipe
   typedef sp::SpSingleThreadedEngine Engine;
@@ -113,7 +111,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     general.add_options()
       ("help", "Show help message")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(1), "Number of random starting structures")
-      ("input,i", po::value< ::std::string>(&in.paramsFile), "The file containing the structure configuration")
+      ("input,i", po::value< ::std::string>(&in.paramsFile)->required(), "The file containing the structure configuration")
     ;
 
     po::positional_options_description p;

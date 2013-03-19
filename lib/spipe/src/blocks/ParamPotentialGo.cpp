@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/ParamPotentialGo.h"
 
+#include <sstream>
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -56,14 +58,12 @@ PotentialGo(optimiser, optimisationParams, writeOutput)
 void ParamPotentialGo::pipelineStarting()
 {
   // The pipeline is starting so try and get the potential parameters
-  common::ObjectData<arma::vec>
-    params = common::getObject(common::GlobalKeys::POTENTIAL_PARAMS, getRunner()->memory());
+  common::ObjectData<PotentialParams> params
+    = common::getObject(common::GlobalKeys::POTENTIAL_PARAMS, getRunner()->memory());
 
   if(params.first != common::DataLocation::NONE)
   {
-    // Need to get the actual parameters as the potential may use a combining rule or change
-    // them in some way from those specified
-    myCurrentParams = setPotentialParams(*params.second);
+    setPotentialParams(*params.second);
 
     // The potential may have changed the params so reset them in the shared data
     common::setObject(
@@ -73,8 +73,17 @@ void ParamPotentialGo::pipelineStarting()
       getRunner()->memory()
     );
 
-    // Add a note to the table with the current parameter string
-    getTableSupport().getTable().addTableNote("params: " + myParamPotential->getParamString());
+    if(!myCurrentParams.empty())
+    {
+      ::std::stringstream ss;
+      ss << "params: " << myCurrentParams[0];
+      for(size_t i = 1; i < myCurrentParams.size(); ++i)
+      {
+        ss << " " << myCurrentParams[i];
+      }
+      // Add a note to the table with the current parameter string
+      getTableSupport().getTable().addTableNote(ss.str());
+    }
   }
 
   // Call the parent to let them deal with the starting event too
@@ -101,17 +110,15 @@ void ParamPotentialGo::copyOptimisationResults(
   strData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = myCurrentParams;
 }
 
-arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
+void ParamPotentialGo::setPotentialParams(const PotentialParams & params)
 {
-	using ::std::string;
-
+  // Need to get the actual parameters as the potential may use a combining rule or change
+  // them in some way from those specified
 	myParamPotential->setParams(params);
-
-  const arma::vec actualParams = myParamPotential->getParams();
-
-  return actualParams;
+  myCurrentParams = myParamPotential->getParams();
 }
 
 
-}}
+}
+}
 

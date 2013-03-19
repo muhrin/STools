@@ -56,7 +56,7 @@ const double TpsdGeomOptimiser::DEFAULT_TOLERANCE = 1e-13;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 355.0;
-const double TpsdGeomOptimiser::MAX_STEPSIZE = 0.2;
+const double TpsdGeomOptimiser::MAX_STEPSIZE = 10.0;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
@@ -129,7 +129,7 @@ bool TpsdGeomOptimiser::optimise(
       *unitCell,
       *evaluator,
       DEFAULT_TOLERANCE,
-      options
+      localSettings
     );
   }
   else
@@ -138,7 +138,7 @@ bool TpsdGeomOptimiser::optimise(
       structure,
       *evaluator,
       DEFAULT_TOLERANCE,
-      options
+      localSettings
     );
   }
 
@@ -155,11 +155,6 @@ bool TpsdGeomOptimiser::optimise(
   const OptimisationSettings & settings) const
 {
   SSLIB_ASSERT(settings.maxSteps.is_initialized());
-  SSLIB_ASSERT(settings.pressure.is_initialized());
-
-  // Set up the external pressure
-  ::arma::mat33 pressureMtx = *settings.pressure;
-  const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
@@ -181,15 +176,14 @@ bool TpsdGeomOptimiser::optimise(
 	dH	= std::numeric_limits<double>::max();
 	h	= 1.0;
 
-	const size_t numIonsSq	= data.numParticles * data.numParticles;
-
 	bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
 
 	// Set the initial step size so get mooving
-	double step = eTol * 1e8;
+	double step = 0.2;
 	for(size_t i = 0; !converged && i < *settings.maxSteps; ++i)
 	{
+    // Save the energy and forces from last time around
 		h0 = h;
 		f0 = data.forces;
 
@@ -216,13 +210,13 @@ bool TpsdGeomOptimiser::optimise(
 
 		h = data.internalEnergy;
 
-		deltaF	= data.forces - f0;
-		// The accu function will do the sum of all elements
-		// and the % operator does the Shure product i.e.
-		// element wise multiplication of two matrices
-		xg		= accu(deltaPos % deltaF);
-		gg		= accu(deltaF % deltaF);
+		deltaF = data.forces - f0;
 
+    // The accu function will do the sum of all elements
+    // and the % operator does the Shure product i.e.
+    // element wise multiplication of two matrices
+	  xg		= accu(deltaPos % deltaF);
+	  gg		= accu(deltaF % deltaF);
 
 		if(fabs(xg) > 0.0)
       step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);

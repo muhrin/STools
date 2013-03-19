@@ -67,6 +67,9 @@ public:
   const IUnitCellGenerator * getUnitCellGenerator() const;
 
 private:
+
+  GenerationOutcome generateSymmetry(StructureBuild & build) const;
+
   IUnitCellGeneratorPtr myUnitCellGenerator;
 };
 

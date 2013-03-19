@@ -53,6 +53,9 @@ public:
 
 private:
 
+  typedef ::sstbx::utility::MultiIdx<int> ParamSpaceIdx;
+  typedef ::std::vector<double> PotentialParams;
+
   // From Block ///////////////////////////////
   virtual void runnerAttached(SpRunnerSetup & setup);
   virtual void pipelineInitialising();
@@ -71,17 +74,17 @@ private:
     const StructureDataType & sweepStrData
   );
 
-	size_t								                    myNumParams;
-  const common::ParamRange                  myParamRange;
-	::sstbx::utility::MultiIdx<unsigned int>	myStepExtents;
+	size_t myNumParams;
+  const common::ParamRange myParamRange;
+	ParamSpaceIdx	myStepExtents;
 
-  ::spipe::utility::DataTableSupport  myTableSupport;
+  ::spipe::utility::DataTableSupport myTableSupport;
 
 	SubpipePtr mySweepPipeline;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataType *>		myBuffer;
-  SpChildRunnerPtr                    mySubpipeRunner;
+  SpChildRunnerPtr mySubpipeRunner;
 
 };
 

@@ -8,7 +8,7 @@
 // INCLUEDES /////////////
 #include "build_cell/GenBox.h"
 
-#include "common/Utils.h"
+#include "math/Random.h"
 #include "utility/IndexingEnums.h"
 
 namespace sstbx {
@@ -70,18 +70,18 @@ void GenBox::setShellThickness(const ShellThickness thickness)
   // TODO: Finish this
   //if(myShellThickness)
   //{
-  //  point(Y) = randDouble(*myShellThickness);
+  //  point(Y) = math::rand<double>(*myShellThickness);
   //  do
   //  {
-  //    point(X) = randDouble(-myHalfWidth - myHeight, myHalfWidth + myHeight + myWidth);
-  //    point(Z) = randDouble(-myHalfDepth - myHeight, myHalfDepth + myHeight);
+  //    point(X) = math::rand(-myHalfWidth - myHeight, myHalfWidth + myHeight + myWidth);
+  //    point(Z) = math::rand(-myHalfDepth - myHeight, myHalfDepth + myHeight);
   //  } while(!isInShell(point))
   //}
   //else // Standard box
   {
-    point(X) = common::randDouble(-myHalfWidth, myHalfWidth);
-    point(Y) = common::randDouble(-myHalfHeight, myHalfHeight);
-    point(Z) = common::randDouble(-myHalfDepth, myHalfDepth);
+    point(X) = math::rand(-myHalfWidth, myHalfWidth);
+    point(Y) = math::rand(-myHalfHeight, myHalfHeight);
+    point(Z) = math::rand(-myHalfDepth, myHalfDepth);
   }
   // translate
   point += myPosition;

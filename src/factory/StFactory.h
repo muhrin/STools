@@ -44,7 +44,9 @@ public:
     mySpFactory(speciesDb)
   {}
 
+  bool createBuildPipe(PipePtr & pipeOut, const OptionsMap & options) const;
   bool createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const;
+  bool createSearchPipeExtended(PipePtr & pipeOut, const OptionsMap & options) const;
 
   bool createGeomOptimiseBlock(
     BlockPtr & blockOut,

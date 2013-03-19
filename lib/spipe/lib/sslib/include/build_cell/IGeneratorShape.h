@@ -9,6 +9,8 @@
 #define I_GENERATOR_SHAPE_H
 
 // INCLUDES ////////////
+#include "SSLib.h"
+
 #include <vector>
 
 #include <armadillo>

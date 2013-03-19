@@ -13,22 +13,6 @@
 namespace sstbx {
 namespace common {
 
-double randDouble()
-{
-	return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
-}
-
-double randDouble(const double to)
-{
-	return randDouble() * to;
-}
-
-double randDouble(const double from, const double to)
-{
-	return randDouble() * (to - from) + from;
-}
-
-
 ProcessId getProcessId()
 {
 	return NS_BOOST_IPC_DETAIL::get_current_process_id();

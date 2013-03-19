@@ -173,17 +173,18 @@ void Structure::getAtomPositions(::arma::mat & posMtx) const
 {
 	// Do we need to update the buffer?
 	if(!myAtomPositionsCurrent)
-	{
-		myAtomPositionsBuffer.reset();
-    myAtomPositionsBuffer.set_size(3, getNumAtoms());
-		for(size_t i = 0; i < getNumAtoms(); ++i)
-    {
-      myAtomPositionsBuffer.col(i) = myAtoms[i].getPosition();
-    }
-		myAtomPositionsCurrent = true;
-	}
+    updatePosBuffer();
 
 	posMtx = myAtomPositionsBuffer;
+}
+
+void Structure::getAtomPositions(::arma::subview<double> & posMtx) const
+{
+	// Do we need to update the buffer?
+	if(!myAtomPositionsCurrent)
+    updatePosBuffer();
+
+  posMtx = myAtomPositionsBuffer;
 }
 
 void Structure::setAtomPositions(const ::arma::mat & posMtx)
@@ -444,6 +445,17 @@ void Structure::atomMoved(const Atom & atom) const
 {
   // Atom has moved so the buffer is not longer current
   myAtomPositionsCurrent = false;
+}
+
+void Structure::updatePosBuffer() const
+{
+	myAtomPositionsBuffer.reset();
+  myAtomPositionsBuffer.set_size(3, getNumAtoms());
+	for(size_t i = 0; i < getNumAtoms(); ++i)
+  {
+    myAtomPositionsBuffer.col(i) = myAtoms[i].getPosition();
+  }
+	myAtomPositionsCurrent = true;
 }
 
 } // namespace common

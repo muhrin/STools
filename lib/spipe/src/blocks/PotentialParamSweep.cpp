@@ -41,17 +41,17 @@ PotentialParamSweep::PotentialParamSweep(
 SpBlock("Potential param sweep"),
 myParamRange(paramRange),
 mySweepPipeline(sweepPipeline),
-myStepExtents(paramRange.nSteps.n_rows)
+myStepExtents(paramRange.nSteps.size())
 {
 	SP_ASSERT(
-    (myParamRange.from.n_rows == myParamRange.step.n_rows) &&
-    (myParamRange.from.n_rows == myParamRange.nSteps.n_rows)
+    (myParamRange.from.size() == myParamRange.step.size()) &&
+    (myParamRange.from.size() == myParamRange.nSteps.size())
   );
 
-	myNumParams = myParamRange.nSteps.n_rows;
+	myNumParams = myParamRange.nSteps.size();
 	for(size_t i = 0; i < myNumParams; ++i)
 	{
-		myStepExtents[i] = myParamRange.nSteps(i);
+		myStepExtents[i] = myParamRange.nSteps[i] + 1;
 	}
 }
 
@@ -60,7 +60,8 @@ void PotentialParamSweep::pipelineInitialising()
 	// Set the parameters in the shared data
   getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = myParamRange;
 
-  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string()
+  myTableSupport.setFilename(
+    getRunner()->memory().shared().getOutputFileStem().string()
     + "." + POTPARAMS_FILE_EXTENSION
   );
   myTableSupport.registerRunner(*getRunner());
@@ -70,20 +71,23 @@ void PotentialParamSweep::start()
 {
   ::std::string sweepPipeOutputPath;
 
-  const ssu::MultiIdxRange<unsigned int> stepsRange(ssu::MultiIdx<unsigned int>(myStepExtents.dims()), myStepExtents);
+  const ssu::MultiIdxRange<int> stepsRange(
+    ParamSpaceIdx(myStepExtents.dims()),
+    myStepExtents
+  );
 
-  BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & stepsIdx, stepsRange)
+  PotentialParams params(myNumParams);
+  BOOST_FOREACH(const ParamSpaceIdx & stepsIdx, stepsRange)
 	{
     ::spipe::SharedDataType & sweepPipeSharedData = mySubpipeRunner->memory().shared();
 
 		// Load the current potential parameters into the pipeline data
-		::arma::vec params(myNumParams);
 		for(size_t i = 0; i < myNumParams; ++i)
-		{
-			params(i) = myParamRange.from(i) + (double)stepsIdx[i] * myParamRange.step(i);
-		}
+			params[i] = myParamRange.from[i] +
+      static_cast<double>(stepsIdx[i]) * myParamRange.step[i];
+
 		// Store the potential parameters in global memory
-    getRunner()->memory().global().objectsStore[::spipe::common::GlobalKeys::POTENTIAL_PARAMS] = params;
+    getRunner()->memory().global().objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
     // Set a directory for this set of parameters
     sweepPipeSharedData.appendToOutputDirName(ssu::generateUniqueName());
@@ -109,15 +113,13 @@ void PotentialParamSweep::runnerAttached(SpRunnerSetup & setup)
 void PotentialParamSweep::finished(SpStructureDataPtr data)
 {
 	// Copy over the parameters into the structure data
-  const ::spipe::common::ObjectData<const ::arma::vec> result = ::spipe::common::getObjectConst(
+  const ::spipe::common::ObjectData<const PotentialParams> result = ::spipe::common::getObjectConst(
     ::spipe::common::GlobalKeys::POTENTIAL_PARAMS,
     mySubpipeRunner->memory()
   );
 
   if(result.first != common::DataLocation::NONE)
-  {
     data->objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = *result.second;
-  }
 
 	// Register the data with our pipeline to transfer ownership
 	// Save it in the buffer for sending down the pipe
@@ -144,7 +146,8 @@ void PotentialParamSweep::updateTable(
 {
   utility::DataTable & table = myTableSupport.getTable();
 
-  const ::arma::vec * const params = sweepStrData.objectsStore.find(common::GlobalKeys::POTENTIAL_PARAMS);
+  const PotentialParams * const params =
+    sweepStrData.objectsStore.find(common::GlobalKeys::POTENTIAL_PARAMS);
   if(params)
   {
     // Update the table with the current parameters

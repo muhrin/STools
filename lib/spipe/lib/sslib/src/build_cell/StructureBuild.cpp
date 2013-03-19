@@ -11,10 +11,12 @@
 #include "build_cell/BuildAtomInfo.h"
 #include "build_cell/Sphere.h"
 #include "build_cell/StructureContents.h"
+#include "build_cell/SymmetryGroup.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
 #include "common/Utils.h"
+#include "math/Random.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -61,6 +63,21 @@ const common::Structure & StructureBuild::getStructure() const
   return myStructure;
 }
 
+size_t StructureBuild::getNumAtomInfos() const
+{
+  return myAtomsInfo.size();
+}
+
+StructureBuild::AtomInfoIterator StructureBuild::beginAtomInfo()
+{
+  return myAtomInfoList.begin();
+}
+
+StructureBuild::AtomInfoIterator StructureBuild::endAtomInfo()
+{
+  return myAtomInfoList.end();
+}
+
 BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom)
 {
   const AtomInfoMap::iterator it = myAtomsInfo.find(&atom);
@@ -68,7 +85,7 @@ BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom)
   if(it == myAtomsInfo.end())
     return NULL;
 
-  return &it->second;
+  return it->second;
 }
 
 const BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom) const
@@ -78,12 +95,38 @@ const BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom) const
   if(it == myAtomsInfo.end())
     return NULL;
 
-  return &it->second;
+  return it->second;
 }
 
-void StructureBuild::insertAtomInfo(BuildAtomInfo & atomInfo)
+BuildAtomInfo & StructureBuild::createAtomInfo(common::Atom & atom)
 {
-  myAtomsInfo.insert(::std::make_pair(&atomInfo.getAtom(), atomInfo));
+  BuildAtomInfo & atomInfo = *myAtomInfoList.insert(myAtomInfoList.end(), new BuildAtomInfo(atom));
+  myAtomsInfo[&atom] = &atomInfo;
+  return atomInfo;
+}
+
+void StructureBuild::addAtom(common::Atom & atom, BuildAtomInfo & atomInfo)
+{
+  myAtomsInfo[&atom] = &atomInfo;
+}
+
+void StructureBuild::removeAtom(common::Atom & atom)
+{
+  AtomInfoMap::iterator itMap = myAtomsInfo.find(&atom);
+  SSLIB_ASSERT(itMap != myAtomsInfo.end());
+
+  BuildAtomInfo & atomInfo = *itMap->second;
+  AtomInfoList::iterator itList = myAtomInfoList.begin();
+  for(AtomInfoList::iterator end = myAtomInfoList.end(); itList != end; ++itList)
+  {
+    if(&(*itList) == &atomInfo)
+      break;
+  }
+  SSLIB_ASSERT(itList != myAtomInfoList.end());
+
+  myAtomsInfo.erase(itMap);
+  if(atomInfo.getNumAtoms() == 0)
+    myAtomInfoList.erase(itList);
 }
 
 ::arma::vec3 StructureBuild::getRandomPoint() const
@@ -95,9 +138,11 @@ void StructureBuild::insertAtomInfo(BuildAtomInfo & atomInfo)
   }
   else
   {
+    // TODO: Replace this with gen sphere
     ::arma::vec3 point;
-    point.randn();
-    return common::randDouble(myClusterRadius) * point;
+    point.randu();
+    point *= 1.0 / sqrt(::arma::dot(point, point)); // normalise
+    return math::rand(myClusterRadius) * point;
   }
 
 }
@@ -112,13 +157,23 @@ void StructureBuild::setClusterRadius(const RadiusCalculator & radiusCalculator)
   myClusterRadius = radiusCalculator.getRadius(myIntendedContents.getVolume());
 }
 
+const SymmetryGroup * StructureBuild::getSymmetryGroup() const
+{
+  return mySymmetryGroup.get();
+}
+
+void StructureBuild::setSymmetryGroup(SymmetryGroupPtr symGroup)
+{
+  mySymmetryGroup = symGroup;
+}
+
 StructureBuild::FixedSet StructureBuild::getFixedSet() const
 {
   FixedSet fixedSet;
 
   BOOST_FOREACH(AtomInfoMap::const_reference atomInfo, myAtomsInfo)
   {
-    if(atomInfo.second.isFixed())
+    if(atomInfo.second->isFixed())
       fixedSet.insert(atomInfo.first->getIndex());
   }
 

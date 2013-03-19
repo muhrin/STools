@@ -12,7 +12,7 @@
 
 #include "SSLib.h"
 
-#include <boost/noncopyable.hpp> // TODO: TEMP
+#include <boost/noncopyable.hpp>
 
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
@@ -23,6 +23,7 @@
 namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
+class BuildAtomInfo;
 
 class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
@@ -68,10 +69,14 @@ public:
   // End from IFragmentGenerator
 
 private:
-
   typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
 
-  AtomPosition generatePosition(const AtomsDescription & atom, const StructureBuild & build) const;
+  AtomPosition generatePosition(
+    BuildAtomInfo & atomInfo,
+    const AtomsDescription & atom,
+    const StructureBuild & build,
+    const unsigned int multiplicity
+  ) const;
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
   Atoms myAtoms;

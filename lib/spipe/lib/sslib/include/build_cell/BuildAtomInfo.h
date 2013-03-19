@@ -9,9 +9,9 @@
 #define BUILD_ATOM_INFO_H
 
 // INCLUDES ////////////
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
-
 
 // DEFINITION ///////////////////////
 
@@ -23,16 +23,17 @@ class AtomGroup;
 }
 
 namespace build_cell {
+class StructureBuild;
 
 class BuildAtomInfo
 {
 public:
   typedef ::boost::shared_ptr<common::AtomGroup> AtomGroupPtr;
+  typedef ::std::vector<bool> OpMask;
 
-  BuildAtomInfo(common::Atom & atom, AtomGroupPtr group = AtomGroupPtr());
-
-  common::Atom & getAtom();
-  const common::Atom & getAtom() const;
+  size_t getNumAtoms() const;
+  common::Atom & getAtom(const size_t index);
+  const common::Atom & getAtom(const size_t index) const;
 
   common::AtomGroup * getGroup();
   const common::AtomGroup * getGroup() const;
@@ -40,12 +41,27 @@ public:
   void setFixed(const bool fixed);
   bool isFixed() const;
 
-private:
+  int getMultiplicity() const;
+  void setMultiplicity(const int multiplicity);
 
-  common::Atom & myAtom;
+  const OpMask & getOpMask() const;
+  void setOperatorsMask(const OpMask & opMask);
+
+private:
+  typedef ::std::vector<common::Atom *> AtomsList;
+
+  BuildAtomInfo(common::Atom & atom);
+
+  void addAtom(common::Atom & atom);
+  void removeAtom(common::Atom & atom);
+
+  AtomsList myAtoms;
   AtomGroupPtr myGroup; 
   bool myFixed;
+  int myMultiplicity;
+  OpMask myOpMask;
 
+  friend class StructureBuild;
 };
 
 }

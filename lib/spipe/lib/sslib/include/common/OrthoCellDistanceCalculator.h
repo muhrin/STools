@@ -9,6 +9,8 @@
 #define ORTHO_CELL_DISTANCE_CALCULATOR_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLib.h"
+
 #include <armadillo>
 
 #include "SSLibAssert.h"

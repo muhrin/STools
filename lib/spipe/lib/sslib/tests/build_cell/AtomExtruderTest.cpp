@@ -23,11 +23,12 @@
 #include <common/Structure.h>
 #include <common/UnitCell.h>
 #include <common/Types.h>
-
 #include <common/Utils.h>
+#include <math/Random.h>
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
+namespace ssm = ::sstbx::math;
 
 BOOST_AUTO_TEST_CASE(ExtrusionTest)
 {
@@ -50,7 +51,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     ssc::Structure structure;
 
-    numAtoms = (size_t)ssc::randDouble(1.0, (double)maxAtoms);
+    numAtoms = static_cast<size_t>(ssm::rand(1, static_cast<int>(maxAtoms)));
 
     // Create a unit cell
     // Make the volume somewhat bigger than the space filled by the atoms

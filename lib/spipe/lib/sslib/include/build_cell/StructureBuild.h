@@ -14,6 +14,8 @@
 #include <map>
 #include <set>
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
 #include "build_cell/BuildAtomInfo.h"
 #include "build_cell/AtomExtruder.h"
 
@@ -26,12 +28,16 @@ namespace build_cell {
 
 class BuildAtomInfo;
 class StructureContents;
+class SymmetryGroup;
 
 class StructureBuild
 {
+  typedef ::std::map<common::Atom *, BuildAtomInfo *> AtomInfoMap;
+  typedef ::boost::ptr_vector<BuildAtomInfo> AtomInfoList;
 public:
-
   typedef ::std::set<size_t> FixedSet;
+  typedef UniquePtr<SymmetryGroup>::Type SymmetryGroupPtr;
+  typedef AtomInfoList::iterator AtomInfoIterator;
 
   class RadiusCalculator
   {
@@ -56,12 +62,21 @@ public:
 
   BuildAtomInfo * getAtomInfo(common::Atom & atom);
   const BuildAtomInfo * getAtomInfo(common::Atom & atom) const;
-  void insertAtomInfo(BuildAtomInfo & atomInfo);
+  BuildAtomInfo & createAtomInfo(common::Atom & atom);
+
+  size_t getNumAtomInfos() const;
+  AtomInfoIterator beginAtomInfo();
+  AtomInfoIterator endAtomInfo();
+  void addAtom(common::Atom & atom, BuildAtomInfo & atomInfo);
+  void removeAtom(common::Atom & atom);
 
   ::arma::vec3 getRandomPoint() const;
 
   double getClusterRadius() const;
   void setClusterRadius(const RadiusCalculator & radiusCalculator);
+
+  const SymmetryGroup * getSymmetryGroup() const;
+  void setSymmetryGroup(SymmetryGroupPtr symGroup);
 
   FixedSet getFixedSet() const;
 
@@ -69,13 +84,18 @@ public:
 
 private:
 
-  typedef ::std::map<common::Atom *, BuildAtomInfo> AtomInfoMap;
+  void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
+  void atomRemoved(common::Atom & atom);
 
   common::Structure & myStructure;
   const StructureContents & myIntendedContents;
   AtomInfoMap myAtomsInfo;
+  AtomInfoList myAtomInfoList;
   double myClusterRadius;
   AtomExtruder myAtomsExtruder;
+  SymmetryGroupPtr mySymmetryGroup;
+
+  friend class BuildAtomInfo;
 };
 
 }

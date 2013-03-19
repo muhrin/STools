@@ -80,7 +80,7 @@ bool AtomFormatParser::setFormat(const FormatDescription & formatDescription)
 void AtomFormatParser::init()
 {
   addEntry("spec", factory::SPECIES);
-  addEntry("radius", factory::ATOM_RADIUS);
+  addEntry("radius", factory::RADIUS);
 }
 
 }

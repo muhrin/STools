@@ -9,6 +9,8 @@
 #define DISTANCE_CALCULATOR_DELEGATOR_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLib.h"
+
 #include <boost/scoped_ptr.hpp>
 #include <boost/utility.hpp>
 

@@ -194,7 +194,7 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addEntry("genSphere", GEN_SPHERE, new GenSphere());
     addEntry("genBox", GEN_BOX, new GenBox());
     addEntry("atoms", ATOMS, new SimpleAtomsListSchema())->required();
-    addScalarEntry("atomsRadius", ATOM_RADIUS);
+    addScalarEntry("atomsRadius", RADIUS);
   }
 };
 
@@ -224,7 +224,7 @@ struct Builder : public yaml_schema::SchemaHeteroMap
       ATOMS_FORMAT,
       new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >()
     );
-    addScalarEntry("atomsRadius", ATOM_RADIUS);
+    addScalarEntry("atomsRadius", RADIUS);
     addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
     addEntry("genSphere", GEN_SPHERE, new GenSphere());
     addEntry("genBox", GEN_BOX, new GenBox());

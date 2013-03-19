@@ -39,8 +39,11 @@ struct convert< ::sstbx::potential::OptimisationSettings>
 template<>
 struct convert< ::sstbx::potential::CombiningRule::Value>
 {
-  static Node encode(const ::sstbx::potential::CombiningRule::Value & rhs);
-  static bool decode(const Node& node, ::sstbx::potential::CombiningRule::Value & rhs);
+private:
+  typedef ::sstbx::potential::CombiningRule Rule;
+public:
+  static Node encode(const Rule::Value & rhs);
+  static bool decode(const Node & node, Rule::Value & rhs);
 };
 
 }
