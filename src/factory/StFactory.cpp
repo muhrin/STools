@@ -131,7 +131,7 @@ Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
 
   // Finally tack on a lowest energy block to make sure that only one structure
   // comes out the end in all eventualities
-  lastBlock = addAndConnect(*pipe, lastBlock, new spb::LowestFreeEnergy(static_cast<unsigned int>(1)));
+  lastBlock = addAndConnect(*pipe, lastBlock, new spb::LowestFreeEnergy(static_cast<size_t>(1)));
 
   pipeOut = pipe;
   return true;

@@ -56,7 +56,7 @@ bool Factory::createLowestEnergyBlock(BlockPtr & blockOut, const OptionsMap & op
     return true;
   }
 
-  const unsigned int * const keepTop = options.find(KEEP_TOP);
+  const size_t * const keepTop = options.find(KEEP_TOP);
   if(keepTop)
   {
     blockOut.reset(new blocks::LowestFreeEnergy(*keepTop));
@@ -117,7 +117,7 @@ bool Factory::createRandomStructureBlock(
 ) const
 {
   // Try to construct a structure generator
-  ssbc::IStructureGeneratorPtr generator = mySsLibFactory.createStructureBuilder(options);
+  ssbc::IStructureGeneratorPtr generator(mySsLibFactory.createStructureBuilder(options));
   if(!generator.get())
     return false;
 

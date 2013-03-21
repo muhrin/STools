@@ -42,11 +42,12 @@ namespace ssp = ::sstbx::potential;
 namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
-	sstbx::potential::IGeomOptimiserPtr optimiser,
+  sstbx::potential::IGeomOptimiserPtr optimiser,
   const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
-myWriteOutput(writeOutput)
+myWriteOutput(writeOutput),
+myOptimisationParams()
 {}
 
 PotentialGo::PotentialGo(

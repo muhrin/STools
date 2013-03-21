@@ -30,7 +30,7 @@ class LowestFreeEnergy : public SpBarrier, ::boost::noncopyable
 {
 public:
 
-	explicit LowestFreeEnergy(const size_t keepTopN = 1);
+  explicit LowestFreeEnergy(const size_t keepTopN = 1);
   explicit LowestFreeEnergy(const double keepTopEnergyPercentage);
 
   // From Block /////////////////

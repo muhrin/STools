@@ -23,13 +23,15 @@ namespace yaml_schema {
 
 template <class EntrySchema>
 SchemaList<EntrySchema>::SchemaList():
-myLength(-1)
+myLength(-1),
+myEntrySchema()
 {}
 
 template <class EntrySchema>
 SchemaList<EntrySchema>::SchemaList(const EntrySchema & entrySchema):
 myEntrySchema(entrySchema),
-myLength(-1)
+myLength(-1),
+myEntrySchema()
 {}
 
 template <class EntrySchema>

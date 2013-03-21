@@ -43,8 +43,10 @@ typedef boost::tokenizer<boost::char_separator<char> > Tok;
 const boost::char_separator<char> tokSep(" \t");
 
 SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
-myAtomSpeciesDb(atomSpeciesDb)
+myAtomSpeciesDb(atomSpeciesDb),
+myShapeFactory()
 {}
+
 //
 //common::StructurePtr
 //SsLibFactoryYaml::createStructure(const YAML::Node & structureNode) const

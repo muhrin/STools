@@ -75,10 +75,24 @@ struct Rand<unsigned int>
   {
     return static_cast<unsigned int>(::rand() % static_cast<int>(to));
   }
-  static int get(const unsigned int from, const unsigned int to)
+  static unsigned int get(const unsigned int from, const unsigned int to)
   {
     return get(to - from) + from;
   }
+};
+
+template <>
+struct Rand<long unsigned int>
+{
+  static long unsigned int get(const long unsigned int to)
+  {
+    return static_cast<long unsigned int>(::rand() % static_cast<long int>(to));
+  }
+  static long unsigned int get(const long unsigned int from, const long unsigned int to)
+  {
+    return get(to - from) + from;
+  }
+
 };
 
 template <>
