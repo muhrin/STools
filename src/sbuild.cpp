@@ -23,9 +23,10 @@
 // From StructurePipe
 
 // Local
-#include "utility/PipeDataInitialisation.h"
 #include "factory/StFactory.h"
 #include "factory/YamlSchema.h"
+#include "utility/BoostCapabilities.h"
+#include "utility/PipeDataInitialisation.h"
 
 // MACROS ////////////////////////////////////
 
@@ -111,7 +112,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     general.add_options()
       ("help", "Show help message")
       ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(1), "Number of random starting structures")
-      ("input,i", po::value< ::std::string>(&in.paramsFile)->required(), "The file containing the structure configuration")
+      ("input,i", po::value< ::std::string>(&in.paramsFile)_ADD_REQUIRED_, "The file containing the structure configuration")
     ;
 
     po::positional_options_description p;

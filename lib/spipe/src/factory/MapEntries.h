@@ -29,7 +29,7 @@ extern ::sstbx::utility::Key<int> NUM;
 
 // BLOCKS
 extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> LOWEST_ENERGY;
-extern ::sstbx::utility::Key<unsigned int> KEEP_TOP;
+extern ::sstbx::utility::Key<size_t> KEEP_TOP;
 extern ::sstbx::utility::Key<double> KEEP_WITHIN;
 
 extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> GEOM_OPTIMISE;

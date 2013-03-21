@@ -84,7 +84,7 @@ protected:
   const ::sstbx::potential::OptimisationSettings  myOptimisationParams;
 
 private:
-	const sstbx::potential::IGeomOptimiserPtr myOptimiser;
+  const sstbx::potential::IGeomOptimiserPtr myOptimiser;
 
   // Use a table to store data about structure that are being optimised
   ::spipe::utility::DataTableSupport myTableSupport;

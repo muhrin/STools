@@ -18,7 +18,7 @@ namespace factory {
 
 // BLOCKS
 ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> LOWEST_ENERGY;
-::sstbx::utility::Key<unsigned int> KEEP_TOP;
+::sstbx::utility::Key<size_t> KEEP_TOP;
 ::sstbx::utility::Key<double> KEEP_WITHIN;
 
 ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> GEOM_OPTIMISE;
