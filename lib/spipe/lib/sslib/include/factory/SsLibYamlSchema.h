@@ -198,7 +198,7 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
   }
 };
 
-struct ExtendedAtomsDataMap : SimpleAtomsDataMap
+struct ExtendedAtomsDataMap : public SimpleAtomsDataMap
 {
   typedef utility::HeterogeneousMap BindingType;
   ExtendedAtomsDataMap()
@@ -208,15 +208,26 @@ struct ExtendedAtomsDataMap : SimpleAtomsDataMap
   }
 };
 
-typedef yaml_schema::SchemaListMap<
-  yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
-  ExtendedAtomsDataMap
-> ExtendedAtomsListEntrySchema;
+struct Symmetry : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
 
-typedef yaml_schema::SchemaList<ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
+  Symmetry()
+  {
+    addScalarEntry("ops", SYM_OPS);
+  }
+};
 
 struct Builder : public yaml_schema::SchemaHeteroMap
 {
+  typedef utility::HeterogeneousMap BindingType;
+
+  typedef yaml_schema::SchemaListMap<
+    yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
+    ExtendedAtomsDataMap
+  > ExtendedAtomsListEntrySchema;
+  typedef yaml_schema::SchemaList<ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
+
   Builder()
   {
     addEntry(
@@ -229,6 +240,7 @@ struct Builder : public yaml_schema::SchemaHeteroMap
     addEntry("genSphere", GEN_SPHERE, new GenSphere());
     addEntry("genBox", GEN_BOX, new GenBox());
     addEntry("unitCell", UNIT_CELL_BUILDER, new UnitCellBuilder());
+    addEntry("symmetry", SYMMETRY, new Symmetry());
   }
 };
 

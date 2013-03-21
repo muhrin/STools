@@ -49,7 +49,6 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
 
   structureOut.reset(new common::Structure());
   StructureBuild structureBuild(*structureOut, contents);
-  structureBuild.setSymmetryGroup(StructureBuild::SymmetryGroupPtr(new C3v));
 
   // Do we need to create a unit cell?
   if(myUnitCellGenerator.get())

@@ -63,11 +63,12 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
   ::std::vector< ::std::string> DEFAULT_INPUT_FILES(1, fs::current_path().string());
 
   ::std::stringstream tokensDescription;
-  BOOST_FOREACH(const TokensMap::const_reference token, tokensMap)
+  for(TokensMap::const_iterator it = tokensMap.begin(), end = tokensMap.end();
+    it != end; ++it)
   {
-    tokensDescription << token.first << "\t= " << token.second->getName();
-    if(!token.second->getDefaultFormatString().empty())
-      tokensDescription << " (" << token.second->getDefaultFormatString() << ")";
+    tokensDescription << it->first << "\t= " << it->second->getName();
+    if(!it->second->getDefaultFormatString().empty())
+      tokensDescription << " (" << it->second->getDefaultFormatString() << ")";
     tokensDescription << ::std::endl;
   }
 

@@ -96,7 +96,11 @@ AtomsGenerator::generateFragment(
   // First insert all the atoms into the structure
   AtomPosition position;
   Multiplicities multiplicities;
-  const Multiplicities possibleMultiplicities(build.getSymmetryGroup()->getMultiplicities());
+  Multiplicities possibleMultiplicities;
+  if(usingSymmetry)
+    possibleMultiplicities = build.getSymmetryGroup()->getMultiplicities();
+  else
+    possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
   BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
   {
     if(atomsDesc.getPosition())
@@ -189,7 +193,7 @@ AtomsGenerator::generatePosition(
   const bool usingSymmetry = build.getSymmetryGroup() != NULL;
 
   AtomPosition position;
-  // Default is not fixex
+  // Default is not fixed
   position.second = false;
 
   OptionalArmaVec3 optionalPosition;

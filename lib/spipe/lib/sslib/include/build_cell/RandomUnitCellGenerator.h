@@ -82,9 +82,6 @@ private:
   OptionalDouble  myTargetVolume;
   OptionalDouble  myVolumeDelta;
   OptionalDouble  myMaxLengthRatio;
-
-
-
 };
 
 }

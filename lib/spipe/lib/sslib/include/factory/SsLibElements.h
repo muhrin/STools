@@ -79,6 +79,9 @@ extern utility::Key<double> SHELL_THICKNESS;
 extern utility::Key<double> WIDTH;
 extern utility::Key<double> HEIGHT;
 extern utility::Key<double> DEPTH;
+// Symmetry
+extern utility::Key<utility::HeterogeneousMap> SYMMETRY;
+extern utility::Key<MinMax> SYM_OPS;
 
 // STRUCTURE COMPARATORS //////////////////////////
 extern utility::Key<utility::HeterogeneousMap> COMPARATOR;

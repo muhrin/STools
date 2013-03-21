@@ -52,6 +52,7 @@ void GenSphere::setShellThickness(const ShellThickness thickness)
   }
   ::arma::vec3 point;
   point.randu();
+  point = point * myRadius / (sqrt(::arma::dot(point, point))); // Normalise and scale the point
 
   point += myPosition;
   return point;
