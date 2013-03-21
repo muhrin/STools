@@ -227,8 +227,8 @@ SsLibFactoryYaml::createGeometryOptimiser(
 {
   GeomOptimiserPtr opt;
 
-  const OptionsMap * optimiser = optimiserMap.find(TPSD);
-  if(optimiser)
+  const OptionsMap * const tpsdOptions = optimiserMap.find(TPSD);
+  if(tpsdOptions)
   {
     // Have to have a potential with this optimiser
     if(!potentialMap)
@@ -237,7 +237,7 @@ SsLibFactoryYaml::createGeometryOptimiser(
     if(!potential.get())
       return opt; // TODO: Emit error
 
-    const double * const tolerance = optimiserMap.find(TOLERANCE);
+    const double * const tolerance = tpsdOptions->find(TOLERANCE);
     
     UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
     if(tolerance)

@@ -48,7 +48,7 @@ struct Optimiser : public yaml_schema::SchemaHeteroMap
 {
   Optimiser()
   {
-    addEntry("tpsd", TPSD, (new yaml_schema::SchemaHeteroMap));
+    addEntry("tpsd", TPSD, (new Tpsd));
     utility::HeterogeneousMap defaultOptimiser;
     defaultOptimiser[TPSD];
     defaultValue(defaultOptimiser);
