@@ -123,17 +123,17 @@ GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) con
       if(opMask[op])
       {
         // Get the operator matrix
-        ::arma::mat44 op(group.getOp(op));
+        ::arma::mat44 opMat(group.getOp(op));
 
         if(unitCell) // Transform the translation from fractional to absolute      
-          op.col(3).rows(X, Z) = trans(unitCell->getOrthoMtx() * op.col(3).rows(X, Z));
+          opMat.col(3).rows(X, Z) = trans(unitCell->getOrthoMtx() * opMat.col(3).rows(X, Z));
 
         common::Atom & oldAtom = it->getAtom(0);
         ::arma::vec4 oldPosition;
         oldPosition.rows(X, Z) = oldAtom.getPosition();
         oldPosition(3) = 1.0; // <- To make symmetry translation work correctly
         // Apply the operator
-        const ::arma::vec4 newPosition = op * oldPosition;
+        const ::arma::vec4 newPosition = opMat * oldPosition;
 
         // Make a copy of the old atom
         common::Atom & newAtom = structure.newAtom(oldAtom);

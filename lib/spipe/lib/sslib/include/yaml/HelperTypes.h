@@ -49,7 +49,7 @@ struct VectorAsString : public TypeWrapper< ::std::vector<T> >
   typedef ::std::vector<T> ValueType;
 
   VectorAsString() {}
-  VectorAsString(const ::std::vector<T> & value): TypeWrapper(value) {}
+  VectorAsString(const ::std::vector<T> & value): TypeWrapper<ValueType>(value) {}
 };
 
 }

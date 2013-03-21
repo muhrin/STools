@@ -8,6 +8,7 @@
 #include "analysis/Histogram.h"
 
 #include <cmath>
+#include <iostream>
 
 #include <boost/foreach.hpp>
 

@@ -35,15 +35,16 @@ SchemaHeteroMapEntryBase * new_clone(const SchemaHeteroMapEntryBase & entry);
 template <typename T>
 class SchemaHomoMap : public detail::SchemaElementBase< ::std::map< ::std::string, T> >
 {
-  typedef ::std::map< ::std::string, T> MapType;
 public:
-  virtual bool valueToNode(YAML::Node & node, const MapType & value, const bool useDefaultOnFail) const;
-  virtual bool nodeToValue(SchemaParse & parse, MapType & value, const YAML::Node & node, const bool useDefaultOnFail) const;
+  typedef ::std::map< ::std::string, T> BindingType;
 
-  void addEntry(const ::std::string & name, const SchemaElementBase<T> * const element);
+  virtual bool valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const;
+  virtual bool nodeToValue(SchemaParse & parse, BindingType & value, const YAML::Node & node, const bool useDefaultOnFail) const;
+
+  void addEntry(const ::std::string & name, const detail::SchemaElementBase<T> * const element);
 
 private:
-  typedef ::boost::ptr_map< ::std::string, const SchemaElementBase<T> > EntriesMap;
+  typedef ::boost::ptr_map< ::std::string, const detail::SchemaElementBase<T> > EntriesMap;
 
   EntriesMap myEntries;
 };
@@ -60,7 +61,7 @@ public:
   detail::SchemaHeteroMapEntry<T> * addEntry(
     const ::std::string & name,
     const utility::Key<T> & key,
-    SchemaElementBase<T> * const element
+    detail::SchemaElementBase<T> * const element
   );
   template <typename T>
   detail::SchemaHeteroMapEntry<T> * addScalarEntry(

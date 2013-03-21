@@ -26,6 +26,12 @@ class SchemaWrapper : public detail::SchemaElementBase<typename Wrapper::ValueTy
 public:
   typedef typename Wrapper::ValueType BindingType;
 
+  // NOTE: Have to pull in any methods that we want to use directly (i.e. without this->)
+  // here because of the way identifier lookup works with template base classes.
+  // See: e.g. http://stackoverflow.com/questions/5286922/g-template-parameter-error
+  using detail::SchemaElementBase<BindingType>::getDefault;
+  using detail::SchemaElementBase<BindingType>::isRequired;
+
   virtual bool valueToNode(
     YAML::Node & node,
     const BindingType & value,

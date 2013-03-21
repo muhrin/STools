@@ -43,7 +43,7 @@ bool SchemaFundamental<T>::nodeToValue(SchemaParse & parse, T & value, const YAM
   }
   catch(const YAML::Exception & /*e*/)
   {
-    parse.logError(TYPE_CONVERSION_FAILED, "Failed to convert value.  Probably a typo.");
+    parse.logError(SchemaParseErrorCode::TYPE_CONVERSION_FAILED, "Failed to convert value.  Probably a typo.");
     return false;
   }
   return true;

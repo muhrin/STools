@@ -68,7 +68,7 @@ myMapSchema(mapSchema)
 template <class ScalarSchema, class ListSchema, class MapSchema>
 SchemaScalarListMap<ScalarSchema, ListSchema, MapSchema>::SchemaScalarListMap(
   const SchemaScalarListMap & toCopy):
-SchemaElementBase(toCopy),
+detail::SchemaElementBase<BindingType>(toCopy),
 myScalarSchema(toCopy.myScalarSchema),
 myListSchema(toCopy.myListSchema),
 myMapSchema(toCopy.myMapSchema)
@@ -94,7 +94,7 @@ bool SchemaScalarListMap<ScalarSchema, ListSchema, MapSchema>::nodeToValue(
   if(!node.IsDefined())
   {
     if(isRequired())
-      parse.logError(REQUIRED_VALUE_MISSING, "Missing required scalar-list-map");
+      parse.logError(SchemaParseErrorCode::REQUIRED_VALUE_MISSING, "Missing required scalar-list-map");
     return false;
   }
 
@@ -165,7 +165,7 @@ myMapSchema(mapSchema)
 template <class ListSchema, class MapSchema>
 SchemaListMap<ListSchema, MapSchema>::SchemaListMap(
   const SchemaListMap & toCopy):
-SchemaElementBase(toCopy),
+detail::SchemaElementBase<BindingType>(toCopy),
 myListSchema(toCopy.myListSchema),
 myMapSchema(toCopy.myMapSchema)
 {}
@@ -198,10 +198,10 @@ bool SchemaListMap<ListSchema, MapSchema>::nodeToValue(
   if(node.IsSequence())
   {
     // Make the variant contain the list binding type
-    binding = ListSchema::BindingType();
+    binding = typename ListSchema::BindingType();
     return myListSchema.nodeToValue(
       parse,
-      ::boost::get<ListSchema::BindingType>(binding),
+      ::boost::get<typename ListSchema::BindingType>(binding),
       node,
       useDefaultOnFail
     );
@@ -209,10 +209,10 @@ bool SchemaListMap<ListSchema, MapSchema>::nodeToValue(
   else if(node.IsMap())
   {
     // Make the variant contain the list binding type
-    binding = MapSchema::BindingType();
+    binding = typename MapSchema::BindingType();
     return myMapSchema.nodeToValue(
       parse,
-      ::boost::get<MapSchema::BindingType>(binding),
+      ::boost::get<typename MapSchema::BindingType>(binding),
       node,
       useDefaultOnFail
     );

@@ -44,7 +44,7 @@ bool SchemaList<EntrySchema>::valueToNode(
   const BindingType & list,
   const bool useDefaultOnFail) const
 {
-  BOOST_FOREACH(BindingType::const_reference value, list)
+  BOOST_FOREACH(typename BindingType::const_reference value, list)
   {
     YAML::Node listEntry;
     if(myEntrySchema.valueToNode(listEntry, value, useDefaultOnFail))

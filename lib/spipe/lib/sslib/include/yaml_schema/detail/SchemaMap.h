@@ -14,6 +14,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/type_traits/is_fundamental.hpp>
 
+#include "yaml_schema/SchemaScalar.h"
+
 // DEFINES //////////////////////////////////////////////
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -192,13 +194,13 @@ SchemaHeteroMapEntry<T>::clone() const
 } // namespace detail
 
 template <typename T>
-bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const MapType & value, const bool useDefaultOnFail) const
+bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const
 {
-  EntriesMap::const_iterator it;
-  FOR_EACH(MapType::const_reference entry, value)
+  typename EntriesMap::const_iterator it;
+  BOOST_FOREACH(typename BindingType::const_reference entry, value)
   {
     it = myEntries.find(entry.first);
-    if(it != end)
+    if(it != myEntries.end())
     {
       YAML::Node entryNode;
       it.second.valueToNode(entryNode, entry.second, useDefaultOnFail);
@@ -208,7 +210,7 @@ bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const MapType & value, con
 }
 
 template <typename T>
-bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, MapType & value, const YAML::Node & node, const bool useDefaultOnFail) const
+bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, BindingType & value, const YAML::Node & node, const bool useDefaultOnFail) const
 {
   if(!node.IsMap())
   {
@@ -217,8 +219,8 @@ bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, MapType & value, const Y
   }
 
   // TODO: Fix this, this method is wrong.  It needs to be Node that is processed, not value!
-  EntriesMap::const_iterator it;
-  FOR_EACH(MapType::const_reference entry, value)
+  typename EntriesMap::const_iterator it;
+  BOOST_FOREACH(typename BindingType::const_reference entry, value)
   {
     if(node[entry.first])
     {
@@ -229,7 +231,7 @@ bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, MapType & value, const Y
 }
 
 template <typename T>
-void SchemaHomoMap<T>::addEntry(const ::std::string & name, const SchemaElementBase<T> * const element)
+void SchemaHomoMap<T>::addEntry(const ::std::string & name, const detail::SchemaElementBase<T> * const element)
 {
   myEntries.insert(name, element);
 }
@@ -238,7 +240,7 @@ template <typename T>
 detail::SchemaHeteroMapEntry<T> * SchemaHeteroMap::addEntry(
   const ::std::string & name,
   const utility::Key<T> & key,
-  SchemaElementBase<T> * const element
+  detail::SchemaElementBase<T> * const element
 )
 {
   const utility::KeyId * keyId = key.getId();

@@ -74,10 +74,10 @@ Node convert< ::sstbx::factory::AtomSpeciesCount>::encode(const ::sstbx::factory
 bool convert< ::sstbx::factory::AtomSpeciesCount>::decode(
   const Node & node, ::sstbx::factory::AtomSpeciesCount & rhs)
 {
-  typedef boost::tokenizer<boost::char_separator<char> > Tok;
+  typedef boost::tokenizer< ::boost::char_separator<char> > Tok;
   const boost::char_separator<char> tokSep(" \t");
 
-  const ::std::string species(node.as<::std::string>());
+  const ::std::string species(node.as< ::std::string>());
   const Tok tok(species, tokSep);
 
   Tok::const_iterator it = tok.begin();

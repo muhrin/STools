@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "yaml/TranscodeGeneral.h"
 
+#include <iomanip>
 #include <sstream>
 
 #include <boost/foreach.hpp>

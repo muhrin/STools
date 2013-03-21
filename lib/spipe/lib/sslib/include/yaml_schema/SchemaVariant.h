@@ -43,6 +43,12 @@ public:
     const MapSchema & mapSchema);
   SchemaScalarListMap(const SchemaScalarListMap & toCopy);
 
+  // NOTE: Have to pull in any methods that we want to use directly (i.e. without this->)
+  // here because of the way identifier lookup works with template base classes.
+  // See: e.g. http://stackoverflow.com/questions/5286922/g-template-parameter-error
+  using detail::SchemaElementBase<BindingType>::getDefault;
+  using detail::SchemaElementBase<BindingType>::isRequired;
+
   virtual bool valueToNode(YAML::Node & node, const BindingType & binding, const bool useDefaultOnFail) const;
   virtual bool nodeToValue(SchemaParse & parse, BindingType & binding, const YAML::Node & node, const bool useDefaultOnFail) const;
 
@@ -75,6 +81,12 @@ public:
   SchemaListMap(const ListSchema & listSchema);
   SchemaListMap(const MapSchema & mapSchema);
   SchemaListMap(const SchemaListMap & toCopy);
+
+  // NOTE: Have to pull in any methods that we want to use directly (i.e. without this->)
+  // here because of the way identifier lookup works with template base classes.
+  // See: e.g. http://stackoverflow.com/questions/5286922/g-template-parameter-error
+  using detail::SchemaElementBase<BindingType>::getDefault;
+  using detail::SchemaElementBase<BindingType>::isRequired;
 
   virtual bool valueToNode(YAML::Node & node, const BindingType & binding, const bool useDefaultOnFail) const;
   virtual bool nodeToValue(SchemaParse & parse, BindingType & binding, const YAML::Node & node, const bool useDefaultOnFail) const;
