@@ -61,7 +61,7 @@ struct Rand<int>
     ::boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
     return gen();
 #else
-    const ::boost::random:::uniform_int_distribution<> dist(0, to - 1);
+    const ::boost::random::uniform_int_distribution<> dist(0, to - 1);
     return dist(mt19937);
 #endif
   }

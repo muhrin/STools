@@ -13,7 +13,7 @@
 namespace sstbx {
 namespace math {
 namespace detail {
-boost:::mt19937 mt19937;
+::boost::mt19937 mt19937;
 
 ::boost::normal_distribution<> Rand<double>::normal(0.0, 1.0);
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
