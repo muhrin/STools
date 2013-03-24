@@ -34,11 +34,20 @@ public:
   const ShellThickness & getShellThickness() const;
   void setShellThickness(const ShellThickness thickness);
 
+  // From IGeneratorShape
   virtual ::arma::vec3 randomPoint() const;
   virtual void randomPoints(::std::vector< ::arma::vec3> & pointsOut, const unsigned int num) const;
+
+  virtual OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis) const;
+  virtual OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const;
+
   virtual UniquePtr<IGeneratorShape>::Type clone() const;
+  // End from IGeneratorShape
 
 private:
+
+  double generateRadius() const;
+
   ::arma::vec3 myPosition;
   double myRadius;
   ShellThickness myShellThickness;

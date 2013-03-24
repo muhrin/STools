@@ -8,6 +8,8 @@
 // INCLUEDES /////////////
 #include "build_cell/GenSphere.h"
 
+#include "common/Constants.h"
+#include "math/Random.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -45,17 +47,11 @@ void GenSphere::setShellThickness(const ShellThickness thickness)
 
 ::arma::vec3 GenSphere::randomPoint() const
 {
-  // TODO: Finish this
-  if(myShellThickness)
-  {
-
-  }
-  ::arma::vec3 point;
-  point.randu();
-  point = point * myRadius / (sqrt(::arma::dot(point, point))); // Normalise and scale the point
-
-  point += myPosition;
-  return point;
+  // Get a random point with normally distributed x, y and z with with 0 mean and 1 variance.
+  const ::arma::vec3 point(::arma::randn< ::arma::vec>(3));
+  
+  // Normalise, scale and translate the point
+  return point * generateRadius() / (sqrt(::arma::dot(point, point))) + myPosition;
 }
 
 void GenSphere::randomPoints(::std::vector< ::arma::vec3> & pointsOut, const unsigned int num) const
@@ -64,9 +60,36 @@ void GenSphere::randomPoints(::std::vector< ::arma::vec3> & pointsOut, const uns
     pointsOut.push_back(randomPoint());
 }
 
+OptionalArmaVec3 GenSphere::randomPointOnAxis(const ::arma::vec3 & axis) const
+{
+  // TODO: Axis/sphere intersection test
+  return ::arma::vec3(generateRadius() * axis + myPosition);
+}
+
+OptionalArmaVec3 GenSphere::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const
+{
+  // TODO: Plane/sphere intersection test
+  const ::arma::vec3 point(math::randn<double>() * a + math::randn<double>() * b);
+  // Normalise, scale and translate the point
+  return point * generateRadius() / (sqrt(::arma::dot(point, point))) + myPosition;
+}
+
 UniquePtr<IGeneratorShape>::Type GenSphere::clone() const
 {
   return UniquePtr<IGeneratorShape>::Type(new GenSphere(*this)); 
+}
+
+double GenSphere::generateRadius() const
+{
+  if(myShellThickness)
+  {
+    const double halfThickness = *myShellThickness * 0.5;
+    return myRadius - halfThickness + *myShellThickness * pow(math::randu<double>(), common::constants::ONE_THIRD);
+    //return math::randu(myRadius - halfThickness, myRadius + halfThickness)
+//      * pow(math::randu<double>(), common::constants::ONE_THIRD);
+  }
+  else
+    return myRadius * pow(math::randu<double>(), common::constants::ONE_THIRD);
 }
 
 }

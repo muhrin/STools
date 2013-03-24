@@ -25,6 +25,7 @@
 // Local
 #include "factory/StFactory.h"
 #include "factory/YamlSchema.h"
+#include "input/OptionsParsing.h"
 #include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
 
@@ -59,17 +60,13 @@ int main(const int argc, char * argv[])
   if(result != 0)
     return result;
 
-  ssys::SchemaParse parse;
+  // Load up the yaml options
   YAML::Node buildNode;
-  try
-  {
-    buildNode = YAML::LoadFile(in.paramsFile);
-  }
-  catch(const YAML::Exception & e)
-  {
-    ::std::cout << e.what();
-    return 1;
-  }
+  result = ::stools::input::parseYaml(buildNode, in.paramsFile);
+  if(result != 0)
+    return result;
+
+  ssys::SchemaParse parse;
   stools::factory::Build buildSchema;
   ssu::HeterogeneousMap buildOptions;
   buildSchema.nodeToValue(parse, buildOptions, buildNode, true);
@@ -87,7 +84,11 @@ int main(const int argc, char * argv[])
   ::stools::factory::Factory factory(speciesDb);
 
   PipePtr pipe;
-  factory.createBuildPipe(pipe, buildOptions);
+  if(!factory.createBuildPipe(pipe, buildOptions))
+  {
+    ::std::cerr << "Failed to create build pipe" << ::std::endl;
+    return 1;
+  }
 
   // Now run the pipe
   typedef sp::SpSingleThreadedEngine Engine;

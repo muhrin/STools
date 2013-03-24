@@ -216,7 +216,7 @@ bool Factory::createGeomOptimiseBlock(
       lastBlock = addAndConnect(pipe, lastBlock, new sp::SpSimpleBarrier());
       // Create another writer immediately after the barrier
       mySpFactory.createWriteStructuresBlock(block, outputOptions);
-      addAndConnect(pipe, lastBlock, block.release());
+      lastBlock = addAndConnect(pipe, lastBlock, block.release());
     }
   }
 

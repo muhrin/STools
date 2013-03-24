@@ -21,9 +21,15 @@ source_group("Source Files\\factory" FILES ${stools_Source_Files__factory})
 
 ## stools/input
 set(stools_Header_Files__input
+  input/OptionsParsing.h
   input/YamlKeywords.h
 )
 source_group("Header Files\\input" FILES ${stools_Header_Files__input})
+
+set(stools_Source_Files__input
+  input/OptionsParsing.cpp
+)
+source_group("Source Files\\input" FILES ${stools_Source_Files__input})
 
 ## stools/utility
 set(stools_Header_Files__utility
@@ -52,6 +58,7 @@ source_group("Header Files\\utility\\detail" FILES ${stools_Header_Files__utilit
 set(stools_Files
   ${stools_Header_Files__}
   ${stools_Header_Files__input}
+  ${stools_Source_Files__input}
   ${stools_Header_Files__factory}
   ${stools_Source_Files__factory}
   ${stools_Header_Files__utility}

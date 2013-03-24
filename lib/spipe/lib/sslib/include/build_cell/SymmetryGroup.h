@@ -26,10 +26,10 @@ class SymmetryGroup
 {
   typedef ::std::vector< ::arma::mat44> SymOps;
   typedef ::arma::vec3 Eigenvector;
-  typedef ::std::vector<Eigenvector> EigenvectorsList;
 
-  typedef ::std::vector<bool> OpMask;
 public:
+  typedef ::std::vector<bool> OpMask;
+  typedef ::std::vector<Eigenvector> EigenvectorsList;
   typedef SymOps::const_iterator OperatorsIterator;
   typedef ::std::vector<unsigned int> Multiplicities;
   typedef ::std::pair<EigenvectorsList, OpMask> EigenvectorsOps;

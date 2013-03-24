@@ -25,7 +25,7 @@ namespace utility {
   result.resize(length);
 
   for(size_t i = 0; i < length; i++)
-    result[i] = charset[math::rand(static_cast<int>(charset.length()))];
+    result[i] = charset[math::randu(static_cast<int>(charset.length()))];
 
   return result;
 }

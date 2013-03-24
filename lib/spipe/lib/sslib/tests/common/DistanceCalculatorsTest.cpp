@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
     ssc::Structure structure;
     structure.setUnitCell(ssc::UnitCellPtr(new ssc::UnitCell(
-      ssm::rand(0.1, 5.0) * cellDim,
-      ssm::rand(0.1, 5.0) * cellDim, 
-      ssm::rand(0.1, 5.0) * cellDim, 90.0, 90.0, 90.0)));
+      ssm::randu(0.1, 5.0) * cellDim,
+      ssm::randu(0.1, 5.0) * cellDim, 
+      ssm::randu(0.1, 5.0) * cellDim, 90.0, 90.0, 90.0)));
 
     for(size_t i = 0; i < numAtoms; ++i)
       structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
 
-    cutoff = ssm::rand(0.0, maxCutoff);
+    cutoff = ssm::randu(0.0, maxCutoff);
 
     t0 = time(NULL);
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
 
-    cutoff = ssm::rand<double>() * maxCutoff;
+    cutoff = ssm::randu<double>() * maxCutoff;
 
     for(size_t i = 0; i < numAtoms; ++i)
     {

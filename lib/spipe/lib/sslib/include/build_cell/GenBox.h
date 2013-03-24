@@ -34,9 +34,17 @@ public:
   const ShellThickness & getShellThickness() const;
   void setShellThickness(const ShellThickness thickness);
 
+  // From IGeneratorShape
   virtual ::arma::vec3 randomPoint() const;
   virtual void randomPoints(::std::vector< ::arma::vec3> & pointsOut, const unsigned int num) const;
+
+  // Generate a random point on an axis that conforms to the shape.  Axis is assumed to be normalised.
+  virtual OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis) const;
+  // Generate a random point in a plane that conforms to the shape.  Axes are assumed to be normalised and orthogonal.
+  virtual OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const; 
+
   virtual UniquePtr<IGeneratorShape>::Type clone() const;
+  // End from IGeneratorShape
 
   void setWidth(const double width);
   void setHeight(const double height);

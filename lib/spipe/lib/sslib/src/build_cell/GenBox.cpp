@@ -73,19 +73,33 @@ void GenBox::setShellThickness(const ShellThickness thickness)
   //  point(Y) = math::rand<double>(*myShellThickness);
   //  do
   //  {
-  //    point(X) = math::rand(-myHalfWidth - myHeight, myHalfWidth + myHeight + myWidth);
-  //    point(Z) = math::rand(-myHalfDepth - myHeight, myHalfDepth + myHeight);
+  //    point(X) = math::randu(-myHalfWidth - myHeight, myHalfWidth + myHeight + myWidth);
+  //    point(Z) = math::randu(-myHalfDepth - myHeight, myHalfDepth + myHeight);
   //  } while(!isInShell(point))
   //}
   //else // Standard box
   {
-    point(X) = math::rand(-myHalfWidth, myHalfWidth);
-    point(Y) = math::rand(-myHalfHeight, myHalfHeight);
-    point(Z) = math::rand(-myHalfDepth, myHalfDepth);
+    point(X) = math::randu(-myHalfWidth, myHalfWidth);
+    point(Y) = math::randu(-myHalfHeight, myHalfHeight);
+    point(Z) = math::randu(-myHalfDepth, myHalfDepth);
   }
   // translate
   point += myPosition;
   return point;
+}
+
+OptionalArmaVec3 GenBox::randomPointOnAxis(const ::arma::vec3 & axis) const
+{
+  // TODO: Intersection test of line and box
+  const ::arma::vec3 point(randomPoint());
+  return ::arma::dot(point, axis) * axis;
+}
+
+OptionalArmaVec3 GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const
+{
+  // TODO: Intersection test of plane and box
+  const ::arma::vec3 point(randomPoint());
+  return ::arma::dot(point, a) * a + ::arma::dot(point, b) * b;
 }
 
 void GenBox::setWidth(const double width)

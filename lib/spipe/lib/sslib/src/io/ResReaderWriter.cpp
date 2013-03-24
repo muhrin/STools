@@ -155,7 +155,7 @@ void ResReaderWriter::writeStructure(
   if(cell)
   {
     cell->cartsToFracInplace(positions);
-    cell->wrapVecFrac(positions);
+    cell->wrapVecsFracInplace(positions);
   }
 
   vector<AtomSpeciesId::Value> species;

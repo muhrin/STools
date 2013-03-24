@@ -67,7 +67,7 @@ generateMultiplicities(
       do
       {
         // Choose a random symmetry factor and add it to the list
-        const size_t multIdx = math::rand(possibleMultiplicities.size());
+        const size_t multIdx = math::randu(possibleMultiplicities.size());
         multiplicities.push_back(possibleMultiplicities[multIdx]);
         multiplicitiesSum += multiplicities.back();
 

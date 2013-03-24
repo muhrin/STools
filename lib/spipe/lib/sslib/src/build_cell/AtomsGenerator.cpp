@@ -16,7 +16,6 @@
 #include "build_cell/StructureBuild.h"
 #include "build_cell/StructureContents.h"
 #include "build_cell/SymmetryFunctions.h"
-#include "build_cell/SymmetryGroup.h"
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
@@ -225,25 +224,78 @@ AtomsGenerator::generatePosition(
         const SymmetryGroup::EigenvectorsOpsList * const eigenVecOpsList =
           build.getSymmetryGroup()->getEigenvectorsOpsList(multiplicity);
 
-        // Choose one of them
-        const size_t invariant = math::rand<size_t>(eigenVecOpsList->size());
-        // Project the generated point onto the invariant eigenvector(s)
         ::arma::vec3 newPos;
-        newPos.zeros();
-        for(size_t i = 0; i < (*eigenVecOpsList)[invariant].first.size(); ++i)
+        SymmetryGroup::OpMask opMask;
+        if(!generateSpecialPosition(newPos, opMask, *eigenVecOpsList))
         {
-          const ::arma::vec & eigenVec = (*eigenVecOpsList)[invariant].first[i];
-          newPos += ::arma::dot(position.first, eigenVec) * eigenVec;
+          // TODO: return error
+          return position;
         }
+        
+        // Save the position
         position.first = newPos;
-
-        atomInfo.setOperatorsMask((*eigenVecOpsList)[invariant].second);
+        atomInfo.setOperatorsMask(opMask);
         position.second = true; // Fix the position so it doesn't get moved when extruding atoms
       }
     }
   }
 
   return position;
+}
+
+bool AtomsGenerator::generateSpecialPosition(
+  ::arma::vec3 & posOut,
+  SymmetryGroup::OpMask & opMaskOut,
+  const SymmetryGroup::EigenvectorsOpsList & eigenvecLists) const
+{
+  typedef ::std::vector<size_t> Indices;
+  // Generate a list of the indices
+  Indices indices;
+  for(size_t i = 0; i < eigenvecLists.size(); ++i)
+    indices.push_back(i);
+  
+  Indices::iterator it;
+  OptionalArmaVec3 pos;
+  while(!indices.empty())
+  {
+    // Get a random one in the list
+    it = indices.begin() + math::randu<size_t>(indices.size() - 1);
+    pos = generateSpeciesPosition(eigenvecLists[*it].first);
+    if(pos)
+    {
+      // Copy over the position and mask
+      posOut = *pos;
+      opMaskOut = eigenvecLists[*it].second;
+      return true;
+    }
+    indices.erase(it);
+  }
+  return false; // Couldn't find one
+}
+
+OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
+  const SymmetryGroup::EigenvectorsList & eigenvecs) const
+{
+  if(eigenvecs.empty())
+    return ::arma::zeros< ::arma::vec>(3);
+
+  // Select the correct function depending on the number of eigenvectors
+  if(eigenvecs.size() == 1)
+    return myGenShape->randomPointOnAxis(eigenvecs[0]);
+  else if(eigenvecs.size() == 2)
+    return myGenShape->randomPointInPlane(eigenvecs[0], eigenvecs[1]);
+  else
+  {
+    // Project the generated point onto the invariant eigenvector
+    ::arma::vec3 oldPos = myGenShape->randomPoint();
+    ::arma::vec3 pos;
+    pos.zeros();
+    for(size_t i = 0; i < eigenvecs.size(); ++i)
+    {
+      pos += ::arma::dot(oldPos, eigenvecs[i]) * eigenvecs[i];
+    }
+    return pos;
+  }
 }
 
 double AtomsGenerator::getRadius(

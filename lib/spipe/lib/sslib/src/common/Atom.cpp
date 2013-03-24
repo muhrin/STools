@@ -56,8 +56,6 @@ double Atom::getRadius() const
 
 void Atom::setRadius(const double radius)
 {
-  SSLIB_ASSERT(radius > 0.0);
-
   myRadius = radius;
 }
 

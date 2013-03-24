@@ -24,6 +24,7 @@
 
 // Local
 #include "utility/PipeDataInitialisation.h"
+#include "input/OptionsParsing.h"
 #include "factory/StFactory.h"
 #include "factory/YamlSchema.h"
 
@@ -58,8 +59,13 @@ int main(const int argc, char * argv[])
   if(result != 0)
     return result;
 
+  // Load up the yaml options
+  YAML::Node searchNode;
+  result = ::stools::input::parseYaml(searchNode, in.inputOptionsFile);
+  if(result != 0)
+    return result;
+
   ssys::SchemaParse parse;
-  const YAML::Node searchNode = YAML::LoadFile(in.inputOptionsFile);
   stools::factory::Search searchSchema;
   ssu::HeterogeneousMap schemaOptions;
   searchSchema.nodeToValue(parse, schemaOptions, searchNode, true);
@@ -75,7 +81,11 @@ int main(const int argc, char * argv[])
   ::stools::factory::Factory factory(speciesDb);
 
   PipePtr pipe;
-  factory.createSearchPipeExtended(pipe, schemaOptions);
+  if(!factory.createSearchPipeExtended(pipe, schemaOptions))
+  {
+    ::std::cerr << "Failed to create search pipe" << ::std::endl;
+    return 1;
+  }
 
   // Now run the pipe
   typedef sp::SpSingleThreadedEngine Engine;

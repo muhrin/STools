@@ -119,7 +119,9 @@ bool TpsdGeomOptimiser::optimise(
   if(!localSettings.maxSteps)
     localSettings.maxSteps.reset(myMaxSteps);
   if(!localSettings.pressure)
-    localSettings.pressure.reset(::arma::eye< ::arma::mat>(3, 3));
+    localSettings.pressure.reset(::arma::zeros< ::arma::mat>(3, 3));
+  if(!localSettings.optimisationType)
+    localSettings.optimisationType.reset(OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
   
   bool outcome;
   if(unitCell)
@@ -128,7 +130,7 @@ bool TpsdGeomOptimiser::optimise(
       structure,
       *unitCell,
       *evaluator,
-      DEFAULT_TOLERANCE,
+      myTolerance,
       localSettings
     );
   }
@@ -137,7 +139,7 @@ bool TpsdGeomOptimiser::optimise(
 	  outcome = optimise(
       structure,
       *evaluator,
-      DEFAULT_TOLERANCE,
+      myTolerance,
       localSettings
     );
   }

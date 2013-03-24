@@ -142,7 +142,7 @@ void StructureBuild::removeAtom(common::Atom & atom)
     ::arma::vec3 point;
     point.randu();
     point *= 1.0 / sqrt(::arma::dot(point, point)); // normalise
-    return math::rand(myClusterRadius) * point;
+    return math::randu(myClusterRadius) * point;
   }
 
 }

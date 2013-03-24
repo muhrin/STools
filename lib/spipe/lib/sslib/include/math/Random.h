@@ -10,6 +10,7 @@
 #define RANDOM_H
 
 // INCLUDES ///////////////////////////////////////
+#include <armadillo>
 
 // FORWARD DECLARES ////////////////////////////////
 
@@ -23,13 +24,19 @@ namespace math {
 void seed(const unsigned int);
 
 template <typename T>
-T rand();
+T randu();
 
 template <typename T>
-T rand(const T to);
+T randu(const T to);
 
 template <typename T>
-T rand(const T from, const T to);
+T randu(const T from, const T to);
+
+template <typename T>
+T randn();
+
+template <typename T>
+T randn(const T mean, const T variance);
 
 }
 }

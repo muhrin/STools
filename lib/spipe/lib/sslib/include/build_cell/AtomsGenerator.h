@@ -17,6 +17,7 @@
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
 #include "build_cell/IGeneratorShape.h"
+#include "build_cell/SymmetryGroup.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -77,6 +78,14 @@ private:
     const StructureBuild & build,
     const unsigned int multiplicity
   ) const;
+
+  bool generateSpecialPosition(
+    ::arma::vec3 & posOut,
+    SymmetryGroup::OpMask & opMaskOut,
+    const SymmetryGroup::EigenvectorsOpsList & eigenvecLists
+  ) const;
+  OptionalArmaVec3 generateSpeciesPosition(const SymmetryGroup::EigenvectorsList & eigenvecs) const;
+
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
   Atoms myAtoms;
