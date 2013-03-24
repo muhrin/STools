@@ -13,10 +13,18 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <boost/version.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
+#if BOOST_VERSION / 100000 <= 1 && BOOST_VERSION / 100 % 1000 <= 42
+#  define SSLIB_USE_BOOST_OLD_RANDOM
+#  include <boost/random/uniform_int.hpp>
+#  include <boost/random/uniform_real.hpp>
+#  include <boost/random/variate_generator.hpp>
+#else
+#  include <boost/random/uniform_int_distribution.hpp>
+#  include <boost/random/uniform_real_distribution.hpp>
+#endif
 
 #include "SSLibAssert.h"
 
@@ -38,7 +46,7 @@ private:
   Rand(); // non constructible
 };
 
-extern boost::random::mt19937 mt19937;
+extern boost::mt19937 mt19937;
 
 // Specialisations
 // TODO: Make these use boost random as this method doesn't generate
@@ -48,13 +56,25 @@ struct Rand<int>
 {
   static int getUniform(const int to)
   {
-    const ::boost::random::uniform_int_distribution<> dist(0, to - 1);
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<> dist(0, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
+    return gen();
+#else
+    const ::boost::random:::uniform_int_distribution<> dist(0, to - 1);
     return dist(mt19937);
+#endif
   }
   static int getUniform(const int from, const int to)
   {
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<> dist(from, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
+    return gen();
+#else
     const ::boost::random::uniform_int_distribution<> dist(from, to - 1);
     return dist(mt19937);
+#endif
   }
 };
 
@@ -65,15 +85,27 @@ struct Rand<unsigned int>
   {
     SSLIB_ASSERT(to > 0);
 
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<unsigned int> dist(0, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen(mt19937, dist);
+    return gen();
+#else
     const ::boost::random::uniform_int_distribution<unsigned int> dist(0, to - 1);
     return dist(mt19937);
+#endif
   }
   static unsigned int getUniform(const unsigned int from, const unsigned int to)
   {
     SSLIB_ASSERT(to > from);
 
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<unsigned int> dist(from, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen(mt19937, dist);
+    return gen();
+#else
     const ::boost::random::uniform_int_distribution<unsigned int> dist(from, to - 1);
     return dist(mt19937);
+#endif
   }
 };
 
@@ -84,31 +116,59 @@ struct Rand<long unsigned int>
   {
     SSLIB_ASSERT(to > 0);
 
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<long unsigned int> dist(0, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<long unsigned int> > gen(mt19937, dist);
+    return gen();
+#else
     const ::boost::random::uniform_int_distribution<long unsigned int> dist(0, to - 1);
     return dist(mt19937);
+#endif
   }
   static long unsigned int getUniform(const long unsigned int from, const long unsigned int to)
   {
     SSLIB_ASSERT(to > from);
 
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    const ::boost::uniform_int<long unsigned int> dist(from, to - 1);
+    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<long unsigned int> > gen(mt19937, dist);
+    return gen();
+#else
     const ::boost::random::uniform_int_distribution<long unsigned int> dist(from, to - 1);
     return dist(mt19937);
+#endif
   }
-
 };
 
 template <>
 struct Rand<double>
 {
+  static ::boost::normal_distribution<> normal;
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+  static const ::boost::uniform_real<> uniform;
+  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::uniform_real<> >
+    uniformGenerator(mt19937, uniform);
+  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::normal_distribution<> >
+    normalGenerator(mt19937, uniform);
+#else
   static const ::boost::random::uniform_real_distribution<> uniform;
-  static ::boost::random::normal_distribution<> normal;
+#endif
+
   static double getUniform()
   {
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    return uniformGenerator();
+#else
     return uniform(mt19937);
+#endif
   }
   static double getUniform(const double to)
   {
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    return uniformGenerator() * to;
+#else
     return uniform(mt19937) * to;
+#endif
   }
   static double getUniform(const double from, const double to)
   {
@@ -116,12 +176,22 @@ struct Rand<double>
   }
   static double getNormal()
   {
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    return normalGenerator();
+#else
     return normal(mt19937);
+#endif
   }
   static double getNormal(const double mean, const double variance)
   {
     ::boost::random::normal_distribution<> normal(mean, variance);
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+    ::boost::variate_generator<boost::mt19937&, ::boost::normal_distribution<> >
+      normalGen(mt19937, norm);
+    normalGen();
+#else
     return normal(mt19937);
+#endif
   }
 };
 
