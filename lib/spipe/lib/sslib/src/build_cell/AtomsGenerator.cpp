@@ -277,7 +277,11 @@ OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
   const SymmetryGroup::EigenvectorsList & eigenvecs) const
 {
   if(eigenvecs.empty())
-    return ::arma::zeros< ::arma::vec>(3);
+  {
+    ::arma::vec3 origin;
+    origin.zeros();
+    return origin;
+  }
 
   // Select the correct function depending on the number of eigenvectors
   if(eigenvecs.size() == 1)

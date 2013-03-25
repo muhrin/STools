@@ -146,10 +146,8 @@ struct Rand<double>
   static ::boost::normal_distribution<> normal;
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
   static const ::boost::uniform_real<> uniform;
-  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::uniform_real<> >
-    uniformGenerator(mt19937, uniform);
-  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::normal_distribution<> >
-    normalGenerator(mt19937, uniform);
+  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::uniform_real<> > uniformGenerator;
+  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::normal_distribution<> > normalGenerator;
 #else
   static const ::boost::random::uniform_real_distribution<> uniform;
 #endif
@@ -184,10 +182,10 @@ struct Rand<double>
   }
   static double getNormal(const double mean, const double variance)
   {
-    ::boost::random::normal_distribution<> normal(mean, variance);
+    ::boost::normal_distribution<> normal(mean, variance);
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
     ::boost::variate_generator<boost::mt19937&, ::boost::normal_distribution<> >
-      normalGen(mt19937, norm);
+      normalGen(mt19937, normal);
     normalGen();
 #else
     return normal(mt19937);
