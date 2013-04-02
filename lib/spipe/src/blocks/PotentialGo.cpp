@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "PotentialGo.h"
 
+#include <iostream>
 #include <locale>
 #include <set>
 
@@ -72,7 +73,8 @@ void PotentialGo::in(spipe::common::StructureData & data)
 {
   ssp::PotentialData optData;
   ssc::Structure * const structure = data.getStructure();
-	if(myOptimiser->optimise(*structure, optData, myOptimisationParams))
+  const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure, optData, myOptimisationParams);
+	if(outcome.isSuccess())
   {
     // Copy over information from the optimisation results
     copyOptimisationResults(optData, *structure);
@@ -84,6 +86,7 @@ void PotentialGo::in(spipe::common::StructureData & data)
   }
   else
   {
+    ::std::cerr << "Optimisation failed: " << outcome.getMessage() << ::std::endl;
     // The structure failed to geometry optimise properly so drop it
     getRunner()->dropData(data);
   }

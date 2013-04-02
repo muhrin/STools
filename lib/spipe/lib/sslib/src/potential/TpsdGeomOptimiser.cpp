@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "potential/TpsdGeomOptimiser.h"
 
+#include <sstream>
+
 #include "SSLib.h"
 #include "common/UnitCell.h"
 #include "potential/OptimisationSettings.h"
@@ -97,7 +99,7 @@ const IPotential * TpsdGeomOptimiser::getPotential() const
 	return myPotential.get();
 }
 
-bool TpsdGeomOptimiser::optimise(
+OptimisationOutcome TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
   const OptimisationSettings & options) const
 {
@@ -106,7 +108,7 @@ bool TpsdGeomOptimiser::optimise(
 }
 
 
-bool TpsdGeomOptimiser::optimise(
+OptimisationOutcome TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
 	PotentialData & data,
   const OptimisationSettings & options) const
@@ -123,7 +125,7 @@ bool TpsdGeomOptimiser::optimise(
   if(!localSettings.optimisationType)
     localSettings.optimisationType.reset(OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
   
-  bool outcome;
+  OptimisationOutcome outcome;
   if(unitCell)
   {
 	  outcome = optimise(
@@ -150,7 +152,7 @@ bool TpsdGeomOptimiser::optimise(
 	return outcome;
 }
 
-bool TpsdGeomOptimiser::optimise(
+OptimisationOutcome TpsdGeomOptimiser::optimise(
   common::Structure &   structure,
   IPotentialEvaluator & evaluator,
 	const double eTol,
@@ -237,10 +239,19 @@ bool TpsdGeomOptimiser::optimise(
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems
-  return converged && numLastEvaluationsWithProblem == 0;
+  if(numLastEvaluationsWithProblem == 0)
+    return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
+  if(!converged)
+  {
+    ::std::stringstream ss;
+    ss << "Failed to converge after " << *settings.maxSteps << "steps";
+    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
+  }
+  
+  return OptimisationOutcome::success();
 }
 
-bool TpsdGeomOptimiser::optimise(
+OptimisationOutcome TpsdGeomOptimiser::optimise(
   common::Structure &   structure,
   common::UnitCell &    unitCell,
   IPotentialEvaluator & evaluator,
@@ -407,7 +418,18 @@ bool TpsdGeomOptimiser::optimise(
 	// Wrap the particle positions so they stay in the central unit cell
 	unitCell.wrapVecsInplace(data.pos);
 
-	return converged && numLastEvaluationsWithProblem == 0;
+  // Only a successful optimisation if it has converged
+  // and the last potential evaluation had no problems
+  if(numLastEvaluationsWithProblem == 0)
+    return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
+  if(!converged)
+  {
+    ::std::stringstream ss;
+    ss << "Failed to converge after " << *settings.maxSteps << "steps";
+    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
+  }
+  
+  return OptimisationOutcome::success();
 }
 
 bool TpsdGeomOptimiser::cellReasonable(const sstbx::common::UnitCell & unitCell) const

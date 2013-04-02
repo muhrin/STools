@@ -46,7 +46,7 @@ bool findFirstFloat(
   const ::std::string & line
 )
 {
-  static const ::boost::regex RE_FLOAT("([-+]?[0-9]*\\.?[0-9]+)");
+  static const ::boost::regex RE_FLOAT("([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
 
   ::boost::smatch match;
   if(::boost::regex_search(line, match, RE_FLOAT))

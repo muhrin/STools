@@ -119,6 +119,7 @@ set(sslib_Source_Files__utility
   src/utility/HeterogeneousMap.cpp
   src/utility/HeterogeneousMapKey.cpp
   src/utility/NamedProperty.cpp
+  src/utility/Outcome.cpp
   src/utility/SortedDistanceComparator.cpp
   src/utility/SortedDistanceComparatorEx.cpp
   src/utility/StableComparison.cpp

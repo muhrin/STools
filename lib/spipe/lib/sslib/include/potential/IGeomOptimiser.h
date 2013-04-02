@@ -17,6 +17,7 @@
 #include <armadillo>
 
 #include "common/Types.h"
+#include "utility/Outcome.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -32,6 +33,18 @@ struct PotentialData;
 class IPotential;
 struct OptimisationSettings;
 
+struct OptimisationError
+{
+  enum Value
+  {
+    FAILED_TO_CONVERGE,
+    ERROR_EVALUATING_POTENTIAL,
+    INTERNAL_ERROR
+  };
+};
+
+typedef utility::OutcomeWithErrorCode<OptimisationError::Value> OptimisationOutcome;
+
 class IGeomOptimiser
 {
 public:
@@ -46,15 +59,15 @@ public:
   virtual IPotential * getPotential() = 0;
   virtual const IPotential * getPotential() const = 0;
 
-  // TODO: Allow return value to give some indication of the reason for the failure!
-	virtual bool optimise(
+	virtual OptimisationOutcome optimise(
     common::Structure & structure,
-    const OptimisationSettings & options) const = 0;
-
-	virtual bool optimise(
+    const OptimisationSettings & options
+  ) const = 0;
+	virtual OptimisationOutcome optimise(
 		common::Structure & structure,
     PotentialData & data,
-    const OptimisationSettings & options) const = 0;
+    const OptimisationSettings & options
+  ) const = 0;
 };
 
 }

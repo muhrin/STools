@@ -39,14 +39,15 @@ public:
   virtual IPotential * getPotential() { return NULL; }
   virtual const IPotential * getPotential() const { return NULL; };
 
-	virtual bool optimise(
+	virtual OptimisationOutcome optimise(
     common::Structure & structure,
-    const OptimisationSettings & options) const;
-
-	virtual bool optimise(
+    const OptimisationSettings & options
+  ) const;
+	virtual OptimisationOutcome optimise(
 		common::Structure & structure,
     PotentialData & data,
-    const OptimisationSettings & options) const;
+    const OptimisationSettings & options
+  ) const;
   // End from IGeomOptimiser //////////////
 private:
   static const ::std::string FINAL_ENTHALPY;

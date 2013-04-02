@@ -55,24 +55,25 @@ public:
   virtual IPotential * getPotential();
   virtual const IPotential * getPotential() const;
 
-	virtual bool optimise(
+	virtual OptimisationOutcome optimise(
     ::sstbx::common::Structure & structure,
-    const OptimisationSettings & options) const;
-
-	virtual bool optimise(
+    const OptimisationSettings & options
+  ) const;
+	virtual OptimisationOutcome optimise(
 		::sstbx::common::Structure &  structure,
     PotentialData & data,
-    const OptimisationSettings & options) const;
+    const OptimisationSettings & options
+  ) const;
 
 	// End IGeomOptimiser interface
 
-	bool optimise(
+	OptimisationOutcome optimise(
     common::Structure &   structure,
     IPotentialEvaluator & evaluator,
 		const double          eTol,
     const OptimisationSettings & options) const;
 
-	bool optimise(
+	OptimisationOutcome optimise(
     common::Structure &   structure,
     common::UnitCell &    unitCell,
     IPotentialEvaluator & evaluator,

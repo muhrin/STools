@@ -178,6 +178,7 @@ set(sslib_Header_Files__utility
   include/utility/MultiIterator.h
   include/utility/MultiRange.h
   include/utility/NamedProperty.h
+  include/utility/Outcome.h
   include/utility/PermutationRange.h
   include/utility/PromotableType.h
   include/utility/Range.h
