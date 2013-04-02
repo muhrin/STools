@@ -141,7 +141,7 @@ void CellReaderWriter::writePositionsBlock(
     os << *speciesDb.getSymbol(atom.getSpecies()) << " ";
     os << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << ::std::endl;    
   }
-  os << "%BLOCK POSITIONS_FRAC" << ::std::endl;
+  os << "%ENDBLOCK POSITIONS_FRAC" << ::std::endl;
 }
 
 

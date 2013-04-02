@@ -40,11 +40,9 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
 {
   ::boost::scoped_array<const char *> argvArray(new const char *[argv.size()  + 2]);
   argvArray[0] = exe.c_str();
-  ::std::cout << "Size: " << argv.size() << " " << argv[0] << ::std::endl;
   for(size_t i = 0; i < argv.size(); ++i)
-  {
     argvArray[i + 1] = argv[i].c_str();
-  }
+
   argvArray[argv.size() + 1] = 0;
 #ifdef SSLIB_OS_POSIX
   const pid_t child = fork();
@@ -59,7 +57,6 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
   }
   else
   { // We are the child
-    ::std::cout << "Starting: " << exe.c_str() << " " << argvArray.get()[1] << ::std::endl;
     execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
   }
 #else
