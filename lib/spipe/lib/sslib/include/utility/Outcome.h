@@ -71,7 +71,7 @@ OutcomeWithErrorCode<ErrorCode> OutcomeWithErrorCode<ErrorCode>::failure(const :
 }
 
 template <typename ErrorCode>
-OutcomeWithErrorCode<ErrorCode> OutcomeWithErrorCode<ErrorCode>::failure(const ErrorCode & errorCode, const ::std::string & message = "")
+OutcomeWithErrorCode<ErrorCode> OutcomeWithErrorCode<ErrorCode>::failure(const ErrorCode & errorCode, const ::std::string & message)
 {
   OutcomeWithErrorCode outcome;
   outcome.setFailure(message);

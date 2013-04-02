@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "os/Process.h"
 
+#include <iostream>
+
 #include <boost/smart_ptr/scoped_array.hpp>
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
@@ -36,12 +38,14 @@ ProcessId getProcessId()
 
 int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> & argv)
 {
-  ::boost::scoped_array<const char *> argvArray(new const char *[argv.size()  + 1]);
+  ::boost::scoped_array<const char *> argvArray(new const char *[argv.size()  + 2]);
+  argvArray[0] = exe.c_str();
+  ::std::cout << "Size: " << argv.size() << " " << argv[0] << ::std::endl;
   for(size_t i = 0; i < argv.size(); ++i)
   {
-    argvArray[i] = argv[i].c_str();
+    argvArray[i + 1] = argv[i].c_str();
   }
-  argvArray[argv.size()] = 0;
+  argvArray[argv.size() + 1] = 0;
 #ifdef SSLIB_OS_POSIX
   const pid_t child = fork();
   if (child < 0)
@@ -55,7 +59,8 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
   }
   else
   { // We are the child
-    execv(exe.c_str(), const_cast<char **>(argvArray.get()));
+    ::std::cout << "Starting: " << exe.c_str() << " " << argvArray.get()[1] << ::std::endl;
+    execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
   }
 #else
   return 1;
