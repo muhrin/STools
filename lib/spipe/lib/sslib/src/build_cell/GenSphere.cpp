@@ -72,7 +72,7 @@ OptionalArmaVec3 GenSphere::randomPointInPlane(const ::arma::vec3 & a, const ::a
   // TODO: Plane/sphere intersection test
   const ::arma::vec3 point(math::randn<double>() * a + math::randn<double>() * b);
   // Normalise, scale and translate the point
-  return point * generateRadius() / (sqrt(::arma::dot(point, point))) + myPosition;
+  return OptionalArmaVec3(point * generateRadius() / (sqrt(::arma::dot(point, point))) + myPosition);
 }
 
 UniquePtr<IGeneratorShape>::Type GenSphere::clone() const

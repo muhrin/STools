@@ -92,12 +92,13 @@ OptionalArmaVec3 GenBox::randomPointOnAxis(const ::arma::vec3 & axis) const
 {
   // TODO: Intersection test of line and box
   const ::arma::vec3 point(randomPoint());
-  return ::arma::dot(point, axis) * axis;
+  return OptionalArmaVec3(::arma::dot(point, axis) * axis);
 }
 
 OptionalArmaVec3 GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const
 {
   // TODO: Intersection test of plane and box
+
   const ::arma::vec3 normal(::arma::cross(a, b)), point(randomPoint());
   return point - ::arma::dot(normal, point) * normal;
 }
