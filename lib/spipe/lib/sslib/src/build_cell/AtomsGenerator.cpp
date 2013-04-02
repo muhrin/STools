@@ -282,7 +282,7 @@ OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
     return genShape.randomPointOnAxis(space);
   else if(space.n_cols == 2)
     return genShape.randomPointInPlane(space.col(0), space.col(1));
-  return ::arma::zeros< ::arma::vec>(3);
+  return OptionalArmaVec3(::arma::zeros< ::arma::vec>(3));
 }
 
 double AtomsGenerator::getRadius(

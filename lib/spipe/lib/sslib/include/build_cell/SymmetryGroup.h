@@ -62,7 +62,7 @@ protected:
   typedef ::std::map<unsigned int, EigenspacesAndMasks> InvariantsMap;
 
   void generateMultiplicityEigenvectors2();
-  bool SymmetryGroup::getEigenspaces(
+  bool getEigenspaces(
     EigenvalsAndEigenspaces & spaces,
     const ::arma::cx_vec & eigenvals,
     const ::arma::cx_mat & eigenvecs

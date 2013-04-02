@@ -33,7 +33,9 @@ CastepGeomOptimiser::CastepGeomOptimiser(
 ):
 myCastepExe(castepExe),
 myCastepSeedPath(castepSeedPath),
-myKeepIntermediates(keepIntermediates)
+myKeepIntermediates(keepIntermediates),
+myCellReaderWriter(),
+myCastepReader()
 {}
 
 bool CastepGeomOptimiser::optimise(

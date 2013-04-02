@@ -21,7 +21,7 @@ namespace build_cell {
 namespace comp = utility::StableComp;
 
 const SymmetryGroupBuilder::Generator
-SymmetryGroupBuilder::IDENTITY(::arma::eye<::arma::mat>(4,4));
+SymmetryGroupBuilder::IDENTITY(::arma::eye< ::arma::mat>(4,4));
 
 SymmetryGroupBuilder::SymmetryGroupBuilder()
 {

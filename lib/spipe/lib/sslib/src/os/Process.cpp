@@ -17,6 +17,7 @@
 #ifdef SSLIB_OS_POSIX
 extern "C"
 {
+#  include <sys/wait.h>
 #  include <sys/types.h>
 #  include <unistd.h>
 }
@@ -54,7 +55,7 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
   }
   else
   { // We are the child
-    execv(exe, argvArray)
+    execv(exe.c_str(), const_cast<char **>(argvArray.get()));
   }
 #else
   return 1;
