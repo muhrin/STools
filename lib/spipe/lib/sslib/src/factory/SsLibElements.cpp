@@ -22,6 +22,10 @@ utility::Key<double> CUTOFF;
 // OPTIMISERS //////////////////////////////////////////////
 utility::Key<utility::HeterogeneousMap> OPTIMISER;
 utility::Key<utility::HeterogeneousMap> TPSD;
+utility::Key<utility::HeterogeneousMap> CASTEP;
+utility::Key< ::boost::filesystem::path> CASTEP_EXE;
+utility::Key< ::std::string> CASTEP_SEED;
+utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
 utility::Key<double> PRESSURE;
 utility::Key<int> MAX_STEPS;
 
@@ -60,6 +64,7 @@ utility::Key<double> DEPTH;
 // Symmetry
 utility::Key<utility::HeterogeneousMap> SYMMETRY;
 utility::Key<MinMax> SYM_OPS;
+utility::Key< ::std::string> POINT_GROUP;
 
 // STRUCTURE COMPARATORS //////////////////////////
 utility::Key<utility::HeterogeneousMap> COMPARATOR;
@@ -70,7 +75,6 @@ utility::Key<bool> SORTED_DISTANCE__USE_PRIMITIVE;
 // UNIT CELL //////////////////////////////////////
 utility::Key<common::UnitCell> UNIT_CELL;
 utility::Key< ::std::vector<double> > ABC;
-
 
 }
 }

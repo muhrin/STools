@@ -33,7 +33,7 @@ public:
   
   // Generate a random point on an axis that conforms to the shape (if possible).  Axis is assumed to be normalised.
   virtual OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis) const = 0;
-  // Generate a random point in a plane that conforms to the shape (if possible).  Axes are assumed to be normalised and orthogonal.
+  // Generate a random point in a plane that conforms to the shape (if possible).
   virtual OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const = 0; 
  
   virtual UniquePtr<IGeneratorShape>::Type clone() const = 0;

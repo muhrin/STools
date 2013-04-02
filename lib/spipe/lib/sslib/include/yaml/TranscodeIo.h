@@ -13,6 +13,8 @@
 
 #ifdef SSLIB_USE_YAML
 
+#include <boost/filesystem/path.hpp>
+
 #include <yaml-cpp/yaml.h>
 
 
@@ -21,7 +23,12 @@
 // Some custom YAML transcoders
 namespace YAML {
 
-
+template <>
+struct convert< ::boost::filesystem::path>
+{
+  static Node encode(const ::boost::filesystem::path & path);
+  static bool decode(const Node & node, ::boost::filesystem::path & path);
+};
 
 }
 

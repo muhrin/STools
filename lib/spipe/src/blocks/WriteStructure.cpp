@@ -15,13 +15,12 @@
 #include <utility/UtilFunctions.h>
 
 // From local
+#include "common/PipeFunctions.h"
 #include "common/SharedData.h"
 #include "common/StructureData.h"
 #include "common/UtilityFunctions.h"
 
-
 // NAMESPACES ////////////////////////////////
-
 
 namespace spipe {
 namespace blocks {
@@ -127,7 +126,7 @@ WriteStructure::generateLocator(
 
   // Should all the structures be stored in one file or seaprate files?
   if(useMultiStructure(writer))
-    p /= getRunner()->memory().shared().getOutputFileStem();
+    p /= common::getOutputFileStem(getRunner()->memory());
   else
     p /= fs::path(structure.getName());
 

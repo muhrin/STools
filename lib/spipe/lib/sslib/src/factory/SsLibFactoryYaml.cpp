@@ -14,6 +14,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
@@ -21,12 +22,14 @@
 // Local includes
 #include "build_cell/AtomsDescription.h"
 #include "build_cell/AtomsGenerator.h"
+#include "build_cell/PointGroups.h"
 #include "build_cell/RandomUnitCellGenerator.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
 #include "factory/FactoryError.h"
 #include "factory/SsLibElements.h"
 #include "io/ResReaderWriter.h"
+#include "potential/CastepGeomOptimiser.h"
 #include "potential/TpsdGeomOptimiser.h"
 #include "potential/Types.h"
 #include "utility/IndexingEnums.h"
@@ -38,6 +41,8 @@
 namespace sstbx {
 namespace factory {
 
+namespace fs = ::boost::filesystem;
+
 // Boost Tokenizer stuff
 typedef boost::tokenizer<boost::char_separator<char> > Tok;
 const boost::char_separator<char> tokSep(" \t");
@@ -46,44 +51,6 @@ SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
 myAtomSpeciesDb(atomSpeciesDb),
 myShapeFactory()
 {}
-
-//
-//common::StructurePtr
-//SsLibFactoryYaml::createStructure(const YAML::Node & structureNode) const
-//{
-//  common::StructurePtr structure(new common::Structure());
-//
-//
-//  // TODO: Use StructureYamlGenerator here
-//
-//  return structure;
-//}
-//
-//common::UnitCellPtr
-//SsLibFactoryYaml::createUnitCell(const OptionsMap & map) const
-//{
-//  namespace param = utility::cell_params_enum;
-//
-//  common::UnitCellPtr cell;
-//
-//  const ::std::vector<double> * const abc = map.find(ABC);
-//  if(abc)
-//  {
-//    if(!(abc->size() == 6))
-//      return cell; // TODO: Emit error
-//
-//    cell.reset(new common::UnitCell(
-//      (*abc)[param::A],
-//      (*abc)[param::B],
-//      (*abc)[param::C],
-//      (*abc)[param::ALPHA],
-//      (*abc)[param::BETA],
-//      (*abc)[param::GAMMA])
-//    );
-//  }
-//
-//  return cell;
-//}
 
 build_cell::RandomUnitCellPtr
 SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
@@ -230,6 +197,7 @@ SsLibFactoryYaml::createGeometryOptimiser(
   GeomOptimiserPtr opt;
 
   const OptionsMap * const tpsdOptions = optimiserMap.find(TPSD);
+  const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
   if(tpsdOptions)
   {
     // Have to have a potential with this optimiser
@@ -246,6 +214,18 @@ SsLibFactoryYaml::createGeometryOptimiser(
       tpsd->setTolerance(*tolerance);
 
     opt = tpsd;      
+  }
+  else if(castepOptions)
+  {
+    const fs::path * const castepExe = castepOptions->find(CASTEP_EXE);
+    const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
+    const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
+    if(castepExe && keepIntermediates && seed)
+      opt.reset(new potential::CastepGeomOptimiser(*castepExe, *seed, *keepIntermediates));
+    else
+    {
+      // TODO: Emit error
+    }
   }
 
   return opt;
@@ -276,56 +256,6 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
 
   return comparator;
 }
-//
-//SsLibFactoryYaml::UniqueStructureSetPtr
-//SsLibFactoryYaml::createStructureSet(const YAML::Node & node)
-//{
-//  //// Make sure we have a structure set node
-//  //if(node.Scalar() != kw::STR_SET)
-//  //{
-//  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-//  //}
-//
-//  UniqueStructureSetPtr strSet;
-//
-//  // First try to create the comparator
-//  if(!node[kw::COMPARATOR])
-//    return strSet;
-//
-//  utility::IStructureComparatorPtr comparator = createStructureComparator(node[kw::COMPARATOR]);
-//
-//  if(comparator.get())
-//    strSet.reset(new ssu::UniqueStructureSet<>(comparator));
-//  
-//  return strSet;
-//}
-
-//::sstbx::io::IStructureWriter *
-//SsLibFactoryYaml::createStructureWriter(const YAML::Node & node)
-//{
-//  //// Make sure we have a structure writer tag
-//  //if(node.Scalar() != kw::STR_SET)
-//  //{
-//  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-//  //}
-//
-//  // Check we have the required keywords
-//  checkKeyword(kw::TYPE, node);
-//
-//  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-//
-//  ssio::IStructureWriter * writer = NULL;
-//  if(type == kw::STR_WRITER__TYPE___RES)
-//  {
-//    writer = new ssio::ResReaderWriter();
-//  }
-//
-//  if(writer)
-//    myStructureWriters.push_back(writer);
-//
-//  return writer;
-//}
-
 
 SsLibFactoryYaml::StructureContentType::Value
 SsLibFactoryYaml::getStructureContentType(const AtomsDataEntry & atomsEntry) const
@@ -417,6 +347,19 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     build_cell::IUnitCellGeneratorPtr ucGen(createRandomCellGenerator(*unitCellBuilder));
     if(ucGen.get())
       builder->setUnitCellGenerator(ucGen);
+  }
+
+  // Symmetry
+  const OptionsMap * const symmetry = map.find(SYMMETRY);
+  if(symmetry)
+  {
+    const ::std::string * const pointGroup = symmetry->find(POINT_GROUP);
+    if(pointGroup)
+    {
+      build_cell::PointGroup group;
+      if(build_cell::getPointGroup(group, *pointGroup))
+        builder->setPointGroup(group);
+    }
   }
 
   return builder;

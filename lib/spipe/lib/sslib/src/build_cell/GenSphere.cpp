@@ -68,6 +68,7 @@ OptionalArmaVec3 GenSphere::randomPointOnAxis(const ::arma::vec3 & axis) const
 
 OptionalArmaVec3 GenSphere::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const
 {
+  // TODO: Do proper stats for a 2d circle
   // TODO: Plane/sphere intersection test
   const ::arma::vec3 point(math::randn<double>() * a + math::randn<double>() * b);
   // Normalise, scale and translate the point

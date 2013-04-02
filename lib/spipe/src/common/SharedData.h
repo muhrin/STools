@@ -60,17 +60,11 @@ public:
 
   /**
   /* Get the output path for the pipeline that owns this shared data relative to
-  /* the parent pipeline (or global data output path if there is not parent).
+  /* the parent pipeline (or global data output path if there is no parent).
   /**/
   const ::boost::filesystem::path & getPipeRelativeOutputPath() const;
 
-  /**
-  /* Get a stem filename for output being made by blocks within the pipeline that
-  /* owns this shared data.
-  /* Using this as the stem output filename allows output from a particular run
-  /* through the pipeline to be easily identified.
-  /*/
-  const ::boost::filesystem::path & getOutputFileStem() const;
+  const ::std::string & getInstanceName() const;
 
   ::sstbx::build_cell::IStructureGenerator * getStructureGenerator();
   const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
@@ -82,19 +76,16 @@ public:
 
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
-  ::spipe::utility::DataTable          dataTable;
-
 private:
-
   void reset();
 
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   IStructureGeneratorPtr myStructureGenerator;
-  ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
-  ::boost::filesystem::path             myOutputDir;
-  ::boost::filesystem::path             myOutputFileStem;
+  ::sstbx::common::AtomSpeciesDatabase mySpeciesDatabase;
+  ::boost::filesystem::path myOutputDir;
+  ::std::string  myInstanceName;
 
 };
 

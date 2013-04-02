@@ -49,8 +49,6 @@ void writeToStream(::std::ostream & out, const double num, const unsigned digits
 
 ::std::string toString(const double num, const unsigned digitsAfterDecimal);
 
-void populateReadWriteManager(StructureReadWriteManager & manager);
-
 }
 }
 

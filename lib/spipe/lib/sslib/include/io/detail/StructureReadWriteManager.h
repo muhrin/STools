@@ -47,7 +47,7 @@ struct DoInsert<Reader, true, false>
     // Save a 'weak' pointer to the reader so we can return it
     Reader * const readerPtr = reader.get();
     rwMan.insertReader(StructureReadWriteManager::ReaderPtr(reader));
-    return *reader;
+    return *readerPtr;
   }
 };
 

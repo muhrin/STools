@@ -24,7 +24,6 @@
 #include <common/Types.h>
 #include <common/UniversalCrystalDistanceCalculator.h>
 #include <common/UnitCell.h>
-#include <common/Utils.h>
 #include <math/Random.h>
 #include <utility/StableComparison.h>
 

@@ -16,9 +16,9 @@
 #include <utility/MultiIdxRange.h>
 #include <utility/UtilFunctions.h>
 
+#include "common/PipeFunctions.h"
 #include "common/SharedData.h"
 #include "common/StructureData.h"
-#include "common/PipeFunctions.h"
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
@@ -61,7 +61,7 @@ void PotentialParamSweep::pipelineInitialising()
   getRunner()->memory().shared().objectsStore[Keys::POTENTIAL_SWEEP_RANGE] = myParamRange;
 
   myTableSupport.setFilename(
-    getRunner()->memory().shared().getOutputFileStem().string()
+    common::getOutputFileStem(getRunner()->memory())
     + "." + POTPARAMS_FILE_EXTENSION
   );
   myTableSupport.registerRunner(*getRunner());

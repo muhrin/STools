@@ -10,9 +10,9 @@
 #define I_STRUCTURE_READER_H
 
 // INCLUDES /////////////////////////////////////////////
-#include <boost/filesystem.hpp>
-
 #include "SSLib.h"
+
+#include <vector>
 
 #include <boost/ptr_container/ptr_vector.hpp>
 

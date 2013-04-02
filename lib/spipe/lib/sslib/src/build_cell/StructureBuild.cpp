@@ -9,13 +9,13 @@
 #include "build_cell/StructureBuild.h"
 
 #include "build_cell/BuildAtomInfo.h"
+#include "build_cell/GenSphere.h"
 #include "build_cell/Sphere.h"
 #include "build_cell/StructureContents.h"
 #include "build_cell/SymmetryGroup.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
-#include "common/Utils.h"
 #include "math/Random.h"
 
 namespace sstbx {
@@ -50,7 +50,7 @@ StructureBuild::StructureBuild(
 myStructure(structure),
 myIntendedContents(intendedContents)
 {
-  myClusterRadius = radiusCalculator.getRadius(myIntendedContents.getVolume());
+  myGenShape.reset(new GenSphere(radiusCalculator.getRadius(myIntendedContents.getVolume())));
 }
 
 common::Structure & StructureBuild::getStructure()
@@ -129,32 +129,9 @@ void StructureBuild::removeAtom(common::Atom & atom)
     myAtomInfoList.erase(itList);
 }
 
-::arma::vec3 StructureBuild::getRandomPoint() const
+const IGeneratorShape & StructureBuild::getGenShape() const
 {
-  const common::UnitCell * cell = myStructure.getUnitCell();
-  if(cell)
-  {
-    return cell->randomPoint();
-  }
-  else
-  {
-    // TODO: Replace this with gen sphere
-    ::arma::vec3 point;
-    point.randu();
-    point *= 1.0 / sqrt(::arma::dot(point, point)); // normalise
-    return math::randu(myClusterRadius) * point;
-  }
-
-}
-
-double StructureBuild::getClusterRadius() const
-{
-  return myClusterRadius;
-}
-
-void StructureBuild::setClusterRadius(const RadiusCalculator & radiusCalculator)
-{
-  myClusterRadius = radiusCalculator.getRadius(myIntendedContents.getVolume());
+  return *myGenShape;
 }
 
 const SymmetryGroup * StructureBuild::getSymmetryGroup() const

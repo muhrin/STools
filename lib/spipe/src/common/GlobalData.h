@@ -39,13 +39,8 @@ public:
   /**/
   const ::boost::filesystem::path & getOutputPath() const;
 
-  /**
-  /* Get a stem filename for output being made by blocks within the pipeline that
-  /* owns this shared data.
-  /* Using this as the stem output filename allows output from a particular run
-  /* through the pipeline to be easily identified.
-  /*/
-  const ::boost::filesystem::path & getOutputFileStem() const;
+  const ::std::string & getSeedName() const;
+  void setSeedName(const ::std::string & seedName);
 
   ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
   const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
@@ -60,7 +55,7 @@ private:
 
   ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;
-  ::boost::filesystem::path             myOutputFileStem;
+  ::std::string mySeedName;
   ::sstbx::io::StructureReadWriteManager myStructureIoManager;
 };
 

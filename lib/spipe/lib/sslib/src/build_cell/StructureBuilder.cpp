@@ -9,6 +9,8 @@
 // INCLUDES /////////////////
 #include "build_cell/StructureBuilder.h"
 
+#include <boost/optional.hpp>
+
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/IFragmentGenerator.h"
 #include "build_cell/IUnitCellGenerator.h"
@@ -24,7 +26,9 @@ namespace build_cell {
 
 StructureBuilder::StructureBuilder(const StructureBuilder & toCopy):
 StructureBuilderCore(toCopy),
-myUnitCellGenerator(myUnitCellGenerator->clone())
+myUnitCellGenerator(myUnitCellGenerator->clone()),
+myPointGroup(PointGroupFamily::NONE, 0),
+myNumSymOps(0)
 {}
 
 GenerationOutcome
@@ -49,6 +53,11 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
 
   structureOut.reset(new common::Structure());
   StructureBuild structureBuild(*structureOut, contents);
+  if(!chooseSymmetry(structureBuild))
+  {
+    outcome.setFailure("Failed to generate a symmetry group");
+    return outcome;
+  }
 
   // Do we need to create a unit cell?
   if(myUnitCellGenerator.get())
@@ -98,6 +107,43 @@ void StructureBuilder::setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenera
 const IUnitCellGenerator * StructureBuilder::getUnitCellGenerator() const
 {
   return myUnitCellGenerator.get();
+}
+
+void StructureBuilder::setPointGroup(const PointGroup & pointGroup)
+{
+  myPointGroup = pointGroup;
+}
+
+const PointGroup & StructureBuilder::getPointGroup() const
+{
+  return myPointGroup;
+}
+
+bool StructureBuilder::chooseSymmetry(StructureBuild & build) const
+{
+  if(myUnitCellGenerator.get())
+  { // Crystal
+    // TODO
+  }
+  else
+  { // Cluster
+    if(myPointGroup.first != PointGroupFamily::NONE)
+    {
+      StructureBuild::SymmetryGroupPtr group(new SymmetryGroup());
+      generatePointGroup(*group, myPointGroup.first, myPointGroup.second);
+      build.setSymmetryGroup(group);
+    }
+    else if(myNumSymOps != 0)
+    {
+      const ::boost::optional<PointGroup> pointGroup(getRandomPointGroup(myNumSymOps));
+      if(!pointGroup)
+        return false;
+      StructureBuild::SymmetryGroupPtr group(new SymmetryGroup());
+      generatePointGroup(*group, pointGroup->first, pointGroup->second);
+      build.setSymmetryGroup(group);      
+    }
+  }
+  return true;
 }
 
 GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) const

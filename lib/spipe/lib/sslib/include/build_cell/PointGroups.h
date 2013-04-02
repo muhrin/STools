@@ -9,33 +9,44 @@
 #define POINT_GROUPS_H
 
 // INCLUDES ////////////
+
+#include <vector>
+
+#include <boost/optional.hpp>
+
 #include "build_cell/SymmetryGroup.h"
-#include "common/Constants.h"
 
 // DEFINITION ///////////////////////
 
 namespace sstbx {
 namespace build_cell {
 
-class C3v : public SymmetryGroup
+struct PointGroupFamily
 {
-public:
-  C3v()
+  enum Value
   {
-    mySymOps.resize(3);
-    double angle;
-    for(int i = 1; i < 3; ++i)
-    {
-      angle = static_cast<double>(i) * common::constants::TWO_PI / 3.0;
-      mySymOps[i] 
-        << cos(angle) << -sin(angle) << 0.0 << 0.0 << ::arma::endr
-        << sin(angle) << cos(angle) << 0.0 << 0.0 << ::arma::endr
-        << 0.0 << 0.0 << 1.0 << 0.0 << ::arma::endr
-        << 0.0 << 0.0 << 0.0 << 0.0 << ::arma::endr;
-    }
-    generateMultiplicityEigenvectors();
-  }
+    NONE,
+    // Axial groups (need 'n' to specify how many rotational symmetries)
+    C, S, Ci, Cs, Ch, Cv, D, Dd, Dh,
+    // Polyhedral groups
+    T, Td, Th, O, Oh, I, Ih
+  };
 };
+
+typedef ::std::pair<PointGroupFamily::Value, unsigned int> PointGroup;
+
+void generatePointGroup(
+  SymmetryGroup & groupOut,
+  const PointGroupFamily::Value family,
+  const unsigned int n = 0);
+
+bool getPointGroup(PointGroup & groupOut, const ::std::string & groupString);
+
+::boost::optional<PointGroup>
+getRandomPointGroup(const unsigned int numOps);
+
+::std::vector<PointGroup>
+getPossiblePointGroups(const unsigned int numOps);
 
 }
 }

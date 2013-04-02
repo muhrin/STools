@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include <string>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/variant.hpp>
 
 #include <armadillo>
@@ -24,7 +25,6 @@
 #include "utility/HeterogeneousMap.h"
 
 // DEFINES //////////////////////////////////////////////
-
 namespace sstbx {
 namespace common {
 class UnitCell;
@@ -44,6 +44,10 @@ extern utility::Key<double> CUTOFF;
 // OPTIMISERS //////////////////////////////////////////////
 extern utility::Key<utility::HeterogeneousMap> OPTIMISER;
 extern utility::Key<utility::HeterogeneousMap> TPSD;
+extern utility::Key<utility::HeterogeneousMap> CASTEP;
+extern utility::Key< ::boost::filesystem::path> CASTEP_EXE;
+extern utility::Key< ::std::string> CASTEP_SEED;
+extern utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
 extern utility::Key<double> PRESSURE;
 extern utility::Key<int> MAX_STEPS;
 
@@ -82,6 +86,7 @@ extern utility::Key<double> DEPTH;
 // Symmetry
 extern utility::Key<utility::HeterogeneousMap> SYMMETRY;
 extern utility::Key<MinMax> SYM_OPS;
+extern utility::Key< ::std::string> POINT_GROUP;
 
 // STRUCTURE COMPARATORS //////////////////////////
 extern utility::Key<utility::HeterogeneousMap> COMPARATOR;

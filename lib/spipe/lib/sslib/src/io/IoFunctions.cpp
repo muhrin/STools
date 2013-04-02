@@ -132,10 +132,5 @@ void writeToStream(::std::ostream & out, const double num, const unsigned digits
   return ss.str();
 }
 
-void populateReadWriteManager(StructureReadWriteManager & manager)
-{
-  //manager.insertWriter(
-}
-
 }
 }

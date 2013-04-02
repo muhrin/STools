@@ -23,8 +23,7 @@ namespace common {
 
 const char GlobalData::DIR_SUBSTRING_DELIMITER[] = "_";
 
-GlobalData::GlobalData():
-myOutputFileStem(ssu::generateUniqueName())
+GlobalData::GlobalData()
 {}
 
 bool GlobalData::appendToOutputDirName(const std::string & toAppend)
@@ -46,9 +45,14 @@ const ::boost::filesystem::path & GlobalData::getOutputPath() const
   return myOutputDir;
 }
 
-const ::boost::filesystem::path & GlobalData::getOutputFileStem() const
+const ::std::string & GlobalData::getSeedName() const
 {
-  return myOutputFileStem;
+  return mySeedName;
+}
+
+void GlobalData::setSeedName(const ::std::string & seedName)
+{
+  mySeedName = seedName;
 }
 
 ssc::AtomSpeciesDatabase & GlobalData::getSpeciesDatabase()
@@ -70,7 +74,7 @@ void GlobalData::reset()
 {
   objectsStore.clear();
   myOutputDir.clear();
-  myOutputFileStem = ssu::generateUniqueName();
+  mySeedName.clear();
 }
 
 }

@@ -21,6 +21,7 @@
 #include "build_cell/IStructureGenerator.h"
 #include "build_cell/IUnitCellGenerator.h"
 #include "build_cell/BuildCellFwd.h"
+#include "build_cell/PointGroups.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -66,9 +67,16 @@ public:
   void setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator);
   const IUnitCellGenerator * getUnitCellGenerator() const;
 
+  void setPointGroup(const PointGroup & pointGroup);
+  const PointGroup & getPointGroup() const;
+
 private:
 
+  bool chooseSymmetry(StructureBuild & build) const;
   GenerationOutcome generateSymmetry(StructureBuild & build) const;
+
+  PointGroup myPointGroup;
+  unsigned int myNumSymOps;
 
   IUnitCellGeneratorPtr myUnitCellGenerator;
 };

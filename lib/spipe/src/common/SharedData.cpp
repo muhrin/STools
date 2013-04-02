@@ -30,7 +30,7 @@ const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 
 SharedData::SharedData():
-myOutputFileStem(ssu::generateUniqueName())
+myInstanceName(ssu::generateUniqueName())
 {}
 
 bool SharedData::appendToOutputDirName(const std::string & toAppend)
@@ -70,9 +70,9 @@ const ::boost::filesystem::path & SharedData::getPipeRelativeOutputPath() const
   return myOutputDir;
 }
 
-const ::boost::filesystem::path & SharedData::getOutputFileStem() const
+const ::std::string & SharedData::getInstanceName() const
 {
-  return myOutputFileStem;
+  return myInstanceName;
 }
 
 ssbc::IStructureGenerator * SharedData::getStructureGenerator()
@@ -100,9 +100,8 @@ void SharedData::reset()
   // Reset everything
   myStructureGenerator.reset();
   objectsStore.clear();
-  dataTable.clear();
   myOutputDir.clear();
-  myOutputFileStem = ssu::generateUniqueName();
+  myInstanceName = ssu::generateUniqueName();
 }
 
 void SharedData::buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const

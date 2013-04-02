@@ -32,6 +32,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/StructureGenerationOutcome.h
   include/build_cell/SymmetryFunctions.h
   include/build_cell/SymmetryGroup.h
+  include/build_cell/SymmetryGroupBuilder.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 
@@ -54,7 +55,6 @@ set(sslib_Header_Files__common
   include/common/Types.h
   include/common/UnitCell.h
   include/common/UniversalCrystalDistanceCalculator.h
-  include/common/Utils.h
 )
 source_group("Header Files\\common" FILES ${sslib_Header_Files__common})
 
@@ -90,8 +90,11 @@ set(sslib_Header_Files__io
   include/io/AtomFormatParser.h
   include/io/AtomYamlFormatParser.h
   include/io/BoostFilesystem.h
+  include/io/CastepReader.h
+  include/io/CellReaderWriter.h
   include/io/IStructureReader.h
   include/io/IStructureWriter.h
+  include/io/Parsing.h
   include/io/ResourceLocator.h
   include/io/ResReaderWriter.h
   include/io/SslibReaderWriter.h
@@ -110,6 +113,7 @@ source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 
 ## math
 set(sslib_Header_Files__math
+  include/math/Matrix.h
   include/math/Random.h
   include/math/RunningStats.h
 )
@@ -121,9 +125,16 @@ set(sslib_Header_Files__math__detail
 )
 source_group("Header Files\\math\\detail" FILES ${sslib_Header_Files__math__detail})
 
+## os
+set(sslib_Header_Files__os
+  include/os/Process.h
+)
+source_group("Header Files\\os" FILES ${sslib_Header_Files__os})
+
 ## potential
 
 set(sslib_Header_Files__potential
+  include/potential/CastepGeomOptimiser.h
   include/potential/CombiningRules.h
   include/potential/FixedLatticeShapeConstraint.h
   include/potential/GenericPotentialEvaluator.h
@@ -265,6 +276,7 @@ set(sslib_Header_Files
   ${sslib_Header_Files__io__detail}
   ${sslib_Header_Files__math}
   ${sslib_Header_Files__math__detail}
+  ${sslib_Header_Files__os}
   ${sslib_Header_Files__potential}
   ${sslib_Header_Files__utility}
   ${sslib_Header_Files__utility__detail}

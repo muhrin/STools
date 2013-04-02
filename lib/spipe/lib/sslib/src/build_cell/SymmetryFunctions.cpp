@@ -11,7 +11,10 @@
 
 #include "SSLibAssert.h"
 
+#include "build_cell/SymmetryGroup.h"
+#include "common/Constants.h"
 #include "math/Random.h"
+#include "utility/IndexingEnums.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -36,7 +39,7 @@ namespace symmetry {
 ::std::vector<unsigned int>
 generateMultiplicities(
   const unsigned int numAtoms,
-  const ::std::vector<unsigned int>  & possibleMultiplicities)
+  const ::std::vector<unsigned int> & possibleMultiplicities)
 {
   const int MAX_ATTEMPTS = 50000;
   const int MAX_FACTOR_ATTEMPTS = 1000;
@@ -59,7 +62,8 @@ generateMultiplicities(
   {
     // Have to find combination of multiplicities that will sum to numAtoms
     unsigned int multiplicitiesSum;
-    unsigned int maxMultiplicities = numAtoms / possibleMultiplicities.back() + 1; // Start by allowing one more than the minumum
+    unsigned int maxMultiplicities =
+      numAtoms < possibleMultiplicities.back() ? 2 : numAtoms / possibleMultiplicities.back() + 1; // Start by allowing one more than the minumum
     for(int i = 0; i < MAX_ATTEMPTS; ++i)
     {
       multiplicitiesSum = 0;
@@ -83,6 +87,66 @@ generateMultiplicities(
   }
   // Couldn't do it.  Return empty multiplicities vector
   return multiplicities;
+}
+
+void makeZRotation(::arma::mat44 & matOut, const double theta, const ::arma::vec3 & axis)
+{
+  using namespace utility::cart_coords_enum;
+  using namespace arma;
+
+  // Using Rodrigues' rotation formula
+  // see: http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+
+  ::arma::mat33 crossProductMtx;
+  crossProductMtx.zeros();
+  crossProductMtx(0, 1) = -axis(Z);
+  crossProductMtx(0, 2) = axis(Y);
+  crossProductMtx(1, 2) = -axis(X);
+  // Skew symmetric replication
+  crossProductMtx(1,0) = axis(Z);
+  crossProductMtx(2,0) = -axis(Y);
+  crossProductMtx(2,1) = axis(X);
+
+  matOut.eye();
+  matOut.submat(0, 0, 2, 2) =
+    eye< ::arma::mat>(3,3) * cos(theta) +
+    sin(theta) * crossProductMtx +
+    (1 - cos(theta)) * kron(axis, axis.t());
+}
+
+void makeZRotation(::arma::mat44 & matOut, const double angle)
+{
+  matOut.eye();
+  matOut(0, 0) = cos(angle); matOut(0, 1) = -sin(angle);
+  matOut(1, 0) = sin(angle); matOut(1, 1) = cos(angle);
+}
+
+void makeReflection(::arma::mat44 & matOut, const ::arma::vec3 & normal)
+{
+  // Using householder transformation.
+  // See: http://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2
+  matOut.eye();
+  matOut.submat(0, 0, 2, 2) = ::arma::eye< ::arma::mat>(3, 3) - 2.0 * normal * normal.t();
+}
+
+void addZRotations(SymmetryGroup & groupOut, const unsigned int n)
+{
+  double angle;
+  ::arma::mat44 op;
+  for(unsigned int i = 1; i < n; ++i)
+  {
+    angle = static_cast<double>(i) * common::constants::TWO_PI / static_cast<double>(n);
+    makeZRotation(op, angle);
+    groupOut.addOp(op);
+  }
+}
+
+void addReflection(SymmetryGroup & groupOut, const ::arma::vec3 & normal)
+{
+  // Generate the operator
+  ::arma::mat44 op;
+  makeReflection(op, normal);
+  groupOut.addOp(op);
 }
 
 }

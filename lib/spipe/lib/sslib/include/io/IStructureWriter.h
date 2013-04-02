@@ -11,6 +11,9 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <string>
+#include <vector>
+
 #include <boost/filesystem.hpp>
 
 #include "io/ResourceLocator.h"

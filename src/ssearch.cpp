@@ -64,7 +64,8 @@ int main(const int argc, char * argv[])
   result = ::stools::input::parseYaml(searchNode, in.inputOptionsFile);
   if(result != 0)
     return result;
-
+  
+  // Parse the yaml
   ssys::SchemaParse parse;
   stools::factory::Search searchSchema;
   ssu::HeterogeneousMap schemaOptions;
@@ -93,6 +94,7 @@ int main(const int argc, char * argv[])
 
   Engine pipeEngine;
   RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
+  runner->memory().global().setSeedName(in.inputOptionsFile);
   runner->run(*pipe);
 
   return 0;

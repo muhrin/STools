@@ -151,7 +151,7 @@ public:
     SSLIB_ASSERT(carts.n_rows == 3);
 
     carts = myFracMtx * carts;     // cart to frac
-    carts -= ::arma::floor(carts); // wrap
+    wrapVecsFracInplace(carts);    // wrap
     carts = myOrthoMtx * carts;    // frac to cart.  Simple.
     return carts;
   }
@@ -162,7 +162,6 @@ public:
   inline ::arma::mat & wrapVecsFracInplace(::arma::mat & fracs) const
   {
     SSLIB_ASSERT(fracs.n_rows == 3);
-
     fracs -= ::arma::floor(fracs);
     return fracs;
   }

@@ -16,8 +16,9 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
-#include "build_cell/BuildAtomInfo.h"
 #include "build_cell/AtomExtruder.h"
+#include "build_cell/BuildAtomInfo.h"
+#include "build_cell/IGeneratorShape.h"
 
 namespace sstbx {
 namespace common {
@@ -70,10 +71,7 @@ public:
   void addAtom(common::Atom & atom, BuildAtomInfo & atomInfo);
   void removeAtom(common::Atom & atom);
 
-  ::arma::vec3 getRandomPoint() const;
-
-  double getClusterRadius() const;
-  void setClusterRadius(const RadiusCalculator & radiusCalculator);
+  const IGeneratorShape & getGenShape() const;
 
   const SymmetryGroup * getSymmetryGroup() const;
   void setSymmetryGroup(SymmetryGroupPtr symGroup);
@@ -83,6 +81,7 @@ public:
   bool extrudeAtoms();
 
 private:
+  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
   void atomRemoved(common::Atom & atom);
@@ -91,9 +90,9 @@ private:
   const StructureContents & myIntendedContents;
   AtomInfoMap myAtomsInfo;
   AtomInfoList myAtomInfoList;
-  double myClusterRadius;
   AtomExtruder myAtomsExtruder;
   SymmetryGroupPtr mySymmetryGroup;
+  GenShapePtr myGenShape;
 
   friend class BuildAtomInfo;
 };

@@ -114,6 +114,12 @@ Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
       return false;
   }
 
+  // Find out what the symmetry group is
+  if(mySpFactory.createDetermineSpaceGroupBlock(block))
+    lastBlock = addAndConnect(*pipe, lastBlock, block.release());
+  else
+    return false;
+
   const OptionsMap * const lowestEnergyOptions = options.find(spf::LOWEST_ENERGY);
   if(lowestEnergyOptions)
   {
@@ -229,7 +235,7 @@ Factory::addAndConnect(
   sp::SpBlock * const lastBlock,
   sp::SpBlock * const newBlock) const
 {
-  SSLIB_ASSERT(newBlock->isPipeBlock());
+  SSLIB_ASSERT_MSG(newBlock->isPipeBlock(), "Can only connect an input to a pipe block.");
 
   pipe.addBlock(newBlock);
   pipe.connect(lastBlock, newBlock->asPipeBlock());

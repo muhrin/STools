@@ -26,6 +26,7 @@
 #include <utility/MultiIdx.h>
 
 // Local includes
+#include "common/PipeFunctions.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 #include "common/UtilityFunctions.h"
@@ -76,7 +77,7 @@ myStructureGenerator(structureBuilder)
 
 void StoichiometrySearch::pipelineInitialising()
 {
-  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".stoich");
+  myTableSupport.setFilename(common::getOutputFileStem(getRunner()->memory()) + ".stoich");
   myTableSupport.registerRunner(*getRunner());
 }
 

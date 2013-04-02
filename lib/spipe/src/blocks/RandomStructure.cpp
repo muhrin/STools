@@ -82,10 +82,7 @@ void RandomStructure::start()
         StructureData & data = getRunner()->createData();
 		    data.setStructure(str);
 
-		    // Build up the name
-			  std::stringstream ss;
-			  ss << ssu::generateUniqueName() << "-" << i;
-			  data.getStructure()->setName(ss.str());
+			  data.getStructure()->setName(generateStructureName(*getRunner(), i));
 
         if(!myFixedNumGenerate)
         {
@@ -152,6 +149,15 @@ RandomStructure::getStructureGenerator() const
   }
 
   return generator;
+}
+
+::std::string RandomStructure::generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const
+{
+  // Build up the name
+  ::std::stringstream ss;
+  ss << /*runner.memory().global().getOutputFileStem().string() <<
+    "-" <<*/ ssu::generateUniqueName() << "-" << structureNum;
+  return ss.str();
 }
 
 }

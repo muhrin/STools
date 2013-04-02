@@ -12,7 +12,6 @@
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/StructureContents.h"
 #include "common/UnitCell.h"
-#include "common/Utils.h"
 #include "math/Random.h"
 
 namespace sstbx {

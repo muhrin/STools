@@ -271,12 +271,7 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
 
 ::arma::vec3 & UnitCell::wrapVecFracInplace(::arma::vec3 & frac) const
 {
-  using namespace utility::cart_coords_enum;
-
-  frac[X] -= floor(frac[X]);
-  frac[Y] -= floor(frac[Y]);
-  frac[Z] -= floor(frac[Z]);
-
+  frac -= ::arma::floor(frac);
   return frac;
 }
 

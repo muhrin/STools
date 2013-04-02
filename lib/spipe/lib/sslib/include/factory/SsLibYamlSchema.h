@@ -44,11 +44,26 @@ struct Tpsd : public yaml_schema::SchemaHeteroMap
   }
 };
 
+struct Castep : public yaml_schema::SchemaHeteroMap
+{
+  Castep()
+  {
+    addScalarEntry("exe", CASTEP_EXE)->element()
+      ->defaultValue("castep");
+    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()
+      ->defaultValue(false);
+    addScalarEntry("seed", CASTEP_SEED)->required();
+  }
+};
+
 struct Optimiser : public yaml_schema::SchemaHeteroMap
 {
   Optimiser()
   {
     addEntry("tpsd", TPSD, (new Tpsd));
+    addEntry("castep", CASTEP, (new Castep));
+
+    // Defaults
     utility::HeterogeneousMap defaultOptimiser;
     defaultOptimiser[TPSD];
     defaultValue(defaultOptimiser);
@@ -215,6 +230,7 @@ struct Symmetry : public yaml_schema::SchemaHeteroMap
   Symmetry()
   {
     addScalarEntry("ops", SYM_OPS);
+    addScalarEntry("pointGroup", POINT_GROUP);
   }
 };
 

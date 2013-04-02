@@ -1,30 +1,31 @@
 /*
- * Utils.h
+ * Process.h
  *
- *  Created on: Aug 22, 2011
+ *
+ *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
+#ifndef PROCESS_H
+#define PROCESS_H
 
-#ifndef UTILS_H_
-#define UTILS_H_
+// INCLUDES /////////////////////////////////////////////
 
-// INCLUDES ///////////////////////////////////////
-#include <armadillo>
+#include <string>
+#include <vector>
 
 // Tell boost not to try to link to the date_time library as interprocess
 // only uses a portion that doesn't need compilation.
 // See: http://www.boost.org/doc/libs/1_49_0/doc/html/interprocess.html#interprocess.intro.introduction_building_interprocess
 #define BOOST_DATE_TIME_NO_LIB
 
+#include <boost/filesystem/path.hpp>
 #include <boost/interprocess/detail/os_thread_functions.hpp>
 #include <boost/version.hpp>
-#include <boost/any.hpp>
 
 // FORWARD DECLARES ////////////////////////////////
 
 // DEFINES ////////////////////////////////////////
-#define EPSILON_REL 1e-5;
 
 #if (BOOST_VERSION / 100000) <= 1 && ((BOOST_VERSION / 100) % 1000) <= 47
 	#define	NS_BOOST_IPC_DETAIL boost::interprocess::detail
@@ -32,17 +33,20 @@
 	#define NS_BOOST_IPC_DETAIL boost::interprocess::ipcdetail
 #endif
 
-#define ProcessId NS_BOOST_IPC_DETAIL::OS_process_id_t
-
 // FUNCTIONS ////////////////////////////////////////
 
 namespace sstbx {
-namespace common {
+namespace os {
+
+typedef NS_BOOST_IPC_DETAIL::OS_process_id_t ProcessId;
 
 ProcessId getProcessId();
 
+int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> & argv);
+int runBlocking(const ::boost::filesystem::path & exe, const ::std::vector< ::std::string> & argv);
+
+
 }
 }
 
-
-#endif /* UTILS_H_ */
+#endif /* PROCESS_H */

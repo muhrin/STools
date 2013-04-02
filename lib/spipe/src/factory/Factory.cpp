@@ -95,18 +95,28 @@ bool Factory::createPotentialGeomOptimiseBlock(
   const ssp::OptimisationSettings * optimisationSettings
 ) const
 {
-  ssp::IGeomOptimiserPtr optimiser;
-  optimiser = mySsLibFactory.createGeometryOptimiser(optimiserOptions, potentialOptions);
+  ssp::IGeomOptimiserPtr optimiser = mySsLibFactory.createGeometryOptimiser(optimiserOptions, potentialOptions);
+
+  bool potentialIsParameterisable =
+    optimiser->getPotential() && optimiser->getPotential()->getParameterisable();
 
   if(!optimiser.get())
     return false;
 
   if(optimisationSettings)
   {
-    blockOut.reset(new blocks::ParamPotentialGo(optimiser));
+    if(potentialIsParameterisable)
+      blockOut.reset(new blocks::ParamPotentialGo(optimiser, *optimisationSettings));
+    else
+      blockOut.reset(new blocks::PotentialGo(optimiser, *optimisationSettings));
   }
   else
-    blockOut.reset(new blocks::ParamPotentialGo(optimiser));
+  {
+    if(potentialIsParameterisable)
+      blockOut.reset(new blocks::ParamPotentialGo(optimiser));
+    else
+      blockOut.reset(new blocks::PotentialGo(optimiser));
+  }
 
   return true;
 }

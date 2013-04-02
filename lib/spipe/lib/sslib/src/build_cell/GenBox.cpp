@@ -98,8 +98,8 @@ OptionalArmaVec3 GenBox::randomPointOnAxis(const ::arma::vec3 & axis) const
 OptionalArmaVec3 GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const
 {
   // TODO: Intersection test of plane and box
-  const ::arma::vec3 point(randomPoint());
-  return ::arma::dot(point, a) * a + ::arma::dot(point, b) * b;
+  const ::arma::vec3 normal(::arma::cross(a, b)), point(randomPoint());
+  return point - ::arma::dot(normal, point) * normal;
 }
 
 void GenBox::setWidth(const double width)

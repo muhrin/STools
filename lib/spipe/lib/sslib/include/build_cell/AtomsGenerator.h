@@ -82,11 +82,17 @@ private:
   bool generateSpecialPosition(
     ::arma::vec3 & posOut,
     SymmetryGroup::OpMask & opMaskOut,
-    const SymmetryGroup::EigenvectorsOpsList & eigenvecLists
+    const SymmetryGroup::EigenspacesAndMasks & spaces,
+    const IGeneratorShape & genShape
   ) const;
-  OptionalArmaVec3 generateSpeciesPosition(const SymmetryGroup::EigenvectorsList & eigenvecs) const;
+
+  OptionalArmaVec3 generateSpeciesPosition(
+    const SymmetryGroup::Eigenspace & eigenspace,
+    const IGeneratorShape & genShape) const;
 
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
+
+  const IGeneratorShape & getGenShape(const StructureBuild & build) const;
 
   Atoms myAtoms;
   GenShapePtr myGenShape;

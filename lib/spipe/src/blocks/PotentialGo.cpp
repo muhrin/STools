@@ -26,6 +26,7 @@
 #include <potential/IGeomOptimiser.h>
 #include <potential/IPotential.h>
 
+#include "common/PipeFunctions.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 #include "common/UtilityFunctions.h"
@@ -63,9 +64,7 @@ myOptimisationParams(optimisationParams)
 void PotentialGo::pipelineInitialising()
 {
   if(myWriteOutput)
-  {
-    myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".geomopt");
-  }
+    myTableSupport.setFilename(common::getOutputFileStem(getRunner()->memory()) + ".geomopt");
   myTableSupport.registerRunner(*getRunner());
 }
 

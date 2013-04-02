@@ -26,7 +26,6 @@
 // Local includes
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
-#include "common/Utils.h"
 #include "potential/CombiningRules.h"
 #include "potential/GenericPotentialEvaluator.h"
 #include "potential/IParameterisable.h"

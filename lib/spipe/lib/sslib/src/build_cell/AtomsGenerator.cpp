@@ -19,7 +19,6 @@
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
-#include "common/Utils.h"
 #include "math/Random.h"
 #include "utility/SharedHandle.h"
 
@@ -97,7 +96,10 @@ AtomsGenerator::generateFragment(
   Multiplicities multiplicities;
   Multiplicities possibleMultiplicities;
   if(usingSymmetry)
+  {
     possibleMultiplicities = build.getSymmetryGroup()->getMultiplicities();
+    possibleMultiplicities.push_back(build.getSymmetryGroup()->numOps());
+  }
   else
     possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
   BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
@@ -206,10 +208,7 @@ AtomsGenerator::generatePosition(
   }
   else
   {
-    if(myGenShape.get())
-      position.first = myGenShape->randomPoint();
-    else
-      position.first = build.getRandomPoint();
+    position.first = getGenShape(build).randomPoint();
 
     // Do we need to apply symmetry and does the atom need to be on a 'special' position
     if(usingSymmetry)
@@ -221,12 +220,12 @@ AtomsGenerator::generatePosition(
       }
       else // Special position
       {
-        const SymmetryGroup::EigenvectorsOpsList * const eigenVecOpsList =
-          build.getSymmetryGroup()->getEigenvectorsOpsList(multiplicity);
+        const SymmetryGroup::EigenspacesAndMasks * const spaces =
+          build.getSymmetryGroup()->getEigenspacesAndMasks(multiplicity);
 
         ::arma::vec3 newPos;
         SymmetryGroup::OpMask opMask;
-        if(!generateSpecialPosition(newPos, opMask, *eigenVecOpsList))
+        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build)))
         {
           // TODO: return error
           return position;
@@ -246,12 +245,13 @@ AtomsGenerator::generatePosition(
 bool AtomsGenerator::generateSpecialPosition(
   ::arma::vec3 & posOut,
   SymmetryGroup::OpMask & opMaskOut,
-  const SymmetryGroup::EigenvectorsOpsList & eigenvecLists) const
+  const SymmetryGroup::EigenspacesAndMasks & spaces,
+  const IGeneratorShape & genShape) const
 {
   typedef ::std::vector<size_t> Indices;
   // Generate a list of the indices
   Indices indices;
-  for(size_t i = 0; i < eigenvecLists.size(); ++i)
+  for(size_t i = 0; i < spaces.size(); ++i)
     indices.push_back(i);
   
   Indices::iterator it;
@@ -259,13 +259,13 @@ bool AtomsGenerator::generateSpecialPosition(
   while(!indices.empty())
   {
     // Get a random one in the list
-    it = indices.begin() + math::randu<size_t>(indices.size() - 1);
-    pos = generateSpeciesPosition(eigenvecLists[*it].first);
+    it = indices.begin() + math::randu<size_t>(indices.size());
+    pos = generateSpeciesPosition(spaces[*it].first, genShape);
     if(pos)
     {
       // Copy over the position and mask
       posOut = *pos;
-      opMaskOut = eigenvecLists[*it].second;
+      opMaskOut = spaces[*it].second;
       return true;
     }
     indices.erase(it);
@@ -274,28 +274,15 @@ bool AtomsGenerator::generateSpecialPosition(
 }
 
 OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
-  const SymmetryGroup::EigenvectorsList & eigenvecs) const
+  const SymmetryGroup::Eigenspace & space,
+  const IGeneratorShape & genShape) const
 {
-  if(eigenvecs.empty())
-    return ::arma::zeros< ::arma::vec>(3);
-
   // Select the correct function depending on the number of eigenvectors
-  if(eigenvecs.size() == 1)
-    return myGenShape->randomPointOnAxis(eigenvecs[0]);
-  else if(eigenvecs.size() == 2)
-    return myGenShape->randomPointInPlane(eigenvecs[0], eigenvecs[1]);
-  else
-  {
-    // Project the generated point onto the invariant eigenvector
-    ::arma::vec3 oldPos = myGenShape->randomPoint();
-    ::arma::vec3 pos;
-    pos.zeros();
-    for(size_t i = 0; i < eigenvecs.size(); ++i)
-    {
-      pos += ::arma::dot(oldPos, eigenvecs[i]) * eigenvecs[i];
-    }
-    return pos;
-  }
+  if(space.n_cols == 1)
+    return genShape.randomPointOnAxis(space);
+  else if(space.n_cols == 2)
+    return genShape.randomPointInPlane(space.col(0), space.col(1));
+  return ::arma::zeros< ::arma::vec>(3);
 }
 
 double AtomsGenerator::getRadius(
@@ -321,6 +308,14 @@ double AtomsGenerator::getRadius(
   }
 
   return radius;
+}
+
+const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build) const
+{
+  if(myGenShape.get())
+    return *myGenShape;
+  else
+    return build.getGenShape();
 }
 
 }

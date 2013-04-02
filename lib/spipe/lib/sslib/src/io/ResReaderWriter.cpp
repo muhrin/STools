@@ -10,7 +10,6 @@
 
 #include <iomanip>
 #include <set>
-#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>

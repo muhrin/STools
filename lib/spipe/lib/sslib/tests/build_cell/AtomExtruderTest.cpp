@@ -23,7 +23,6 @@
 #include <common/Structure.h>
 #include <common/UnitCell.h>
 #include <common/Types.h>
-#include <common/Utils.h>
 #include <math/Random.h>
 
 namespace ssbc = ::sstbx::build_cell;
