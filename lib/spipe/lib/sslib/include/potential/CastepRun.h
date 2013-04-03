@@ -17,8 +17,6 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include "potential/IGeomOptimiser.h" // TODO: REMOVE
-
 // DEFINES //////////////////////////////////////////////
 
 namespace sstbx {
@@ -61,7 +59,7 @@ public:
   const ::boost::filesystem::path & getCellFile() const;
   const ::boost::filesystem::path & getCastepFile() const;
 
-  CastepRunResult::Value openCellFile(::boost::filesystem::ofstream * * ofstream);
+  CastepRunResult::Value openCellFile(::boost::filesystem::fstream * * fstream);
   CastepRunResult::Value openCastepFile(::boost::filesystem::ifstream * * ifstream = NULL);
 
   void closeAllStreams();
@@ -81,58 +79,9 @@ private:
   const ::boost::filesystem::path myParamFile;
   const ::boost::filesystem::path myCastepFile;
 
-  ::boost::filesystem::ofstream myCellFileStream;
+  ::boost::filesystem::fstream myCellFileStream;
   ::boost::filesystem::ifstream myCastepFileStream;
 
-  const io::CellReaderWriter & myCellReaderWriter;
-  const io::CastepReader & myCastepReader;
-};
-
-class CastepGeomOptRun
-{
-public:
-  CastepGeomOptRun(
-    const ::std::string & originalSeed,
-    const ::std::string & newSeed,
-    const bool keepIntermediates,
-    const io::CellReaderWriter & myCellReaderWriter,
-    const io::CastepReader & myCastepReader
-  );
-  ~CastepGeomOptRun();
-
-  OptimisationOutcome runFullRelax(
-    common::Structure & structure,
-    PotentialData & data,
-    const ::boost::filesystem::path & castepExe,
-    const common::AtomSpeciesDatabase & speciesDb,
-    const int numConsistentRelaxations = 3
-  );
-  bool copyParamFile() const;
-
-private:
-
-  static const int MAX_RELAX_ATTEMPTS;
-
-  OptimisationOutcome makeCellCopy(
-    common::Structure & structure,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
-  OptimisationOutcome doRelaxation(
-    common::Structure & structure,
-    const common::AtomSpeciesDatabase & speciesDb,
-    const ::boost::filesystem::path & castepExe
-  );
-  bool updateOptimisationInfo(
-    common::Structure & structure,
-    PotentialData & data,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
-  bool optimistaionSucceeded();
-
-  CastepRun myCastepRun;
-  const ::boost::filesystem::path myOrigCellFile;
-  const ::boost::filesystem::path myOrigParamFile;
-  const bool myKeepIntermediates;
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
 };

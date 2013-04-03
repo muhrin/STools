@@ -28,6 +28,8 @@ namespace potential {
 class CastepGeomOptimiser : public IGeomOptimiser
 {
 public:
+  static const ::std::string FINAL_ENTHALPY;
+
   CastepGeomOptimiser(
     const ::boost::filesystem::path & castepExe,
     const ::std::string & castepSeed,
@@ -50,7 +52,6 @@ public:
   ) const;
   // End from IGeomOptimiser //////////////
 private:
-  static const ::std::string FINAL_ENTHALPY;
 
   bool updateStructure(
     common::Structure & structure,
