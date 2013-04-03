@@ -182,6 +182,8 @@ int main(const int argc, char * argv[])
 
     lastLoaded = rwMan.readStructures(loadedStructures, locator, speciesDb);
 
+    // TODO: If the structure has no atoms, remove it
+
     if(lastLoaded == 0)
       ::std::cerr << "Couldn't load structure(s) from " << locator.string() << ::std::endl;
     else

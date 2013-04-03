@@ -33,7 +33,8 @@ public:
   CastepHelper(
     const ::std::string & originalSeed,
     const ::std::string & newSeed,
-    const bool keepIntermediates);
+    const bool keepIntermediates
+  );
   ~CastepHelper();
   
   bool copyParamFile() const;
@@ -41,6 +42,7 @@ public:
   const fs::path & getNewParam() const;
   const fs::path & getOrigCell() const;
   const fs::path & getNewCell() const;
+  const fs::path & getCastepOut() const;
   bool openOrigCell(fs::ifstream * & ifstream);
   bool openNewCell(fs::ofstream * & ofstream);
   void closeStreams();
@@ -52,6 +54,7 @@ private:
   const fs::path myOrigParam;
   const fs::path myNewCell;
   const fs::path myNewParam;
+  const fs::path myCastepOut;
   fs::ifstream myOrigCellStream;
   fs::ofstream myNewCellStream;
   const bool myKeepIntermediates;
@@ -127,6 +130,11 @@ const fs::path & CastepHelper::getNewCell() const
   return myNewCell;
 }
 
+const fs::path & CastepHelper::getCastepOut() const
+{
+  return myCastepOut;
+}
+
 void CastepHelper::closeStreams()
 {
   if(myOrigCellStream.is_open())
@@ -139,7 +147,7 @@ bool CastepHelper::deleteIntermediateFiles() const
 {
   fs::remove_all(myNewParam);
   fs::remove_all(myNewCell);
-  //fs::remove_all(myNewParam);
+  fs::remove_all(myCastepOut);
   return true;
 }
 
@@ -216,7 +224,6 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
   }
   helper.closeStreams();
   
-  // TODO: Run castep with outSeedName as parameter
   ::std::vector< ::std::string> args(1, outSeedName);
   if(os::runBlocking(myCastepExe, args) != 0)
   {
@@ -226,12 +233,15 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
   }
 
   // Read in results from castep run and update structure
-  const fs::path seedCastep(outSeedName + ".castep");
-  if(fs::exists(seedCastep))
+  if(fs::exists(helper.getCastepOut()))
   {
-    updateStructure(structure, data, seedCastep, mySpeciesDb);
-    if(!myKeepIntermediates)
-      fs::remove_all(seedCastep);
+    updateStructure(structure, data, helper.getCastepOut(), mySpeciesDb);
+  }
+  else
+  {
+    ::std::stringstream ss;
+    ss << "Castep output: " << helper.getCastepOut() << " not found.";
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
 
   return OptimisationOutcome::success();
