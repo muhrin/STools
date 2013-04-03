@@ -68,6 +68,7 @@ myOrigCell(originalSeed + ".cell"),
 myOrigParam(originalSeed + ".param"),
 myNewCell(newSeed + ".cell"),
 myNewParam(newSeed + ".param"),
+myCastepOut(newSeed + ".castep"),
 myKeepIntermediates(keepIntermediates)
 {}
 
