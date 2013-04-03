@@ -205,19 +205,20 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
     ss << "Failed to copy " << myOrigParamFile << " to " << myCastepRun.getParamFile() << ".";
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
+ 
   
-   const OptimisationOutcome copyResult = makeCellCopy(structure, speciesDb);
-   if(!copyResult.isSuccess())
-     return copyResult;
-  
-  OptimisationOutcome relaxOutcome;
+  OptimisationOutcome outcome;
   int successfulRelaxations = 0;
   int i;
   for(i = 0; successfulRelaxations < numRelaxations && i < MAX_RELAX_ATTEMPTS; ++i)
   {
-    relaxOutcome = doRelaxation(structure, speciesDb, castepExe);
-    if(!relaxOutcome.isSuccess())
-      return relaxOutcome;
+    outcome = makeCellCopy(structure, speciesDb);
+    if(!outcome.isSuccess())
+      return outcome;
+
+    outcome = doRelaxation(structure, speciesDb, castepExe);
+    if(!outcome.isSuccess())
+      return outcome;
 
     // Keep relaxing until we get somewhere
     if(optimistaionSucceeded())
