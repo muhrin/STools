@@ -15,6 +15,7 @@
 
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
+#include "io/BoostFilesystem.h"
 #include "io/CastepReader.h"
 #include "io/CellReaderWriter.h"
 #include "io/Parsing.h"
@@ -106,7 +107,7 @@ CastepRunResult::Value CastepRun::runCastep(const fs::path & castepExe)
   // Make sure to close all streams so we don't end up in a conflict
   closeAllStreams();
 
-  const ::std::vector< ::std::string> args(1, myCellFile.filename().string());
+  const ::std::vector< ::std::string> args(1, io::stemString(myCellFile));
   if(os::runBlocking(castepExe, args) != 0)
     return CastepRunResult::FAILED_TO_RUN;
 
