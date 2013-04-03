@@ -175,7 +175,7 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  fs::fstream * newCellFileStream;
+  fs::ofstream * newCellFileStream;
   if(myCastepRun.openCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
   {  
     myCellReaderWriter.writeStructure(*newCellFileStream, structure, speciesDb);
@@ -215,7 +215,7 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
   if(myCastepRun.runCastep(castepExe) != CastepRunResult::SUCCESS)
   {
     ::std::stringstream ss;
-    ss << "Failed to run castep with: " << castepExe.string() << " " << myOrigCellFile.stem();
+    ss << "Failed to run castep with: " << castepExe.string() << " " << io::stemString(myCastepRun.getParamFile());
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
 
@@ -317,9 +317,7 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
     myCastepReader
   );
 
-  geomOpt.runFullRelax(structure, data, myCastepExe, mySpeciesDb);
-
-  return OptimisationOutcome::success();
+  return geomOpt.runFullRelax(structure, data, myCastepExe, mySpeciesDb);
 }
 
 bool CastepGeomOptimiser::updateStructure(

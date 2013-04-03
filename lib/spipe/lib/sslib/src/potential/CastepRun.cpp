@@ -58,18 +58,19 @@ const fs::path & CastepRun::getCastepFile() const
   return myCastepFile;
 }
 
-CastepRunResult::Value CastepRun::openCellFile(fs::fstream * * fstream)
+CastepRunResult::Value CastepRun::openCellFile(fs::ofstream * * ofstream)
 {
-  if(!myCellFileStream.is_open())
-    myCellFileStream.open(myCellFile);
-  else
-  { // Move the file to the beginning
-    myCellFileStream.clear(); // Clear the EoF flag
-    myCellFileStream.seekg(0, myCastepFileStream.beg);
-  }
+  // If the file is already open close it and delete it
+  if(myCellFileStream.is_open())
+    myCellFileStream.close();
 
-  if(fstream)
-    *fstream = &myCellFileStream;
+  if(fs::exists(myCellFile))
+    fs::remove_all(myCellFile);
+
+  myCellFileStream.open(myCellFile);
+  
+  if(ofstream)
+    *ofstream = &myCellFileStream;
 
   return CastepRunResult::SUCCESS;
 }
@@ -103,11 +104,11 @@ void CastepRun::closeAllStreams()
 
 CastepRunResult::Value CastepRun::runCastep(const fs::path & castepExe)
 {
-  if(!fs::exists(myCellFile) || !fs::exists(myParamFile))
-    return CastepRunResult::INPUT_NOT_FOUND;
-
   // Make sure to close all streams so we don't end up in a conflict
   closeAllStreams();
+
+  if(!fs::exists(myCellFile) || !fs::exists(myParamFile))
+    return CastepRunResult::INPUT_NOT_FOUND;
 
   const ::std::vector< ::std::string> args(1, io::stemString(myCellFile));
   if(os::runBlocking(castepExe, args) != 0)
