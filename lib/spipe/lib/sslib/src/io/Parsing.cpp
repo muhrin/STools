@@ -41,6 +41,31 @@ bool findFirstLine(
   return false;
 }
 
+bool findLastLine(
+  ::std::string & matchingLine,
+  ::std::istream & inputStream,
+  const ::std::string & token
+)
+{
+  int foundPos = -1;
+  ::std::string line;
+  while(::std::getline(inputStream, line))
+  {
+    if(::boost::find_first(line, token))
+    {
+      foundPos = inputStream.tellg();
+      matchingLine = line;
+    }
+  }
+  if(foundPos != -1)
+  {
+    inputStream.clear(); // Clear the EoF flag
+    inputStream.seekg(foundPos, inputStream.beg);
+    return true;
+  }
+  return false;
+}
+
 bool findFirstFloat(
   double & number,
   const ::std::string & line

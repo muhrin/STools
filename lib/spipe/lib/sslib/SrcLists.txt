@@ -102,6 +102,7 @@ source_group("Source Files\\os" FILES ${sslib_Source_Files__os})
 
 set(sslib_Source_Files__potential
   src/potential/CastepGeomOptimiser.cpp
+  src/potential/CastepRun.cpp
   src/potential/CombiningRules.cpp
   src/potential/FixedLatticeShapeConstraint.cpp
   src/potential/OptimisationSettings.cpp

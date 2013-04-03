@@ -30,7 +30,7 @@ class CastepGeomOptimiser : public IGeomOptimiser
 public:
   CastepGeomOptimiser(
     const ::boost::filesystem::path & castepExe,
-    const ::std::string & castepSeedPath,
+    const ::std::string & castepSeed,
     const bool keepIntermediates
   );
 
@@ -63,7 +63,7 @@ private:
     ::std::istream & inputStream
   ) const;
 
-  const ::std::string myCastepSeedPath;
+  const ::std::string myCastepSeed;
   const io::CellReaderWriter myCellReaderWriter;
   const io::CastepReader myCastepReader;
   const common::AtomSpeciesDatabase mySpeciesDb; // HACK: Keep a copy here for now

@@ -23,6 +23,12 @@ bool findFirstLine(
   const ::std::string & token
 );
 
+bool findLastLine(
+  ::std::string & matchingLine,
+  ::std::istream & inputStream,
+  const ::std::string & token
+);
+
 bool findFirstFloat(
   double & number,
   const ::std::string & line
