@@ -46,18 +46,24 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
   argvArray[argv.size() + 1] = 0;
 #ifdef SSLIB_OS_POSIX
   const pid_t child = fork();
-  if (child < 0)
+  if(child < 0)
   { // Failed to fork
     return 1;
   }
-  if (child == 0)
-  { // We are the parent
-    wait(NULL);
-    return 0;
-  }
-  else
+  if(child == 0)
   { // We are the child
     execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
+  }
+  else
+  { // We are the parent
+    int childExitStatus;
+    waitpid(child, &childExitStatus, 0);
+
+    // Did the child exit normally?
+    if(WIFEXITED(childExitStatus))
+      return 0;
+    else
+      return 1;
   }
 #else
   return 1;
