@@ -141,7 +141,7 @@ CastepRunResult::Value CastepRun::insertParams(ParamsMap params) const
     if(!preComment.empty() && !params.empty())
     {
       // Look through each of the parameters to insert to see if it needs to be replaced
-      ParamsMap::const_iterator it = params.begin();
+      ParamsMap::iterator it = params.begin();
       for(const ParamsMap::const_iterator end = params.end(); it != end; ++it)
       {
         if(::boost::ifind_first(preComment, it->first))
@@ -164,6 +164,7 @@ CastepRunResult::Value CastepRun::insertParams(ParamsMap params) const
   paramsOut.close();
 
   // Overwrite the old with the new
+  fs::remove_all(getParamFile());
   fs::copy_file(tempParamFile, getParamFile(), fs::copy_option::overwrite_if_exists);
   fs::remove_all(tempParamFile);
 
