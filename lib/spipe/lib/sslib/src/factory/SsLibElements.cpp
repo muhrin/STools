@@ -18,6 +18,9 @@ utility::Key< ::arma::vec3> POSITION;
 utility::Key<double> RADIUS;
 utility::Key<double> TOLERANCE;
 utility::Key<double> CUTOFF;
+utility::Key<double> MIN;
+utility::Key<double> MAX;
+utility::Key<double> MAX_RATIO;
 
 // OPTIMISERS //////////////////////////////////////////////
 utility::Key<utility::HeterogeneousMap> OPTIMISER;
@@ -52,8 +55,8 @@ utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
 utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;
 utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
-utility::Key<MinMax> UNIT_CELL_BUILDER_ANGLES;
-utility::Key<MinMax> UNIT_CELL_BUILDER_LENGTHS;
+utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
+utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
 // Shape generators
 utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 utility::Key<utility::HeterogeneousMap> GEN_BOX;

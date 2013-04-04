@@ -17,6 +17,7 @@
 
 // From SSTbx
 #include <common/AtomSpeciesDatabase.h>
+#include <io/BoostFilesystem.h>
 
 #include <pipelib/pipelib.h>
 
@@ -31,6 +32,7 @@
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
+namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
 namespace ssc   = ::sstbx::common;
@@ -58,6 +60,9 @@ int main(const int argc, char * argv[])
   int result = processCommandLineArgs(in, argc, argv);
   if(result != 0)
     return result;
+
+  if(!fs::exists(in.inputOptionsFile))
+    return 1;
 
   // Load up the yaml options
   YAML::Node searchNode;
@@ -94,7 +99,7 @@ int main(const int argc, char * argv[])
 
   Engine pipeEngine;
   RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-  runner->memory().global().setSeedName(in.inputOptionsFile);
+  runner->memory().global().setSeedName(::sstbx::io::stemString(in.inputOptionsFile));
   runner->run(*pipe);
 
   return 0;

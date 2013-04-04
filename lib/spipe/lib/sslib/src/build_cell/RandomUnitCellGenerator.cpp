@@ -23,7 +23,7 @@ const double RandomUnitCellGenerator::DEFAULT_MIN_LENGTH = 0.25;
 const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCellGenerator::DEFAULT_VOLUME_DELTA = 0.25;
-const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 6.0;
+const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 4.0;
 
 RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMin(const size_t param) const
 {

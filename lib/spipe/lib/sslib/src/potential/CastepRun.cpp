@@ -227,9 +227,17 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
 CastepRunResult::Value CastepRun::deleteAllOutput()
 {
   closeAllStreams();
+  const ::std::string stem(io::stemString(myCellFile));
 
-  // TODO: Remove all other files
   fs::remove_all(myCastepFile);
+  fs::remove_all(myCellOutFile);
+  fs::remove_all(stem + ".bands");
+  fs::remove_all(stem + ".bib");
+  fs::remove_all(stem + ".castep_bin");
+  fs::remove_all(stem + ".cst_esp");
+  fs::remove_all(stem + ".geom");
+  fs::remove_all(stem + ".param.orig");
+  fs::remove_all(stem + ".param.tmp");
 
   return CastepRunResult::SUCCESS;
 }

@@ -51,7 +51,6 @@ public:
   void setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
   ParamValue getMaxLengthRatio() const;
 
-
   // From IUnitCellGenerator ////
   virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut) const;
   virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut, const StructureContents & contents) const;

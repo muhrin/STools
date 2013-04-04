@@ -81,24 +81,31 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
   }
 
   {
-    const MinMax * const angles = map.find(UNIT_CELL_BUILDER_ANGLES);
+    const OptionsMap * const angles = map.find(UNIT_CELL_BUILDER_ANGLES);
     if(angles)
     {
-      if(angles->min)
-        cell->setMinAngles(*angles->min);
-      if(angles->max)
-        cell->setMaxAngles(*angles->max);
+      const double * const min = angles->find(MIN);
+      const double * const max = angles->find(MAX);
+      if(min)
+        cell->setMinAngles(*min);
+      if(max)
+        cell->setMaxAngles(*max);
     }
   }
 
   {
-    const MinMax * const lengths = map.find(UNIT_CELL_BUILDER_ANGLES);
+    const OptionsMap * const lengths = map.find(UNIT_CELL_BUILDER_ANGLES);
     if(lengths)
     {
-      if(lengths->min)
-        cell->setMinLengths(*lengths->min);
-      if(lengths->max)
-        cell->setMaxLengths(*lengths->max);
+      const double * const min = lengths->find(MIN);
+      const double * const max = lengths->find(MAX);
+      const double * const maxRatio = lengths->find(MAX_RATIO);
+      if(min)
+        cell->setMinLengths(*min);
+      if(max)
+        cell->setMaxLengths(*max);
+      if(maxRatio)
+        cell->setMaxLengthRatio(*maxRatio);
     }
   }
 

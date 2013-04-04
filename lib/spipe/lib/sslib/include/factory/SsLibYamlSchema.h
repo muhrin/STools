@@ -171,6 +171,17 @@ struct GenBox : public yaml_schema::SchemaHeteroMap
   };
 };
 
+struct MinMaxRatio : public yaml_schema::SchemaHeteroMap
+{
+  typedef utility::HeterogeneousMap BindingType;
+  MinMaxRatio()
+  {
+    addScalarEntry("min", MIN);
+    addScalarEntry("max", MAX);
+    addScalarEntry("maxRatio", MAX_RATIO);
+  }
+};
+
 struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
@@ -179,8 +190,8 @@ struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
     addEntry("abc", UNIT_CELL_BUILDER_ABC,
       (new yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> >)->length(6));
     addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
-    addScalarEntry("lengths", UNIT_CELL_BUILDER_LENGTHS);
-    addScalarEntry("angles", UNIT_CELL_BUILDER_ANGLES);
+    addEntry("lengths", UNIT_CELL_BUILDER_LENGTHS, new MinMaxRatio());
+    addEntry("angles", UNIT_CELL_BUILDER_ANGLES, new MinMaxRatio());
   }
 };
 
