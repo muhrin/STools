@@ -77,6 +77,8 @@ common::types::StructurePtr CellReaderWriter::readStructure(
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb
 ) const
 {
+  using namespace utility::cart_coords_enum;
+
   static const ::boost::regex RE_FLOAT("([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
   typedef boost::tokenizer<boost::char_separator<char> > Tok;
   const boost::char_separator<char> sep(" \t");
@@ -90,11 +92,30 @@ common::types::StructurePtr CellReaderWriter::readStructure(
     // Unit cell
     if(::boost::ifind_first(line, "_abc"))
     { // abc format
+      int offset = 0;
       while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
       {
         if(::boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
         {
-          // TODO
+          double latticeParams[6];
+
+          Tok tok(line, sep);
+          Tok::iterator tokIt = tok.begin();
+          unsigned int i;
+          for(i = 0; i < 3 && tokIt != tok.end(); ++i)
+            latticeParams[i + offset] = ::boost::lexical_cast<double>(*tokIt++);
+
+          // Did we get all three parts
+          if(i < 3)
+            break;
+          // Have we got both 
+          if(offset == 0)
+            offset += 3;
+          else
+          {
+            structure->setUnitCell(makeUniquePtr(new common::UnitCell(latticeParams)));
+            break;
+          }
         }
       }
     }
@@ -108,10 +129,14 @@ common::types::StructurePtr CellReaderWriter::readStructure(
         {
           Tok tok(line, sep);
           Tok::iterator tokIt = tok.begin();
-          mtx(0, vec) = ::boost::lexical_cast<double>(*tokIt);
-          mtx(1, vec) = ::boost::lexical_cast<double>(*++tokIt);
-          mtx(2, vec) = ::boost::lexical_cast<double>(*++tokIt);
+          unsigned int i;
+          for(i = X; i <= Z && tokIt != tok.end(); ++i)
+            mtx(vec, i) = ::boost::lexical_cast<double>(*tokIt++);
 
+          // Did we get all three components?
+          if(i <= Z)
+            break;
+          // Have we got all three lattice vectors
           if(++vec == 3)
             break;
         }
@@ -133,33 +158,33 @@ common::types::StructurePtr CellReaderWriter::readStructure(
   {
     common::AtomSpeciesId species;
     ::arma::vec3 pos;
-    bool found;
-    if(::boost::ifind_first(line, "_frac"))
+    const bool fractional = ::boost::ifind_first(line, "_frac");
+    const bool cartesian = ::boost::ifind_first(line, "_abs");
+    if(fractional || cartesian)
     { // fractional format
       while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
       {
-        found = true;
         Tok tok(line, sep);
         Tok::iterator tokIt = tok.begin();
-        species = speciesDb.getIdFromSymbol(*tokIt);
-        found &= species != common::AtomSpeciesId::DUMMY;
+        species = speciesDb.getIdFromSymbol(*tokIt++);
 
-        pos(0) = ::boost::lexical_cast<double>(*++tokIt);
-        pos(1) = ::boost::lexical_cast<double>(*++tokIt);
-        pos(2) = ::boost::lexical_cast<double>(*++tokIt);
+        if(species == common::AtomSpeciesId::DUMMY)
+          continue;
 
-        unitCell->cartToFracInplace(pos);
+        unsigned int i;
+        for(i = X; i <= Z && tokIt != tok.end(); ++i)
+          pos(i) = ::boost::lexical_cast<double>(*tokIt++);
 
-        if(found)
+        // Did we get all three components?
+        if(i > Z)
+        {
+          if(fractional)
+            unitCell->cartToFracInplace(pos);
           structure->newAtom(species).setPosition(pos);
+        }
       }
     }
-    else if(::boost::ifind_first(line, "_abs"))
-    { // cart format
-      // TODO
-    }
   }
-
 
   return structure;
 }
