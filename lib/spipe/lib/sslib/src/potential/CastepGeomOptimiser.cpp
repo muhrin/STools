@@ -226,13 +226,13 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
     if(updateResult == CastepRunResult::OUTPUT_NOT_FOUND)
     {
       ::std::stringstream ss;
-      ss << "Castep output: " << myCastepRun.getCastepOutFile().string() << " not found.";
+      ss << "Castep output: " << myCastepRun.getCellOutFile().string() << " not found.";
       return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
     }
     else if(updateResult == CastepRunResult::FAILED_TO_READ_STRUCTURE)
     {
       ::std::stringstream ss;
-      ss << "Failed to read structure from " << myCastepRun.getCastepOutFile().string() << ".";
+      ss << "Failed to read structure from " << myCastepRun.getCellOutFile().string() << ".";
       return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
     }
     else

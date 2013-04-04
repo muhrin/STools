@@ -59,6 +59,11 @@ const fs::path & CastepRun::getCastepFile() const
   return myCastepFile;
 }
 
+const fs::path & CastepRun::getCellOutFile() const
+{
+  return myCellOutFile;
+}
+
 CastepRunResult::Value CastepRun::openCellFile(fs::ofstream * * ofstream)
 {
   // If the file is already open close it and delete it
