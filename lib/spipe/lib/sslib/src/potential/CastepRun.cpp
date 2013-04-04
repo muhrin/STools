@@ -101,7 +101,7 @@ CastepRunResult::Value CastepRun::openCellOutFile(::boost::filesystem::ifstream 
     return CastepRunResult::OUTPUT_NOT_FOUND;
 
   if(!myCellOutFileStream.is_open())
-    myCellOutFileStream.open(myCastepFile);
+    myCellOutFileStream.open(myCellOutFile);
   else
   { // Move the file to the beginning
     myCellOutFileStream.clear(); // Clear the EoF flag
