@@ -142,7 +142,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
         }
       }
       if(vec == 3)
-        structure->setUnitCell(makeUniquePtr(new common::UnitCell(mtx)));
+        structure->setUnitCell(makeUniquePtr(new common::UnitCell(mtx.t())));
     }
   }
 
