@@ -26,13 +26,16 @@ namespace io {
 bool findFirstLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
-  const ::std::string & token
+  const ::std::string & token,
+  const bool caseSensitive
 )
 {
   ::std::string line;
+  bool found;
   while(::std::getline(inputStream, line))
   {
-    if(::boost::find_first(line, token))
+    found = caseSensitive ? ::boost::find_first(line, token) : ::boost::ifind_first(line, token);
+    if(found)
     {
       matchingLine = line;
       return true;
@@ -44,14 +47,17 @@ bool findFirstLine(
 bool findLastLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
-  const ::std::string & token
+  const ::std::string & token,
+  const bool caseSensitive
 )
 {
   int foundPos = -1;
   ::std::string line;
+  bool found;
   while(::std::getline(inputStream, line))
   {
-    if(::boost::find_first(line, token))
+    found = caseSensitive ? ::boost::find_first(line, token) : ::boost::ifind_first(line, token);
+    if(found)
     {
       foundPos = inputStream.tellg();
       matchingLine = line;

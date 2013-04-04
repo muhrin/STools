@@ -34,6 +34,7 @@ CastepRun::CastepRun(
 myCellFile(seed + ".cell"),
 myParamFile(seed + ".param"),
 myCastepFile(seed + ".castep"),
+myCellOutFile(seed + "-out.cell"),
 myCellReaderWriter(cellReaderWriter),
 myCastepReader(castepReader)
 {}
@@ -94,12 +95,33 @@ CastepRunResult::Value CastepRun::openCastepFile(fs::ifstream * * ifstream)
   return CastepRunResult::SUCCESS;
 }
 
+CastepRunResult::Value CastepRun::openCellOutFile(::boost::filesystem::ifstream * * ifstream)
+{
+  if(!fs::exists(myCellOutFile))
+    return CastepRunResult::OUTPUT_NOT_FOUND;
+
+  if(!myCellOutFileStream.is_open())
+    myCellOutFileStream.open(myCastepFile);
+  else
+  { // Move the file to the beginning
+    myCellOutFileStream.clear(); // Clear the EoF flag
+    myCellOutFileStream.seekg(0, myCellOutFileStream.beg);
+  }
+
+  if(ifstream)
+    *ifstream = &myCellOutFileStream;
+
+  return CastepRunResult::SUCCESS;
+}
+
 void CastepRun::closeAllStreams()
 {
   if(myCastepFileStream.is_open())
     myCastepFileStream.close();
   if(myCellFileStream.is_open())
     myCellFileStream.close();
+  if(myCellOutFileStream.is_open())
+    myCellOutFileStream.close();
 }
 
 CastepRunResult::Value CastepRun::runCastep(const fs::path & castepExe)
@@ -122,14 +144,14 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  if(!fs::exists(myCastepFile))
+  if(!fs::exists(myCellOutFile))
     return CastepRunResult::OUTPUT_NOT_FOUND;
 
-  CastepRunResult::Value result = openCastepFile();
+  CastepRunResult::Value result = openCellOutFile();
   if(result != CastepRunResult::SUCCESS)
     return result;
 
-  common::types::StructurePtr newStructure = myCastepReader.readStructure(myCastepFileStream, speciesDb);
+  common::types::StructurePtr newStructure = myCellReaderWriter.readStructure(myCellOutFileStream, speciesDb);
   if(!newStructure.get())
     return CastepRunResult::FAILED_TO_READ_STRUCTURE;
 

@@ -61,6 +61,7 @@ public:
 
   CastepRunResult::Value openCellFile(::boost::filesystem::ofstream * * ofstream);
   CastepRunResult::Value openCastepFile(::boost::filesystem::ifstream * * ifstream = NULL);
+  CastepRunResult::Value openCellOutFile(::boost::filesystem::ifstream * * ifstream = NULL);
 
   void closeAllStreams();
 
@@ -78,9 +79,11 @@ private:
   const ::boost::filesystem::path myCellFile;
   const ::boost::filesystem::path myParamFile;
   const ::boost::filesystem::path myCastepFile;
+  const ::boost::filesystem::path myCellOutFile;
 
   ::boost::filesystem::ofstream myCellFileStream;
   ::boost::filesystem::ifstream myCastepFileStream;
+  ::boost::filesystem::ifstream myCellOutFileStream;
 
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;

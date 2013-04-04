@@ -8,13 +8,18 @@
 // INCLUDES //////////////////////////////////
 #include "io/CellReaderWriter.h"
 
+#include <boost/algorithm/string/find.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/tokenizer.hpp>
 
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
 #include "io/BoostFilesystem.h"
+#include "io/Parsing.h"
 #include "utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
@@ -34,14 +39,23 @@ namespace fs = ::boost::filesystem;
 }
 
 common::types::StructurePtr CellReaderWriter::readStructure(
-  const ResourceLocator & resourceLocator,
+  const ResourceLocator & locator,
 	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
 {
   common::types::StructurePtr structure;
+  const fs::path filepath(locator.path());
+	if(!filepath.has_filename())
+    return structure; // Can't write out structure without filepath
 
-  // TODO:
+  fs::ifstream strFile;
+	strFile.open(filepath);
 
-  return structure;
+  structure = readStructure(strFile, speciesDb);
+
+ if(strFile.is_open())
+    strFile.close();
+
+ return structure;
 }
 
 size_t CellReaderWriter::readStructures(
@@ -56,6 +70,98 @@ size_t CellReaderWriter::readStructures(
     return 1;
   }
   return 0;
+}
+
+common::types::StructurePtr CellReaderWriter::readStructure(
+  ::std::istream & is,
+	const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+) const
+{
+  static const ::boost::regex RE_FLOAT("([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
+  typedef boost::tokenizer<boost::char_separator<char> > Tok;
+  const boost::char_separator<char> sep(" \t");
+
+  common::types::StructurePtr structure(new common::Structure());
+
+  ::std::string line;
+  ::boost::smatch match;
+  if(findFirstLine(line, is, "%BLOCK lattice_", false))
+  {
+    // Unit cell
+    if(::boost::ifind_first(line, "_abc"))
+    { // abc format
+      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      {
+        if(::boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
+        {
+          // TODO
+        }
+      }
+    }
+    else if(::boost::ifind_first(line, "_cart"))
+    { // cart format
+      int vec = 0;
+      ::arma::mat33 mtx;
+      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      {
+        if(::boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
+        {
+          Tok tok(line, sep);
+          Tok::iterator tokIt = tok.begin();
+          mtx(0, vec) = ::boost::lexical_cast<double>(*tokIt);
+          mtx(1, vec) = ::boost::lexical_cast<double>(*++tokIt);
+          mtx(2, vec) = ::boost::lexical_cast<double>(*++tokIt);
+
+          if(++vec == 3)
+            break;
+        }
+      }
+      if(vec == 3)
+        structure->setUnitCell(makeUniquePtr(new common::UnitCell(mtx)));
+    }
+  }
+
+  // Reset the stream
+  is.clear(); // Clear the EoF flag
+  is.seekg(0, is.beg);
+
+  const common::UnitCell * const unitCell = structure->getUnitCell();
+  if(!unitCell)
+    return common::types::StructurePtr();
+
+  if(findFirstLine(line, is, "%BLOCK positions_", false))
+  {
+    common::AtomSpeciesId species;
+    ::arma::vec3 pos;
+    bool found;
+    if(::boost::ifind_first(line, "_frac"))
+    { // fractional format
+      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      {
+        found = true;
+        Tok tok(line, sep);
+        Tok::iterator tokIt = tok.begin();
+        species = speciesDb.getIdFromSymbol(*tokIt);
+        found &= species != common::AtomSpeciesId::DUMMY;
+
+        pos(0) = ::boost::lexical_cast<double>(*++tokIt);
+        pos(1) = ::boost::lexical_cast<double>(*++tokIt);
+        pos(2) = ::boost::lexical_cast<double>(*++tokIt);
+
+        unitCell->cartToFracInplace(pos);
+
+        if(found)
+          structure->newAtom(species).setPosition(pos);
+      }
+    }
+    else if(::boost::ifind_first(line, "_abs"))
+    { // cart format
+      // TODO
+    }
+  }
+
+
+  return structure;
 }
 
 void CellReaderWriter::writeStructure(

@@ -20,13 +20,15 @@ namespace io {
 bool findFirstLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
-  const ::std::string & token
+  const ::std::string & token,
+  const bool caseSensitive = true
 );
 
 bool findLastLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
-  const ::std::string & token
+  const ::std::string & token,
+  const bool caseSensitive = true
 );
 
 bool findFirstFloat(

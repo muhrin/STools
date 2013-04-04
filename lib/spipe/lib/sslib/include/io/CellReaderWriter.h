@@ -27,7 +27,7 @@ class UnitCell;
 
 namespace io {
 
-class CellReaderWriter :  public virtual IStructureWriter/*,  public virtual IStructureReader*/
+class CellReaderWriter :  public virtual IStructureWriter,  public virtual IStructureReader
 {
 public:
 
@@ -38,23 +38,30 @@ public:
   // From IStructureReader //
   virtual ::sstbx::common::types::StructurePtr readStructure(
     const ResourceLocator & resourceLocator,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const;
-
+		const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+  ) const;
   virtual size_t readStructures(
     StructuresContainer & outStructures,
 		const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb) const;
+		const common::AtomSpeciesDatabase & speciesDb
+  ) const;
   // End from IStructureReader //
 
   // from IStructureWriter //
 	virtual void writeStructure(
 		::sstbx::common::Structure & str,
 		const ResourceLocator & locator,
-		const common::AtomSpeciesDatabase & speciesDb) const;
+		const common::AtomSpeciesDatabase & speciesDb
+  ) const;
   // End from IStructureWriter
 
   // Single structure per file
   virtual bool multiStructureSupport() const { return false; }
+
+  virtual common::types::StructurePtr readStructure(
+    ::std::istream & is,
+		const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+  ) const;
 
   virtual void writeStructure(
     ::std::ostream & os,
