@@ -21,7 +21,8 @@
 namespace sstbx {
 namespace math {
 
-void seed(const unsigned int);
+void seed();
+void seed(const unsigned int randSeed);
 
 template <typename T>
 T randu();

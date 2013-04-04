@@ -195,7 +195,13 @@ struct Rand<double>
 
 } // namespace detail
 
-inline void seed(const unsigned int)
+inline void seed(const unsigned int randSeed)
+{
+  ::std::srand(randSeed);
+  detail::mt19937.seed(randSeed);
+}
+
+inline void seed()
 {
   ::std::srand(static_cast<unsigned int>(time(NULL)));
   detail::mt19937.seed(static_cast<unsigned int>(time(NULL)));

@@ -96,5 +96,33 @@ bool findFirstFloat(
   return false;
 }
 
+::std::string getLastLine(::std::istream & is)
+{
+  // Go to just before EoF
+  is.seekg(-1, is.end);
+
+  bool found = false;
+  char ch;
+  while(!found)
+  {
+    // Get the current character
+    is.get(ch);
+
+    // Are we at or before the first character
+    if((int)is.tellg() <= 1)
+    {
+      is.seekg(0); // First line is last line
+      found = true;
+    }
+    else if(ch == '\n')
+      found = true;
+    else
+      is.seekg(-2, is.cur); // Move two backwards so we read the next char
+  }
+  ::std::string lastLine;
+  ::std::getline(is, lastLine);
+  return lastLine;
+}
+
 }
 }

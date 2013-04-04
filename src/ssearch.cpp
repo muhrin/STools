@@ -28,6 +28,7 @@
 #include "input/OptionsParsing.h"
 #include "factory/StFactory.h"
 #include "factory/YamlSchema.h"
+#include "math/Random.h"
 
 // MACROS ////////////////////////////////////
 
@@ -36,6 +37,7 @@ namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
 namespace ssc   = ::sstbx::common;
+namespace ssm   = ::sstbx::math;
 namespace ssu   = ::sstbx::utility;
 namespace ssys  = ::sstbx::yaml_schema;
 
@@ -51,6 +53,7 @@ struct InputOptions
 
 // FUNCTIONS ////////////////////////////////
 int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
+void seedRng(ssu::HeterogeneousMap schemaOptions);
 
 int main(const int argc, char * argv[])
 {
@@ -80,6 +83,8 @@ int main(const int argc, char * argv[])
     parse.printErrors();
     return 1;
   }
+
+  seedRng(schemaOptions);
 
   ssc::AtomSpeciesDatabase speciesDb;
 
@@ -146,4 +151,10 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 
   // Everything went fine
   return 0;
+}
+
+
+void seedRng(ssu::HeterogeneousMap schemaOptions)
+{
+  ssm::seed();
 }

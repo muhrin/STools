@@ -238,6 +238,7 @@ CastepRunResult::Value CastepRun::deleteAllOutput()
   fs::remove_all(stem + ".geom");
   fs::remove_all(stem + ".param.orig");
   fs::remove_all(stem + ".param.tmp");
+  fs::remove_all(stem + ".001.err");
 
   return CastepRunResult::SUCCESS;
 }
@@ -249,6 +250,17 @@ CastepRunResult::Value CastepRun::deleteAllFiles()
   fs::remove_all(myParamFile);
 
   return CastepRunResult::SUCCESS;
+}
+
+bool CastepRun::finishedSuccessfully()
+{
+  CastepRunResult::Value result = openCastepFile();
+  if(result != CastepRunResult::SUCCESS)
+    return false;
+
+  const ::std::string lastLine = io::getLastLine(myCastepFileStream);
+
+  return ::boost::ifind_first(lastLine, "Peak") || ::boost::ifind_first(lastLine, "Total");
 }
 
 }

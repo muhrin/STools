@@ -81,6 +81,8 @@ public:
   CastepRunResult::Value deleteAllOutput();
   CastepRunResult::Value deleteAllFiles();
 
+  bool finishedSuccessfully();
+
 private:
   const ::boost::filesystem::path myCellFile;
   const ::boost::filesystem::path myParamFile;

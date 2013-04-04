@@ -36,6 +36,8 @@ bool findFirstFloat(
   const ::std::string & line
 );
 
+::std::string getLastLine(::std::istream & is);
+
 }
 }
 

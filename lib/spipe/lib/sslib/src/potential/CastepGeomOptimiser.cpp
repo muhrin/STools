@@ -251,6 +251,9 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
 
+  if(!myCastepRun.finishedSuccessfully())
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, "Castep did not finish correctly.");
+
   // 3. Read in results from -out.cell and update structure
   const CastepRunResult::Value updateResult = myCastepRun.updateStructureFromOutput(structure, speciesDb);
   if(updateResult != CastepRunResult::SUCCESS)
