@@ -59,6 +59,11 @@ private:
     common::Structure & structure,
     const common::AtomSpeciesDatabase & speciesDb
   );
+  OptimisationOutcome doPreRelaxation(
+    common::Structure & structure,
+    const common::AtomSpeciesDatabase & speciesDb,
+    const ::boost::filesystem::path & castepExe
+  );
   OptimisationOutcome doRelaxation(
     common::Structure & structure,
     const common::AtomSpeciesDatabase & speciesDb,
@@ -80,7 +85,7 @@ private:
 };
 
 
-const int CastepGeomOptRun::MAX_RELAX_ATTEMPTS = 40;
+const int CastepGeomOptRun::MAX_RELAX_ATTEMPTS = 20;
 
 CastepGeomOptRun::CastepGeomOptRun(
   const ::std::string & originalSeed,
@@ -125,16 +130,13 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
  
-  
+  doPreRelaxation(structure, speciesDb, castepExe);
+
   OptimisationOutcome outcome;
   int successfulRelaxations = 0;
   int i;
   for(i = 0; successfulRelaxations < numRelaxations && i < MAX_RELAX_ATTEMPTS; ++i)
   {
-    outcome = makeCellCopy(structure, speciesDb);
-    if(!outcome.isSuccess())
-      return outcome;
-
     outcome = doRelaxation(structure, speciesDb, castepExe);
     if(!outcome.isSuccess())
       return outcome;
@@ -207,11 +209,41 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   return OptimisationOutcome::success();
 }
 
+OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
+  common::Structure & structure,
+  const common::AtomSpeciesDatabase & speciesDb,
+  const ::boost::filesystem::path & castepExe
+)
+{
+  const fs::path origParamFile(myCastepRun.getParamFile().string() + ".orig");
+  fs::copy_file(myCastepRun.getParamFile(), origParamFile, fs::copy_option::overwrite_if_exists);
+
+  CastepRun::ParamsMap paramsMap;
+  paramsMap["geom_max_iter"] = "2";
+  myCastepRun.insertParams(paramsMap);
+
+  // Do short relaxations
+  for(size_t i = 0;  i < 4;  ++i)
+    doRelaxation(structure, speciesDb, castepExe);
+
+  // Copy the original back
+  fs::copy_file(origParamFile, myCastepRun.getParamFile(), fs::copy_option::overwrite_if_exists);
+  fs::remove_all(origParamFile);
+
+  return OptimisationOutcome::success();
+}
+
 OptimisationOutcome CastepGeomOptRun::doRelaxation(
   common::Structure &structure,
   const common::AtomSpeciesDatabase & speciesDb,
   const fs::path & castepExe)
 {
+  // 1. Write the .cell file from teh current structure
+  OptimisationOutcome outcome = makeCellCopy(structure, speciesDb);
+  if(!outcome.isSuccess())
+    return outcome;
+
+  // 2. Run Castep
   if(myCastepRun.runCastep(castepExe) != CastepRunResult::SUCCESS)
   {
     ::std::stringstream ss;
@@ -219,7 +251,7 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
 
-  // Read in results from castep run and update structure
+  // 3. Read in results from -out.cell and update structure
   const CastepRunResult::Value updateResult = myCastepRun.updateStructureFromOutput(structure, speciesDb);
   if(updateResult != CastepRunResult::SUCCESS)
   {

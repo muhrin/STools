@@ -10,7 +10,9 @@
 
 #include <sstream>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
@@ -115,6 +117,55 @@ CastepRunResult::Value CastepRun::openCellOutFile(::boost::filesystem::ifstream 
 
   if(ifstream)
     *ifstream = &myCellOutFileStream;
+
+  return CastepRunResult::SUCCESS;
+}
+
+CastepRunResult::Value CastepRun::insertParams(ParamsMap params) const
+{
+  if(!fs::exists(getParamFile()))
+    return CastepRunResult::INPUT_NOT_FOUND;
+
+  const fs::path tempParamFile(getParamFile().string() + ".tmp");
+
+  fs::ifstream paramsIn(getParamFile());
+  fs::ofstream paramsOut(tempParamFile);
+
+  ::std::string line, preComment, outLine;
+  while(::std::getline(paramsIn, line))
+  {
+    outLine = line;
+
+    // Get the string up the a comment character
+    preComment = line.substr(0, line.find('#'));
+    if(!preComment.empty() && !params.empty())
+    {
+      // Look through each of the parameters to insert to see if it needs to be replaced
+      ParamsMap::const_iterator it = params.begin();
+      for(const ParamsMap::const_iterator end = params.end(); it != end; ++it)
+      {
+        if(::boost::ifind_first(preComment, it->first))
+        {
+          outLine = it->first + " : " + it->second;
+          break;
+        }
+      }
+      // If we found the parameter, erase it
+      if(it != params.end())
+        params.erase(it);
+    }
+    paramsOut << outLine << ::std::endl;
+  }
+  paramsIn.close();
+  BOOST_FOREACH(ParamsMap::const_reference entry, params)
+  {
+    paramsOut << entry.first << " : " << entry.second << ::std::endl;
+  }
+  paramsOut.close();
+
+  // Overwrite the old with the new
+  fs::copy_file(tempParamFile, getParamFile(), fs::copy_option::overwrite_if_exists);
+  fs::remove_all(tempParamFile);
 
   return CastepRunResult::SUCCESS;
 }

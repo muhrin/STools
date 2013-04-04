@@ -12,6 +12,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <map>
 #include <string>
 
 #include <boost/filesystem/fstream.hpp>
@@ -48,6 +49,8 @@ struct CastepRunResult
 class CastepRun
 {
 public:
+  typedef ::std::map< ::std::string, ::std::string> ParamsMap;
+
   CastepRun(
     const ::std::string & seed,
     const io::CellReaderWriter & myCellReaderWriter,
@@ -63,6 +66,8 @@ public:
   CastepRunResult::Value openCellFile(::boost::filesystem::ofstream * * ofstream);
   CastepRunResult::Value openCastepFile(::boost::filesystem::ifstream * * ifstream = NULL);
   CastepRunResult::Value openCellOutFile(::boost::filesystem::ifstream * * ifstream = NULL);
+
+  CastepRunResult::Value insertParams(ParamsMap params) const;
 
   void closeAllStreams();
 
@@ -83,6 +88,7 @@ private:
   const ::boost::filesystem::path myCellOutFile;
 
   ::boost::filesystem::ofstream myCellFileStream;
+  ::boost::filesystem::fstream myParamFileStream;
   ::boost::filesystem::ifstream myCastepFileStream;
   ::boost::filesystem::ifstream myCellOutFileStream;
 
