@@ -179,7 +179,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
         if(i > Z)
         {
           if(fractional)
-            unitCell->cartToFracInplace(pos);
+            unitCell->fracToCartInplace(pos);
           structure->newAtom(species).setPosition(pos);
         }
       }
