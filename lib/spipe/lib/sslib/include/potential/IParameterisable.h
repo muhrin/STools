@@ -13,6 +13,7 @@
 #include <armadillo>
 
 #include <utility>
+#include <vector>
 
 // DEFINES //////////////////////////////////////////////
 
@@ -20,11 +21,14 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace sstbx { namespace potential {
+namespace sstbx {
+namespace potential {
 
 class IParameterisable
 {
 public:
+  typedef ::std::vector<double> PotentialParams;
+
 	virtual ~IParameterisable() {}
 
   /**
@@ -35,18 +39,15 @@ public:
   /**
   /* Get the current parameters vector for this potential.
   /**/
-	virtual arma::vec getParams() const = 0;
+	virtual PotentialParams getParams() const = 0;
 
   /**
   /* Set the parameters for this potential.
   /**/
-	virtual void setParams(const ::arma::vec & params) = 0;
-
-	virtual const std::string & getParamString() const = 0;
-
-  virtual std::pair<arma::vec, bool> getParamsFromString(const std::string & str) const = 0;
+	virtual void setParams(const PotentialParams & params) = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_PARAMETERISABLE_H */

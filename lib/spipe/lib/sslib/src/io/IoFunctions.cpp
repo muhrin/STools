@@ -48,13 +48,13 @@ bool getWildcardPaths(::std::string wildString, ::std::vector<fs::path> & outPat
   }
 
   return getWildcardPaths(wildString, outPaths, searchFolder);
-
 }
 
 bool getWildcardPaths(
   ::std::string wildString,
   ::std::vector< ::boost::filesystem::path> & outPaths,
-  const fs::path & searchFolder)
+  const fs::path & searchFolder
+)
 {
   // Check that the search folder makes sense
   if(!fs::exists(searchFolder) || ! fs::is_directory(searchFolder))
@@ -79,7 +79,6 @@ bool getWildcardPaths(
       // File matches, store it
       outPaths.push_back(it->path());
   }
-
   return true;
 }
 
@@ -130,11 +129,6 @@ void writeToStream(::std::ostream & out, const double num, const unsigned digits
   ::std::stringstream ss;
   ss << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
   return ss.str();
-}
-
-void populateReadWriteManager(StructureReadWriteManager & manager)
-{
-  //manager.insertWriter(
 }
 
 }

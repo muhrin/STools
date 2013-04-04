@@ -10,7 +10,6 @@
 
 #include <iomanip>
 #include <set>
-#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -155,7 +154,7 @@ void ResReaderWriter::writeStructure(
   if(cell)
   {
     cell->cartsToFracInplace(positions);
-    cell->wrapVecFrac(positions);
+    cell->wrapVecsFracInplace(positions);
   }
 
   vector<AtomSpeciesId::Value> species;

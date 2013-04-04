@@ -15,10 +15,10 @@
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
 #include <build_cell/AtomsGenerator.h>
+#include <build_cell/BuildCellFwd.h>
 #include <build_cell/IFragmentGenerator.h>
 #include <build_cell/IStructureGenerator.h>
 #include <build_cell/StructureBuilder.h>
-#include <build_cell/Types.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <io/BoostFilesystem.h>
@@ -26,6 +26,7 @@
 #include <utility/MultiIdx.h>
 
 // Local includes
+#include "common/PipeFunctions.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 #include "common/UtilityFunctions.h"
@@ -49,7 +50,7 @@ StoichiometrySearch::StoichiometrySearch(
   const ::sstbx::common::AtomSpeciesId::Value species1,
   const ::sstbx::common::AtomSpeciesId::Value species2,
   const size_t maxAtoms,
-  SpStartBlock & subpipe,
+  SubpipePtr subpipe,
   StructureBuilderPtr structureBuilder):
 SpBlock("Sweep stoichiometry"),
 myMaxAtoms(maxAtoms),
@@ -64,7 +65,7 @@ StoichiometrySearch::StoichiometrySearch(
   const SpeciesParameters & speciesParameters,
   const size_t maxAtoms,
   const double atomsRadius,
-  SpStartBlock & sweepPipe,
+  SubpipePtr sweepPipe,
   StructureBuilderPtr structureBuilder):
 SpBlock("Sweep stoichiometry"),
 mySpeciesParameters(speciesParameters),
@@ -76,7 +77,7 @@ myStructureGenerator(structureBuilder)
 
 void StoichiometrySearch::pipelineInitialising()
 {
-  myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".stoich");
+  myTableSupport.setFilename(common::getOutputFileStem(getRunner()->memory()) + ".stoich");
   myTableSupport.registerRunner(*getRunner());
 }
 
@@ -219,7 +220,7 @@ void StoichiometrySearch::releaseBufferedStructures(
 
 void StoichiometrySearch::runnerAttached(RunnerSetupType & setup)
 {
-  mySubpipeRunner = setup.createChildRunner(mySubpipe);
+  mySubpipeRunner = setup.createChildRunner(*mySubpipe);
   // Set outselves to collect any finished data from the sweep pipeline
   mySubpipeRunner->setFinishedDataSink(this);
 }

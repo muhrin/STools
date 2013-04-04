@@ -24,15 +24,17 @@ public:
   bool success() const;
   const ::std::string & getErrorMessage() const;
 
-  void setSuccess()
+  GenerationOutcome setSuccess()
   {
     mySucceeded = true;
+    return *this;
   }
 
-  void setFailure(const ::std::string & msg = "")
+  GenerationOutcome setFailure(const ::std::string & msg = "")
   {
     mySucceeded = false;
     myErrorMessage = msg;
+    return *this;
   }
 
 private:

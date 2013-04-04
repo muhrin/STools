@@ -19,6 +19,7 @@ namespace common {
 namespace constants {
 
 extern const double PI;
+extern const double TWO_PI;
 extern const double DEG_TO_RAD;
 extern const double RAD_TO_DEG;
 

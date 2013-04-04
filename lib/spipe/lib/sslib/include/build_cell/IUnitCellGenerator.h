@@ -9,7 +9,7 @@
 #define I_UNIT_CELL_GENERATOR_H
 
 // INCLUDES ////////////
-#include "build_cell/Types.h"
+#include "build_cell/BuildCellFwd.h"
 #include "common/Types.h"
 
 namespace sstbx {

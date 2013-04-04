@@ -8,94 +8,76 @@
 // INCLUDES //////////////////////////////////
 #include "factory/SsLibElements.h"
 
-
-#include "factory/SchemaAnon.h"
-#include "factory/SchemaList.h"
-#include "factory/SchemaMap.h"
-#include "factory/SchemaMapSingle.h"
-#include "factory/SchemaScalarValueLiteral.h"
-#include "factory/SchemaObjectUid.h"
-
 // NAMESPACES ////////////////////////////////
 
 namespace sstbx {
 namespace factory {
 
-SsLibElements::SsLibElements():
-// Num
-n(new SchemaMapSingle("n", true, "sslib.n")),
+// GENERAL /////////////////////////////////////////////////
+utility::Key< ::arma::vec3> POSITION;
+utility::Key<double> RADIUS;
+utility::Key<double> TOLERANCE;
+utility::Key<double> CUTOFF;
+utility::Key<double> MIN;
+utility::Key<double> MAX;
+utility::Key<double> MAX_RATIO;
 
-// Atom description
-atomDesc(new SchemaMap("atom", true, "sslib.atomDesc")),
-atomSpec(new SchemaMapSingle("spec", true, "sslib.atomDesc.spec")),
-atomsDescList(new SchemaList("atoms", true, "sslib.atomsDescList")),
+// OPTIMISERS //////////////////////////////////////////////
+utility::Key<utility::HeterogeneousMap> OPTIMISER;
+utility::Key<utility::HeterogeneousMap> TPSD;
+utility::Key<utility::HeterogeneousMap> CASTEP;
+utility::Key< ::boost::filesystem::path> CASTEP_EXE;
+utility::Key< ::std::string> CASTEP_SEED;
+utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
+utility::Key<double> PRESSURE;
+utility::Key<int> MAX_STEPS;
 
-// Structure description
-strDesc(new SchemaMap("strDesc", true, "sslib.strDesc")),
+// POTENTIALS //////////////////////////////////////////////
+utility::Key<utility::HeterogeneousMap> POTENTIAL;
+utility::Key<utility::HeterogeneousMap> LENNARD_JONES;
 
-// Cell description
-cellDesc(new SchemaMap("cellDesc", true, "sslib.cellDesc")),
-cellDescVol(new SchemaMapSingle("vol", true, "sslib.cellDesc.bol")),
-cellDescParams(new SchemaList("params", true, "sslib.cellDesc.params", 6)),
+utility::Key<factory::AtomSpeciesIdVector> SPECIES_LIST;
+utility::Key< ::arma::mat> LJ_EPSILON;
+utility::Key< ::arma::mat> LJ_SIGMA;
+utility::Key< ::arma::mat> LJ_BETA;
+utility::Key< ::arma::vec> LJ_POWERS;
+utility::Key<potential::CombiningRule::Value> POT_COMBINING;
 
-// Structure constraints
-strDescConstraintsList(new SchemaList("constraints", false, "sslib.strDesc.constraints")),
-strDescConstraintTyp(new SchemaMap("constraintTyp", true, "sslib.strDesc.constraintTyp", true)),
+// STRUCTURE //////////////////////////////////////
+utility::Key<utility::HeterogeneousMap> STRUCTURE;
+utility::Key<AtomsDataEntryList> ATOMS;
+utility::Key<AtomSpeciesCount> SPECIES;
+utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
 
-// Structure generator
-strGenerator(new SchemaMap("strGenerator", true, "sslib.strGenerator")),
-strGeneratorTyp(new SchemaMap("strGeneratorTyp", false, "sslib.strGeneratorTyp", true)),
+// STRUCTURE BUILDER //////////////////////////////
+utility::Key<utility::HeterogeneousMap> BUILDER;
+utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
+utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
+utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;
+utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
+utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
+utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
+// Shape generators
+utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
+utility::Key<utility::HeterogeneousMap> GEN_BOX;
+utility::Key<double> SHELL_THICKNESS;
+utility::Key<double> WIDTH;
+utility::Key<double> HEIGHT;
+utility::Key<double> DEPTH;
+// Symmetry
+utility::Key<utility::HeterogeneousMap> SYMMETRY;
+utility::Key<MinMax> SYM_OPS;
+utility::Key< ::std::string> POINT_GROUP;
 
-// Cell generator
-cellGenerator(new SchemaMap("cellGenerator", true, "sslib.cellGenerator")),
-cellGeneratorTyp(new SchemaMap("cellGeneratorTyp", false, "sslib.cellGeneratorTyp", true)),
+// STRUCTURE COMPARATORS //////////////////////////
+utility::Key<utility::HeterogeneousMap> COMPARATOR;
+utility::Key<utility::HeterogeneousMap> SORTED_DISTANCE;
+utility::Key<bool> SORTED_DISTANCE__VOLUME_AGNOSTIC;
+utility::Key<bool> SORTED_DISTANCE__USE_PRIMITIVE;
 
-// Potential
-potential(new SchemaMap("potential", true, "sslib.potential", false)),
-potentialTyp(new SchemaMap("potentialTyp", true, "sslib.potentialTyp", true))
-{
-  // Atom description
-  atomDesc->insert(atomDesc->newInstance());
-  atomDesc->insert(n->newInstance());
-
-  // Structure description
-  strDesc->insert(atomsDescList->newInstance());
-
-  // Cell description
-  cellDesc->insert(cellDescVol->newInstance());
-  cellDesc->insert(cellDescParams->newInstance());
-
-  // Structure constraints
-  strDescConstraintsList->insert(strDescConstraintTyp->newInstance());
-
-  // Cell generator
-  cellGenerator->insert(cellGeneratorTyp->newInstance());
-  cellGeneratorTyps._default = MapPtr(new SchemaMap("default", false, "sslib.cellGenerator.default", false, cellGeneratorTyp->getUid()));
-
-  // Structure generator
-  strGenerator->insert(strGeneratorTyp->newInstance());
-  strGenerator->insert(cellGenerator->newInstance());
-  strGeneratorTyps._default = MapPtr(new SchemaMap("default", false, "sslib.strGenerator.default", false, strGeneratorTyp->getUid()));
-
-  // Potential
-  potential->insert(potentialTyp->newInstance());
-
-  { // PairPot
-    potentialTyps.pairPot = MapPtr(new SchemaMap("pairPot", true, "sslib.potential.pairPot", false, potentialTyp->getUid()));
-    potentialTyps.pairPot->insertAnon(ListPtr(new SchemaList("e", true, SchemaElement::UID_ANONYMOUS)));
-    potentialTyps.pairPot->insertAnon(ListPtr(new SchemaList("s", true, SchemaElement::UID_ANONYMOUS)));
-    potentialTyps.pairPot->insertAnon(ListPtr(new SchemaList("b", true, SchemaElement::UID_ANONYMOUS)));
-    potentialTyps.pairPot->insertAnon(ScalarPtr(new SchemaMapSingle("cut", true, SchemaElement::UID_ANONYMOUS)));
-    ScalarPtr comb(new SchemaMapSingle("comb", true, SchemaElement::UID_ANONYMOUS));
-    comb->insert("none");
-    comb->insert("uhrin");
-    comb->insert("lorentz");
-    comb->insert("berthelot");
-    comb->insert("lorentzBerthelot");
-    potentialTyps.pairPot->insertAnon(comb);
-
-  }
-}
+// UNIT CELL //////////////////////////////////////
+utility::Key<common::UnitCell> UNIT_CELL;
+utility::Key< ::std::vector<double> > ABC;
 
 }
 }

@@ -42,16 +42,15 @@ namespace blocks {
 class ParamPotentialGo : public PotentialGo
 {
 public:
-	ParamPotentialGo(
-		::sstbx::potential::IParameterisable & paramPotential,
-		const ::sstbx::potential::IGeomOptimiser & optimiser,
-    const bool                  writeOutput = true);
 
 	ParamPotentialGo(
-		::sstbx::potential::IParameterisable & paramPotential,
-		const ::sstbx::potential::IGeomOptimiser & optimiser,
+		::sstbx::potential::IGeomOptimiserPtr optimiser,
+    const bool writeOutput = true);
+
+	ParamPotentialGo(
+		::sstbx::potential::IGeomOptimiserPtr optimiser,
     const ::sstbx::potential::OptimisationSettings & optimisationParams,
-    const bool                  writeOutput = true);
+    const bool writeOutput = true);
 
   // From Block /////////////////////////
 	virtual void pipelineStarting();
@@ -59,14 +58,18 @@ public:
 
 private:
 
+  typedef ::std::vector<double> PotentialParams;
+
+  void init();
+
   virtual void copyOptimisationResults(
     const sstbx::potential::PotentialData & optData,
     spipe::common::StructureData & strData);
 
-  arma::vec setPotentialParams(const ::arma::vec & params);
+  void setPotentialParams(const PotentialParams & params);
 
-	::sstbx::potential::IParameterisable &      myParamPotential;
-  ::arma::vec                                 myCurrentParams;
+	::sstbx::potential::IParameterisable * myParamPotential;
+  PotentialParams myCurrentParams;
 };
 
 }

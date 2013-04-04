@@ -14,12 +14,9 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
-namespace yaml_keywords
-{
+namespace spipe {
+namespace common {
+namespace yaml_keywords {
 
 /** The id type used by elements in the yaml document */
 typedef ::std::string     IdTyp;
@@ -37,16 +34,25 @@ static const IdTyp PIPELINE__SINGLE_THREADED = "singleThreaded";
 // Blocks
 static const IdTyp BLOCKS                         = "blocks";
 static const IdTyp BLOCKS__BARRIER                = "barrier";
-static const IdTyp BLOCKS__DROP_DUPLICATES        = "dropDuplicates";
-static const IdTyp BLOCKS__RANDOM_CRYSTAL         = "randomCrystal";
-static const IdTyp BLOCKS__RANDOM_CRYSTAL__N_STRS = "nStrs";
+
+static const IdTyp BLOCKS__REMOVE_DUPLICATES      = "removeDuplicates";
+
+static const IdTyp BLOCKS__RANDOM_STRUCTURE       = "randomStructure";
+static const IdTyp BLOCKS__RANDOM_STRUCTURE__BUILD= "build";
+static const IdTyp BLOCKS__RANDOM_STRUCTURE__NUM  = "num";
+
 
 static const IdTyp BLOCKS__NIGGLI                 = "niggli";
 
-static const IdTyp BLOCKS__GEOM_OPTIMISE              = "geomOptimise";
-static const IdTyp BLOCKS__GEOM_OPTIMISE__OPTIMISER   = "optimiser";
+static const IdTyp BLOCKS__GEOM_OPTIMISE          = "geomOptimise";
 
-static const IdTyp BLOCKS__WRITE_STRS             = "writeStrs";
+static const IdTyp BLOCKS__WRITE_STRUCTURES       = "writeStructures";
+static const IdTyp BLOCKS__WRITE_STRUCTURES__MULTI= "multi";
+
+static const IdTyp PRE_GEOM_OPTIMISE = "preGeomOptimise";
+
+static const IdTyp STRUCTURES = "structures";
+static const IdTyp RANDOM = "structures";
 
 }
 }

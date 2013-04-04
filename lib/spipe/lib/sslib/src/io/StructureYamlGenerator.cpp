@@ -20,8 +20,8 @@
 #include "common/UnitCell.h"
 #include "factory/SsLibYamlKeywords.h"
 #include "io/IoFunctions.h"
-#include "io/YamlTranscode.h"
 #include "utility/IndexingEnums.h"
+#include "yaml/Transcode.h"
 
 // DEFINES /////////////////////////////////
 

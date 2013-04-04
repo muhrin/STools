@@ -83,7 +83,7 @@ bool AtomYamlFormatParser::parse(AtomInfo & atomInfo, const YAML::Node & atomNod
 
     for(size_t i = 0; i < numEntries; ++i)
     {
-      if(atomNode[i].IsNull())
+      if(!atomNode[i].IsDefined())
         atomInfo[myAtomsFormat[i].first] = myAtomsFormat[i].second;
       else
         atomInfo[myAtomsFormat[i].first] = atomNode[i];

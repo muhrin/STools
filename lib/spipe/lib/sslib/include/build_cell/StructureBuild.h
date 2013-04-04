@@ -14,8 +14,11 @@
 #include <map>
 #include <set>
 
-#include "build_cell/BuildAtomInfo.h"
+#include <boost/ptr_container/ptr_vector.hpp>
+
 #include "build_cell/AtomExtruder.h"
+#include "build_cell/BuildAtomInfo.h"
+#include "build_cell/IGeneratorShape.h"
 
 namespace sstbx {
 namespace common {
@@ -26,12 +29,16 @@ namespace build_cell {
 
 class BuildAtomInfo;
 class StructureContents;
+class SymmetryGroup;
 
 class StructureBuild
 {
+  typedef ::std::map<common::Atom *, BuildAtomInfo *> AtomInfoMap;
+  typedef ::boost::ptr_vector<BuildAtomInfo> AtomInfoList;
 public:
-
   typedef ::std::set<size_t> FixedSet;
+  typedef UniquePtr<SymmetryGroup>::Type SymmetryGroupPtr;
+  typedef AtomInfoList::iterator AtomInfoIterator;
 
   class RadiusCalculator
   {
@@ -56,26 +63,38 @@ public:
 
   BuildAtomInfo * getAtomInfo(common::Atom & atom);
   const BuildAtomInfo * getAtomInfo(common::Atom & atom) const;
-  void insertAtomInfo(BuildAtomInfo & atomInfo);
+  BuildAtomInfo & createAtomInfo(common::Atom & atom);
 
-  ::arma::vec3 getRandomPoint() const;
+  size_t getNumAtomInfos() const;
+  AtomInfoIterator beginAtomInfo();
+  AtomInfoIterator endAtomInfo();
+  void addAtom(common::Atom & atom, BuildAtomInfo & atomInfo);
+  void removeAtom(common::Atom & atom);
 
-  double getClusterRadius() const;
-  void setClusterRadius(const RadiusCalculator & radiusCalculator);
+  const IGeneratorShape & getGenShape() const;
+
+  const SymmetryGroup * getSymmetryGroup() const;
+  void setSymmetryGroup(SymmetryGroupPtr symGroup);
 
   FixedSet getFixedSet() const;
 
   bool extrudeAtoms();
 
 private:
+  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
-  typedef ::std::map<common::Atom *, BuildAtomInfo> AtomInfoMap;
+  void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
+  void atomRemoved(common::Atom & atom);
 
   common::Structure & myStructure;
   const StructureContents & myIntendedContents;
   AtomInfoMap myAtomsInfo;
-  double myClusterRadius;
+  AtomInfoList myAtomInfoList;
   AtomExtruder myAtomsExtruder;
+  SymmetryGroupPtr mySymmetryGroup;
+  GenShapePtr myGenShape;
+
+  friend class BuildAtomInfo;
 };
 
 }

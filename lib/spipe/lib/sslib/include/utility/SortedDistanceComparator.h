@@ -67,7 +67,11 @@ public:
 	static const double DEFAULT_TOLERANCE;
   static const double CUTOFF_FACTOR;
 
-	SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE, const bool volumeAgnostic = false, const bool usePrimitive = true);
+	SortedDistanceComparator(
+    double tolerance = DEFAULT_TOLERANCE,
+    const bool volumeAgnostic = false,
+    const bool usePrimitive = true
+  );
 
   // From IStructureComparator ////////////////
 

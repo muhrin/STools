@@ -16,7 +16,7 @@
 #include <pipelib/pipelib.h>
 
 #include <utility/UniqueStructureSet.h>
-#include <utility/IStructureComparator.h>
+#include <utility/UtilityFwd.h>
 
 #include "SpTypes.h"
 
@@ -34,7 +34,9 @@ namespace blocks {
 class RemoveDuplicates : public SpPipeBlock, ::boost::noncopyable
 {
 public:
-	RemoveDuplicates(sstbx::utility::IStructureComparator & comparator);
+
+  RemoveDuplicates(::sstbx::utility::IStructureComparatorPtr comparator);
+  RemoveDuplicates(const ::sstbx::utility::IStructureComparator & comparator);
 
 	virtual void in(::spipe::common::StructureData & data);
 

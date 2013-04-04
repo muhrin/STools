@@ -175,7 +175,7 @@ double SortedDistanceComparator::compareStructures(
 
   ::sstbx::math::RunningStats stats;
   common::AtomSpeciesId::Value specI, specJ;
-  for(size_t i = 0; i < numSpecies - 1; ++i)
+  for(size_t i = 0; i < numSpecies; ++i)
   {
     specI = dist1.species[i];
     

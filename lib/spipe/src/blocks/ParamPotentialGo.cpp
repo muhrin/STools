@@ -8,14 +8,18 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/ParamPotentialGo.h"
 
+#include <sstream>
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 // From SSTbx
+#include <SSLibAssert.h> // TEMP !
 #include <common/Structure.h>
 #include <potential/PotentialData.h>
 #include <potential/IGeomOptimiser.h>
 #include <potential/IParameterisable.h>
+#include <potential/IPotential.h>
 
 #include "common/PipeFunctions.h"
 #include "common/StructureData.h"
@@ -33,35 +37,33 @@ namespace common = ::spipe::common;
 namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IParameterisable & paramPotential,
-	const ::sstbx::potential::IGeomOptimiser & optimiser,
-  const bool                  writeOutput):
+	::sstbx::potential::IGeomOptimiserPtr optimiser,
+  const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, writeOutput),
-myParamPotential(paramPotential)
-{}
+PotentialGo(optimiser, writeOutput)
+{
+  init();
+}
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IParameterisable & paramPotential,
-	const ::sstbx::potential::IGeomOptimiser & optimiser,
+	::sstbx::potential::IGeomOptimiserPtr optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
-  const bool                  writeOutput):
+  const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
-PotentialGo(optimiser, optimisationParams, writeOutput),
-myParamPotential(paramPotential)
-{}
+PotentialGo(optimiser, optimisationParams, writeOutput)
+{
+  init();
+}
 
 void ParamPotentialGo::pipelineStarting()
 {
   // The pipeline is starting so try and get the potential parameters
-  common::ObjectData<arma::vec>
-    params = common::getObject(common::GlobalKeys::POTENTIAL_PARAMS, getRunner()->memory());
+  common::ObjectData<PotentialParams> params
+    = common::getObject(common::GlobalKeys::POTENTIAL_PARAMS, getRunner()->memory());
 
   if(params.first != common::DataLocation::NONE)
   {
-    // Need to get the actual parameters as the potential may use a combining rule or change
-    // them in some way from those specified
-    myCurrentParams = setPotentialParams(*params.second);
+    setPotentialParams(*params.second);
 
     // The potential may have changed the params so reset them in the shared data
     common::setObject(
@@ -71,12 +73,30 @@ void ParamPotentialGo::pipelineStarting()
       getRunner()->memory()
     );
 
-    // Add a note to the table with the current parameter string
-    myTableSupport.getTable().addTableNote("params: " + myParamPotential.getParamString());
+    if(!myCurrentParams.empty())
+    {
+      ::std::stringstream ss;
+      ss << "params: " << myCurrentParams[0];
+      for(size_t i = 1; i < myCurrentParams.size(); ++i)
+      {
+        ss << " " << myCurrentParams[i];
+      }
+      // Add a note to the table with the current parameter string
+      getTableSupport().getTable().addTableNote(ss.str());
+    }
   }
 
   // Call the parent to let them deal with the starting event too
   PotentialGo::pipelineStarting();
+}
+
+void ParamPotentialGo::init()
+{
+  SSLIB_ASSERT_MSG(
+    getOptimiser().getPotential() != NULL && getOptimiser().getPotential()->getParameterisable() != NULL,
+    "Must use geometry optimiser with parameterisable potential."
+  );
+  myParamPotential = getOptimiser().getPotential()->getParameterisable();
 }
 
 void ParamPotentialGo::copyOptimisationResults(
@@ -90,17 +110,15 @@ void ParamPotentialGo::copyOptimisationResults(
   strData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = myCurrentParams;
 }
 
-arma::vec ParamPotentialGo::setPotentialParams(const ::arma::vec & params)
+void ParamPotentialGo::setPotentialParams(const PotentialParams & params)
 {
-	using ::std::string;
-
-	myParamPotential.setParams(params);
-
-  const arma::vec actualParams = myParamPotential.getParams();
-
-  return actualParams;
+  // Need to get the actual parameters as the potential may use a combining rule or change
+  // them in some way from those specified
+	myParamPotential->setParams(params);
+  myCurrentParams = myParamPotential->getParams();
 }
 
 
-}}
+}
+}
 

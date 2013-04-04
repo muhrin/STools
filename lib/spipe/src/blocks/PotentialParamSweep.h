@@ -41,18 +41,20 @@ namespace blocks {
 class PotentialParamSweep : public SpStartBlock, public SpFinishedSink, ::boost::noncopyable
 {
 public:
+  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
 
   static const ::std::string POTPARAMS_FILE_EXTENSION;
 
-	PotentialParamSweep(
-    const common::ParamRange & paramRange,
-		SpStartBlockTyp & sweepPipeline);
+	PotentialParamSweep(const common::ParamRange & paramRange, SubpipePtr sweepPipeline);
 
 	// From Block /////////////////////////////////
 	virtual void start();
 	// End from Block //////////////////////////////
 
 private:
+
+  typedef ::sstbx::utility::MultiIdx<int> ParamSpaceIdx;
+  typedef ::std::vector<double> PotentialParams;
 
   // From Block ///////////////////////////////
   virtual void runnerAttached(SpRunnerSetup & setup);
@@ -72,17 +74,17 @@ private:
     const StructureDataType & sweepStrData
   );
 
-	size_t								                    myNumParams;
-  const common::ParamRange                  myParamRange;
-	::sstbx::utility::MultiIdx<unsigned int>	myStepExtents;
+	size_t myNumParams;
+  const common::ParamRange myParamRange;
+	ParamSpaceIdx	myStepExtents;
 
-  ::spipe::utility::DataTableSupport  myTableSupport;
+  ::spipe::utility::DataTableSupport myTableSupport;
 
-	SpStartBlockTyp &                   mySweepPipeline;
+	SubpipePtr mySweepPipeline;
 
 	/** Buffer to store structure that have finished their path through the sub pipeline. */
 	::std::vector<StructureDataType *>		myBuffer;
-  SpChildRunnerPtr                    mySubpipeRunner;
+  SpChildRunnerPtr mySubpipeRunner;
 
 };
 

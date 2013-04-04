@@ -9,7 +9,7 @@
 #define I_FRAGMENT_GENERATOR_H
 
 // INCLUDES ////////////
-#include "build_cell/Types.h"
+#include "build_cell/BuildCellFwd.h"
 #include "utility/SharedHandle.h"
 
 // DEFINITION ///////////////////////

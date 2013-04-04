@@ -10,11 +10,17 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
+::std::string getOutputFileStem(const MemoryAccessType & memory)
+{
+  ::std::string stem = memory.global().getSeedName();
+  if(!stem.empty() && !memory.shared().getInstanceName().empty())
+    stem += "-";
+  stem += memory.shared().getInstanceName();
+  return stem;
+}
 
 }
 }

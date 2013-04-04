@@ -13,6 +13,12 @@ namespace utility {
 namespace detail {
 
 template <typename Key>
+UniqueStructureSetBase<Key>::UniqueStructureSetBase(IStructureComparatorPtr comparator):
+myOwnedComparator(comparator),
+myComparator(myOwnedComparator->generateBuffered())
+{}
+
+template <typename Key>
 UniqueStructureSetBase<Key>::UniqueStructureSetBase(const IStructureComparator & comparator):
 myComparator(comparator.generateBuffered())
 {}
@@ -158,6 +164,11 @@ UniqueStructureSetBase<Key>::insertStructure(const Key & key, common::Structure 
 }
 
 } // namespace detail
+
+template <typename Key>
+UniqueStructureSet<Key>::UniqueStructureSet(IStructureComparatorPtr comparator):
+detail::UniqueStructureSetBase<Key>(comparator)
+{}
 
 template <typename Key>
 UniqueStructureSet<Key>::UniqueStructureSet(const IStructureComparator & comparator):

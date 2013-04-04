@@ -13,8 +13,6 @@
 #include "io/IStructureReader.h"
 #include "io/IStructureWriter.h"
 
-#include <vector>
-
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 

@@ -19,7 +19,9 @@
 
 #include "build_cell/IFragmentGenerator.h"
 #include "build_cell/IStructureGenerator.h"
-#include "build_cell/Types.h"
+#include "build_cell/IUnitCellGenerator.h"
+#include "build_cell/BuildCellFwd.h"
+#include "build_cell/PointGroups.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -27,7 +29,7 @@ namespace sstbx {
 namespace build_cell {
 namespace detail {
 
-class StructureBuilderCore : public IStructureGenerator
+class StructureBuilderCore
 {
 public:
   
@@ -50,7 +52,7 @@ void StructureBuilderCore::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
 
 } // namespace detail
 
-class StructureBuilder : public detail::StructureBuilderCore
+class StructureBuilder : public detail::StructureBuilderCore, public IStructureGenerator
 {
 public:
 
@@ -65,22 +67,18 @@ public:
   void setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator);
   const IUnitCellGenerator * getUnitCellGenerator() const;
 
+  void setPointGroup(const PointGroup & pointGroup);
+  const PointGroup & getPointGroup() const;
+
 private:
+
+  bool chooseSymmetry(StructureBuild & build) const;
+  GenerationOutcome generateSymmetry(StructureBuild & build) const;
+
+  PointGroup myPointGroup;
+  unsigned int myNumSymOps;
+
   IUnitCellGeneratorPtr myUnitCellGenerator;
-};
-
-class AddOnStructureBuilder : public detail::StructureBuilderCore
-{
-public:
-  AddOnStructureBuilder(const IStructureGenerator & generator);
-
-  virtual GenerationOutcome generateStructure(
-    common::StructurePtr & structureOut,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) const;
-
-private:
-  const IStructureGenerator & myGenerator;
 };
 
 }

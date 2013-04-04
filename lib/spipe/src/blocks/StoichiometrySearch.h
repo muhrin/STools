@@ -22,7 +22,7 @@
 // From SSTbx
 #include <build_cell/StructureBuilder.h>
 #include <build_cell/RandomUnitCellGenerator.h>
-#include <build_cell/Types.h>
+#include <build_cell/BuildCellFwd.h>
 #include <common/AtomSpeciesId.h>
 #include <io/BoostFilesystem.h>
 #include <utility/MultiIdxRange.h>
@@ -68,12 +68,13 @@ class StoichiometrySearch : public SpStartBlock, public SpFinishedSink,
 public:
   typedef ::sstbx::build_cell::StructureBuilderPtr StructureBuilderPtr;
   typedef ::std::vector<SpeciesParameter> SpeciesParameters;
+  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
 
   StoichiometrySearch(
     const ::sstbx::common::AtomSpeciesId::Value  species1,
     const ::sstbx::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
-    SpStartBlock &        subpipe,
+    SubpipePtr            subpipe,
     StructureBuilderPtr   structureBuilder = StructureBuilderPtr()
   );
 
@@ -81,7 +82,7 @@ public:
     const SpeciesParameters & speciesParameters,
     const size_t       maxAtoms,
     const double       atomsRadius,
-    SpStartBlock &     subpipe,
+    SubpipePtr         subpipe,
     StructureBuilderPtr structureBuilder = StructureBuilderPtr()
   );
 
@@ -121,7 +122,7 @@ private:
 
   StructureBuilderPtr newStructureGenerator() const;
 
-  SpStartBlock &  mySubpipe;
+  SubpipePtr mySubpipe;
   SpChildRunnerPtr mySubpipeRunner;
 
   // Use this to write out our table data

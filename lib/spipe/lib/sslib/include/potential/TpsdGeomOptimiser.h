@@ -26,9 +26,9 @@
 
 // DEFINES //////////////////////////////////////////////
 
-// FORWARD DECLARATIONS ////////////////////////////////////
-
 namespace sstbx {
+
+// FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
 class UnitCell;
 }
@@ -38,39 +38,45 @@ class TpsdGeomOptimiser : public IGeomOptimiser
 {
 public:
 
+  typedef ::sstbx::UniquePtr<IPotential>::Type PotentialPtr;
+
 	static const unsigned int DEFAULT_MAX_STEPS;
 	static const double	DEFAULT_TOLERANCE;
 
-	TpsdGeomOptimiser(
-		const IPotential & potential,
-		const double tolerance = DEFAULT_TOLERANCE);
+	TpsdGeomOptimiser(PotentialPtr potential);
+
+  double getTolerance() const;
+  void setTolerance(const double tolerance);
+
+  unsigned int getMaxSteps() const;
+  void setMaxSteps(const unsigned int maxSteps);
 
 	// IGeomOptimiser interface //////////////////////////////
+  virtual IPotential * getPotential();
   virtual const IPotential * getPotential() const;
 
-	virtual bool optimise(
+	virtual OptimisationOutcome optimise(
     ::sstbx::common::Structure & structure,
-    const OptimisationSettings & options) const;
-
-	virtual bool optimise(
+    const OptimisationSettings & options
+  ) const;
+	virtual OptimisationOutcome optimise(
 		::sstbx::common::Structure &  structure,
     PotentialData & data,
-    const OptimisationSettings & options) const;
+    const OptimisationSettings & options
+  ) const;
 
 	// End IGeomOptimiser interface
 
-	bool optimise(
+	OptimisationOutcome optimise(
     common::Structure &   structure,
     IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
 		const double          eTol,
     const OptimisationSettings & options) const;
 
-	bool optimise(
+	OptimisationOutcome optimise(
     common::Structure &   structure,
     common::UnitCell &    unitCell,
     IPotentialEvaluator & evaluator,
-		const size_t          maxSteps,
 		const double          eTol,
     const OptimisationSettings & options) const;
 
@@ -83,9 +89,10 @@ private:
 
   bool cellReasonable(const common::UnitCell & unitCell) const;
 
-	const IPotential & myPotential;
+	PotentialPtr myPotential;
 
-	const double myTolerance;
+	double myTolerance;
+  unsigned int myMaxSteps;
 };
 
 }

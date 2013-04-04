@@ -26,7 +26,6 @@ namespace blocks {
 class NiggliReduction : public SpPipeBlock, ::boost::noncopyable
 {
 public:
-
 	NiggliReduction();
 
 	virtual void in(StructureDataType & data);

@@ -26,7 +26,7 @@
 // Local includes
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
-#include "common/Utils.h"
+#include "potential/CombiningRules.h"
 #include "potential/GenericPotentialEvaluator.h"
 #include "potential/IParameterisable.h"
 #include "potential/IPotential.h"
@@ -53,27 +53,13 @@ public:
   typedef SimplePairPotentialData::SpeciesList SpeciesList;
   typedef SimplePairPotentialData DataType;
 
-  /**
-  /* Combining rules for setting off-diagonal length/energy scale terms. See
-  /* http://www.sklogwiki.org/SklogWiki/index.php/Combining_rules
-  /* for good reference.
-  /* If a rule is being used it will overwrite any off diagonal parameters.
-  /**/
-  enum CombiningRule
-  {
-    NONE,
-    LORENTZ,
-    BERTHELOT,
-    LORENTZ_BERTHELOT,
-    CUSTOM
-  };
-
   static const unsigned int MAX_INTERACTION_VECTORS = 5000;
   static const unsigned int MAX_CELL_MULTIPLES = 500;
 
+  static unsigned int numParams(const unsigned int numSpecies);
+
 	SimplePairPotential(
     common::AtomSpeciesDatabase & atomSpeciesDb,
-		const size_t 				          numSpecies,
     const SpeciesList &           speciesList,
 		const ::arma::mat &		        epsilon,
 		const ::arma::mat &		        sigma,
@@ -81,18 +67,15 @@ public:
 		const ::arma::mat &	          beta,
 		const double  			          m,
 		const double 	  		          n,
-    const CombiningRule           combiningRule = NONE);
+    const CombiningRule::Value    combiningRule = CombiningRule::NONE);
 
 	virtual const ::std::string & getName() const;
 
 	// From IParameterisable ////////////////////////////////////////
 
 	virtual size_t getNumParams() const;
-	virtual const ::std::string & getParamString() const;
-	virtual ::arma::vec getParams() const;
-	virtual void setParams(const ::arma::vec & params);
-  virtual std::pair<arma::vec, bool>
-    getParamsFromString(const std::string & str) const;
+  virtual IParameterisable::PotentialParams getParams() const;
+	virtual void setParams(const IParameterisable::PotentialParams & params);
 
 	// End IParameterisable //////////////////////////////////////////
 
@@ -100,6 +83,7 @@ public:
   // From IPotential /////////////
   virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const;
   virtual ::boost::shared_ptr< IPotentialEvaluator > createEvaluator(const sstbx::common::Structure & structure) const;
+  virtual IParameterisable * getParameterisable();
   // End from IPotential /////////
 
   bool evaluate(const common::Structure & structure, SimplePairPotentialData & data) const;
@@ -127,7 +111,7 @@ private:
 
 	/** Potential parameters */
 	size_t					myNumSpecies;
-  SpeciesList     mySpeciesList;
+  const SpeciesList mySpeciesList;
 	::arma::mat			myEpsilon;
 	::arma::mat			mySigma;
 	::arma::mat			myBeta;
@@ -136,7 +120,7 @@ private:
 	/** The powers of the sigma/r terms in the potential */
 	double				myN, myM;
 
-  CombiningRule myCombiningRule;
+  CombiningRule::Value myCombiningRule;
 
   ::arma::mat 	rCutoff;
   ::arma::mat 	rCutoffSq;

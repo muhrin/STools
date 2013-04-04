@@ -15,10 +15,11 @@
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/StructureBuild.h"
 #include "build_cell/StructureContents.h"
+#include "build_cell/SymmetryFunctions.h"
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
-#include "common/Utils.h"
+#include "math/Random.h"
 #include "utility/SharedHandle.h"
 
 namespace sstbx {
@@ -26,7 +27,7 @@ namespace build_cell {
 
 AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
 myAtoms(toCopy.myAtoms),
-myGenerationSphere(toCopy.myGenerationSphere)
+myGenShape(toCopy.myGenShape->clone())
 {}
 
 size_t AtomsGenerator::numAtoms() const
@@ -64,14 +65,14 @@ void AtomsGenerator::eraseAtoms(AtomsGenerator::iterator pos)
   myAtoms.erase(pos);
 }
 
-const AtomsGenerator::OptionalSphere & AtomsGenerator::getGenerationSphere() const
+const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
 {
-  return myGenerationSphere;
+  return myGenShape.get();
 }
 
-void AtomsGenerator::setGenerationSphere(const OptionalSphere & sphere)
+void AtomsGenerator::setGeneratorShape(GenShapePtr shape)
 {
-  myGenerationSphere = sphere;
+  myGenShape = shape;
 }
 
 GenerationOutcome
@@ -81,30 +82,63 @@ AtomsGenerator::generateFragment(
   const common::AtomSpeciesDatabase & speciesDb
 ) const
 {
+  typedef ::std::vector<unsigned int> Multiplicities;
+
   GenerationOutcome outcome;
 
   common::Structure & structure = build.getStructure();
+
+  // Do we have any symmetry?
+  const bool usingSymmetry = build.getSymmetryGroup() != NULL;
+
   // First insert all the atoms into the structure
   AtomPosition position;
+  Multiplicities multiplicities;
+  Multiplicities possibleMultiplicities;
+  if(usingSymmetry)
+  {
+    possibleMultiplicities = build.getSymmetryGroup()->getMultiplicities();
+    possibleMultiplicities.push_back(build.getSymmetryGroup()->numOps());
+  }
+  else
+    possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
   BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
   {
-    for(unsigned int i = 0; i < atomsDesc.getCount(); ++i)
+    if(atomsDesc.getPosition())
+    {
+      // If the atom has a fixed position then we should not apply symmetry
+      // and the multiplicity should be 1
+      // TODO: Check if this position is compatible with our symmetry operators!
+      multiplicities.insert(multiplicities.begin(), atomsDesc.getCount(), 1);
+    }
+    else
+    {
+      multiplicities = symmetry::generateMultiplicities(atomsDesc.getCount(), possibleMultiplicities);
+    }
+
+    if(multiplicities.empty())
+    {
+      outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
+      return outcome;
+    }
+
+    // Go over the multiplicities inserting the atoms
+    BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
     {
       common::Atom & atom = structure.newAtom(atomsDesc.getSpecies());
-      BuildAtomInfo info(atom);
+      BuildAtomInfo & info = build.createAtomInfo(atom);
+      info.setMultiplicity(multiplicity);
 
-      position = generatePosition(atomsDesc, build);
-
+      position = generatePosition(info, atomsDesc, build, multiplicity);
       atom.setPosition(position.first);
       info.setFixed(position.second);
 
       atom.setRadius(getRadius(atomsDesc, speciesDb));
-
-      // Tell the structure build about this atom
-      build.insertAtomInfo(info);
     }
+    multiplicities.clear(); // Reset for next loop
   }
 
+  // Finally solve any atom overlap
   if(build.extrudeAtoms())
     outcome.setSuccess();
   else
@@ -145,13 +179,25 @@ IFragmentGeneratorPtr AtomsGenerator::clone() const
 }
 
 AtomsGenerator::AtomPosition
-AtomsGenerator::generatePosition(const AtomsDescription & atom, const StructureBuild & build) const
+AtomsGenerator::generatePosition(
+  BuildAtomInfo & atomInfo,
+  const AtomsDescription & atom,
+  const StructureBuild & build,
+  const unsigned int multiplicity
+) const
 {
+  SSLIB_ASSERT_MSG(
+    !(multiplicity > 1 && !build.getSymmetryGroup()),
+    "If we have a multiplicity of more than one then there must be a symmetry group"
+  );
+
+  const bool usingSymmetry = build.getSymmetryGroup() != NULL;
+
   AtomPosition position;
-  // Default is not fixex
+  // Default is not fixed
   position.second = false;
 
-  OptionalVec3 optionalPosition;
+  OptionalArmaVec3 optionalPosition;
 
   optionalPosition = atom.getPosition();
   if(optionalPosition)
@@ -162,13 +208,81 @@ AtomsGenerator::generatePosition(const AtomsDescription & atom, const StructureB
   }
   else
   {
-    if(myGenerationSphere)
-      position.first = myGenerationSphere->randomPoint();
-    else
-      position.first = build.getRandomPoint();
+    position.first = getGenShape(build).randomPoint();
+
+    // Do we need to apply symmetry and does the atom need to be on a 'special' position
+    if(usingSymmetry)
+    {
+      if(multiplicity == build.getSymmetryGroup()->numOps())
+      {
+        // Apply all operators (true for entire op mask)
+        atomInfo.setOperatorsMask(::std::vector<bool>(build.getSymmetryGroup()->numOps(), true));
+      }
+      else // Special position
+      {
+        const SymmetryGroup::EigenspacesAndMasks * const spaces =
+          build.getSymmetryGroup()->getEigenspacesAndMasks(multiplicity);
+
+        ::arma::vec3 newPos;
+        SymmetryGroup::OpMask opMask;
+        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build)))
+        {
+          // TODO: return error
+          return position;
+        }
+        
+        // Save the position
+        position.first = newPos;
+        atomInfo.setOperatorsMask(opMask);
+        position.second = true; // Fix the position so it doesn't get moved when extruding atoms
+      }
+    }
   }
 
   return position;
+}
+
+bool AtomsGenerator::generateSpecialPosition(
+  ::arma::vec3 & posOut,
+  SymmetryGroup::OpMask & opMaskOut,
+  const SymmetryGroup::EigenspacesAndMasks & spaces,
+  const IGeneratorShape & genShape) const
+{
+  typedef ::std::vector<size_t> Indices;
+  // Generate a list of the indices
+  Indices indices;
+  for(size_t i = 0; i < spaces.size(); ++i)
+    indices.push_back(i);
+  
+  Indices::iterator it;
+  OptionalArmaVec3 pos;
+  while(!indices.empty())
+  {
+    // Get a random one in the list
+    it = indices.begin() + math::randu<size_t>(indices.size());
+    pos = generateSpeciesPosition(spaces[*it].first, genShape);
+    if(pos)
+    {
+      // Copy over the position and mask
+      posOut = *pos;
+      opMaskOut = spaces[*it].second;
+      return true;
+    }
+    indices.erase(it);
+  }
+  return false; // Couldn't find one
+}
+
+OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
+  const SymmetryGroup::Eigenspace & space,
+  const IGeneratorShape & genShape) const
+{
+  // Select the correct function depending on the number of eigenvectors
+  if(space.n_cols == 1)
+    return genShape.randomPointOnAxis(space);
+  else if(space.n_cols == 2)
+    return genShape.randomPointInPlane(space.col(0), space.col(1));
+  return OptionalArmaVec3(::arma::zeros< ::arma::vec>(3));
 }
 
 double AtomsGenerator::getRadius(
@@ -194,6 +308,14 @@ double AtomsGenerator::getRadius(
   }
 
   return radius;
+}
+
+const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build) const
+{
+  if(myGenShape.get())
+    return *myGenShape;
+  else
+    return build.getGenShape();
 }
 
 }

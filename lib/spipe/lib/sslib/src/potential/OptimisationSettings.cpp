@@ -16,54 +16,6 @@
 namespace sstbx {
 namespace potential {
 
-OptimisationSettings::OptimisationSettings():
-myOptimise(ATOMS_AND_LATTICE)
-{
-  myExternalPressure.zeros();
-}
-
-OptimisationSettings::OptimisationSettings(const Optimise optimise_):
-myOptimise(optimise_),
-myExternalPressure(::arma::zeros< ::arma::mat>(3, 3))
-{}
-
-OptimisationSettings::OptimisationSettings(const Optimise optimise_, const ::arma::mat33 & externalPressure_):
-myOptimise(optimise_),
-myExternalPressure(externalPressure_)
-{}
-
-void OptimisationSettings::setExternalPressure(const ::arma::mat33 & pressure)
-{
-  myExternalPressure = pressure;
-}
-
-const ::arma::mat33 & OptimisationSettings::getExternalPressure() const
-{
-  return myExternalPressure;
-}
-
-void OptimisationSettings::setOptimise(const Optimise & optimise)
-{
-  myOptimise = optimise;
-}
-
-OptimisationSettings::Optimise OptimisationSettings::getOptimise() const
-{
-  return myOptimise;
-}
-
-void OptimisationSettings::setMaxIterations(
-  const OptimisationSettings::OptionalUint & maxIters)
-{
-  myMaxIterations = maxIters;
-}
-
-OptimisationSettings::OptionalUint
-OptimisationSettings::getMaxIterations() const
-{
-  return myMaxIterations;
-}
-
 void
 OptimisationSettings::insertConstraint(OptimisationConstraint & constraint)
 {

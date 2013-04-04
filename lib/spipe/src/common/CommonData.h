@@ -12,6 +12,9 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <string>
+#include <vector>
+
 #include <armadillo>
 
 #include <utility/HeterogeneousMap.h>
@@ -22,19 +25,26 @@
 namespace spipe {
 namespace common {
 
-struct ParamRange
+class ParamRange
 {
+public:
   ParamRange() {}
   ParamRange(const size_t dims);
-  ::arma::vec from;
-  ::arma::vec step;
-  ::arma::Col<unsigned int> nSteps;
+
+  bool fromStrings(const ::std::vector< ::std::string> & paramStrings);
+
+  ::std::vector<double> from;
+  ::std::vector<double> step;
+  ::std::vector<int> nSteps;
+private:
+
+  bool parseParamString(const size_t idx, const ::std::string & paramString);
 };
 
 struct GlobalKeys
 {
   // The current parameterised potential parameters
-  static ::sstbx::utility::Key< ::arma::vec>  POTENTIAL_PARAMS;
+  static ::sstbx::utility::Key< ::std::vector<double> >  POTENTIAL_PARAMS;
   static ::sstbx::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
 
 };

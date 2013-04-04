@@ -1,0 +1,35 @@
+randomStructures:
+  num: 10
+  atomsRadius: 2.5
+  atoms:
+    - spec: 2 Na
+    - spec: Cl
+      radius: 5.0
+    - group:
+        atoms:
+          - spec: 2 Na
+          - spec: Cl
+        genSphere:
+          pos: 2 2 2
+          radius: 5
+
+geomOptimise:
+  optimiser:
+    tpsd:
+      tol:  0.1
+  potential:
+    lennardJones:
+      species:   Na Cl
+      eps:       1 1.5 0.5
+      sig:       2 2 2
+      beta:      1 1 1
+      pow:       6 12
+      combining: none
+  pressure: 0.01
+
+removeDuplicates:
+  comparator:
+    sortedDist:
+	
+output:
+  multiWrite: true

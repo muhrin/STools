@@ -16,12 +16,8 @@
 
 #include <boost/concept_check.hpp>
 #include <boost/concept/assert.hpp>
-#include <boost/foreach.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-
-
-#include "SSLibAssert.h"
 
 namespace sstbx {
 namespace utility {
@@ -36,6 +32,9 @@ class KeyId : private ::boost::noncopyable
 {
 public:
   ~KeyId();
+
+  bool operator ==(const KeyId & rhs) const
+  { return this == &rhs; }
 
 private:
 
@@ -54,18 +53,18 @@ class Key
 {
 public:
   typedef T ValueType;
+  typedef ::boost::shared_ptr<KeyId> Id;
 
   Key():
   myId(new KeyId())
   {}
 
-  Key(Key & toCopy):
+  Key(const Key & toCopy):
   myId(toCopy.myId)
   {}
 
-private:
-
-  typedef ::boost::shared_ptr<KeyId> Id;
+  bool operator ==(const Key<T> & rhs) const
+  { return myId.get() = rhs.myId.get(); }
 
   KeyId * getId()
   { return myId.get(); }
@@ -73,9 +72,8 @@ private:
   const KeyId * getId() const
   { return myId.get(); }
 
+private:  
   Id myId;
-
-  friend class HeterogeneousMap;
 };
 
 template <class Data>
@@ -157,46 +155,9 @@ public:
 };
 
 
-// IMPLEMENTATION /////////////////////////
-
-template <class Data>
-KeyIdEx<Data>::~KeyIdEx()
-{
-  // Remove all entries of ourselves from all the maps
-  HeterogeneousMapEx<Data> * map;
-  BOOST_FOREACH(map, myMaps)
-  {
-    map->erase(*this);
-  }
-}
-
-template <class Data>
-void KeyIdEx<Data>::insertedIntoMap(HeterogeneousMapEx<Data> & map)
-{
-  myMaps.insert(&map);
-}
-
-template <class Data>
-void KeyIdEx<Data>::removedFromMap(HeterogeneousMapEx<Data> & map)
-{
-  typename MapsSet::iterator it = myMaps.find(&map);
-  
-  // We should know that we are in the map at the moment,
-  // otherwise there is a problem
-  SSLIB_ASSERT(it != myMaps.end());
-
-  myMaps.erase(it);
-}
-
-template <typename T, typename Data>
-void StreamableKeyEx<T, Data>::stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const
-{
-  const T * const value = map.find(*this);
-  if(value)
-    stream << *value;
-}
-
 }
 }
+
+#include "utility/detail/HeterogeneousMapKey.h"
 
 #endif /* HETEROGENEOUS_MAP_KEY_H */

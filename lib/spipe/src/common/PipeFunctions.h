@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <string>
 #include <utility>
 
 #include <boost/concept_check.hpp>
@@ -121,7 +122,7 @@ bool setObject(
   return false;
 }
 
-
+::std::string getOutputFileStem(const MemoryAccessType & memory);
 
 }
 }

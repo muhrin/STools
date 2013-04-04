@@ -11,8 +11,10 @@
 // INCLUDES ////////////
 #include "SSLib.h"
 
+#include <algorithm>
 #include <limits>
 #include <ostream>
+#include <vector>
 
 #include <math/RunningStats.h>
 

@@ -8,25 +8,26 @@
 // INCLUEDES /////////////
 #include "build_cell/BuildAtomInfo.h"
 
+#include "SSLibAssert.h"
+#include "build_cell/StructureBuild.h"
 #include "common/Atom.h"
 
 namespace sstbx {
 namespace build_cell {
 
-BuildAtomInfo::BuildAtomInfo(common::Atom & atom, AtomGroupPtr group):
-myAtom(atom),
-myGroup(group),
-myFixed(false)
-{}
-
-common::Atom & BuildAtomInfo::getAtom()
+size_t BuildAtomInfo::getNumAtoms() const
 {
-  return myAtom;
+  return myAtoms.size();
 }
 
-const common::Atom & BuildAtomInfo::getAtom() const
+common::Atom & BuildAtomInfo::getAtom(const size_t i)
 {
-  return myAtom;
+  return *myAtoms[i];
+}
+
+const common::Atom & BuildAtomInfo::getAtom(const size_t i) const
+{
+  return *myAtoms[i];
 }
 
 common::AtomGroup * BuildAtomInfo::getGroup()
@@ -47,6 +48,45 @@ void BuildAtomInfo::setFixed(const bool fixed)
 bool BuildAtomInfo::isFixed() const
 {
   return myFixed;
+}
+
+int BuildAtomInfo::getMultiplicity() const
+{
+  return myMultiplicity;
+}
+
+void BuildAtomInfo::setMultiplicity(const int multiplicity)
+{
+  myMultiplicity = multiplicity;
+}
+
+const BuildAtomInfo::OpMask & BuildAtomInfo::getOpMask() const
+{
+  return myOpMask;
+}
+
+void BuildAtomInfo::setOperatorsMask(const OpMask & opMask)
+{
+  myOpMask = opMask;
+}
+
+BuildAtomInfo::BuildAtomInfo(common::Atom & atom):
+myFixed(false),
+myMultiplicity(1)
+{
+  myAtoms.push_back(&atom);
+}
+
+void BuildAtomInfo::addAtom(common::Atom & atom)
+{
+  myAtoms.push_back(&atom);
+}
+
+void BuildAtomInfo::removeAtom(common::Atom & atom)
+{
+  const AtomsList::iterator it = ::std::find(myAtoms.begin(), myAtoms.end(), &atom);
+  SSLIB_ASSERT(it != myAtoms.end());
+  myAtoms.erase(it);
 }
 
 }

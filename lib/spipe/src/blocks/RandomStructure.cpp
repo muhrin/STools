@@ -36,7 +36,7 @@ namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
 
 RandomStructure::RandomStructure(
-  const unsigned int numToGenerate,
+  const int numToGenerate,
   IStructureGeneratorPtr structureGenerator
 ):
 SpBlock("Generate Random structures"),
@@ -67,11 +67,11 @@ void RandomStructure::start()
 
   if(generator)
   {
-    unsigned int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
+    int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
   	
     float totalAtomsGenerated = 0.0;
     ssbc::GenerationOutcome outcome;
-    for(size_t i = 0; i < numToGenerate; ++i)
+    for(int i = 0; i < numToGenerate; ++i)
     {
 	    // Create the random structure
       ssc::StructurePtr str;
@@ -82,15 +82,12 @@ void RandomStructure::start()
         StructureData & data = getRunner()->createData();
 		    data.setStructure(str);
 
-		    // Build up the name
-			  std::stringstream ss;
-			  ss << ssu::generateUniqueName() << "-" << i;
-			  data.getStructure()->setName(ss.str());
+			  data.getStructure()->setName(generateStructureName(*getRunner(), i));
 
         if(!myFixedNumGenerate)
         {
           totalAtomsGenerated += static_cast<float>(str->getNumAtoms());
-          numToGenerate = static_cast<unsigned int>(std::ceil(
+          numToGenerate = static_cast<int>(std::ceil(
             myAtomsMultiplierGenerate * totalAtomsGenerated /
             static_cast<float>(i))
             );
@@ -152,6 +149,15 @@ RandomStructure::getStructureGenerator() const
   }
 
   return generator;
+}
+
+::std::string RandomStructure::generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const
+{
+  // Build up the name
+  ::std::stringstream ss;
+  ss << /*runner.memory().global().getOutputFileStem().string() <<
+    "-" <<*/ ssu::generateUniqueName() << "-" << structureNum;
+  return ss.str();
 }
 
 }

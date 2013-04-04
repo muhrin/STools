@@ -37,6 +37,10 @@ public:
   static const Enumerator F;
   static const Enumerator NE;
   static const Enumerator NA;
+  static const Enumerator MG;
+  static const Enumerator AL;
+  static const Enumerator SI;
+  static const Enumerator P;
   static const Enumerator CL;
   static const Enumerator CUSTOM_1;
   static const Enumerator CUSTOM_2;

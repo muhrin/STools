@@ -12,17 +12,21 @@
 
 #include "SSLib.h"
 
+#include <boost/noncopyable.hpp>
+
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
-#include "build_cell/Sphere.h"
+#include "build_cell/IGeneratorShape.h"
+#include "build_cell/SymmetryGroup.h"
 
 // FORWARD DECLARES //////////////////////////
 
 namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
+class BuildAtomInfo;
 
-class AtomsGenerator : public IFragmentGenerator
+class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
   typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
   typedef ::std::vector<AtomsDescription> Atoms;
@@ -30,7 +34,7 @@ public:
   typedef IFragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::iterator iterator;
   typedef Atoms::const_iterator const_iterator;
-  typedef ::boost::optional<Sphere> OptionalSphere;
+  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   AtomsGenerator() {}
   AtomsGenerator(const AtomsGenerator & toCopy);
@@ -44,8 +48,8 @@ public:
   iterator addAtoms(const AtomsDescription & atoms);
   void eraseAtoms(iterator pos);
 
-  const OptionalSphere & getGenerationSphere() const;
-  void setGenerationSphere(const OptionalSphere & shere);
+  const IGeneratorShape * getGeneratorShape() const;
+  void setGeneratorShape(GenShapePtr shere);
   
   // From IFragmentGenerator ////////
   virtual GenerationOutcome generateFragment(
@@ -66,14 +70,32 @@ public:
   // End from IFragmentGenerator
 
 private:
-
   typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
 
-  AtomPosition generatePosition(const AtomsDescription & atom, const StructureBuild & build) const;
+  AtomPosition generatePosition(
+    BuildAtomInfo & atomInfo,
+    const AtomsDescription & atom,
+    const StructureBuild & build,
+    const unsigned int multiplicity
+  ) const;
+
+  bool generateSpecialPosition(
+    ::arma::vec3 & posOut,
+    SymmetryGroup::OpMask & opMaskOut,
+    const SymmetryGroup::EigenspacesAndMasks & spaces,
+    const IGeneratorShape & genShape
+  ) const;
+
+  OptionalArmaVec3 generateSpeciesPosition(
+    const SymmetryGroup::Eigenspace & eigenspace,
+    const IGeneratorShape & genShape) const;
+
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
+  const IGeneratorShape & getGenShape(const StructureBuild & build) const;
+
   Atoms myAtoms;
-  OptionalSphere myGenerationSphere;
+  GenShapePtr myGenShape;
   
 };
 

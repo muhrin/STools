@@ -10,6 +10,7 @@
 
 #cmakedefine SSLIB_USE_YAML
 #cmakedefine SSLIB_USE_CGAL
+#cmakedefine SSLIB_USE_LAPACK
 
 #cmakedefine SSLIB_DISABLE_CPP11
 

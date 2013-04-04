@@ -9,6 +9,8 @@
 #define UNIT_CELL_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLibTypes.h"
+
 #include <armadillo>
 
 #include <boost/noncopyable.hpp>
@@ -72,7 +74,11 @@ public:
   double getLongestCellVectorLength() const;
 
   const ::arma::mat33 & getOrthoMtx() const;
-  const void setOrthoMtx(const ::arma::mat33 & orthoMtx);
+  /**
+  /* Set the orthogonalisation matrix.
+  /* Returns false and UnitCell remains unchanged if orthoMtx is singular, true otherwise.
+  /**/
+  bool setOrthoMtx(const ::arma::mat33 & orthoMtx);
 
   const ::arma::mat33 & getFracMtx() const;
 
@@ -145,7 +151,7 @@ public:
     SSLIB_ASSERT(carts.n_rows == 3);
 
     carts = myFracMtx * carts;     // cart to frac
-    carts -= ::arma::floor(carts); // wrap
+    wrapVecsFracInplace(carts);    // wrap
     carts = myOrthoMtx * carts;    // frac to cart.  Simple.
     return carts;
   }
@@ -156,7 +162,6 @@ public:
   inline ::arma::mat & wrapVecsFracInplace(::arma::mat & fracs) const
   {
     SSLIB_ASSERT(fracs.n_rows == 3);
-
     fracs -= ::arma::floor(fracs);
     return fracs;
   }
@@ -168,13 +173,13 @@ public:
 private:
 
   /** Initialise the unit cell from lattice parameters */
-	void init(
+	bool init(
 		const double a, const double b, const double c,
 		const double alpha, const double beta, const double gamma);
 
 	/** Initialise the unit cell from an orthogonalisation matrix */
-  void init(const ::arma::mat33 & orthoMtx);
-	void initOrthoAndFracMatrices();
+  bool init(const ::arma::mat33 & orthoMtx);
+	bool initOrthoAndFracMatrices();
 	void initLatticeParams();
 	void initRest();
 
@@ -188,9 +193,9 @@ private:
 	/** The inverse of the orthogonalisation matrix */
   ::arma::mat33 myFracMtx;
 
-	double	myLatticeParams[6];
+	double myLatticeParams[6];
 
-	double	myVolume;
+	double myVolume;
 
   friend class Structure;
 };

@@ -9,6 +9,8 @@
 #define ATOM_GROUP_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLib.h"
+
 #include <vector>
 
 #include <boost/iterator/indirect_iterator.hpp>

@@ -10,6 +10,9 @@
 
 #include <sstream>
 
+#include "math/Random.h"
+#include "os/Process.h"
+
 // NAMESPACES ////////////////////////////////
 
 namespace sstbx {
@@ -24,20 +27,15 @@ namespace utility {
   result.resize(length);
 
   for(size_t i = 0; i < length; i++)
-    result[i] = charset[rand() % charset.length()];
+    result[i] = charset[math::randu(static_cast<int>(charset.length()))];
 
   return result;
-}
-
-ProcessId getProcessId()
-{
-	return NS_BOOST_IPC_DETAIL::get_current_process_id();
 }
 
 std::string generateUniqueName()
 {
   // Use boost as portable way to get the process id
-  const ProcessId processId = getProcessId();
+  const os::ProcessId processId = os::getProcessId();
   const time_t currTime = time(NULL);
  
   // Build up the name

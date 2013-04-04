@@ -8,35 +8,32 @@
 // INCLUDES //////////////////////////////////
 #include "SSLib.h"
 
-#ifdef SSLIB_USE_YAML
-
 #include "factory/SsLibFactoryYaml.h"
 
 #include <memory>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <yaml-cpp/yaml.h>
-
 // Local includes
 #include "build_cell/AtomsDescription.h"
-#include "build_cell/AtomConstraintDescription.h"
 #include "build_cell/AtomsGenerator.h"
+#include "build_cell/PointGroups.h"
 #include "build_cell/RandomUnitCellGenerator.h"
-#include "build_cell/StructureBuilder.h"
-#include "build_cell/StructureConstraintDescription.h"
 #include "common/AtomSpeciesDatabase.h"
 #include "common/AtomSpeciesId.h"
 #include "factory/FactoryError.h"
-#include "io/AtomYamlFormatParser.h"
+#include "factory/SsLibElements.h"
 #include "io/ResReaderWriter.h"
+#include "potential/CastepGeomOptimiser.h"
+#include "potential/TpsdGeomOptimiser.h"
+#include "potential/Types.h"
 #include "utility/IndexingEnums.h"
 #include "utility/SortedDistanceComparator.h"
-
 
 
 // NAMESPACES ////////////////////////////////
@@ -44,480 +41,306 @@
 namespace sstbx {
 namespace factory {
 
-// namespace aliases
-namespace ssbc  = ::sstbx::build_cell;
-namespace ssc   = ::sstbx::common;
-namespace ssio  = ::sstbx::io;
-namespace ssp   = ::sstbx::potential;
-namespace ssu   = ::sstbx::utility;
-
-namespace kw = sslib_yaml_keywords;
+namespace fs = ::boost::filesystem;
 
 // Boost Tokenizer stuff
 typedef boost::tokenizer<boost::char_separator<char> > Tok;
 const boost::char_separator<char> tokSep(" \t");
 
 SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
-myAtomSpeciesDb(atomSpeciesDb)
+myAtomSpeciesDb(atomSpeciesDb),
+myShapeFactory()
 {}
 
-common::StructurePtr
-SsLibFactoryYaml::createStructure(const YAML::Node & structureNode) const
-{
-  common::StructurePtr structure(new common::Structure());
-
-
-  // TODO: Use StructureYamlGenerator here
-
-  return structure;
-}
-
-common::UnitCellPtr
-SsLibFactoryYaml::createUnitCell(const YAML::Node & cellNode) const
-{
-  common::UnitCellPtr cell;
-
-  if(cellNode[kw::STRUCTURE__CELL__ABC])
-  {
-    const YAML::Node & abcNode = cellNode[kw::STRUCTURE__CELL__ABC];
-
-
-  }
-
-  return cell;
-}
-
-ssbc::RandomUnitCellPtr
-SsLibFactoryYaml::createRandomCellGenerator(const YAML::Node & node) const
+build_cell::RandomUnitCellPtr
+SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
 {
   using namespace utility::cell_params_enum;
 
-  ssbc::RandomUnitCellPtr cell(new ssbc::RandomUnitCellGenerator());
+  build_cell::RandomUnitCellPtr cell(new build_cell::RandomUnitCellGenerator());
 
-  if(node[kw::RANDOM_CELL__ABC])
   {
-    const YAML::Node & paramsNode = node[kw::RANDOM_CELL__ABC];
-
-    if(paramsNode.IsSequence() && paramsNode.size() == 6)
+    const ::std::vector<double> * const abc = map.find(UNIT_CELL_BUILDER_ABC);
+    if(abc)
     {
-      double params[6];
-      for(size_t i = A; i <= GAMMA; ++i)
+      if(abc->size() == 6)
       {
-        try
+        for(size_t i = A; i <= GAMMA; ++i)
         {
-          params[i] = paramsNode[i].as<double>();
+          cell->setMin(i, (*abc)[i]);
+          cell->setMax(i, (*abc)[i]);
         }
-        catch(YAML::TypedBadConversion<double> e)
-        {
-          BOOST_THROW_EXCEPTION(FactoryError() <<
-            ErrorType(MALFORMED_VALUE) <<
-            NodeName(kw::RANDOM_CELL__ABC) <<
-            ProblemValue(paramsNode[i].as< ::std::string>()));
-        }
-        cell->setMin(i, params[i]);
-        cell->setMax(i, params[i]);
       }
     }
-    else
+  }
+
+  {
+    const double * const targetVol = map.find(UNIT_CELL_BUILDER_VOLUME);
+    if(targetVol)
+      cell->setTargetVolume(*targetVol);
+  }
+
+  {
+    const OptionsMap * const angles = map.find(UNIT_CELL_BUILDER_ANGLES);
+    if(angles)
     {
-      BOOST_THROW_EXCEPTION(FactoryError() <<
-        ErrorType(SEQUENCE_LENGTH_INVALID) <<
-        NodeName(kw::RANDOM_CELL__ABC));
+      const double * const min = angles->find(MIN);
+      const double * const max = angles->find(MAX);
+      if(min)
+        cell->setMinAngles(*min);
+      if(max)
+        cell->setMaxAngles(*max);
     }
   }
 
-  OptionalDouble dValue;
-
-  dValue = getNodeChildValueAs<double>(node, kw::RANDOM_CELL__VOL);
-  if(dValue)
   {
-    cell->setTargetVolume(*dValue);
-  }
-
-  if(node[kw::RANDOM_CELL__ANGLES])
-  {
-    const OptionalMinMax<double>::Type minMax = getMinMax<double>(node[kw::RANDOM_CELL__ANGLES]);
-    if(minMax.first)
+    const OptionsMap * const lengths = map.find(UNIT_CELL_BUILDER_ANGLES);
+    if(lengths)
     {
-      cell->setMinAngles(*minMax.first);
-    }
-    if(minMax.second)
-    {
-      cell->setMaxAngles(*minMax.second);
-    }
-  }
-
-  if(node[kw::RANDOM_CELL__LENGTHS])
-  {
-    const YAML::Node & lengths = node[kw::RANDOM_CELL__LENGTHS];
-    const OptionalMinMax<double>::Type minMax = getMinMax<double>(lengths);
-    if(minMax.first)
-    {
-      cell->setMinLengths(*minMax.first);
-    }
-    if(minMax.second)
-    {
-      cell->setMaxLengths(*minMax.second);
-    }
-    dValue = getNodeChildValueAs<double>(lengths, kw::RANDOM_CELL__LENGTHS__MAX_RATIO);
-    if(dValue)
-    {
-      cell->setMaxLengthRatio(dValue);
+      const double * const min = lengths->find(MIN);
+      const double * const max = lengths->find(MAX);
+      const double * const maxRatio = lengths->find(MAX_RATIO);
+      if(min)
+        cell->setMinLengths(*min);
+      if(max)
+        cell->setMaxLengths(*max);
+      if(maxRatio)
+        cell->setMaxLengthRatio(*maxRatio);
     }
   }
 
   return cell;
 }
 
-ssbc::IStructureGeneratorPtr
-SsLibFactoryYaml::createStructureGenerator(const YAML::Node & node)
+build_cell::IStructureGeneratorPtr
+SsLibFactoryYaml::createStructureGenerator(const OptionsMap & map) const
 {
-  //// Make sure we have a structure description node
-  //if(node.Scalar() != kw::STR_DESC)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  build_cell::IStructureGeneratorPtr generator;
 
-  ssbc::IStructureGeneratorPtr generator;
-
-  if(node[kw::RANDOM_STRUCTURE])
+  const OptionsMap * generatorMap = map.find(BUILDER);
+  if(generatorMap)
   {
-    generator = createStructureBuilder(node[kw::RANDOM_STRUCTURE]);
+    generator = createStructureBuilder(*generatorMap);
   }
 
-  // Assign the pointer so the caller gets the object
   return generator;
 }
 
-ssp::IPotential * SsLibFactoryYaml::createPotential(const YAML::Node & node)
+potential::IPotentialPtr
+SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
 {
-  //// Make sure we have a potential node
-  //if(node.Scalar() != kw::POTENTIAL)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  potential::IPotentialPtr pot;
 
-  ssp::IPotential * pot = NULL;
-
-  // First check that we have the keywords that we require in this node
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string potType = node[kw::TYPE].as< ::std::string>();
-
-  if(potType == kw::POTENTIAL__TYPE___PAIR_POT)
+  const OptionsMap * const lj  = potentialOptions.find(LENNARD_JONES);
+  if(lj)
   {
-    // Check all the required keywords are there for the pair potential
-    checkKeyword(kw::POTENTIAL__PAIR_POT__E, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__S, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__CUT, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__B, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__POW, node);
-    checkKeyword(kw::POTENTIAL__PAIR_POT__COMB, node);
 
-    // Let's build it up one by one
-    const ArmaTriangularMat epsilon  = node[kw::POTENTIAL__PAIR_POT__E].as<ArmaTriangularMat>();
-    const ArmaTriangularMat sigma    = node[kw::POTENTIAL__PAIR_POT__S].as<ArmaTriangularMat>();
-    double                  cutoff   = node[kw::POTENTIAL__PAIR_POT__CUT].as<double>();
-    const ArmaTriangularMat beta     = node[kw::POTENTIAL__PAIR_POT__B].as<ArmaTriangularMat>();
-    const ::arma::vec       pow      = node[kw::POTENTIAL__PAIR_POT__POW].as< ::arma::vec>();
-    const ssp::SimplePairPotential::CombiningRule comb =
-      node[kw::POTENTIAL__PAIR_POT__COMB].as<ssp::SimplePairPotential::CombiningRule>();
+    // Get the species list
+    const AtomSpeciesIdVector * const speciesVec = lj->find(SPECIES_LIST);
+    if(!speciesVec)
+      return pot; // TODO: Emit error
 
-    const size_t numSpecies = epsilon.mat.n_rows;
-
-    if((numSpecies != sigma.mat.n_rows) || (numSpecies != beta.mat.n_rows))
+    ::std::vector<common::AtomSpeciesId::Value> species;
+    species.reserve(speciesVec->size());
+    BOOST_FOREACH(const ::std::string & spec, *speciesVec)
     {
-      throw FactoryError() << ErrorType(MALFORMED_VALUE);
+      species.push_back(myAtomSpeciesDb.getIdFromSymbol(spec));
     }
 
-    // TODO: HACK!! Fix this to read in the real values
-    const ::std::vector<ssc::AtomSpeciesId> species;
+    // Build up the potential parameters one by one
+    const ::arma::mat * const epsilon = lj->find(LJ_EPSILON);
+    if(!epsilon)
+      return pot;
 
-    pot = new ssp::SimplePairPotential(
+    const ::arma::mat * const sigma = lj->find(LJ_SIGMA);
+    if(!sigma)
+      return pot;
+
+    const ::arma::mat * const beta = lj->find(LJ_BETA);
+    if(!beta)
+      return pot;
+
+    const ::arma::vec * const pow = lj->find(LJ_POWERS);
+    if(!pow)
+      return pot;
+
+    const double * const cutoff = lj->find(CUTOFF);
+    if(!cutoff)
+      return pot;
+
+    const potential::CombiningRule::Value * const comb = lj->find(POT_COMBINING);
+    if(!comb)
+      return pot;
+
+    const size_t numSpecies = epsilon->n_rows;
+
+    if((numSpecies != sigma->n_rows) || (numSpecies != beta->n_rows))
+      return pot;
+
+    pot.reset(new potential::SimplePairPotential(
       myAtomSpeciesDb,
-      numSpecies,
       species,
-      epsilon.mat,
-      sigma.mat,
-      cutoff,
-      beta.mat,
-      pow(0),
-      pow(1),
-      comb
-    );
-
-    myPotentials.push_back(pot);
+      *epsilon,
+      *sigma,
+      *cutoff,
+      *beta,
+      (*pow)(0),
+      (*pow)(1),
+      *comb
+    ));
   }
-  else
-  {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD) << ProblemValue(potType);
-  }
-
-
 
   return pot;
-
 }
 
 
 
-ssp::IGeomOptimiser * SsLibFactoryYaml::createGeometryOptimiser(const YAML::Node & node)
+SsLibFactoryYaml::GeomOptimiserPtr
+SsLibFactoryYaml::createGeometryOptimiser(
+  const OptionsMap & optimiserMap,
+  const OptionsMap * potentialMap
+) const
 {
-  checkKeyword(kw::TYPE, node);
+  GeomOptimiserPtr opt;
 
-  ssp::IGeomOptimiser * opt = NULL;
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  if(type == kw::OPTIMISER__TYPE___TPSD)
+  const OptionsMap * const tpsdOptions = optimiserMap.find(TPSD);
+  const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
+  if(tpsdOptions)
   {
-    checkKeyword(kw::POTENTIAL, node);
+    // Have to have a potential with this optimiser
+    if(!potentialMap)
+      return opt; // TODO: Emit error
+    potential::IPotentialPtr potential = createPotential(*potentialMap);
+    if(!potential.get())
+      return opt; // TODO: Emit error
 
-    ssp::IPotential * pp = createPotential(node[kw::POTENTIAL]);
+    const double * const tolerance = tpsdOptions->find(TOLERANCE);
+    
+    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
+    if(tolerance)
+      tpsd->setTolerance(*tolerance);
 
-    if(pp)
+    opt = tpsd;      
+  }
+  else if(castepOptions)
+  {
+    const fs::path * const castepExe = castepOptions->find(CASTEP_EXE);
+    const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
+    const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
+    if(castepExe && keepIntermediates && seed)
+      opt.reset(new potential::CastepGeomOptimiser(*castepExe, *seed, *keepIntermediates));
+    else
     {
-      opt = new ssp::TpsdGeomOptimiser(*pp);
+      // TODO: Emit error
     }
   }
-
-  myOptimisers.push_back(opt);
 
   return opt;
 }
 
-::sstbx::utility::IStructureComparator *
-SsLibFactoryYaml::createStructureComparator(const YAML::Node & node)
+utility::IStructureComparatorPtr
+SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
 {
-  //// Make sure we have a structure set node
-  //if(node.Scalar() != kw::STR_COMPARATOR)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
+  utility::IStructureComparatorPtr comparator;
 
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  ssu::IStructureComparator * comparator = NULL;
-
-  if(type == kw::STR_COMPARATOR__TYPE___SORTED_DIST)
+  const OptionsMap * const comparatorMap = map.find(SORTED_DISTANCE);
+  if(comparatorMap)
   {
-    comparator = new ssu::SortedDistanceComparator();
-    myStructureComparators.push_back(comparator);
-  }
-  else
-  {
-    throw FactoryError() << ErrorType(UNRECOGNISED_KEYWORD);
+    const double  * const tolerance = map.find(TOLERANCE);
+    const bool * const volAgnostic = map.find(SORTED_DISTANCE__VOLUME_AGNOSTIC);
+    const bool * const usePrimitive = map.find(SORTED_DISTANCE__USE_PRIMITIVE);
+    
+    // Create with the given options (if any)
+    if(tolerance && volAgnostic && usePrimitive)
+      comparator.reset(new utility::SortedDistanceComparator(*tolerance, *volAgnostic, *usePrimitive));
+    else if(tolerance && volAgnostic)
+      comparator.reset(new utility::SortedDistanceComparator(*tolerance, *volAgnostic));
+    else if(tolerance)
+      comparator.reset(new utility::SortedDistanceComparator(*tolerance));
+    else
+      comparator.reset(new utility::SortedDistanceComparator());
   }
 
   return comparator;
 }
 
-SsLibFactoryYaml::UniqueStructureSetPtr
-SsLibFactoryYaml::createStructureSet(const YAML::Node & node)
-{
-  //// Make sure we have a structure set node
-  //if(node.Scalar() != kw::STR_SET)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  // First try to create the comparator
-  checkKeyword(kw::STR_COMPARATOR, node);
-
-  ssu::IStructureComparator * const comparator = createStructureComparator(node[kw::STR_COMPARATOR]);
-
-  UniqueStructureSetPtr strSet;
-  if(comparator)
-  {
-    strSet.reset(new ssu::UniqueStructureSet<>(*comparator));
-  }
-  
-  return strSet;
-}
-
-::sstbx::io::IStructureWriter *
-SsLibFactoryYaml::createStructureWriter(const YAML::Node & node)
-{
-  //// Make sure we have a structure writer tag
-  //if(node.Scalar() != kw::STR_SET)
-  //{
-  //  throw FactoryError() << ErrorType(BAD_TAG) << NodeName(node.Scalar());
-  //}
-
-  // Check we have the required keywords
-  checkKeyword(kw::TYPE, node);
-
-  const ::std::string type = node[kw::TYPE].as< ::std::string>();
-
-  ssio::IStructureWriter * writer = NULL;
-  if(type == kw::STR_WRITER__TYPE___RES)
-  {
-    writer = new ssio::ResReaderWriter();
-  }
-
-  if(writer)
-    myStructureWriters.push_back(writer);
-
-  return writer;
-}
-
-void SsLibFactoryYaml::checkKeyword(
-  const kw::KwTyp & kw,
-  const YAML::Node & node) const
-{
-  if(!node[kw])
-    throw FactoryError() << ErrorType(REQUIRED_KEYWORD_MISSING);
-}
-
-
-ssbc::StructureConstraintDescription *
-SsLibFactoryYaml::createStructureConstraintDescription(const YAML::Node & descNode) const
-{
-  // TODO: No structure constraint
-  return NULL;
-}
-
-SsLibFactoryYaml::OptionalNode
-SsLibFactoryYaml::getChildNode(const YAML::Node & parent, const ::std::string & childNodeName) const
-{
-  OptionalNode childNode;
-
-  if(parent[childNodeName])
-  {
-    childNode.reset(parent[childNodeName]);
-  }
-
-  return childNode;
-}
-
-SsLibFactoryYaml::OptionalAtomSpeciesCount
-SsLibFactoryYaml::parseAtomTypeString(const ::std::string & atomSpecString) const
-{
-  OptionalAtomSpeciesCount atomSpeciesCount;
-
-  const Tok tok(atomSpecString, tokSep);
-
-  Tok::const_iterator it = tok.begin();
-
-  AtomSpeciesCount type;
-  type.second = 1;
-  bool successful = false;
-  if(it != tok.end())
-  {
-    try
-    {
-      type.second = ::boost::lexical_cast<unsigned int>(*it);
-      ++it;
-    }
-    catch(::boost::bad_lexical_cast)
-    {}
-
-    if(it != tok.end())
-    {
-      type.first = myAtomSpeciesDb.getIdFromSymbol(*it);
-      if(type.first != common::AtomSpeciesId::DUMMY)
-        successful = true;
-    }
-  }
-
-  if(successful)
-    atomSpeciesCount.reset(type);
-
-  return atomSpeciesCount;
-}
-
 SsLibFactoryYaml::StructureContentType::Value
-SsLibFactoryYaml::getStructureContentType(const YAML::Node & node) const
+SsLibFactoryYaml::getStructureContentType(const AtomsDataEntry & atomsEntry) const
 {
-  if(node[kw::STRUCTURE__ATOMS__SPEC] || node.IsSequence())
+  // If it is a list then we know it's a compact atoms info object
+  if(::boost::get<AtomsCompactInfo>(&atomsEntry))
     return StructureContentType::ATOMS;
-  if(node[kw::RANDOM_STRUCTURE__ATOMS__GROUP])
-    return StructureContentType::GROUP;
+
+  const OptionsMap * const map = ::boost::get<OptionsMap>(&atomsEntry);
+  if(map)
+  {
+    if(map->find(SPECIES))
+      return StructureContentType::ATOMS;
+    else if(map->find(ATOMS_GROUP))
+      return StructureContentType::GROUP;
+  }
 
   return StructureContentType::UNKNOWN;
 }
 
 build_cell::AtomsDescriptionPtr
 SsLibFactoryYaml::createAtomsDescription(
-  const YAML::Node & descNode,
-  const io::AtomYamlFormatParser & parser,
-  const AtomsDefaults & defaults) const
+  const AtomsDataEntry & atomsEntry,
+  const io::AtomFormatParser & parser) const
 {
-  std::string sValue;
+  build_cell::AtomsDescriptionPtr atomsDescription;
 
-  io::AtomYamlFormatParser::AtomInfo atomsInfo;
-  if(!parser.parse(atomsInfo, descNode))
-  {
-    // TODO: Throw exception
-  }
-  io::AtomYamlFormatParser::AtomInfo::const_iterator it, end = atomsInfo.end();
+  ::boost::optional<AtomSpeciesCount> speciesAndCount = parser.getValue(SPECIES, atomsEntry);
+  if(!speciesAndCount)
+    return atomsDescription;
 
-  unsigned int nAtoms = defaults.count;
-  ssc::AtomSpeciesId::Value species;
-  if(defaults.species)
-    species = *defaults.species;
+  const common::AtomSpeciesId::Value species =
+    myAtomSpeciesDb.getIdFromSymbol(speciesAndCount->species);
+  atomsDescription.reset(new build_cell::AtomsDescription(species, speciesAndCount->count));
 
-
-  it = atomsInfo.find(kw::STRUCTURE__ATOMS__SPEC);
-  if(it != end)
-  {
-    sValue = it->second.as< ::std::string>();
-    OptionalAtomSpeciesCount atomSpeciesCount = parseAtomTypeString(sValue);
-    if(atomSpeciesCount)
-    {
-      species = atomSpeciesCount->first;
-      nAtoms = atomSpeciesCount->second;
-    }
-  }
-
-  build_cell::AtomsDescriptionPtr atomsDescription(new build_cell::AtomsDescription(species, nAtoms));
-
-  // If there is a default atoms radii first set that and then try to see if there
-  // is a specific one for this atom
-  if(defaults.radius)
-    atomsDescription->setRadius(*defaults.radius);
-
-  it = atomsInfo.find(kw::RANDOM_STRUCTURE__ATOMS__RADIUS);
-  if(it != end)
-  {
-    atomsDescription->setRadius(it->second.as<double>());
-  }
-
+  ::boost::optional<double> radius = parser.getValue(RADIUS, atomsEntry);
+  if(radius)
+    atomsDescription->setRadius(*radius);
 
   return atomsDescription;
 }
 
 build_cell::StructureBuilderPtr
-SsLibFactoryYaml::createStructureBuilder(const YAML::Node & node) const
+SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
 {
-  build_cell::StructureBuilderPtr builder(new ssbc::StructureBuilder());
+  build_cell::StructureBuilderPtr builder(new build_cell::StructureBuilder());
 
-  const OptionalDouble atomsRadii = getNodeChildValueAs<double>(node, kw::RANDOM_STRUCTURE__ATOMS_RADII);
+  io::AtomFormatParser atomsFormatParser;
+  {
+    const io::AtomFormatParser::FormatDescription * const format = map.find(ATOMS_FORMAT);
+    if(format)
+      atomsFormatParser.setFormat(*format);
+  }
 
-  io::AtomYamlFormatParser atomsFormatParser;
-  if(node[kw::STRUCTURE__ATOMS_FORMAT])
-    atomsFormatParser.updateFormat(node[kw::STRUCTURE__ATOMS_FORMAT]);
+  {
+    const double * const atomsRadius = map.find(RADIUS);
+    if(atomsRadius)
+      atomsFormatParser.setDefault(RADIUS, *atomsRadius);
+  }
 
-  // Generators 
-  if(node[kw::RANDOM_STRUCTURE__ATOMS])
+  // Generators
+  const AtomsDataEntryList * const atoms = map.find(ATOMS);
+  if(atoms)
   {
     // Try creating the default atoms generator
     {
-      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(node, atomsFormatParser);
+      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(map, atomsFormatParser);
       if(atomsGenerator.get())
         builder->addGenerator(atomsGenerator);
     }
 
-    const YAML::Node & atomsNode = node[kw::RANDOM_STRUCTURE__ATOMS];
-
     // Now look for other generators
-    BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
+    BOOST_FOREACH(const AtomsDataEntry & atomsEntry, *atoms)
     {
-      if(getStructureContentType(atomNode) == StructureContentType::GROUP)
+      if(getStructureContentType(atomsEntry) == StructureContentType::GROUP)
       {
-        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(atomNode, atomsFormatParser);
+        const OptionsMap * const groupOptions = ::boost::get<OptionsMap>(atomsEntry).find(ATOMS_GROUP);
+        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(*groupOptions, atomsFormatParser);
         if(atomsGenerator.get())
           builder->addGenerator(atomsGenerator);
       }
@@ -525,10 +348,25 @@ SsLibFactoryYaml::createStructureBuilder(const YAML::Node & node) const
   }
 
   // Unit cell
-  if(node[kw::RANDOM_CELL])
+  const OptionsMap * unitCellBuilder = map.find(UNIT_CELL_BUILDER);
+  if(unitCellBuilder)
   {
-    build_cell::IUnitCellGeneratorPtr ucGen(createRandomCellGenerator(node[kw::RANDOM_CELL]));
-    builder->setUnitCellGenerator(ucGen);
+    build_cell::IUnitCellGeneratorPtr ucGen(createRandomCellGenerator(*unitCellBuilder));
+    if(ucGen.get())
+      builder->setUnitCellGenerator(ucGen);
+  }
+
+  // Symmetry
+  const OptionsMap * const symmetry = map.find(SYMMETRY);
+  if(symmetry)
+  {
+    const ::std::string * const pointGroup = symmetry->find(POINT_GROUP);
+    if(pointGroup)
+    {
+      build_cell::PointGroup group;
+      if(build_cell::getPointGroup(group, *pointGroup))
+        builder->setPointGroup(group);
+    }
   }
 
   return builder;
@@ -536,47 +374,40 @@ SsLibFactoryYaml::createStructureBuilder(const YAML::Node & node) const
 
 build_cell::AtomsGeneratorPtr
 SsLibFactoryYaml::createAtomsGenerator(
-  const YAML::Node & node,
-  const io::AtomYamlFormatParser & atomsFormatParser,
-  AtomsDefaults defaults
+  const OptionsMap & map,
+  io::AtomFormatParser & parser
 ) const
 {
   build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator());
 
-  if(node[kw::RANDOM_STRUCTURE__ATOMS_RADII])
-    defaults.radius = node[kw::RANDOM_STRUCTURE__ATOMS_RADII].as<double>();
+  // Check if there is a 'global' radius
+  {
+    const double * const radius = map.find(RADIUS);
+    if(radius)
+      parser.setDefault(RADIUS, *radius);
+  }
 
   ///////////
   // Atoms
-  if(node[kw::RANDOM_STRUCTURE__ATOMS])
+  const AtomsDataEntryList * const atomsList = map.find(ATOMS);
+  if(atomsList)
   {
-    const YAML::Node & atomsNode = node[kw::RANDOM_STRUCTURE__ATOMS];
-
-    if(atomsNode.IsSequence())
-    {
-      BOOST_FOREACH(const YAML::Node & atomNode, atomsNode)
+      BOOST_FOREACH(const AtomsDataEntry & atomData, *atomsList)
       {
-        if(getStructureContentType(atomNode) == StructureContentType::ATOMS)
-          atomsGenerator->addAtoms(*createAtomsDescription(atomNode, atomsFormatParser, defaults));
+        if(getStructureContentType(atomData) == StructureContentType::ATOMS)
+        {
+          build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
+          if(atomsDescription.get())
+            atomsGenerator->addAtoms(*atomsDescription);
+        }
       }
-    }
-    else
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
   }
 
-  if(node[kw::RANDOM_STRUCTURE__ATOMS__GEN_SPHERE])
-  {
-    try
-    {
-      atomsGenerator->setGenerationSphere(
-        node[kw::RANDOM_STRUCTURE__ATOMS__GEN_SPHERE].as<build_cell::Sphere>()
-      );
-    }
-    catch(const YAML::Exception & /*exception*/)
-    {
-      BOOST_THROW_EXCEPTION(FactoryError() << ErrorType(MALFORMED_VALUE));
-    }
-  }
+  // Try creating a generator shape
+  UniquePtr<build_cell::IGeneratorShape>::Type shape;
+  myShapeFactory.createShape(shape, map);
+  if(shape.get())
+    atomsGenerator->setGeneratorShape(shape);
 
   return atomsGenerator;
 }
@@ -585,4 +416,3 @@ SsLibFactoryYaml::createAtomsGenerator(
 }
 
 
-#endif /* SSLIB_USE_YAML */

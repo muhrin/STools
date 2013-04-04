@@ -23,6 +23,7 @@
 #include <potential/PotentialData.h>
 
 #include "SpTypes.h"
+#include "potential/Types.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -46,14 +47,14 @@ class PotentialGo : public SpPipeBlock, ::boost::noncopyable
 public:
 
 	PotentialGo(
-    const ::sstbx::potential::IGeomOptimiser &  optimiser,
-    const bool                                  writeOutput = true
+    ::sstbx::potential::IGeomOptimiserPtr optimiser,
+    const bool writeOutput = true
   );
 
 	PotentialGo(
-    const ::sstbx::potential::IGeomOptimiser &  optimiser,
+    ::sstbx::potential::IGeomOptimiserPtr optimiser,
     const ::sstbx::potential::OptimisationSettings & optimisationParams,
-    const bool                                  writeOutput = true
+    const bool writeOutput = true
   );
 
   // From Block ///////////////////////////////
@@ -66,6 +67,10 @@ public:
 
 protected:
 
+  ::sstbx::potential::IGeomOptimiser & getOptimiser();
+  ::spipe::utility::DataTableSupport & getTableSupport();
+
+
   virtual void copyOptimisationResults(
     const sstbx::potential::PotentialData & optData,
     sstbx::common::Structure & structure);
@@ -74,14 +79,15 @@ protected:
 
   // Should we write information about structures being optimised
   // to file.
-  const bool                               myWriteOutput;
+  const bool myWriteOutput;
 
-	const sstbx::potential::IGeomOptimiser & myOptimiser;
   const ::sstbx::potential::OptimisationSettings  myOptimisationParams;
-  ::arma::mat33                            myExternalPressure;
+
+private:
+  const sstbx::potential::IGeomOptimiserPtr myOptimiser;
 
   // Use a table to store data about structure that are being optimised
-  ::spipe::utility::DataTableSupport       myTableSupport;
+  ::spipe::utility::DataTableSupport myTableSupport;
 
 };
 

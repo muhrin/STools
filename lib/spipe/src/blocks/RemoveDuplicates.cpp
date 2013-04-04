@@ -28,7 +28,12 @@ namespace ssc = ::sstbx::common;
 namespace ssu = ::sstbx::utility;
 namespace structure_properties = ssc::structure_properties;
 
-RemoveDuplicates::RemoveDuplicates(sstbx::utility::IStructureComparator & comparator):
+RemoveDuplicates::RemoveDuplicates(ssu::IStructureComparatorPtr comparator):
+SpBlock("Remove duplicates"),
+myStructureSet(comparator)
+{}
+
+RemoveDuplicates::RemoveDuplicates(const sstbx::utility::IStructureComparator & comparator):
 SpBlock("Remove duplicates"),
 myStructureSet(comparator)
 {}

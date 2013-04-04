@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "PotentialGo.h"
 
+#include <iostream>
 #include <locale>
 #include <set>
 
@@ -26,6 +27,7 @@
 #include <potential/IGeomOptimiser.h>
 #include <potential/IPotential.h>
 
+#include "common/PipeFunctions.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
 #include "common/UtilityFunctions.h"
@@ -42,17 +44,18 @@ namespace ssp = ::sstbx::potential;
 namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
-	const sstbx::potential::IGeomOptimiser & optimiser,
-  const bool                               writeOutput):
+  sstbx::potential::IGeomOptimiserPtr optimiser,
+  const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
-myWriteOutput(writeOutput)
+myWriteOutput(writeOutput),
+myOptimisationParams()
 {}
 
 PotentialGo::PotentialGo(
-	const sstbx::potential::IGeomOptimiser & optimiser,
+	sstbx::potential::IGeomOptimiserPtr optimiser,
   const ::sstbx::potential::OptimisationSettings & optimisationParams,
-  const bool                               writeOutput):
+  const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
 myWriteOutput(writeOutput),
@@ -62,9 +65,7 @@ myOptimisationParams(optimisationParams)
 void PotentialGo::pipelineInitialising()
 {
   if(myWriteOutput)
-  {
-    myTableSupport.setFilename(getRunner()->memory().shared().getOutputFileStem().string() + ".geomopt");
-  }
+    myTableSupport.setFilename(common::getOutputFileStem(getRunner()->memory()) + ".geomopt");
   myTableSupport.registerRunner(*getRunner());
 }
 
@@ -72,7 +73,8 @@ void PotentialGo::in(spipe::common::StructureData & data)
 {
   ssp::PotentialData optData;
   ssc::Structure * const structure = data.getStructure();
-	if(myOptimiser.optimise(*structure, optData, myOptimisationParams))
+  const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure, optData, myOptimisationParams);
+	if(outcome.isSuccess())
   {
     // Copy over information from the optimisation results
     copyOptimisationResults(optData, *structure);
@@ -84,9 +86,20 @@ void PotentialGo::in(spipe::common::StructureData & data)
   }
   else
   {
+    ::std::cerr << "Optimisation failed: " << outcome.getMessage() << ::std::endl;
     // The structure failed to geometry optimise properly so drop it
     getRunner()->dropData(data);
   }
+}
+
+ssp::IGeomOptimiser & PotentialGo::getOptimiser()
+{
+  return *myOptimiser;
+}
+
+::spipe::utility::DataTableSupport & PotentialGo::getTableSupport()
+{
+  return myTableSupport;
 }
 
 void PotentialGo::copyOptimisationResults(

@@ -9,8 +9,9 @@
 #define SPHERE_H
 
 // INCLUDES /////////////////////////////////
-
 #include "SSLib.h"
+
+#include <armadillo>
 
 // FORWARD DECLARES //////////////////////////
 

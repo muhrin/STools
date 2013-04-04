@@ -96,6 +96,7 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
 {
   typedef spipe::SpSingleThreadedEngine Engine;
   typedef Engine::RunnerPtr RunnerPtr;
+  typedef ::spipe::SpPipe Pipe;
 
   // SETTINGS ////
   SpeciesParameters speciesParams;
@@ -103,15 +104,20 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
   speciesParams.push_back(SpeciesParameter(ssc::AtomSpeciesId::CL, 13));
 
 
-  blocks::RandomStructure randomStructure(static_cast<unsigned int>(1));
-  blocks::StoichiometrySearch stoichSearch(speciesParams, 1000, 0.5, randomStructure);
+  ::sstbx::UniquePtr<Pipe>::Type searchPipe(new Pipe());
+  blocks::RandomStructure * const randomStructure = searchPipe->addBlock(new blocks::RandomStructure(1));
+  searchPipe->setStartBlock(randomStructure);
+
+  Pipe stoichPipe;
+  blocks::StoichiometrySearch * const stoichSearch = stoichPipe.addBlock(new blocks::StoichiometrySearch(speciesParams, 1000, 0.5, searchPipe));
+  stoichPipe.setStartBlock(stoichSearch);
 
   Engine engine;
   RunnerPtr runner = engine.createRunner();
 
   StoichiometrySink sink(speciesParams);
   runner->setFinishedDataSink(&sink);
-  runner->run(stoichSearch);
+  runner->run(stoichPipe);
 
   sink.doFinishedCheck();
 }

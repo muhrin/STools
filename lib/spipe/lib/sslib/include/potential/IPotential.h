@@ -18,18 +18,16 @@
 #include <common/AtomSpeciesId.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
+
 namespace sstbx {
 namespace common {
 class Structure;
 }
 namespace potential {
+
+class IParameterisable;
 class IPotentialInfo;
 class IPotentialEvaluator;
-}
-}
-
-namespace sstbx {
-namespace potential {
 
 class IPotential
 {
@@ -50,6 +48,8 @@ public:
   virtual ::boost::optional<double> getPotentialRadius(const ::sstbx::common::AtomSpeciesId::Value id) const = 0;
 
   virtual ::boost::shared_ptr<IPotentialEvaluator> createEvaluator(const sstbx::common::Structure & structure) const = 0;
+
+  virtual IParameterisable * getParameterisable() = 0;
 };
 
 }

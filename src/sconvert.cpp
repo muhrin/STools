@@ -72,7 +72,10 @@ int main(const int argc, char * argv[])
 
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
-    rwMan.writeStructure(structure, fileOut, speciesDb);
+    if(!rwMan.writeStructure(structure, fileOut, speciesDb))
+    {
+      ::std::cerr << "Failed to write structure to " << fileOut << ::std::endl;
+    }
   }
 
   return 0;

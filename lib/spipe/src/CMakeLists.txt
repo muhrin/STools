@@ -4,7 +4,6 @@
 set(spipe_Header_Files__blocks
   blocks/DetermineSpaceGroup.h
   blocks/EdgeDetect.h
-  blocks/LoadPotStructures.h
   blocks/LoadSeedStructures.h
   blocks/LowestFreeEnergy.h
   blocks/MakeConvexHull.h
@@ -22,7 +21,6 @@ source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 
 set(spipe_Source_Files__blocks
   blocks/DetermineSpaceGroup.cpp
-  blocks/LoadPotStructures.cpp
   blocks/LoadSeedStructures.cpp
   blocks/LowestFreeEnergy.cpp
   blocks/MakeConvexHull.cpp
@@ -44,13 +42,10 @@ set(spipe_Header_Files__common
   common/CommonData.h
   common/GlobalData.h
   common/PipeBuilder.h
-  common/PipeFactoryYaml.h
   common/PipeFunctions.h
   common/SharedData.h
   common/StructureData.h
   common/UtilityFunctions.h
-  common/YamlInputObjectAdapter.h
-  common/YamlInputObjectIteratorAdapter.h
 )
 source_group("Header Files\\common" FILES ${spipe_Header_Files__common})
 
@@ -58,15 +53,28 @@ set(spipe_Source_Files__common
   common/CommonData.cpp
   common/GlobalData.cpp
   common/PipeBuilder.cpp
-  common/PipeFactoryYaml.cpp
   common/PipeFunctions.cpp
   common/SharedData.cpp
   common/StructureData.cpp
   common/UtilityFunctions.cpp
-  common/YamlInputObjectAdapter.cpp
-  common/YamlInputObjectIteratorAdapter.cpp
 )
 source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
+
+## spipe/factory/
+
+set(spipe_Header_Files__factory
+  factory/MapEntries.h
+  factory/Factory.h
+  factory/YamlSchema.h
+)
+source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
+
+set(spipe_Source_Files__factory
+  factory/MapEntries.cpp
+  factory/Factory.cpp
+  factory/YamlSchema.cpp
+)
+source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 
 ## spipe/utility/
 
@@ -106,6 +114,7 @@ source_group("Source Files" FILES ${spipe_Source_Files__})
 set(spipe_Header_Files
   ${spipe_Header_Files__blocks}
   ${spipe_Header_Files__common}
+  ${spipe_Header_Files__factory}
   ${spipe_Header_Files__utility}
   ${spipe_Header_Files__}
 )
@@ -113,6 +122,7 @@ set(spipe_Header_Files
 set(spipe_Source_Files
   ${spipe_Source_Files__blocks}
   ${spipe_Source_Files__common}
+  ${spipe_Source_Files__factory}
   ${spipe_Source_Files__utility}
   ${spipe_Source_Files__}
 )

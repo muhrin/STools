@@ -12,8 +12,7 @@
 #include "build_cell/GenerationOutcome.h"
 #include "build_cell/StructureContents.h"
 #include "common/UnitCell.h"
-#include "common/Utils.h"
-
+#include "math/Random.h"
 
 namespace sstbx {
 namespace build_cell {
@@ -24,7 +23,7 @@ const double RandomUnitCellGenerator::DEFAULT_MIN_LENGTH = 0.25;
 const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCellGenerator::DEFAULT_VOLUME_DELTA = 0.25;
-const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 6.0;
+const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 4.0;
 
 RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMin(const size_t param) const
 {
@@ -231,14 +230,14 @@ double RandomUnitCellGenerator::generateParameter(const size_t param) const
     const double min = myParameters[param].first ? *myParameters[param].first : DEFAULT_MIN_LENGTH;
     const double max = myParameters[param].second ? *myParameters[param].second : DEFAULT_MAX_LENGTH;
 
-    return common::randDouble(min, max);
+    return math::randu(min, max);
   }
   else
   {
     const double min = myParameters[param].first ? *myParameters[param].first : DEFAULT_MIN_ANGLE;
     const double max = myParameters[param].second ? *myParameters[param].second : DEFAULT_MAX_ANGLE;
 
-    return common::randDouble(min, max);    
+    return math::randu(min, max);    
   }
 }
 
@@ -326,8 +325,7 @@ double RandomUnitCellGenerator::generateVolume(const double overrideVolume) cons
   }
 
   const double delta = myVolumeDelta ? *myVolumeDelta : DEFAULT_VOLUME_DELTA;
-
-  return common::randDouble(target * (1.0 - delta), target * (1 + delta));
+  return math::randu(target * (1.0 - delta), target * (1 + delta));
 }
 
 RandomUnitCellGenerator::MinMaxIndex RandomUnitCellGenerator::getMinMaxLengths(const double (&params)[6]) const

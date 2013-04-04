@@ -9,6 +9,8 @@
 #define ATOM_H
 
 // INCLUDES ///////////////////////////////////
+#include "SSLib.h"
+
 #include "common/AtomSpeciesId.h"
 
 #include <armadillo>

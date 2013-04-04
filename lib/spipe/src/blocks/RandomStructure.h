@@ -19,19 +19,13 @@
 #include <boost/variant.hpp>
 
 // From SSTbx
-#include <build_cell/Types.h>
+#include <build_cell/BuildCellFwd.h>
 
 #include <pipelib/pipelib.h>
 
 #include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-
-namespace sstbx {
-namespace build_cell {
-class IStructureGenerator;
-}
-}
 
 namespace spipe {
 namespace blocks {
@@ -44,7 +38,7 @@ public:
   typedef ::sstbx::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
 	RandomStructure(
-    const unsigned int numToGenerate,
+    const int numToGenerate,
     IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr()
   );
 
@@ -66,10 +60,11 @@ private:
   typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
   const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
+  ::std::string generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const;
 
 	const IStructureGeneratorPtr myStructureGenerator;
   const bool myFixedNumGenerate;
-  const unsigned int myNumToGenerate;
+  const int myNumToGenerate;
   const float myAtomsMultiplierGenerate;
 };
 

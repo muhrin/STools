@@ -10,6 +10,8 @@
 
 // From SSTbx
 #include <SSLibTypes.h>
+#include <io/CastepReader.h>
+#include <io/CellReaderWriter.h>
 #include <io/StructureReadWriteManager.h>
 #include <io/ResReaderWriter.h>
 #include <io/SslibReaderWriter.h>
@@ -30,6 +32,8 @@ namespace ssio = ::sstbx::io;
 
 void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
 {
+  rwMan.insert(::sstbx::makeUniquePtr(new ssio::CastepReader()));
+  rwMan.insert(::sstbx::makeUniquePtr(new ssio::CellReaderWriter()));
   rwMan.insert(::sstbx::makeUniquePtr(new ssio::ResReaderWriter()));
   rwMan.insert(::sstbx::makeUniquePtr(new ssio::SslibReaderWriter()));
   rwMan.insert(::sstbx::makeUniquePtr(new ssio::XyzReaderWriter()));

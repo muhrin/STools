@@ -37,6 +37,7 @@ typedef pipelib::FinishedSink<StructureDataType>                                
 typedef SpFinishedSink::PipelineDataPtr                                          SpStructureDataPtr;
 typedef pipelib::PipeBlock<StructureDataType, SharedDataType, GlobalDataType>    SpPipeBlock;
 typedef pipelib::StartBlock<StructureDataType, SharedDataType, GlobalDataType>   SpStartBlock;
+typedef pipelib::Pipe<StructureDataType, SharedDataType, GlobalDataType>         SpPipe;
 
 // Pipe engine and runner
 typedef pipelib::PipeRunner<StructureDataType, SharedDataType, GlobalDataType>   SpRunner;

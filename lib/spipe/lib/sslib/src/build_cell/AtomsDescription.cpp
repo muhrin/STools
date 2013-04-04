@@ -9,8 +9,6 @@
 // INCLUDES /////////////////
 #include "build_cell/AtomsDescription.h"
 
-#include "build_cell/AtomConstraintDescription.h"
-
 #include "common/AtomSpeciesId.h"
 
 namespace sstbx {
@@ -26,32 +24,6 @@ AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  
 mySpecies(species),
 myCount(count)
 {}
-//
-//const AtomConstraintDescription *
-//AtomsDescription::getAtomConstraint(const ConstraintDescriptionId id) const
-//{
-//	AtomCMap::const_iterator it = myAtomConstraints.find(id);
-//	if(it == myAtomConstraints.end())
-//		return NULL;
-//
-//	return it->second;
-//}
-//
-//void AtomsDescription::addAtomConstraint(AtomConstraintDescription * const atomConstraint)
-//{
-//	myAtomConstraints.insert(atomConstraint->getType(), atomConstraint);
-//}
-//
-//bool AtomsDescription::removeAtomConstraint(const AtomConstraintDescription * const atomConstraint)
-//{
-//	AtomCMap::iterator it =	myAtomConstraints.find(atomConstraint->getType());
-//
-//	if(it == myAtomConstraints.end() || (*it).second != atomConstraint) return false;
-//
-//	myAtomConstraints.erase(it);
-//
-//	return true;
-//}
 
 const ::sstbx::common::AtomSpeciesId::Value & AtomsDescription::getSpecies() const
 {
@@ -83,12 +55,12 @@ void AtomsDescription::setRadius(const OptionalDouble radius)
   myRadius = radius;
 }
 
-const OptionalVec3 & AtomsDescription::getPosition() const
+const OptionalArmaVec3 & AtomsDescription::getPosition() const
 {
   return myPosition;
 }
 
-void AtomsDescription::setPosition(const OptionalVec3 & pos)
+void AtomsDescription::setPosition(const OptionalArmaVec3 & pos)
 {
   myPosition = pos;
 }
