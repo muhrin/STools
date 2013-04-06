@@ -258,7 +258,7 @@ bool CastepRun::finishedSuccessfully()
   if(result != CastepRunResult::SUCCESS)
     return false;
 
-  const ::std::string lastLine = io::getLastLine(myCastepFileStream);
+  const ::std::string lastLine = io::getLastNonEmptyLine(myCastepFileStream);
 
   return ::boost::ifind_first(lastLine, "Peak") || ::boost::ifind_first(lastLine, "Total");
 }

@@ -41,6 +41,7 @@ bool findFirstFloat(
 );
 
 ::std::string getLastLine(::std::istream & is);
+::std::string getLastNonEmptyLine(::std::istream & is);
 
 }
 }
