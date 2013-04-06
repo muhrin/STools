@@ -86,17 +86,15 @@ bool convert< ::sstbx::factory::AtomSpeciesCount>::decode(
   if(!node.IsScalar())
     return false;
 
-  static const ::boost::regex RE_SPECIES_COUNT("([[:alpha:]]+)[[:blank:]]*(" + ssio::PATTERN_RANGE + ")");
+  static const ::boost::regex RE_SPECIES_COUNT("([[:alpha:]]+)[[:blank:]]*(" + ssio::PATTERN_RANGE + ")?");
 
   const ::std::string speciesString = node.Scalar();
-
-
   ::boost::smatch match;
   if(::boost::regex_search(speciesString, match, RE_SPECIES_COUNT))
   {
+    rhs.count.set(1, 1); // Assume just one atom
     rhs.species.assign(match[1].first, match[1].second);
-    rhs.count.set(1, 1);
-    if(match.size() > 2)
+    if(match[2].matched)
     {
       // We maybe have a count range, so make a node and use the
       // current transcoding to parse that

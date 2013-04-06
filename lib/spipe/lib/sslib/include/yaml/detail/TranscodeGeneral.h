@@ -109,7 +109,8 @@ bool convert< ::sstbx::utility::Range<T> >::decode(const Node & node, ::sstbx::u
   ::boost::smatch match;
   if(::boost::regex_search(rangeString, match, RE_RANGE))
   {
-    if(match.size() == 2)
+    // Did we only match the first number?
+    if(match[1].matched && !match[3].matched)
     { // Has single number
       const ::std::string lower(match[1].first, match[1].second);
       try
@@ -121,7 +122,7 @@ bool convert< ::sstbx::utility::Range<T> >::decode(const Node & node, ::sstbx::u
       catch(const ::boost::bad_lexical_cast & /*e*/)
       {}
     }
-    else if(match.size() >= 5)
+    else if(match[1].matched && match[4].matched)
     { // Has number x0-x1
       const ::std::string lower(match[1].first, match[1].second);
       const ::std::string upper(match[4].first, match[4].second);
