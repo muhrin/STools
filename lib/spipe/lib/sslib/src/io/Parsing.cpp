@@ -140,7 +140,7 @@ bool findFirstFloat(
   {
     // Get the current character
     is.get(ch);
-    notEmpty |= (::std::isspace(ch) != 0);
+    notEmpty |= (::std::isspace(ch) == 0);
 
     // Are we at or before the first character
     if((int)is.tellg() <= 1)
