@@ -17,7 +17,11 @@ namespace sstbx {
 
 namespace io {
 
-bool findFirstLine(
+extern const ::std::string PATTERN_FLOAT;
+extern const ::std::string PATTERN_RANGE;
+extern const ::std::string PATTERN_RANGE_CAPTURE;
+
+bool findNextLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
   const ::std::string & token,

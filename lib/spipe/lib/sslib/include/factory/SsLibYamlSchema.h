@@ -263,6 +263,7 @@ struct Builder : public yaml_schema::SchemaHeteroMap
       new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >()
     );
     addScalarEntry("atomsRadius", RADIUS);
+    addScalarEntry("cluster", CLUSTER)->element()->defaultValue(true);
     addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
     addEntry("genSphere", GEN_SPHERE, new GenSphere());
     addEntry("genBox", GEN_BOX, new GenBox());

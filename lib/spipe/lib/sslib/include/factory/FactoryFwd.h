@@ -18,6 +18,7 @@
 
 #include <armadillo>
 
+#include "build_cell/AtomsDescription.h"
 #include "common/AtomSpeciesId.h"
 #include "utility/HeterogeneousMap.h"
 
@@ -42,7 +43,7 @@ struct AtomSpeciesCount
   AtomSpeciesCount(): count(1) {}
   //common::AtomSpeciesId::Value species;
   AtomSpeciesIdType species;
-  unsigned int count;
+  build_cell::AtomsDescription::CountRange count;
 };
 
 struct MinMax

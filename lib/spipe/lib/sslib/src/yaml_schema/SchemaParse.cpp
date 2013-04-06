@@ -31,14 +31,16 @@ void SchemaParseError::print() const
   ::std::cout << myPath << ": " << myMessage << " code: " << myCode << ::std::endl;
 }
 
-void SchemaParse::pushPath(const std::string & path)
+SchemaParse::PathPusher::PathPusher(SchemaParse & parse, const ::std::string & path):
+myParse(parse),
+myPath(path)
 {
-  myParsePath.push_back(path);
+  myParse.pushPath(myPath);
 }
 
-void SchemaParse::popPath()
+SchemaParse::PathPusher::~PathPusher()
 {
-  myParsePath.pop_back();
+  myParse.popPath();
 }
 
 bool SchemaParse::hasErrors() const
@@ -54,7 +56,7 @@ const SchemaParse::ParseErrors & SchemaParse::getErrors() const
 ::std::string SchemaParse::pathString() const
 {
   ::std::stringstream ss;
-  for(size_t i = 0; i < myParsePath.size() - 1; ++i)
+  for(size_t i = 0; i < myParsePath.size(); ++i)
   {
     ss << myParsePath[i] << ".";
   }
@@ -79,6 +81,16 @@ void SchemaParse::printErrors() const
   {
     error.print();
   }
+}
+
+void SchemaParse::pushPath(const std::string & path)
+{
+  myParsePath.push_back(path);
+}
+
+void SchemaParse::popPath()
+{
+  myParsePath.pop_back();
 }
 
 }

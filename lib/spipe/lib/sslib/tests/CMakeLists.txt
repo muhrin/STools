@@ -46,12 +46,23 @@ set(tests_Input_Files__factory
   factory/RandomStructure.sslib
 )
 
-# tests/factory
+# tests/io
 
 set(tests_Source_Files__io
   io/ReaderWriterTest.cpp
 )
 source_group("Source Files\\io" FILES ${tests_Source_Files__io})
+
+# tests/potential
+
+set(tests_Source_Files__potential
+  potential/CastepGeomOptimiserTest.cpp
+)
+source_group("Source Files\\potential" FILES ${tests_Source_Files__potential})
+set(tests_Input_Files__potential
+  potential/input/successful.castep
+  potential/input/successful-out.cell
+)
 
 ## tests/utility
 
@@ -94,6 +105,7 @@ set(tests_Source_Files
   ${tests_Source_Files__common}
   ${tests_Source_Files__factory}
   ${tests_Source_Files__io}
+  ${tests_Source_Files__potential}
   ${tests_Source_Files__utility}
   ${tests_Source_Files__}
 )
@@ -114,7 +126,10 @@ file(COPY
   ${tests_Input_Files__utility}
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
 )
-
+file(COPY
+  ${tests_Input_Files__potential}
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
+)
 
 #########################
 ## Include directories ##

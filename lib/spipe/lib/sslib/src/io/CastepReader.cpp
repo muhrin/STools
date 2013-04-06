@@ -18,6 +18,7 @@
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
+#include "io/Parsing.h"
 #include "utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
@@ -35,9 +36,8 @@ const ::std::string CastepReader::CELL_TITLE("Unit Cell");
 const ::std::string CastepReader::CONTENTS_TITLE("Cell Contents");
 const ::std::string CastepReader::CONTENTS_BOX_BEGIN("x----------------------------------------------------------x");
 const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
-const ::std::string CastepReader::RE_FLOAT("[-+]?[0-9]*\\.?[0-9]+");
-const ::boost::regex CastepReader::RE_LATTICE_PARAM("[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + RE_FLOAT + ")[[:blank:]]*[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + RE_FLOAT + ")");
-const ::boost::regex CastepReader::RE_ATOM_INFO("x[[:blank:]]*([[:word:]]+)[[:blank:]]+[[:digit:]]+[[:blank:]]+(" + RE_FLOAT + ")[[:blank:]]+(" + RE_FLOAT + ")[[:blank:]]+(" + RE_FLOAT + ")");
+const ::boost::regex CastepReader::RE_LATTICE_PARAM("[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")[[:blank:]]*[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")");
+const ::boost::regex CastepReader::RE_ATOM_INFO("x[[:blank:]]*([[:word:]]+)[[:blank:]]+[[:digit:]]+[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")");
 
 ::std::vector<std::string> CastepReader::getSupportedFileExtensions() const
 {

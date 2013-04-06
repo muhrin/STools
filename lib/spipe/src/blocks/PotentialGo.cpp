@@ -71,14 +71,10 @@ void PotentialGo::pipelineInitialising()
 
 void PotentialGo::in(spipe::common::StructureData & data)
 {
-  ssp::PotentialData optData;
   ssc::Structure * const structure = data.getStructure();
-  const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure, optData, myOptimisationParams);
+  const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure, myOptimisationParams);
 	if(outcome.isSuccess())
   {
-    // Copy over information from the optimisation results
-    copyOptimisationResults(optData, *structure);
-
     // Update our data table with the structure data
     updateTable(*structure);
 
@@ -100,26 +96,6 @@ ssp::IGeomOptimiser & PotentialGo::getOptimiser()
 ::spipe::utility::DataTableSupport & PotentialGo::getTableSupport()
 {
   return myTableSupport;
-}
-
-void PotentialGo::copyOptimisationResults(
-  const sstbx::potential::PotentialData & optData,
-  ssc::Structure & structure)
-{
-  // Copy over information from the optimisation results
-
-  // Internal energy
-  structure.setProperty(
-    structure_properties::general::ENERGY_INTERNAL,
-    optData.internalEnergy
-  );
-
-  // Pressure
-  const double pressure = ::arma::trace(optData.stressMtx) / 3.0;
-  structure.setProperty(
-    structure_properties::general::PRESSURE_INTERNAL,
-    pressure
-  );
 }
 
 void PotentialGo::updateTable(const ssc::Structure & structure)

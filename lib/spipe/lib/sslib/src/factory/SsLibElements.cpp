@@ -51,6 +51,7 @@ utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
 
 // STRUCTURE BUILDER //////////////////////////////
 utility::Key<utility::HeterogeneousMap> BUILDER;
+utility::Key<bool> CLUSTER;
 utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
 utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;

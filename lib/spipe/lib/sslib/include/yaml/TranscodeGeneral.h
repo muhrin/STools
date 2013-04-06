@@ -13,10 +13,13 @@
 
 #ifdef SSLIB_USE_YAML
 
+#include <boost/regex.hpp>
+
 #include <armadillo>
 
 #include <yaml-cpp/yaml.h>
 
+#include "utility/Range.h"
 #include "yaml/HelperTypes.h"
 
 // NAMESPACES ////////////////////////////////
@@ -55,6 +58,12 @@ struct convert< ::sstbx::yaml::ArmaTriangularMat>
   static bool decode(const Node & node, ::sstbx::yaml::ArmaTriangularMat & rhs);
 };
 
+template <typename T>
+struct convert< ::sstbx::utility::Range<T> >
+{
+  static Node encode(const ::sstbx::utility::Range<T> & rhs);
+  static bool decode(const Node & node, ::sstbx::utility::Range<T> & rhs);
+};
 
 }
 

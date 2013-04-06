@@ -63,7 +63,7 @@ void RandomStructure::start()
 {
 	using ::spipe::common::StructureData;
 
-  const ssbc::IStructureGenerator * const generator = getStructureGenerator();
+  ssbc::IStructureGenerator * const generator = getStructureGenerator();
 
   if(generator)
   {
@@ -103,8 +103,7 @@ void RandomStructure::start()
 
 void RandomStructure::in(::spipe::common::StructureData & data)
 {
-  const ssbc::IStructureGenerator * const generator = getStructureGenerator();
-
+  ssbc::IStructureGenerator * const generator = getStructureGenerator();
   if(!generator)
   {
     out(data);
@@ -135,10 +134,10 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		getRunner()->dropData(data);
 }
 
-const ::sstbx::build_cell::IStructureGenerator *
-RandomStructure::getStructureGenerator() const
+::sstbx::build_cell::IStructureGenerator *
+RandomStructure::getStructureGenerator()
 {
-  const ssbc::IStructureGenerator * generator = NULL;
+  ssbc::IStructureGenerator * generator = NULL;
   if(myStructureGenerator.get())
     generator = myStructureGenerator.get();
   else
@@ -155,8 +154,7 @@ RandomStructure::getStructureGenerator() const
 {
   // Build up the name
   ::std::stringstream ss;
-  ss << /*runner.memory().global().getOutputFileStem().string() <<
-    "-" <<*/ ssu::generateUniqueName() << "-" << structureNum;
+  ss << ssu::generateUniqueName(0) << "-" << structureNum;
   return ss.str();
 }
 

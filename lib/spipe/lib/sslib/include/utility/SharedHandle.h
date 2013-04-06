@@ -23,8 +23,9 @@ template <typename Id, class Notifiee>
 class SharedHandle
 {
   BOOST_CONCEPT_ASSERT((::boost::CopyConstructible<Id>));
-
 public:
+  typedef Id IdType;
+
   SharedHandle();
   SharedHandle(const Id id, Notifiee * notifiee = NULL);
   SharedHandle(const SharedHandle & other);

@@ -66,14 +66,8 @@ public:
   // End from PipeBlock ///////////////////////
 
 protected:
-
   ::sstbx::potential::IGeomOptimiser & getOptimiser();
   ::spipe::utility::DataTableSupport & getTableSupport();
-
-
-  virtual void copyOptimisationResults(
-    const sstbx::potential::PotentialData & optData,
-    sstbx::common::Structure & structure);
 
   void updateTable(const sstbx::common::Structure & structure);
 
@@ -88,7 +82,6 @@ private:
 
   // Use a table to store data about structure that are being optimised
   ::spipe::utility::DataTableSupport myTableSupport;
-
 };
 
 }

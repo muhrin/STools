@@ -13,6 +13,9 @@
 // INCLUDES /////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <boost/concept/assert.hpp>
+#include "boost/concept_check.hpp"
+
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace sstbx {
@@ -22,6 +25,8 @@ template <typename T>
 class Range
 {
 public:
+  BOOST_CONCEPT_ASSERT((::boost::LessThanComparable<T>));
+
   typedef T ValueType;
 
   static Range make(const T & x0, const T & x1)
@@ -29,10 +34,20 @@ public:
     return Range(x0, x1);
   }
 
+  Range() {}
+
+  explicit Range(const T & x)
+  {
+    set(x, x);
+  }
+
   Range(const T & x0, const T & x1)
   {
     set(x0, x1);
   }
+
+  bool nullSpan() const
+  { return myLower == myUpper; }
 
   T lower() { return myLower; }
   const T & lower() const { return myLower; }
@@ -44,8 +59,8 @@ public:
 
   void set(const T & x0, const T & x1)
   {
-    myLower = x0 < x1 : x0 : x1;
-    myUpper = x0 < x1 : x1 : x0;
+    myLower = x0 < x1 ? x0 : x1;
+    myUpper = x0 < x1 ? x1 : x0;
   }
 
 private:

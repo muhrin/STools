@@ -9,6 +9,7 @@
 // INCLUDES /////////////////
 #include "build_cell/AtomsDescription.h"
 
+#include "SsLibAssert.h"
 #include "common/AtomSpeciesId.h"
 
 namespace sstbx {
@@ -17,10 +18,14 @@ namespace build_cell {
 AtomsDescription::AtomsDescription():
 mySpecies(sstbx::common::AtomSpeciesId::DUMMY),
 myCount(1)
-{
-}
+{}
 
 AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  species, const size_t count):
+mySpecies(species),
+myCount(count)
+{}
+
+AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  species, const CountRange count):
 mySpecies(species),
 myCount(count)
 {}
@@ -35,14 +40,23 @@ void AtomsDescription::setSpecies(const ::sstbx::common::AtomSpeciesId::Value  s
 	mySpecies = species;
 }
 
-size_t AtomsDescription::getCount() const
+AtomsDescription::CountRange AtomsDescription::getCount() const
 {
 	return myCount;
 }
 
-void AtomsDescription::setCount(const size_t newCount)
+void AtomsDescription::setCount(const int count)
 {
-	myCount = newCount;
+  SSLIB_ASSERT(count > 0);
+
+	myCount.set(count, count);
+}
+
+void AtomsDescription::setCount(const CountRange count)
+{
+  SSLIB_ASSERT(count.lower() >= 0);
+
+	myCount = count;
 }
 
 const OptionalDouble & AtomsDescription::getRadius() const

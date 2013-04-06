@@ -16,6 +16,8 @@
 
 #include <armadillo>
 
+#include "OptionalTypes.h"
+#include "common/Structure.h"
 #include "common/Types.h"
 #include "utility/Outcome.h"
 
@@ -29,7 +31,6 @@ namespace common {
 class Structure;
 }
 namespace potential {
-struct PotentialData;
 class IPotential;
 struct OptimisationSettings;
 
@@ -38,12 +39,32 @@ struct OptimisationError
   enum Value
   {
     FAILED_TO_CONVERGE,
+    PROBLEM_WITH_STRUCTURE,
     ERROR_EVALUATING_POTENTIAL,
     INTERNAL_ERROR
   };
 };
 
 typedef utility::OutcomeWithErrorCode<OptimisationError::Value> OptimisationOutcome;
+
+struct OptimisationData
+{
+  OptionalDouble internalEnergy;
+  OptionalDouble enthalpy;
+  OptionalDouble pressure;
+  OptionalArmaMat33 pressureMtx;
+  OptionalArmaMat33 stressMtx;
+  OptionalArmaMat ionicForces;
+
+  void saveToStructure(common::Structure & structure) const;
+private:
+  template <typename T>
+  void setProperty(
+    common::Structure & structure,
+    utility::Key<T> & key,
+    const ::boost::optional<T> & value
+  ) const;
+};
 
 class IGeomOptimiser
 {
@@ -65,10 +86,32 @@ public:
   ) const = 0;
 	virtual OptimisationOutcome optimise(
 		common::Structure & structure,
-    PotentialData & data,
+    OptimisationData & data,
     const OptimisationSettings & options
   ) const = 0;
 };
+
+inline void OptimisationData::saveToStructure(common::Structure & structure) const
+{
+  namespace properties = common::structure_properties;
+
+  setProperty(structure, properties::general::ENERGY_INTERNAL, internalEnergy);
+  setProperty(structure, properties::general::ENTHALPY, enthalpy);
+  setProperty(structure, properties::general::PRESSURE_INTERNAL, pressure);
+}
+
+template <typename T>
+void OptimisationData::setProperty(
+  common::Structure & structure,
+  utility::Key<T> & key,
+  const ::boost::optional<T> & value
+) const
+{
+  if(value)
+    structure.setProperty(key, *value);
+  else
+    structure.eraseProperty(key);
+}
 
 }
 }

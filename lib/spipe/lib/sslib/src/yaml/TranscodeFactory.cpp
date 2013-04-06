@@ -9,9 +9,12 @@
 #include "yaml/TranscodeFactory.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 
 #include "factory/SsLibYamlKeywords.h"
+#include "io/Parsing.h"
+#include "yaml/TranscodeGeneral.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -61,11 +64,14 @@ Node convert< ::sstbx::factory::AtomSpeciesCount>::encode(const ::sstbx::factory
   ::std::stringstream ss;
   ss << rhs.species;
   
-  // Don't bother printing if only 1
-  if(rhs.count != 1)
+  // Don't bother printing if it's a null span and the count is 1
+  if(!(rhs.count.nullSpan() && rhs.count.lower() == 1))
   {
-    ss << " " << rhs.count;
+    Node range;
+    range = rhs.count; // Use existing range transcoding
+    ss << range.Scalar();
   }
+
   node = ss.str();
 
   return node;
@@ -74,34 +80,41 @@ Node convert< ::sstbx::factory::AtomSpeciesCount>::encode(const ::sstbx::factory
 bool convert< ::sstbx::factory::AtomSpeciesCount>::decode(
   const Node & node, ::sstbx::factory::AtomSpeciesCount & rhs)
 {
-  typedef boost::tokenizer< ::boost::char_separator<char> > Tok;
-  const boost::char_separator<char> tokSep(" \t");
+  namespace ssbc = ::sstbx::build_cell;
+  namespace ssio = ::sstbx::io;
 
-  const ::std::string species(node.as< ::std::string>());
-  const Tok tok(species, tokSep);
+  if(!node.IsScalar())
+    return false;
 
-  Tok::const_iterator it = tok.begin();
+  static const ::boost::regex RE_SPECIES_COUNT("([[:alpha:]]+)[[:blank:]]*(" + ssio::PATTERN_RANGE + ")");
 
-  if(it != tok.end())
+  const ::std::string speciesString = node.Scalar();
+
+
+  ::boost::smatch match;
+  if(::boost::regex_search(speciesString, match, RE_SPECIES_COUNT))
   {
-    rhs.species = *it;
-
-    if(++it != tok.end())
+    rhs.species.assign(match[1].first, match[1].second);
+    rhs.count.set(1, 1);
+    if(match.size() > 2)
     {
+      // We maybe have a count range, so make a node and use the
+      // current transcoding to parse that
+      const ::std::string count(match[2].first, match[2].second);
+      Node countNode;
+      countNode = count;
       try
       {
-        rhs.count = ::boost::lexical_cast<unsigned int>(*it);
+        rhs.count = countNode.as<ssbc::AtomsDescription::CountRange>();
       }
-      catch(::boost::bad_lexical_cast)
+      catch(const YAML::Exception & /*e*/)
       {
         return false;
       }
     }
+    return true;
   }
-  else
-    return false;
-
-  return true;
+  return false;
 }
 
 }

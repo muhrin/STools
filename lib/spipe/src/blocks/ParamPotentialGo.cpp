@@ -90,6 +90,15 @@ void ParamPotentialGo::pipelineStarting()
   PotentialGo::pipelineStarting();
 }
 
+void ParamPotentialGo::in(spipe::common::StructureData & data)
+{
+  // Add the potential parameters to the structure data
+  data.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = myCurrentParams;
+
+  // Let our parent class deal with it
+  PotentialGo::in(data);
+}
+
 void ParamPotentialGo::init()
 {
   SSLIB_ASSERT_MSG(
@@ -97,17 +106,6 @@ void ParamPotentialGo::init()
     "Must use geometry optimiser with parameterisable potential."
   );
   myParamPotential = getOptimiser().getPotential()->getParameterisable();
-}
-
-void ParamPotentialGo::copyOptimisationResults(
-  const sstbx::potential::PotentialData & optData,
-  spipe::common::StructureData & strData)
-{
-  // Copy over information from the optimisation results
-  PotentialGo::copyOptimisationResults(optData, *strData.getStructure());
-
-  // Add the potential parameters to its data
-  strData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = myCurrentParams;
 }
 
 void ParamPotentialGo::setPotentialParams(const PotentialParams & params)

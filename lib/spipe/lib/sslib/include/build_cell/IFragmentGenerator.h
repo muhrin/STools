@@ -39,7 +39,7 @@ public:
     const common::AtomSpeciesDatabase & speciesDb
   ) const = 0;
 
-  virtual GenerationTicket getTicket() const = 0;
+  virtual GenerationTicket getTicket() = 0;
   virtual StructureContents getGenerationContents(
     const GenerationTicket ticket,
     const common::AtomSpeciesDatabase & speciesDb

@@ -23,7 +23,11 @@
 namespace sstbx {
 namespace io {
 
-bool findFirstLine(
+const ::std::string PATTERN_FLOAT("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
+const ::std::string PATTERN_RANGE(PATTERN_FLOAT + "[[:blank:]]*(~[[:blank:]]*" + PATTERN_FLOAT + ")?");
+const ::std::string PATTERN_RANGE_CAPTURE("(" + PATTERN_FLOAT + ")[[:blank:]]*(~[[:blank:]]*(" + PATTERN_FLOAT + "))?");
+
+bool findNextLine(
   ::std::string & matchingLine,
   ::std::istream & inputStream,
   const ::std::string & token,

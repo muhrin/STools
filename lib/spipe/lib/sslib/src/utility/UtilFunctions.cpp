@@ -32,7 +32,7 @@ namespace utility {
   return result;
 }
 
-std::string generateUniqueName()
+std::string generateUniqueName(const size_t randPostfixLength)
 {
   // Use boost as portable way to get the process id
   const os::ProcessId processId = os::getProcessId();
@@ -40,7 +40,7 @@ std::string generateUniqueName()
  
   // Build up the name
   std::stringstream ss;	//create a stringstream
-  ss << processId << "-" << currTime << "-" << randomString(4);
+  ss << processId << "-" << currTime << randomString(randPostfixLength);
 
   return ss.str();
 }

@@ -37,11 +37,9 @@ public:
   void addGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
 protected:
-
   typedef ::boost::ptr_vector<IFragmentGenerator> Generators;
 
   Generators myGenerators;
-  
 };
 
 template <class T>
@@ -55,20 +53,22 @@ void StructureBuilderCore::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
 class StructureBuilder : public detail::StructureBuilderCore, public IStructureGenerator
 {
 public:
-
-  StructureBuilder() {}
+  StructureBuilder();
   StructureBuilder(const StructureBuilder & toCopy);
   
   virtual GenerationOutcome generateStructure(
     common::StructurePtr & structureOut,
     const common::AtomSpeciesDatabase & speciesDb
-  ) const;
+  );
 
   void setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator);
   const IUnitCellGenerator * getUnitCellGenerator() const;
 
   void setPointGroup(const PointGroup & pointGroup);
   const PointGroup & getPointGroup() const;
+
+  void setCluster(const bool isCluster);
+  bool isCluster() const;
 
 private:
 
@@ -77,6 +77,7 @@ private:
 
   PointGroup myPointGroup;
   unsigned int myNumSymOps;
+  bool myIsCluster;
 
   IUnitCellGeneratorPtr myUnitCellGenerator;
 };

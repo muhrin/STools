@@ -33,6 +33,7 @@ extern utility::NamedKey<unsigned int>       SPACEGROUP_NUMBER;
 extern utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL;
 extern utility::NamedKey<double>             PRESSURE_INTERNAL;
 extern utility::NamedKey<double>             ENERGY_INTERNAL;
+extern utility::NamedKey<double>             ENTHALPY;
 
 
 } // namespace general

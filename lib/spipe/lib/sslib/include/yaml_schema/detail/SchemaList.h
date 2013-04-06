@@ -72,13 +72,11 @@ bool SchemaList<EntrySchema>::nodeToValue(
   {
     ::std::stringstream ss;
     ss << "[" << i << "]";
-    parse.pushPath(ss.str());
+    SchemaParse::PathPusher pusher(parse, ss.str());
 
     ListEntryType entryValue;
     if(myEntrySchema.nodeToValue(parse, entryValue, node[i], useDefaultOnFail))
       list.push_back(entryValue);
-
-    parse.popPath();
   }
   return true;
 }

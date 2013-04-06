@@ -22,7 +22,8 @@
 namespace sstbx {
 namespace utility {
 
-std::string generateUniqueName();
+  
+std::string generateUniqueName(const size_t randPostfixLength = 4);
 
 }
 }

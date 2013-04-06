@@ -175,7 +175,7 @@ void Structure::setPropertyFromString(utility::Key<T> & key, const ::std::string
 template <typename T>
 bool Structure::eraseProperty(utility::Key<T> & key)
 {
-  myTypedProperties.erase(key);
+  return myTypedProperties.erase(key) != 0;
 }
 
 }

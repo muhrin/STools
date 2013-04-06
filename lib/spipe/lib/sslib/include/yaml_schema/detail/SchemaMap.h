@@ -148,7 +148,7 @@ bool SchemaHeteroMapEntry<T>::nodeToValue(
   const bool useDefaultOnFail
 ) const
 {
-  parse.pushPath(getName());
+  SchemaParse::PathPusher pusher(parse, getName());
 
   if(!node.IsDefined())
   {
@@ -168,8 +168,6 @@ bool SchemaHeteroMapEntry<T>::nodeToValue(
   
   if(succeeded)
     map.insert(myKey, value);
-
-  parse.popPath();
 
   return succeeded;
 }

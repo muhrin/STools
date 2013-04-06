@@ -59,7 +59,7 @@ public:
 private:
   typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
-  const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
+  ::sstbx::build_cell::IStructureGenerator * getStructureGenerator();
   ::std::string generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const;
 
 	const IStructureGeneratorPtr myStructureGenerator;

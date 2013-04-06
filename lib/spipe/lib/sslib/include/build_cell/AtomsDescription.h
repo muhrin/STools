@@ -16,6 +16,7 @@
 
 #include "OptionalTypes.h"
 #include "common/AtomSpeciesId.h"
+#include "utility/Range.h"
 
 // FORWARD DECLARES ///////////
 namespace sstbx {
@@ -30,18 +31,25 @@ namespace build_cell {
 class AtomsDescription
 {
 public:
+  typedef utility::Range<int> CountRange;
 
 	AtomsDescription();
 	AtomsDescription(
     const common::AtomSpeciesId::Value species,
-    const size_t count = 1);
+    const size_t count = 1
+  );
+	AtomsDescription(
+    const common::AtomSpeciesId::Value species,
+    const CountRange count
+  );
 	virtual ~AtomsDescription() {}
 
 	const common::AtomSpeciesId::Value & getSpecies() const;
 	void setSpecies(const common::AtomSpeciesId::Value species);
 
-	size_t getCount() const;
-	void setCount(const size_t newCount);
+	CountRange getCount() const;
+	void setCount(const int count);
+  void setCount(const CountRange count);
 
   const OptionalDouble & getRadius() const;
   void setRadius(const OptionalDouble radius);
@@ -50,12 +58,10 @@ public:
   void setPosition(const OptionalArmaVec3 & pos);
 
 private:
-
   ::sstbx::common::AtomSpeciesId::Value	mySpecies;
   OptionalDouble myRadius;
   OptionalArmaVec3 myPosition;
-	size_t myCount;
-
+	CountRange myCount;
 };
 
 

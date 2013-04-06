@@ -56,15 +56,15 @@ public:
 	virtual void pipelineStarting();
   // End from Block ////////////////////
 
+  // From PipeBlock ///////////////////////////
+	virtual void in(spipe::common::StructureData & data);
+  // End from PipeBlock ///////////////////////
+
 private:
 
   typedef ::std::vector<double> PotentialParams;
 
   void init();
-
-  virtual void copyOptimisationResults(
-    const sstbx::potential::PotentialData & optData,
-    spipe::common::StructureData & strData);
 
   void setPotentialParams(const PotentialParams & params);
 

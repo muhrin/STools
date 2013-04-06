@@ -87,7 +87,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
 
   ::std::string line;
   ::boost::smatch match;
-  if(findFirstLine(line, is, "%BLOCK lattice_", false))
+  if(findNextLine(line, is, "%BLOCK lattice_", false))
   {
     // Unit cell
     if(::boost::ifind_first(line, "_abc"))
@@ -154,7 +154,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
   if(!unitCell)
     return common::types::StructurePtr();
 
-  if(findFirstLine(line, is, "%BLOCK positions_", false))
+  if(findNextLine(line, is, "%BLOCK positions_", false))
   {
     common::AtomSpeciesId species;
     ::arma::vec3 pos;

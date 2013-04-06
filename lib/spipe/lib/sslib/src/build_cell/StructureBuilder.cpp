@@ -24,15 +24,22 @@
 namespace sstbx {
 namespace build_cell {
 
+StructureBuilder::StructureBuilder():
+myPointGroup(PointGroupFamily::NONE, 0),
+myNumSymOps(0),
+myIsCluster(false)
+{}
+
 StructureBuilder::StructureBuilder(const StructureBuilder & toCopy):
 StructureBuilderCore(toCopy),
 myUnitCellGenerator(myUnitCellGenerator->clone()),
-myPointGroup(PointGroupFamily::NONE, 0),
-myNumSymOps(0)
+myPointGroup(toCopy.myPointGroup),
+myNumSymOps(toCopy.myNumSymOps),
+myIsCluster(toCopy.myIsCluster)
 {}
 
 GenerationOutcome
-StructureBuilder::generateStructure(common::StructurePtr & structureOut, const common::AtomSpeciesDatabase & speciesDb) const
+StructureBuilder::generateStructure(common::StructurePtr & structureOut, const common::AtomSpeciesDatabase & speciesDb)
 {
   GenerationOutcome outcome;
 
@@ -42,11 +49,10 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
 
   // First find out what the generators want to put in the structure
   StructureContents contents;
-  BOOST_FOREACH(const IFragmentGenerator & generator, myGenerators)
+  BOOST_FOREACH(IFragmentGenerator & generator, myGenerators)
   {
     const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
     generationInfo.push_back(GeneratorAndTicket(&generator, ticket));
-
     contents += generator.getGenerationContents(ticket, speciesDb);
   }
   // TODO: Sort fragment generators by volume (largest first)
@@ -117,6 +123,16 @@ void StructureBuilder::setPointGroup(const PointGroup & pointGroup)
 const PointGroup & StructureBuilder::getPointGroup() const
 {
   return myPointGroup;
+}
+
+void StructureBuilder::setCluster(const bool isCluster)
+{
+  myIsCluster = isCluster;
+}
+
+bool StructureBuilder::isCluster() const
+{
+  return myIsCluster;
 }
 
 bool StructureBuilder::chooseSymmetry(StructureBuild & build) const

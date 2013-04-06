@@ -9,10 +9,14 @@
 #define TRANSCODE_GENERAL_DETAIL_H
 
 // INCLUDES //////////////////////////////////
+#include <sstream>
 #include <string>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+
+#include "io/Parsing.h"
 
 // NAMESPACES ////////////////////////////////
 namespace ssy = ::sstbx::yaml;
@@ -76,6 +80,63 @@ bool convert<ssy::VectorAsString<T> >::decode(const Node & node, ssy::VectorAsSt
     return false;
 
   return true;
+}
+
+template <typename T>
+Node convert< ::sstbx::utility::Range<T> >::encode(const ::sstbx::utility::Range<T> & rhs)
+{
+  ::std::stringstream ss;
+  if(rhs.nullSpan())
+    ss << rhs.lower();
+  else
+    ss << rhs.lower() << "-" << rhs.upper();
+  Node node;
+  node = ss.str();
+  return node;
+}
+
+template <typename T>
+bool convert< ::sstbx::utility::Range<T> >::decode(const Node & node, ::sstbx::utility::Range<T> & rhs)
+{
+  namespace ssio = ::sstbx::io;
+
+  if(!node.IsScalar())
+    return false;
+
+  static const ::boost::regex RE_RANGE(ssio::PATTERN_RANGE_CAPTURE);
+  
+  const ::std::string rangeString = node.Scalar();
+  ::boost::smatch match;
+  if(::boost::regex_search(rangeString, match, RE_RANGE))
+  {
+    if(match.size() == 2)
+    { // Has single number
+      const ::std::string lower(match[1].first, match[1].second);
+      try
+      {
+        const T x0 = ::boost::lexical_cast<T>(lower);
+        rhs.set(x0, x0);
+        return true;
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+    }
+    else if(match.size() >= 5)
+    { // Has number x0-x1
+      const ::std::string lower(match[1].first, match[1].second);
+      const ::std::string upper(match[4].first, match[4].second);
+      try
+      {
+        const T x0 = ::boost::lexical_cast<T>(lower);
+        const T x1 = ::boost::lexical_cast<T>(upper);
+        rhs.set(x0, x1);
+        return true;
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+    }
+  }
+  return false;
 }
 
 }

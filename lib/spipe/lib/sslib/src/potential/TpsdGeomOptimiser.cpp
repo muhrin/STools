@@ -52,7 +52,6 @@ private:
 
 // CONSTANTS ////////////////////////////////////////////////
 
-
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
 const double TpsdGeomOptimiser::DEFAULT_TOLERANCE = 1e-13;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
@@ -103,14 +102,14 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
   const OptimisationSettings & options) const
 {
-  PotentialData potData;
-  return optimise(structure, potData, options);
+  OptimisationData optData;
+  return optimise(structure, optData, options);
 }
 
 
 OptimisationOutcome TpsdGeomOptimiser::optimise(
 	::sstbx::common::Structure & structure,
-	PotentialData & data,
+	OptimisationData & data,
   const OptimisationSettings & options) const
 {
   ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential->createEvaluator(structure);
@@ -131,6 +130,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 	  outcome = optimise(
       structure,
       *unitCell,
+      data,
       *evaluator,
       myTolerance,
       localSettings
@@ -140,20 +140,21 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
   {
 	  outcome = optimise(
       structure,
+      data,
       *evaluator,
       myTolerance,
       localSettings
     );
   }
 
-  // Copy over data from the geometry optimisation
-  data = evaluator->getData();
+  data.saveToStructure(structure);
 
 	return outcome;
 }
 
 OptimisationOutcome TpsdGeomOptimiser::optimise(
-  common::Structure &   structure,
+  common::Structure & structure,
+  OptimisationData & optimisationData,
   IPotentialEvaluator & evaluator,
 	const double eTol,
   const OptimisationSettings & settings) const
@@ -247,13 +248,15 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
     ss << "Failed to converge after " << *settings.maxSteps << "steps";
     return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
   }
-  
+
+  populateOptimistaionData(optimisationData, structure, data);
   return OptimisationOutcome::success();
 }
 
 OptimisationOutcome TpsdGeomOptimiser::optimise(
-  common::Structure &   structure,
-  common::UnitCell &    unitCell,
+  common::Structure & structure,
+  common::UnitCell & unitCell,
+  OptimisationData & optimisationData,
   IPotentialEvaluator & evaluator,
 	const double eTol,
   const OptimisationSettings & settings) const
@@ -409,9 +412,10 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 
 		if((i % CHECK_CELL_EVERY_N_STEPS == 0) && !cellReasonable(unitCell))
     {
-      // Cell has collapsed
-      converged = false;
-      break;
+      return OptimisationOutcome::failure(
+        OptimisationError::PROBLEM_WITH_STRUCTURE,
+        "Unit cell has collapsed."
+      );
     }
 	}
 
@@ -428,7 +432,8 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
     ss << "Failed to converge after " << *settings.maxSteps << "steps";
     return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
   }
-  
+
+  populateOptimistaionData(optimisationData, structure, data);
   return OptimisationOutcome::success();
 }
 
@@ -446,6 +451,26 @@ bool TpsdGeomOptimiser::cellReasonable(const sstbx::common::UnitCell & unitCell)
   return true;
 }
 
+void TpsdGeomOptimiser::populateOptimistaionData(
+  OptimisationData & optData,
+  const common::Structure & structure,
+  const PotentialData & potData
+) const
+{
+  const common::UnitCell * const unitCell = structure.getUnitCell();
+
+  optData.internalEnergy.reset(potData.internalEnergy);
+  const double pressure = -::arma::trace(potData.stressMtx) / 3.0;
+  optData.pressure.reset(pressure);
+  if(unitCell)
+  {
+    optData.enthalpy.reset(
+      potData.internalEnergy + *optData.pressure * unitCell->getVolume()
+    );
+  }
+  optData.ionicForces.reset(potData.forces);
+  optData.stressMtx.reset(potData.stressMtx);
+}
 
 }
 }

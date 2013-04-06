@@ -58,7 +58,7 @@ public:
     const common::AtomSpeciesDatabase & speciesDb
   ) const;
 
-  virtual GenerationTicket getTicket() const;
+  virtual GenerationTicket getTicket();
   virtual StructureContents getGenerationContents(
     const GenerationTicket ticket,
     const common::AtomSpeciesDatabase & speciesDb
@@ -71,6 +71,8 @@ public:
 
 private:
   typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
+  typedef ::std::map<const AtomsDescription *, int> AtomCounts;
+  typedef ::std::map<GenerationTicket::IdType, AtomCounts> TicketsMap;
 
   AtomPosition generatePosition(
     BuildAtomInfo & atomInfo,
@@ -96,7 +98,8 @@ private:
 
   Atoms myAtoms;
   GenShapePtr myGenShape;
-  
+  TicketsMap myTickets;
+  GenerationTicket::IdType myLastTicketId;
 };
 
 }

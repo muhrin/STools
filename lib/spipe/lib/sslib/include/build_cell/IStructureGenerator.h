@@ -32,7 +32,7 @@ public:
   virtual GenerationOutcome generateStructure(
     common::StructurePtr & structureOut,
     const common::AtomSpeciesDatabase & speciesDb
-  ) const = 0;
+  ) = 0;
 };
 
 }

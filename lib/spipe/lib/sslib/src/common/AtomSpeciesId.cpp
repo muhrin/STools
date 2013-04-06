@@ -30,6 +30,7 @@ const AtomSpeciesId::Enumerator AtomSpeciesId::AL;
 const AtomSpeciesId::Enumerator AtomSpeciesId::SI;
 const AtomSpeciesId::Enumerator AtomSpeciesId::P;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CL;
+const AtomSpeciesId::Enumerator AtomSpeciesId::AS;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_1;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_2;
 const AtomSpeciesId::Enumerator AtomSpeciesId::CUSTOM_3;

@@ -161,7 +161,6 @@ set(sslib_Header_Files__utility
   include/utility/DistanceMatrixComparator.h
   include/utility/EdgeMap.h
   include/utility/Enum.h
-  include/utility/FloatRange.h
   include/utility/GenericBufferedComparator.h
   include/utility/HeterogeneousMap.h
   include/utility/HeterogeneousMapEx.h

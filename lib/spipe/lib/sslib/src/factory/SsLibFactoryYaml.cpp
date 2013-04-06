@@ -369,6 +369,11 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     }
   }
 
+  // Cluster mode
+  const bool * const clusterMode = map.find(CLUSTER);
+  if(clusterMode)
+    builder->setCluster(*clusterMode);
+
   return builder;
 }
 

@@ -60,7 +60,6 @@ private:
   static const ::std::string CONTENTS_TITLE;
   static const ::std::string CONTENTS_BOX_BEGIN;
   
-  static const ::std::string RE_FLOAT;
   static const ::boost::regex RE_LATTICE_PARAM;
   static const ::boost::regex RE_ATOM_INFO;
 

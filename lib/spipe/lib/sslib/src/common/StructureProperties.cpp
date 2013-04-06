@@ -17,7 +17,7 @@ utility::NamedKey<unsigned int>       SPACEGROUP_NUMBER("spaceGroupNo");
 utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL("spaceGroup");
 utility::NamedKey<double>             PRESSURE_INTERNAL("pressure");
 utility::NamedKey<double>             ENERGY_INTERNAL("internalEnergy");
-
+utility::NamedKey<double>             ENTHALPY("enthalpy");
 
 } // namespace general
 
@@ -45,6 +45,7 @@ InitialiseVisibleProperties::InitialiseVisibleProperties()
   add(general::SPACEGROUP_SYMBOL);
   add(general::PRESSURE_INTERNAL);
   add(general::ENERGY_INTERNAL);
+  add(general::ENTHALPY);
   add(searching::TIMES_FOUND);
 }
 

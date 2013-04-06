@@ -72,8 +72,15 @@ class SchemaParse
 public:
   typedef ::std::vector<SchemaParseError> ParseErrors;
 
-  void pushPath(const ::std::string & path);
-  void popPath();
+  class PathPusher
+  {
+  public:
+    PathPusher(SchemaParse & parse, const ::std::string & path);
+    ~PathPusher();
+  private:
+    SchemaParse & myParse;
+    const ::std::string & myPath;
+  };
 
   bool hasErrors() const;
   const ParseErrors & getErrors() const;
@@ -88,8 +95,13 @@ public:
 private:
   typedef ::std::vector< ::std::string> ParsePath;
 
+  void pushPath(const ::std::string & path);
+  void popPath();
+
   ParsePath myParsePath;
   ParseErrors myParseErrors;
+
+  friend class PathPusher;
 };
 
 }

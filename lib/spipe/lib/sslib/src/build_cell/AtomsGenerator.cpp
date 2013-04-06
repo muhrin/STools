@@ -84,6 +84,11 @@ AtomsGenerator::generateFragment(
 {
   typedef ::std::vector<unsigned int> Multiplicities;
 
+  // Get the ticket
+  TicketsMap::const_iterator it = myTickets.find(ticket.getId());
+  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
+  const AtomCounts & counts = it->second;
+
   GenerationOutcome outcome;
 
   common::Structure & structure = build.getStructure();
@@ -102,18 +107,19 @@ AtomsGenerator::generateFragment(
   }
   else
     possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
-  BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
+
+  BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
-    if(atomsDesc.getPosition())
+    if(atomsDesc.first->getPosition())
     {
       // If the atom has a fixed position then we should not apply symmetry
       // and the multiplicity should be 1
       // TODO: Check if this position is compatible with our symmetry operators!
-      multiplicities.insert(multiplicities.begin(), atomsDesc.getCount(), 1);
+      multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
     }
     else
     {
-      multiplicities = symmetry::generateMultiplicities(atomsDesc.getCount(), possibleMultiplicities);
+      multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
     }
 
     if(multiplicities.empty())
@@ -125,15 +131,15 @@ AtomsGenerator::generateFragment(
     // Go over the multiplicities inserting the atoms
     BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
     {
-      common::Atom & atom = structure.newAtom(atomsDesc.getSpecies());
+      common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
       BuildAtomInfo & info = build.createAtomInfo(atom);
       info.setMultiplicity(multiplicity);
 
-      position = generatePosition(info, atomsDesc, build, multiplicity);
+      position = generatePosition(info, *atomsDesc.first, build, multiplicity);
       atom.setPosition(position.first);
       info.setFixed(position.second);
 
-      atom.setRadius(getRadius(atomsDesc, speciesDb));
+      atom.setRadius(getRadius(*atomsDesc.first, speciesDb));
     }
     multiplicities.clear(); // Reset for next loop
   }
@@ -147,9 +153,23 @@ AtomsGenerator::generateFragment(
   return outcome;
 }
 
-AtomsGenerator::GenerationTicket AtomsGenerator::getTicket() const
+AtomsGenerator::GenerationTicket AtomsGenerator::getTicket()
 {
-  return GenerationTicket(0);
+  GenerationTicket::IdType ticketId = ++myLastTicketId;
+
+  // Generate a random number of atoms
+  AtomsDescription::CountRange count;
+  AtomCounts counts;
+  BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
+  {
+    count = atomsDesc.getCount();
+    if(count.nullSpan())
+      counts[&atomsDesc] = count.lower();
+    else
+      counts[&atomsDesc] = math::randu(count.lower(), count.upper());
+  }
+  myTickets[ticketId] = counts;
+  return GenerationTicket(ticketId);
 }
 
 StructureContents AtomsGenerator::getGenerationContents(
@@ -158,11 +178,16 @@ StructureContents AtomsGenerator::getGenerationContents(
 {
   StructureContents contents;
 
+  // Get the ticket
+  TicketsMap::const_iterator it = myTickets.find(ticket.getId());
+  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
+  const AtomCounts & counts = it->second;
+
   double radius;
-  BOOST_FOREACH(const AtomsDescription & atoms, myAtoms)
+  BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
-    radius = getRadius(atoms, speciesDb);
-    contents.addAtoms(atoms.getCount(), radius);
+    radius = getRadius(*atomsDesc.first, speciesDb);
+    contents.addAtoms(static_cast<size_t>(atomsDesc.second), radius);
   }
 
   return contents;
@@ -170,7 +195,10 @@ StructureContents AtomsGenerator::getGenerationContents(
 
 void AtomsGenerator::handleReleased(const GenerationTicketId & id)
 {
-  // Nothing to do: ticket doesn't identify a particular generation instance
+  // Get the ticket
+  TicketsMap::iterator it = myTickets.find(id);
+  SSLIB_ASSERT_MSG(it != myTickets.end(), "Being notified of ticket release for a ticket id we don't recognise.");
+  myTickets.erase(it);
 }
 
 IFragmentGeneratorPtr AtomsGenerator::clone() const

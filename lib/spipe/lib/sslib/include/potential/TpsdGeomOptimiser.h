@@ -61,24 +61,28 @@ public:
   ) const;
 	virtual OptimisationOutcome optimise(
 		::sstbx::common::Structure &  structure,
-    PotentialData & data,
+    OptimisationData & data,
     const OptimisationSettings & options
   ) const;
 
 	// End IGeomOptimiser interface
 
 	OptimisationOutcome optimise(
-    common::Structure &   structure,
+    common::Structure & structure,
+    OptimisationData & optimistaionData,
     IPotentialEvaluator & evaluator,
-		const double          eTol,
-    const OptimisationSettings & options) const;
+		const double eTol,
+    const OptimisationSettings & options
+  ) const;
 
 	OptimisationOutcome optimise(
-    common::Structure &   structure,
-    common::UnitCell &    unitCell,
+    common::Structure & structure,
+    common::UnitCell & unitCell,
+    OptimisationData & optimistaionData,
     IPotentialEvaluator & evaluator,
-		const double          eTol,
-    const OptimisationSettings & options) const;
+		const double eTol,
+    const OptimisationSettings & options
+  ) const;
 
 private:
 
@@ -88,6 +92,11 @@ private:
   static const double MAX_STEPSIZE;
 
   bool cellReasonable(const common::UnitCell & unitCell) const;
+  void populateOptimistaionData(
+    OptimisationData & optData,
+    const common::Structure & structure,
+    const PotentialData & potData
+  ) const;
 
 	PotentialPtr myPotential;
 
