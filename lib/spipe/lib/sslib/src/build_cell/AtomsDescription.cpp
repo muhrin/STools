@@ -9,7 +9,7 @@
 // INCLUDES /////////////////
 #include "build_cell/AtomsDescription.h"
 
-#include "SsLibAssert.h"
+#include "SSLibAssert.h"
 #include "common/AtomSpeciesId.h"
 
 namespace sstbx {
@@ -49,14 +49,14 @@ void AtomsDescription::setCount(const int count)
 {
   SSLIB_ASSERT(count > 0);
 
-	myCount.set(count, count);
+  myCount.set(count, count);
 }
 
 void AtomsDescription::setCount(const CountRange count)
 {
   SSLIB_ASSERT(count.lower() >= 0);
 
-	myCount = count;
+  myCount = count;
 }
 
 const OptionalDouble & AtomsDescription::getRadius() const
