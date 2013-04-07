@@ -65,11 +65,8 @@ public:
   const ::boost::filesystem::path & getCastepFile() const;
   const ::boost::filesystem::path & getCellOutFile() const;
 
-  CastepRunResult::Value openCellFile(
-    ::boost::filesystem::ofstream * * ofstream = NULL,
-    const bool atBeginning = true
-  );
-  void deleteCellFile();
+
+  CastepRunResult::Value openNewCellFile(::boost::filesystem::ofstream * * ofstream = NULL);
   CastepRunResult::Value openCastepFile(::boost::filesystem::ifstream * * ifstream = NULL);
   CastepRunResult::Value openCellOutFile(::boost::filesystem::ifstream * * ifstream = NULL);
 

@@ -191,11 +191,8 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  // Delete the current cell file so we can start afresh
-  myCastepRun.deleteCellFile();
-
   fs::ofstream * newCellFileStream;
-  if(myCastepRun.openCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
+  if(myCastepRun.openNewCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
   {  
     myCellReaderWriter.writeStructure(*newCellFileStream, structure, speciesDb);
 
