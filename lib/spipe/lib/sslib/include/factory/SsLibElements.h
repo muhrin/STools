@@ -23,6 +23,7 @@
 #include "factory/FactoryFwd.h"
 #include "potential/SimplePairPotential.h"
 #include "utility/HeterogeneousMap.h"
+#include "utility/Range.h"
 
 // DEFINES //////////////////////////////////////////////
 namespace sstbx {
@@ -76,7 +77,7 @@ extern utility::Key<utility::HeterogeneousMap> BUILDER;
 extern utility::Key<bool> CLUSTER;
 extern utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
-extern utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;
+extern utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
 extern utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;

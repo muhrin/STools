@@ -13,12 +13,15 @@
 #include "build_cell/StructureContents.h"
 #include "common/UnitCell.h"
 #include "math/Random.h"
+#include "utility/StableComparison.h"
 
 namespace sstbx {
 namespace build_cell {
 
-const double RandomUnitCellGenerator::DEFAULT_MIN_ANGLE = 30.0;
-const double RandomUnitCellGenerator::DEFAULT_MAX_ANGLE = 140.0;
+namespace comp = utility::StableComp;
+
+const double RandomUnitCellGenerator::DEFAULT_MIN_ANGLE = 35.0;
+const double RandomUnitCellGenerator::DEFAULT_MAX_ANGLE = 135.0;
 const double RandomUnitCellGenerator::DEFAULT_MIN_LENGTH = 0.25;
 const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_TARGET_VOLUME = 50.0;
@@ -195,7 +198,8 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(common::UnitCellPtr & ce
   // ortho matrix being singular
   cellOut.reset(new common::UnitCell(params));
 
-  cellOut->setVolume(generateVolume());
+  if(!(!myTargetVolume && cellFullySpecified()))
+    cellOut->setVolume(generateVolume());
 
   outcome.setSuccess();
   return outcome;
@@ -208,7 +212,7 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(common::UnitCellPtr & ce
   if(!outcome.success())
     return outcome;
 
-  if(!myTargetVolume)
+  if(!myTargetVolume && !cellFullySpecified())
   {
     cellOut->setVolume(2.0 * structureContents.getVolume()); 
   }
@@ -274,8 +278,8 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
     {
       // Can move if the user hasn't set the parameter or if we are still within
       // the user set range
-      canMoveMin = !myParameters[minMax.first].first || minLength > *myParameters[minMax.first].first;
-      canMoveMax = !myParameters[minMax.second].second || maxLength < *myParameters[minMax.second].second;
+      canMoveMin = !myParameters[minMax.first].first || comp::lt(minLength, *myParameters[minMax.first].second);
+      canMoveMax = !myParameters[minMax.second].second || comp::gt(maxLength, *myParameters[minMax.second].first);
 
       // Three possibilities for movement
       if(canMoveMin && canMoveMax) // move both
@@ -312,8 +316,6 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
       }
     }
   }
-
-  SSLIB_ASSERT(i < maxIters);
 }
 
 double RandomUnitCellGenerator::generateVolume(const double overrideVolume) const
@@ -364,6 +366,17 @@ bool RandomUnitCellGenerator::areParametersValid(const double (&params)[6]) cons
   if(abs(params[GAMMA]-params[ALPHA]) > params[BETA]) return false;
 
   return true;
+}
+
+bool RandomUnitCellGenerator::cellFullySpecified() const
+{
+  using namespace utility::cell_params_enum;
+  bool fullySpecified = true;
+  for(size_t i = A; i <= GAMMA; ++i)
+  {
+    fullySpecified &= myParameters[i].first && myParameters[i].second;
+  }
+  return fullySpecified;
 }
 
 }

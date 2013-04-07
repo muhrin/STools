@@ -187,11 +187,16 @@ struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
   typedef utility::HeterogeneousMap BindingType;
   UnitCellBuilder()
   {
-    addEntry("abc", UNIT_CELL_BUILDER_ABC,
-      (new yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> >)->length(6));
+    typedef utility::Range<double> DoubleRange;
+    addEntry(
+      "abc",
+      UNIT_CELL_BUILDER_ABC,
+      new yaml_schema::SchemaWrapper<yaml::VectorAsString<DoubleRange> >()
+    );
     addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
     addEntry("lengths", UNIT_CELL_BUILDER_LENGTHS, new MinMaxRatio());
     addEntry("angles", UNIT_CELL_BUILDER_ANGLES, new MinMaxRatio());
+
   }
 };
 

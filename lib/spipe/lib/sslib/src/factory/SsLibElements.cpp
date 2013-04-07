@@ -54,7 +54,7 @@ utility::Key<utility::HeterogeneousMap> BUILDER;
 utility::Key<bool> CLUSTER;
 utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
-utility::Key< ::std::vector<double> > UNIT_CELL_BUILDER_ABC;
+utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
 utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;

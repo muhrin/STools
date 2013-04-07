@@ -75,6 +75,8 @@ private:
 
   bool areParametersValid(const double (&latticeParams)[6]) const;
 
+  bool cellFullySpecified() const;
+
   /** An array of the optional min/max values of the unit cell lattice parameters. */
   MinMax myParameters[6];
 

@@ -60,21 +60,6 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
   build_cell::RandomUnitCellPtr cell(new build_cell::RandomUnitCellGenerator());
 
   {
-    const ::std::vector<double> * const abc = map.find(UNIT_CELL_BUILDER_ABC);
-    if(abc)
-    {
-      if(abc->size() == 6)
-      {
-        for(size_t i = A; i <= GAMMA; ++i)
-        {
-          cell->setMin(i, (*abc)[i]);
-          cell->setMax(i, (*abc)[i]);
-        }
-      }
-    }
-  }
-
-  {
     const double * const targetVol = map.find(UNIT_CELL_BUILDER_VOLUME);
     if(targetVol)
       cell->setTargetVolume(*targetVol);
@@ -106,6 +91,26 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
         cell->setMaxLengths(*max);
       if(maxRatio)
         cell->setMaxLengthRatio(*maxRatio);
+    }
+  }
+
+  {
+    // Do this after settings the general min/max length/angles as this is a more specific
+    // way of specifying the unit cell dimensions
+    const ::std::vector<utility::Range<double> > * const abc = map.find(UNIT_CELL_BUILDER_ABC);
+    if(abc)
+    {
+      // TODO: Eventuall emit error instead
+      SSLIB_ASSERT(abc->size() == 6);
+
+      if(abc->size() == 6)
+      {
+        for(size_t i = A; i <= GAMMA; ++i)
+        {
+          cell->setMin(i, (*abc)[i].lower());
+          cell->setMax(i, (*abc)[i].upper());
+        }
+      }
     }
   }
 
