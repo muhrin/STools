@@ -14,6 +14,7 @@
 #include <io/CastepReader.h>
 #include <io/CellReaderWriter.h>
 #include <potential/CastepGeomOptimiser.h>
+#include <potential/OptimisationSettings.h>
 #include <utility/StableComparison.h>
 
 namespace ssc = ::sstbx::common;
@@ -31,7 +32,15 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::CastepReader castepReader;
   ssio::CellReaderWriter cellReader;
-  ssp::detail::CastepGeomOptRun optRun("successful", "successful", false, cellReader, castepReader);
+  ssp::OptimisationSettings optSettings;
+  ssp::detail::CastepGeomOptRun optRun(
+    optSettings,
+    "successful",
+    "successful",
+    true, // Keep intermediates so we don't delete the input files
+    cellReader,
+    castepReader
+  );
   ssp::OptimisationData optimisationData;
   const bool updatedSuccessfully = optRun.updateStructure(structure, optimisationData, speciesDb).isSuccess();
   BOOST_REQUIRE(updatedSuccessfully);

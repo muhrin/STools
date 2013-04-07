@@ -18,6 +18,8 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
 
+#include <armadillo>
+
 // DEFINES //////////////////////////////////////////////
 
 namespace sstbx {
@@ -63,11 +65,16 @@ public:
   const ::boost::filesystem::path & getCastepFile() const;
   const ::boost::filesystem::path & getCellOutFile() const;
 
-  CastepRunResult::Value openCellFile(::boost::filesystem::ofstream * * ofstream);
+  CastepRunResult::Value openCellFile(
+    ::boost::filesystem::ofstream * * ofstream = NULL,
+    const bool atBeginning = true
+  );
+  void deleteCellFile();
   CastepRunResult::Value openCastepFile(::boost::filesystem::ifstream * * ifstream = NULL);
   CastepRunResult::Value openCellOutFile(::boost::filesystem::ifstream * * ifstream = NULL);
 
   CastepRunResult::Value insertParams(ParamsMap params) const;
+  CastepRunResult::Value writePressure(const ::arma::mat33 & pressureTensor);
 
   void closeAllStreams();
 

@@ -66,21 +66,30 @@ const fs::path & CastepRun::getCellOutFile() const
   return myCellOutFile;
 }
 
-CastepRunResult::Value CastepRun::openCellFile(fs::ofstream * * ofstream)
+CastepRunResult::Value CastepRun::openCellFile(
+  fs::ofstream * * ofstream,
+  const bool atBeginning)
 {
-  // If the file is already open close it and delete it
-  if(myCellFileStream.is_open())
-    myCellFileStream.close();
-
-  if(fs::exists(myCellFile))
-    fs::remove_all(myCellFile);
-
-  myCellFileStream.open(myCellFile);
+  if(!myCellFileStream.is_open())
+    myCellFileStream.open(myCellFile);
+  else if(atBeginning)
+  { // Move the file to the beginning
+    myCastepFileStream.clear(); // Clear the EoF flag
+    myCastepFileStream.seekg(0, myCastepFileStream.beg);
+  }
   
   if(ofstream)
     *ofstream = &myCellFileStream;
 
   return CastepRunResult::SUCCESS;
+}
+
+void CastepRun::deleteCellFile()
+{
+  if(myCellFileStream.is_open())
+    myCellFileStream.close();
+
+  fs::remove_all(myCellFile);
 }
 
 CastepRunResult::Value CastepRun::openCastepFile(fs::ifstream * * ifstream)
@@ -169,6 +178,27 @@ CastepRunResult::Value CastepRun::insertParams(ParamsMap params) const
   fs::remove_all(tempParamFile);
 
   return CastepRunResult::SUCCESS;
+}
+
+CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTensor)
+{
+  if(!fs::exists(myCellFile))
+    return CastepRunResult::INPUT_NOT_FOUND;
+
+  openCellFile();
+
+  myCellFileStream << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
+
+  for(unsigned int row = 0; row < 3; ++row)
+  {
+    myCellFileStream << ::std::string(row, ' ');
+    for(unsigned int col = row; col < 3; ++col)
+    {
+      myCellFileStream << pressureTensor(row, col) << " ";
+    }
+    myCellFileStream << ::std::endl;
+  }
+  myCellFileStream << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
 }
 
 void CastepRun::closeAllStreams()

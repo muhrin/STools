@@ -52,8 +52,8 @@ public:
     const OptimisationSettings & options
   ) const;
   // End from IGeomOptimiser //////////////
-private:
 
+private:
   const ::std::string myCastepSeed;
   const io::CellReaderWriter myCellReaderWriter;
   const io::CastepReader myCastepReader;
@@ -68,6 +68,7 @@ class CastepGeomOptRun
 {
 public:
   CastepGeomOptRun(
+    const OptimisationSettings & optimisationSettings,
     const ::std::string & originalSeed,
     const ::std::string & newSeed,
     const bool keepIntermediates,
@@ -122,6 +123,7 @@ private:
   const bool myKeepIntermediates;
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
+  const OptimisationSettings & myOptimisationSettings;
 };
 
 } // namespace detail

@@ -18,14 +18,13 @@
 #include "io/Parsing.h"
 #include "io/BoostFilesystem.h"
 #include "os/Process.h"
+#include "potential/OptimisationSettings.h"
 
 // NAMESPACES ////////////////////////////////
 namespace sstbx {
 namespace potential {
 
 namespace fs = ::boost::filesystem;
-
-const ::std::string CastepGeomOptimiser::FINAL_ENTHALPY("Final Enthalpy");
 
 CastepGeomOptimiser::CastepGeomOptimiser(
   const ::boost::filesystem::path & castepExe,
@@ -55,6 +54,7 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
   const ::std::string outSeedName(structure.getName());
 
   detail::CastepGeomOptRun geomOpt(
+    options,
     myCastepSeed,
     outSeedName,
     myKeepIntermediates,
@@ -74,6 +74,7 @@ namespace detail {
 const int CastepGeomOptRun::MAX_RELAX_ATTEMPTS = 20;
 
 CastepGeomOptRun::CastepGeomOptRun(
+  const OptimisationSettings & optimisationSettings,
   const ::std::string & originalSeed,
   const ::std::string & newSeed,
   const bool keepIntermediates,
@@ -85,7 +86,8 @@ myOrigParamFile(originalSeed + ".param"),
 myCastepRun(newSeed, cellReaderWriter, castepReader),
 myKeepIntermediates(keepIntermediates),
 myCellReaderWriter(cellReaderWriter),
-myCastepReader(castepReader)
+myCastepReader(castepReader),
+myOptimisationSettings(optimisationSettings)
 {}
 
 CastepGeomOptRun::~CastepGeomOptRun()
@@ -189,10 +191,19 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
+  // Delete the current cell file so we can start afresh
+  myCastepRun.deleteCellFile();
+
   fs::ofstream * newCellFileStream;
   if(myCastepRun.openCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
   {  
     myCellReaderWriter.writeStructure(*newCellFileStream, structure, speciesDb);
+
+    if(myOptimisationSettings.pressure)
+    {
+      *newCellFileStream << ::std::endl;
+      myCastepRun.writePressure(*myOptimisationSettings.pressure);
+    }
 
     // Now copy over the original contents
     if(fs::exists(myOrigCellFile))
@@ -236,7 +247,7 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
   myCastepRun.insertParams(paramsMap);
 
   // Do short relaxations
-  for(size_t i = 0;  i < 4;  ++i)
+  for(size_t i = 0;  i < 2;  ++i)
     doRelaxation(structure, optimisationData, speciesDb, castepExe);
 
   // Copy the original back
