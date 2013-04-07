@@ -72,7 +72,8 @@ CastepRunResult::Value CastepRun::openCellFile(
 {
   if(!myCellFileStream.is_open())
     myCellFileStream.open(myCellFile);
-  else if(atBeginning)
+  
+  if(atBeginning)
   { // Move the file to the beginning
     myCastepFileStream.clear(); // Clear the EoF flag
     myCastepFileStream.seekg(0, myCastepFileStream.beg);
@@ -185,7 +186,7 @@ CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTe
   if(!fs::exists(myCellFile))
     return CastepRunResult::INPUT_NOT_FOUND;
 
-  openCellFile();
+  openCellFile(NULL, false);
 
   myCellFileStream << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
 
