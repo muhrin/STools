@@ -134,7 +134,7 @@ void DataTableWriter::initialise()
   {
     const fs::path parentPath = myOutputPath.parent_path();
 
-    if(!exists(parentPath))
+    if(!parentPath.empty() && !exists(parentPath))
       fs::create_directories(parentPath);
   }
 

@@ -45,7 +45,7 @@ find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
 
 #
 # Armadillo #
-find_package(Armadillo)
+find_package(Armadillo REQUIRED)
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
