@@ -42,7 +42,13 @@ typedef NS_BOOST_IPC_DETAIL::OS_process_id_t ProcessId;
 
 ProcessId getProcessId();
 
+void parseParameters(
+  ::std::vector< ::std::string> & outParams,
+  const ::std::string & exeString
+);
+
 int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> & argv);
+int runBlocking(const ::std::vector< ::std::string> & exeAndArgv);
 int runBlocking(const ::boost::filesystem::path & exe, const ::std::vector< ::std::string> & argv);
 
 

@@ -189,6 +189,8 @@ CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTe
     myCellFileStream << ::std::endl;
   }
   myCellFileStream << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
+
+  return CastepRunResult::SUCCESS;
 }
 
 void CastepRun::closeAllStreams()
@@ -201,7 +203,7 @@ void CastepRun::closeAllStreams()
     myCellOutFileStream.close();
 }
 
-CastepRunResult::Value CastepRun::runCastep(const fs::path & castepExe)
+CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeString)
 {
   // Make sure to close all streams so we don't end up in a conflict
   closeAllStreams();
@@ -209,8 +211,11 @@ CastepRunResult::Value CastepRun::runCastep(const fs::path & castepExe)
   if(!fs::exists(myCellFile) || !fs::exists(myParamFile))
     return CastepRunResult::INPUT_NOT_FOUND;
 
-  const ::std::vector< ::std::string> args(1, io::stemString(myCellFile));
-  if(os::runBlocking(castepExe, args) != 0)
+  ::std::vector< ::std::string> castepExeAndArgs;
+  os::parseParameters(castepExeAndArgs, castepExeString);
+  castepExeAndArgs.push_back(io::stemString(myCellFile));
+
+  if(os::runBlocking(castepExeAndArgs) != 0)
     return CastepRunResult::FAILED_TO_RUN;
 
   return CastepRunResult::SUCCESS;

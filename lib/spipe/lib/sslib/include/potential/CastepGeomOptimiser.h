@@ -32,7 +32,7 @@ public:
   static const ::std::string FINAL_ENTHALPY;
 
   CastepGeomOptimiser(
-    const ::boost::filesystem::path & castepExe,
+    const ::std::string & castepExe,
     const ::std::string & castepSeed,
     const bool keepIntermediates
   );
@@ -59,7 +59,7 @@ private:
   const io::CastepReader myCastepReader;
   const common::AtomSpeciesDatabase mySpeciesDb; // HACK: Keep a copy here for now
   const bool myKeepIntermediates;
-  const ::boost::filesystem::path myCastepExe;
+  const ::std::string myCastepExe;
 };
 
 namespace detail {
@@ -80,7 +80,7 @@ public:
   OptimisationOutcome runFullRelax(
     common::Structure & structure,
     OptimisationData & data,
-    const ::boost::filesystem::path & castepExe,
+    const ::std::string & castepExeAndArgs,
     const common::AtomSpeciesDatabase & speciesDb,
     const int numConsistentRelaxations = 3
   );
@@ -102,13 +102,13 @@ private:
     common::Structure & structure,
     OptimisationData & optimisationData,
     const common::AtomSpeciesDatabase & speciesDb,
-    const ::boost::filesystem::path & castepExe
+    const ::std::string & castepExeAndArgs
   );
   OptimisationOutcome doRelaxation(
     common::Structure & structure,
     OptimisationData & optimistaionData,
     const common::AtomSpeciesDatabase & speciesDb,
-    const ::boost::filesystem::path & castepExe
+    const ::std::string & castepExeAndArgs
   );
   bool optimisationSucceeded();
   bool parseOptimisationInfo(

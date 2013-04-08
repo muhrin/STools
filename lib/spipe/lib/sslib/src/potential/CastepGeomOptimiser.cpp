@@ -27,7 +27,7 @@ namespace potential {
 namespace fs = ::boost::filesystem;
 
 CastepGeomOptimiser::CastepGeomOptimiser(
-  const ::boost::filesystem::path & castepExe,
+  const ::std::string & castepExe,
   const ::std::string & castepSeed,
   const bool keepIntermediates
 ):
@@ -99,7 +99,7 @@ CastepGeomOptRun::~CastepGeomOptRun()
 OptimisationOutcome CastepGeomOptRun::runFullRelax(
   common::Structure & structure,
   OptimisationData & data,
-  const fs::path & castepExe,
+  const ::std::string & castepExeAndArgs,
   const common::AtomSpeciesDatabase & speciesDb,
   const int numRelaxations
 )
@@ -118,14 +118,14 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
  
-  doPreRelaxation(structure, data, speciesDb, castepExe);
+  doPreRelaxation(structure, data, speciesDb, castepExeAndArgs);
 
   OptimisationOutcome outcome;
   int successfulRelaxations = 0;
   int i;
   for(i = 0; successfulRelaxations < numRelaxations && i < MAX_RELAX_ATTEMPTS; ++i)
   {
-    outcome = doRelaxation(structure, data, speciesDb, castepExe);
+    outcome = doRelaxation(structure, data, speciesDb, castepExeAndArgs);
     if(!outcome.isSuccess())
       return outcome;
 
@@ -233,7 +233,7 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
   common::Structure & structure,
   OptimisationData & optimisationData,
   const common::AtomSpeciesDatabase & speciesDb,
-  const ::boost::filesystem::path & castepExe
+  const ::std::string & castepExeAndArgs
 )
 {
   const fs::path origParamFile(myCastepRun.getParamFile().string() + ".orig");
@@ -245,7 +245,7 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
 
   // Do short relaxations
   for(size_t i = 0;  i < 2;  ++i)
-    doRelaxation(structure, optimisationData, speciesDb, castepExe);
+    doRelaxation(structure, optimisationData, speciesDb, castepExeAndArgs);
 
   // Copy the original back
   fs::copy_file(origParamFile, myCastepRun.getParamFile(), fs::copy_option::overwrite_if_exists);
@@ -255,10 +255,10 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
 }
 
 OptimisationOutcome CastepGeomOptRun::doRelaxation(
-  common::Structure &structure,
+  common::Structure & structure,
   OptimisationData & optimistaionData,
   const common::AtomSpeciesDatabase & speciesDb,
-  const fs::path & castepExe)
+  const ::std::string & castepExeAndArgs)
 {
   // 1. Write the .cell file from the current structure
   OptimisationOutcome outcome = makeCellCopy(structure, speciesDb);
@@ -266,10 +266,10 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
     return outcome;
 
   // 2. Run Castep
-  if(myCastepRun.runCastep(castepExe) != CastepRunResult::SUCCESS)
+  if(myCastepRun.runCastep(castepExeAndArgs) != CastepRunResult::SUCCESS)
   {
     ::std::stringstream ss;
-    ss << "Failed to run castep with: " << castepExe.string() << " " << io::stemString(myCastepRun.getParamFile());
+    ss << "Failed to run castep with: " << castepExeAndArgs << " " << io::stemString(myCastepRun.getParamFile());
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
 

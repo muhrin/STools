@@ -26,7 +26,7 @@ utility::Key<double> MAX_RATIO;
 utility::Key<utility::HeterogeneousMap> OPTIMISER;
 utility::Key<utility::HeterogeneousMap> TPSD;
 utility::Key<utility::HeterogeneousMap> CASTEP;
-utility::Key< ::boost::filesystem::path> CASTEP_EXE;
+utility::Key< ::std::string> CASTEP_EXE;
 utility::Key< ::std::string> CASTEP_SEED;
 utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
 utility::Key<double> PRESSURE;

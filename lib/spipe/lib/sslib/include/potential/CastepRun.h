@@ -75,7 +75,7 @@ public:
 
   void closeAllStreams();
 
-  CastepRunResult::Value runCastep(const ::boost::filesystem::path & castepExe);
+  CastepRunResult::Value runCastep(const ::std::string & castepExeString);
 
   CastepRunResult::Value updateStructureFromOutput(
     common::Structure & structure,

@@ -40,7 +40,9 @@ std::string generateUniqueName(const size_t randPostfixLength)
  
   // Build up the name
   std::stringstream ss;	//create a stringstream
-  ss << processId << "-" << currTime << "-" << randomString(randPostfixLength);
+  ss << processId << "-" << currTime;
+  if(randPostfixLength > 0)
+    ss << "-" << randomString(randPostfixLength);
 
   return ss.str();
 }

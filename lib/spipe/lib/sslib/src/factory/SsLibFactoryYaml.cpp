@@ -229,7 +229,7 @@ SsLibFactoryYaml::createGeometryOptimiser(
   }
   else if(castepOptions)
   {
-    const fs::path * const castepExe = castepOptions->find(CASTEP_EXE);
+    const ::std::string * const castepExe = castepOptions->find(CASTEP_EXE);
     const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
     const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
     if(castepExe && keepIntermediates && seed)
