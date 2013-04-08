@@ -55,7 +55,6 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 #
 # LAPACK #
 if(SSLIB_USE_LAPACK)
-  set(BLA_STATIC ON)
   find_package(LAPACK REQUIRED)
   if(NOT LAPACK_FOUND)
     message(STATUS "LAPACK Not found")

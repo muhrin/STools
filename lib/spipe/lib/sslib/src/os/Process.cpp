@@ -8,8 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "os/Process.h"
 
-#include <iostream>
-
 #include <boost/foreach.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/tokenizer.hpp>
@@ -44,7 +42,7 @@ void parseParameters(
 )
 {
   typedef boost::tokenizer<boost::char_separator<char> > Tok;
-	const boost::char_separator<char> sep(" \t");
+  const boost::char_separator<char> sep(" \t");
 
   Tok tok(exeString, sep);
   outParams.insert(outParams.begin(), tok.begin(), tok.end());
@@ -81,6 +79,7 @@ int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> &
   if(child == 0)
   { // We are the child
     execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
+    return 0;
   }
   else
   { // We are the parent
