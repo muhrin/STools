@@ -15,6 +15,7 @@ namespace factory {
 
 // GENERAL
 ::sstbx::utility::Key<int> NUM;
+::sstbx::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
 ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> LOWEST_ENERGY;

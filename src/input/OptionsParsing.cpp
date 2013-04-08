@@ -10,7 +10,14 @@
 
 #include <iostream>
 
+#include <boost/lexical_cast.hpp>
+
 #include <yaml-cpp/yaml.h>
+
+#include <math/Random.h>
+#include <utility/HeterogeneousMap.h>
+
+#include <factory/MapEntries.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -29,6 +36,28 @@ int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
     return 1;
   }
   return 0;
+}
+
+void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & options)
+{
+  namespace spf = ::spipe::factory;
+  namespace ssm = ::sstbx::math;
+
+  const ::std::string * const rngSeed = options.find(spf::RNG_SEED);
+  if(rngSeed)
+  {
+    // Is it an integer?
+    bool userSuppliedSeed = false;
+    try
+    {
+      ssm::seed(::boost::lexical_cast<unsigned int>(*rngSeed));
+      userSuppliedSeed = true;
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
+    if(!userSuppliedSeed && rngSeed->find("time"))
+      ssm::seed();
+  }
 }
 
 } // namespace stools

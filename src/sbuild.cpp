@@ -70,13 +70,13 @@ int main(const int argc, char * argv[])
   stools::factory::Build buildSchema;
   ssu::HeterogeneousMap buildOptions;
   buildSchema.nodeToValue(parse, buildOptions, buildNode, true);
-
   if(parse.hasErrors())
   {
     ::std::cout << "Found errors:\n";
     parse.printErrors();
     return 1;
   }
+  ::stools::input::seedRandomNumberGenerator(buildOptions);
 
   ssc::AtomSpeciesDatabase speciesDb;
 

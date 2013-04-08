@@ -22,13 +22,12 @@
 #include <pipelib/pipelib.h>
 
 // From StructurePipe
+#include <factory/StFactory.h>
 
 // Local
 #include "utility/PipeDataInitialisation.h"
 #include "input/OptionsParsing.h"
-#include "factory/StFactory.h"
 #include "factory/YamlSchema.h"
-#include "math/Random.h"
 
 // MACROS ////////////////////////////////////
 
@@ -53,7 +52,6 @@ struct InputOptions
 
 // FUNCTIONS ////////////////////////////////
 int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
-void seedRng(ssu::HeterogeneousMap schemaOptions);
 
 int main(const int argc, char * argv[])
 {
@@ -83,8 +81,7 @@ int main(const int argc, char * argv[])
     parse.printErrors();
     return 1;
   }
-
-  seedRng(schemaOptions);
+  ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
   ssc::AtomSpeciesDatabase speciesDb;
 
@@ -154,7 +151,3 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 }
 
 
-void seedRng(ssu::HeterogeneousMap schemaOptions)
-{
-  ssm::seed();
-}

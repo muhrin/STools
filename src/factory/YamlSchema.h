@@ -42,6 +42,7 @@ struct Build : public ::sstbx::yaml_schema::SchemaHeteroMap
     ::sstbx::utility::HeterogeneousMap randStructureDefault;
     randStructureDefault[spf::NUM] = 1;
 
+    addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
     addEntry(
       "randomStructures",
       spf::RANDOM_STRUCTURE,
@@ -63,6 +64,7 @@ struct Search : public ::sstbx::yaml_schema::SchemaHeteroMap
   {
     namespace spf = ::spipe::factory;
 
+    addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
     addEntry(
       "paramSweep",
       spf::PARAM_SWEEP,

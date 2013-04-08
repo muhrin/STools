@@ -9,9 +9,10 @@
 #include "factory/StFactory.h"
 
 // SSLib includes
-#include <utility/UtilityFwd.h>
 #include <factory/SsLibElements.h>
+#include <math/Random.h>
 #include <potential/OptimisationSettings.h>
+#include <utility/UtilityFwd.h>
 
 // From SPipe
 #include <blocks/LowestFreeEnergy.h>
@@ -30,6 +31,7 @@ namespace sp = ::spipe;
 namespace spb = sp::blocks;
 namespace spf = sp::factory;
 
+namespace ssm = ::sstbx::math;
 namespace ssf = ::sstbx::factory;
 namespace ssp = ::sstbx::potential;
 
