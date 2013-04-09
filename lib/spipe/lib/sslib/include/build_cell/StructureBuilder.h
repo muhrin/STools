@@ -71,7 +71,6 @@ public:
   bool isCluster() const;
 
 private:
-
   bool chooseSymmetry(StructureBuild & build) const;
   GenerationOutcome generateSymmetry(StructureBuild & build) const;
 

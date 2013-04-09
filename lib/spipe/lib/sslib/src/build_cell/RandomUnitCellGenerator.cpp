@@ -164,11 +164,11 @@ RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMaxLengthRatio()
     return ParamValue(DEFAULT_MAX_LENGTH_RATIO, false);
 }
 
-GenerationOutcome RandomUnitCellGenerator::generateCell(common::UnitCellPtr & cellOut) const
+GenerationOutcome RandomUnitCellGenerator::generateCell(
+  common::UnitCellPtr & cellOut,
+  const bool structureIsCluster) const
 {
   using namespace utility::cell_params_enum;
-
-  GenerationOutcome outcome;
 
   double params[6];
   size_t i;
@@ -196,23 +196,36 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(common::UnitCellPtr & ce
 
   // TODO: Deal with possible runtime exception as a result of
   // ortho matrix being singular
-  cellOut.reset(new common::UnitCell(params));
+  try
+  {
+    cellOut.reset(new common::UnitCell(params));
+  }
+  catch(const ::std::runtime_error & /*e*/)
+  {
+    return GenerationOutcome::failure("Cell parameters caused singular orthogonalisation matrix.");
+  }
+
 
   if(!(!myTargetVolume && cellFullySpecified()))
     cellOut->setVolume(generateVolume());
 
-  outcome.setSuccess();
-  return outcome;
+  return GenerationOutcome::success();
 }
 
-GenerationOutcome RandomUnitCellGenerator::generateCell(common::UnitCellPtr & cellOut, const StructureContents & structureContents) const
+GenerationOutcome RandomUnitCellGenerator::generateCell(
+  common::UnitCellPtr & cellOut,
+  const StructureContents & structureContents,
+  const bool structureIsCluster) const
 {
   const GenerationOutcome & outcome = generateCell(cellOut);
-
   if(!outcome.success())
     return outcome;
 
-  if(!myTargetVolume && !cellFullySpecified())
+  if(structureIsCluster && myClusterVolMultiplier &&!cellFullySpecified())
+  {
+    cellOut->setVolume(*myClusterVolMultiplier * structureContents.getVolume()); 
+  }
+  else if(!myTargetVolume && !cellFullySpecified())
   {
     cellOut->setVolume(2.0 * structureContents.getVolume()); 
   }

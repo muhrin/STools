@@ -9,43 +9,14 @@
 #define GENERATION_OUTCOME_H
 
 // INCLUDES /////////////////////////////////
-
+#include <utility/Outcome.h>
 
 // FORWARD DECLARES //////////////////////////
 
 namespace sstbx {
 namespace build_cell {
 
-class GenerationOutcome
-{
-public:
-  GenerationOutcome(): mySucceeded(false) {}
-
-  bool success() const;
-  const ::std::string & getErrorMessage() const;
-
-  GenerationOutcome setSuccess()
-  {
-    mySucceeded = true;
-    return *this;
-  }
-
-  GenerationOutcome setFailure(const ::std::string & msg = "")
-  {
-    mySucceeded = false;
-    myErrorMessage = msg;
-    return *this;
-  }
-
-private:
-  bool mySucceeded;
-  ::std::string myErrorMessage;
-};
-
-inline bool GenerationOutcome::success() const
-{
-  return mySucceeded;
-}
+typedef utility::Outcome GenerationOutcome;
 
 }
 }

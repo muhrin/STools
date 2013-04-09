@@ -93,6 +93,15 @@ OptionalDouble getVolume(const ssc::Structure & structure)
   return volume;
 }
 
+OptionalDouble getVolumePerAtom(const ssc::Structure & structure)
+{
+  OptionalDouble volume;
+  if(structure.getNumAtoms() > 0 && structure.getUnitCell())
+    volume.reset(structure.getUnitCell()->getVolume() / structure.getNumAtoms());
+
+  return volume;
+}
+
 OptionalDouble getEnergyPerAtom(const ssc::Structure & structure)
 {
   OptionalDouble energyPerAtom;

@@ -10,6 +10,7 @@
 
 // INCLUDES ////////////
 #include "build_cell/BuildCellFwd.h"
+#include "build_cell/GenerationOutcome.h"
 #include "common/Types.h"
 
 namespace sstbx {
@@ -19,7 +20,6 @@ class UnitCell;
 }
 
 namespace build_cell {
-class GenerationOutcome;
 class StructureContents;
 
 class IUnitCellGenerator
@@ -27,8 +27,15 @@ class IUnitCellGenerator
 public:
   virtual ~IUnitCellGenerator() {}
 
-  virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut) const = 0;
-  virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut, const StructureContents & contents) const = 0;
+  virtual GenerationOutcome generateCell(
+    common::UnitCellPtr & cellOut,
+    const bool structureIsCluster = false
+  ) const = 0;
+  virtual GenerationOutcome generateCell(
+    common::UnitCellPtr & cellOut,
+    const StructureContents & contents,
+    const bool structureIsCluster = false
+  ) const = 0;
 
   virtual IUnitCellGeneratorPtr clone() const = 0;
 };

@@ -40,7 +40,7 @@ const ::std::string VAR_BRACKET("$");
 const ::std::string VAR_FORMAT("%");
 const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
-const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $v$ $e$ $re$ $sg$ $tf$\\n");
+const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ea$ $rea$ $sg$ $tf$\\n");
 
 ::std::string mapEnvToOptionName(const ::std::string & envVariable)
 {
@@ -80,7 +80,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
     desc.add_options()
       ("help", "Show help message")
       ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
-      ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("re"), "sort token")
+      ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("rea"), "sort token")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
@@ -162,6 +162,7 @@ CustomisableTokens generateTokens(TokensMap & map)
 
   addToken(map, utility::makeFunctionToken< ::std::string>("Name", "n", utility::functions::getName, "%|-|"));
   addToken(map, utility::makeFunctionToken<double>("Volume", "v", utility::functions::getVolume, "%.2f"));
+  addToken(map, utility::makeFunctionToken<double>("Volume/atom", "va", utility::functions::getVolumePerAtom, "%.2f"));
   addToken(map, TokenPtr(new utility::EnergyToken("Energy/atom", "ea", "%.4f", true)));
   addToken(map, utility::makeFunctionToken<unsigned int>("N atoms", "na", utility::functions::getNumAtoms));
   

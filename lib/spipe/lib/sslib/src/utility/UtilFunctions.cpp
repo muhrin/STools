@@ -18,11 +18,18 @@
 namespace sstbx {
 namespace utility {
 
+static const ::std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+char randomChar(const int seed = -1)
+{
+  if(seed == -1)
+    return charset[math::randu(static_cast<int>(charset.length()))];
+  else
+    return charset[seed % charset.length()];
+}
+
 ::std::string randomString(const size_t length)
 {
-  static const ::std::string charset =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-
   ::std::string result;
   result.resize(length);
 
@@ -40,9 +47,9 @@ std::string generateUniqueName(const size_t randPostfixLength)
  
   // Build up the name
   std::stringstream ss;	//create a stringstream
-  ss << processId << "-" << currTime;
+  ss << processId << "-" << randomChar(static_cast<int>(currTime));
   if(randPostfixLength > 0)
-    ss << "-" << randomString(randPostfixLength);
+    ss << randomString(randPostfixLength);
 
   return ss.str();
 }

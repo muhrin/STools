@@ -69,7 +69,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   if(myUnitCellGenerator.get())
   {
     common::UnitCellPtr cell;
-    outcome = myUnitCellGenerator->generateCell(cell, contents);
+    outcome = myUnitCellGenerator->generateCell(cell, contents, myIsCluster);
     
     if(!outcome.success())
       return outcome;
@@ -78,11 +78,12 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
       structureOut->setUnitCell(cell);
     else
     {
-      outcome.setFailure("Unit cell generator failed to generate unit cell");
-      return outcome;
+      return GenerationOutcome::failure("Unit cell generator failed to generate unit cell");
     }
   }
 
+  // By now we should have a unit cell and symmetry if needed
+  // so generate the atoms
   BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
   {
     outcome = generatorAndTicket.first->generateFragment(
@@ -168,9 +169,8 @@ GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) con
 
   SSLIB_ASSERT(build.getStructure().getNumAtoms() == build.getNumAtomInfos());
 
-  GenerationOutcome outcome;
   if(!build.getSymmetryGroup())
-    return outcome.setSuccess();
+    return GenerationOutcome::success(); // No symmetry
 
   common::Structure & structure = build.getStructure();
   const common::UnitCell * const unitCell = structure.getUnitCell();
@@ -207,7 +207,7 @@ GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) con
       }
     }
   }
-  return outcome.setSuccess();
+  return GenerationOutcome::success();
 }
 
 }

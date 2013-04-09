@@ -12,6 +12,8 @@
 
 #include "common/Types.h"
 
+#include "build_cell/GenerationOutcome.h"
+
 namespace sstbx {
 
 // FORWARD DECLARES //////////////////////////
@@ -21,7 +23,6 @@ class Structure;
 }
 
 namespace build_cell {
-class GenerationOutcome;
 
 class IStructureGenerator
 {

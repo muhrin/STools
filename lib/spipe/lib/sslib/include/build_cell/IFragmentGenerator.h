@@ -12,6 +12,8 @@
 #include "build_cell/BuildCellFwd.h"
 #include "utility/SharedHandle.h"
 
+#include "build_cell/GenerationOutcome.h"
+
 // DEFINITION ///////////////////////
 
 namespace sstbx {
@@ -20,7 +22,6 @@ class AtomSpeciesDatabase;
 }
 namespace build_cell {
 // FORWARD DECLARATIONS ///////
-class GenerationOutcome;
 class StructureBuild;
 class StructureContents;
 

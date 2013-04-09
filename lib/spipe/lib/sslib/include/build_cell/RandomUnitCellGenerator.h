@@ -52,8 +52,15 @@ public:
   ParamValue getMaxLengthRatio() const;
 
   // From IUnitCellGenerator ////
-  virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut) const;
-  virtual GenerationOutcome generateCell(common::UnitCellPtr & cellOut, const StructureContents & contents) const;
+  virtual GenerationOutcome generateCell(
+    common::UnitCellPtr & cellOut,
+    const bool structureIsCluster = false
+  ) const;
+  virtual GenerationOutcome generateCell(
+    common::UnitCellPtr & cellOut,
+    const StructureContents & contents,
+    const bool structureIsCluster = false
+  ) const;
 
   virtual IUnitCellGeneratorPtr clone() const;
   // End from IUnitCellGenerator //////
@@ -80,9 +87,10 @@ private:
   /** An array of the optional min/max values of the unit cell lattice parameters. */
   MinMax myParameters[6];
 
-  OptionalDouble  myTargetVolume;
-  OptionalDouble  myVolumeDelta;
-  OptionalDouble  myMaxLengthRatio;
+  OptionalDouble myTargetVolume;
+  OptionalDouble myVolumeDelta;
+  OptionalDouble myMaxLengthRatio;
+  OptionalDouble myClusterVolMultiplier;
 };
 
 }

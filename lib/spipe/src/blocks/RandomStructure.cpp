@@ -154,7 +154,7 @@ RandomStructure::getStructureGenerator()
 {
   // Build up the name
   ::std::stringstream ss;
-  ss << ssu::generateUniqueName(0) << "-" << structureNum;
+  ss << ssu::generateUniqueName() << "-" << structureNum;
   return ss.str();
 }
 

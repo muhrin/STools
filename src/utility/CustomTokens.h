@@ -62,6 +62,7 @@ private:
 namespace functions {
 ::boost::optional< ::std::string> getName(const ::sstbx::common::Structure & structure);
 ::boost::optional<double> getVolume(const ::sstbx::common::Structure & structure);
+::boost::optional<double> getVolumePerAtom(const ::sstbx::common::Structure & structure);
 ::boost::optional<double> getEnergyPerAtom(const ::sstbx::common::Structure & structure);
 ::boost::optional<unsigned int> getNumAtoms(const ::sstbx::common::Structure & structure);
 ::boost::optional< ::std::string> getSpaceGroupSymbol(const ::sstbx::common::Structure & structure);

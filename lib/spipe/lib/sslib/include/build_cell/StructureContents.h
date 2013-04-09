@@ -35,7 +35,6 @@ public:
   double getVolume() const;
 
 private:
-
   double volume(const double radius) const;
 
   size_t myNumAtoms;
