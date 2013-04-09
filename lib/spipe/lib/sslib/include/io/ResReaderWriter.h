@@ -54,6 +54,12 @@ public:
   /* Does this reader support reading multiple structures from a single file.
   /**/
   virtual bool multiStructureSupport() const;
+
+private:
+  bool parseTitle(common::Structure & structure, const ::std::string & titleLine) const;
+  bool parseCell(common::Structure & structure, const ::std::string & cellLine) const;
+
+  void writeTitle(::std::ostream & os, const common::Structure & structure) const;
 };
 
 }

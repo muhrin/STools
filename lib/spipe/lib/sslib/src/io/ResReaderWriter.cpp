@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <set>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
@@ -43,6 +44,10 @@ namespace ssc = ::sstbx::common;
 namespace properties = ssc::structure_properties;
 
 const unsigned int ResReaderWriter::DIGITS_AFTER_DECIMAL = 8;
+
+// Set up our tokenizer to split around space and tab
+typedef boost::tokenizer<boost::char_separator<char> > Tok;
+const boost::char_separator<char> sep(" \t");
 
 void ResReaderWriter::writeStructure(
 	::sstbx::common::Structure & str,
@@ -106,7 +111,7 @@ void ResReaderWriter::writeStructure(
 		strFile << "n/a";
 
 	// Space group
-	strFile << " 0 0 (";
+	strFile << " 0 0 " << str.getNumAtoms() << " (";
   sValue = str.getProperty(properties::general::SPACEGROUP_SYMBOL);
 	if(sValue)
 		strFile << *sValue;
@@ -240,134 +245,26 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 
     // We're expecting the TITL line
     foundTitle = false;
-    for(
-      getline(strFile, line);
-      !foundTitle && strFile.good();
-      getline(strFile, line))
-      {
+    for(getline(strFile, line); !foundTitle && strFile.good(); getline(strFile, line))
+    {
       Tok toker(line, sep);
       Tok::iterator tokIt = toker.begin();
       if(*tokIt == "TITL")
       {
+        parseTitle(*str, line);
         foundTitle = true;
-        if(++tokIt != toker.end())
-          str->setName(*tokIt);
-        else
-          str->setName(io::stemString(filepath));
-
-        bool hasMore = true;
-        // Parse the rest of the tokens
-        // Pressure
-        if(hasMore && ++tokIt != toker.end())
-        {
-          try
-          {
-            str->setPropertyFromString(properties::general::PRESSURE_INTERNAL, *tokIt);
-          }
-          catch(const bad_lexical_cast &)
-          {}
-        }
-        else
-          hasMore = false;
-
-        // Volume
-        if(hasMore && ++tokIt == toker.end())
-          hasMore = false;
-
-        // Free energy
-        if(hasMore && ++tokIt != toker.end())
-        {
-          try
-          {
-            str->setPropertyFromString(properties::general::ENERGY_INTERNAL, *tokIt);
-          }
-          catch(const bad_lexical_cast &)
-          {}
-        }
-        else 
-          hasMore = false;
-
-        if(hasMore && ++tokIt == toker.end())
-          hasMore = false;
-        if(hasMore && ++tokIt == toker.end())
-          hasMore = false;
-
-        // Space group
-        if(hasMore && ++tokIt != toker.end())
-        {
-          ::std::string iucSymbol = *tokIt;
-          if(!iucSymbol.empty() && iucSymbol[0] == '(')
-            iucSymbol.erase(0, 1);
-          if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
-            iucSymbol.erase(iucSymbol.size() - 1, 1);
-
-          str->setProperty(properties::general::SPACEGROUP_SYMBOL, iucSymbol);
-        }
-        else
-          hasMore = false;
-
-        if(hasMore && ++tokIt == toker.end())
-          hasMore = false;
-        if(hasMore && ++tokIt == toker.end())
-          hasMore = false;
-
-        // Times found
-        if(hasMore && ++tokIt != toker.end())
-        {
-          try
-          {
-            str->setPropertyFromString(properties::searching::TIMES_FOUND, *tokIt);
-          }
-          catch(const bad_lexical_cast &)
-          {}
-        }
-        else
-          hasMore = false;
-      } // end if(*tokIt == "TITL")
+      }
     } // end for
 
     // We're expecting the CELL line
     bool finishedCell = false;
-    for(; // The previous for statement will have called one last getline
-      !finishedCell && strFile.good();
-      getline(strFile, line))
+    for(; !finishedCell && strFile.good(); getline(strFile, line))
     {
-      Tok toker(line, sep);
-      Tok::iterator tokIt = toker.begin();
-      if(*tokIt == "CELL")
+      if(line.find("CELL") != ::std::string::npos)
       {
+        parseCell(*str, line);
         finishedCell = true;
-
-        // Move the token on
-        bool hasMore = ++tokIt != toker.end();
-        if(hasMore)
-        {
-          // Set up the cell parameters
-          double params[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-          unsigned int i = 0;
-          bool foundParams = true;
-          for(++tokIt; i < 6 && tokIt != toker.end();
-            ++i, ++tokIt)
-          {
-            try
-            {
-              params[i] = lexical_cast<double>(*tokIt);
-            }
-            catch(const bad_lexical_cast &)
-            {
-              foundParams = false;
-              break;
-            }
-          }
-          // Check if we found all six values
-          foundParams = foundParams && i == 6;
-
-          str->setUnitCell(common::UnitCellPtr(new common::UnitCell(params)));
-        } // if(hasMore)
-      } // if(*tokIt == "CELL")
-      else if(!tokIt->empty()) // There is another token, but it's not the cell
-        finishedCell = true; 
+      }
     } // while !finishedCell
 
 
@@ -458,7 +355,7 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
   } // end if(strFile.is_open())
 
 
-  if(!foundTitle || !foundSfac)
+  if(!foundSfac)
     str.reset();
 
   return str;
@@ -491,6 +388,101 @@ std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
 bool ResReaderWriter::multiStructureSupport() const
 {
   return false;
+}
+
+bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::string & titleLine) const
+{
+  Tok tok(titleLine, sep);
+  // Put the tokens into a vector
+  ::std::vector< ::std::string> titleTokens(tok.begin(), tok.end());
+
+  if(titleTokens.empty() || titleTokens[0].find("TITL") == ::std::string::npos)
+    return false;
+
+  // If there are this many tokens or more it probably means the title
+  // is in airss format
+  if(titleTokens.size() >= 11)
+  {
+    structure.setName(titleTokens[1]);
+    try
+    {
+      structure.setPropertyFromString(properties::general::PRESSURE_INTERNAL, titleTokens[2]);
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
+    // 3 = volume
+    try
+    {
+      structure.setPropertyFromString(properties::general::ENERGY_INTERNAL, titleTokens[4]);
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
+    // 5 = spin density
+    // 6 = integrated spin density
+    // 7 = space group or num atoms(in new format ONLY)
+    size_t newFormat = 0;
+    if(!titleTokens[8].empty() && titleTokens[8][0] == '(')
+      newFormat = 1;
+
+    ::std::string iucSymbol = titleTokens[7 + newFormat];
+    if(!iucSymbol.empty() && iucSymbol[0] == '(')
+      iucSymbol.erase(0, 1);
+    if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
+     iucSymbol.erase(iucSymbol.size() - 1, 1);
+    if(!iucSymbol.empty())
+      structure.setProperty(properties::general::SPACEGROUP_SYMBOL, iucSymbol);
+
+    // 8 = 'n'
+    // 9 = '-'
+    // 10 = times found
+    if(titleTokens.size() >= 11 + newFormat)
+    {
+      try
+      {
+        structure.setPropertyFromString(properties::searching::TIMES_FOUND, titleTokens[10 + newFormat]);
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::string & cellLine) const
+{
+  const Tok tok(cellLine, sep);
+  const ::std::vector< ::std::string> cellTokens(tok.begin(), tok.end());
+
+  if(cellTokens.size() < 8 || cellTokens[0].find("CELL") == ::std::string::npos)
+    return false;
+
+  bool paramsFound = true;
+  double params[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  for(size_t i = 0; i < 6; ++i)
+  {
+    try
+    {
+      params[i] = ::boost::lexical_cast<double>(cellTokens[i + 2]);
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {
+      paramsFound = false;
+      break;
+    }
+  }
+  if(paramsFound)
+  {
+    structure.setUnitCell(makeUniquePtr(new common::UnitCell(params)));
+    return true;
+  }
+  return false;
+}
+
+void ResReaderWriter::writeTitle(::std::ostream & os, const common::Structure & structure) const
+{
+
 }
 
 }
