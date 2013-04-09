@@ -15,6 +15,8 @@
 #include <common/UnitCell.h>
 #include <io/ResourceLocator.h>
 #include <io/StructureReadWriteManager.h>
+#include <utility/SortedDistanceComparator.h>
+#include <utility/UniqueStructureSet.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -32,7 +34,6 @@ namespace sp  = ::spipe;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
-
 
 int main(const int argc, char * argv[])
 {
@@ -60,13 +61,16 @@ int main(const int argc, char * argv[])
 
   StructureInfoTable infoTable;
   StructuresContainer structures;
+  ssu::UniqueStructureSet<ssc::Structure *> uniqueStructures(
+    ::sstbx::makeUniquePtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
+  );
   SortedKeys sortedKeys;
 
   DataGatherer gatherer;
   ssc::AtomSpeciesDatabase speciesDb;
   ::std::string inputFile;
   ssio::ResourceLocator structureLocator;
-  size_t numLoaded = 0;
+  size_t numKept, numLoaded = 0;
   BOOST_FOREACH(inputFile, in.inputFiles)
   {
     if(structureLocator.set(inputFile))
@@ -74,14 +78,38 @@ int main(const int argc, char * argv[])
       const size_t numLoadedFromFile = rwMan.readStructures(
         structures,
         structureLocator,
-        speciesDb);
+        speciesDb
+      );
       
-      for(size_t i = numLoaded; i < numLoaded + numLoadedFromFile; ++i)
+      numKept = 0;
+      if(in.uniqueMode)
+      {
+        // Get an interator to the first new structure
+        StructuresContainer::iterator it = structures.begin() + numLoaded;
+        while(it != structures.end())
+        {
+          // Have we seen this structure before?
+          if(uniqueStructures.insert(&*it).second == false)
+            it = structures.erase(it);  // Yes
+          else
+          { // No
+            ++it;
+            ++numKept;
+          }
+        }
+
+      }
+      else
+        numKept = numLoadedFromFile;
+
+      // Preprocess the structure
+      for(size_t i = numLoaded; i < numLoaded + numKept; ++i)
       {
         sortedKeys.push_back(&structures[i]);
         gatherer.gather(structures[i]);
       }
-      numLoaded += numLoadedFromFile; // Up the counter
+
+      numLoaded += numKept; // Up the counter
     }
   }
 

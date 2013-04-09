@@ -64,6 +64,8 @@ struct InputOptions
   bool recursive;
   bool summary;
   int printTop; // Print top n structures (-1 for all)
+  bool uniqueMode;
+  double uniqueTolerance;
 };
 
 struct CustomisableTokens

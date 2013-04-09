@@ -88,6 +88,8 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("summary,s", po::value<bool>(&in.summary)->default_value(false)->zero_tokens(), "summary only")
       ("top,t", po::value<int>(&in.printTop)->default_value(PRINT_ALL), "print top n structures")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
+      ("unique,u", po::value<bool>(&in.uniqueMode)->default_value(false)->zero_tokens(), "use only unique structures")
+      ("unique-tol,T", po::value<double>(&in.uniqueTolerance)->default_value(0.001), "tolernace to use when comparing unique structures")
     ;
 
     po::positional_options_description p;
@@ -184,12 +186,12 @@ parseTokenNames(
   const InputOptions & in)
 {
   typedef ::boost::find_iterator< ::std::string::iterator> StringFindIterator;
-  ::boost::regex matchTitles(VAR_TITLE + "[^[:space:]]+" + VAR_TITLE);
+  static const ::boost::regex RE_MATCH_TITLES(VAR_TITLE + "[^[:space:]]+" + VAR_TITLE);
 
   ::std::string namesSubstituted = in.infoString;
 
   ::std::string token;
-  for(StringFindIterator it = ::boost::make_find_iterator(namesSubstituted, ::boost::algorithm::regex_finder(matchTitles)),
+  for(StringFindIterator it = ::boost::make_find_iterator(namesSubstituted, ::boost::algorithm::regex_finder(RE_MATCH_TITLES)),
     end = StringFindIterator(); it != end; ++it)
   {
     token.assign(it->begin() + 1, it->end() - 1);
