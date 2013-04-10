@@ -17,9 +17,7 @@ namespace utility {
 // FORWARD DECLARES ////////////
 class IStructureComparator;
 
-
 typedef UniquePtr<IStructureComparator>::Type IStructureComparatorPtr;
-
 
 }
 }
