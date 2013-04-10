@@ -18,6 +18,7 @@
 #include "common/AtomSpeciesDatabase.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
+#include "io/BoostFilesystem.h"
 #include "io/Parsing.h"
 #include "utility/IndexingEnums.h"
 
@@ -84,6 +85,10 @@ size_t CastepReader::readStructures(
     common::types::StructurePtr str(readStructure(strFile, speciesDb, locator.id()));
     if(str.get())
     {
+      ::std::string name = io::stemString(locator.path());
+      if(!locator.id().empty())
+        name += "-" + locator.id();
+      str->setName(name);
       outStructures.push_back(str);
       numRead = 1;
     }
@@ -92,7 +97,7 @@ size_t CastepReader::readStructures(
   if(strFile.is_open())
     strFile.close();
 
-  return outStructures.size();
+  return numRead;
 }
 
 ::sstbx::common::types::StructurePtr CastepReader::readStructure(
@@ -141,6 +146,7 @@ size_t CastepReader::readStructures(
   common::UnitCell currentCell;
   std::string line;
   bool cellUpToDate = false;
+  size_t numRead = 0;
   while(::std::getline(inputStream, line))
   {
     if(::boost::find_first(line, CELL_TITLE))
@@ -151,10 +157,13 @@ size_t CastepReader::readStructures(
         new common::Structure(makeUniquePtr(new common::UnitCell(currentCell)))
       );
       if(parseContents(*structure, inputStream, speciesDb))
+      {
         outStructures.push_back(structure.release());
+        ++numRead;
+      }
     }
   }
-  return outStructures.size();
+  return numRead;
 }
 
 bool CastepReader::parseCell(common::UnitCell & unitCell, ::std::istream & inputStream) const

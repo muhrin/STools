@@ -357,7 +357,12 @@ void StructureReadWriteManager::postRead(
 {
   // If the structure doesn't have a name, set it to the locator
   if(structure.getName().empty())
-    structure.setName(io::stemString(locator.path()) + locator.id());
+  {
+    ::std::string name = io::stemString(locator.path());
+    if(!locator.id().empty())
+      name += "-" + locator.id();
+    structure.setName(name);
+  }
 
   structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
 }

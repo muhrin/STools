@@ -27,6 +27,7 @@ namespace io {
 class ResourceLocator
 {
 public:
+  static const ::std::string ID_DELIMITER;
 
   ResourceLocator();
   /* implicit */ ResourceLocator(const ::boost::filesystem::path & path);
@@ -49,8 +50,6 @@ public:
   ResourceLocator & makeRelative(const ::boost::filesystem::path & from);
 
 private:
-
-  static const ::std::string ID_DELIMITER;
 
   ::boost::filesystem::path myPath;
   ::std::string myResourceId;
