@@ -104,7 +104,9 @@ void ResReaderWriter::writeStructure(
 
 	// Enthalpy
 	strFile << " ";
-  dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
+  dValue = str.getProperty(properties::general::ENTHALPY);
+  if(!dValue)
+    dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
 	if(dValue)
 		io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
 	else
@@ -413,7 +415,7 @@ bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::str
     // 3 = volume
     try
     {
-      structure.setPropertyFromString(properties::general::ENERGY_INTERNAL, titleTokens[4]);
+      structure.setPropertyFromString(properties::general::ENTHALPY, titleTokens[4]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {}

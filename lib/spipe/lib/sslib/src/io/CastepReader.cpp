@@ -77,6 +77,8 @@ size_t CastepReader::readStructures(
 	const common::AtomSpeciesDatabase & speciesDb
 ) const
 {
+  const size_t originalSize = outStructures.size();
+
   const fs::path filepath(locator.path());
 	if(!filepath.has_filename())
     return 0; // Can't write out structure without filepath
@@ -102,9 +104,9 @@ size_t CastepReader::readStructures(
 
   // The above call will set the name of the structures to the index in the
   // .castep file.  Now, prepend the file stem to complete the name.
-  BOOST_FOREACH(common::Structure & structure, outStructures)
+  for(size_t i = originalSize; i < originalSize + numRead; ++i)
   {
-    structure.setName(stemString(locator.path()) + "-" + structure.getName());
+    outStructures[i].setName(stemString(locator.path()) + "-" + outStructures[i].getName());
   }
 
   return numRead;
