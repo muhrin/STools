@@ -198,11 +198,7 @@ bool StructureReadWriteManager::writeStructure(
   // Finally pass it on the the correct writer
 	it->second->writeStructure(str, locator, atomSpeciesDb);
 
-  // If the structure doesn't have a name, set it to the locator
-  if(str.getName().empty())
-    str.setName(io::stemString(locator.path()) + locator.id());
-
-  updateStructure(str, locator);
+  postWrite(str, locator);
 
   // TODO: The write may have failed so provide better and accurate feedback!
   return true;
@@ -229,7 +225,7 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
   structure = it->second->readStructure(locator, speciesDb);
   
   if(structure.get())
-    updateStructure(*structure, locator);
+    postRead(*structure, locator);
 
   // TODO: The write may have failed so provide better and accurate feedback!
   return structure;
@@ -261,7 +257,7 @@ size_t StructureReadWriteManager::readStructures(
     // Set the path to where it was read from
     BOOST_FOREACH(common::Structure & structure, outStructures)
     {
-      updateStructure(structure, locator);
+      postRead(structure, locator);
     }
   }
   else if(fs::is_directory(locator.path()))
@@ -351,7 +347,19 @@ size_t StructureReadWriteManager::doReadAllStructuresFromPath(
   return numRead;
 }
 
-void StructureReadWriteManager::updateStructure(
+void StructureReadWriteManager::postRead(
+  common::Structure & structure,
+  const ResourceLocator & locator
+) const
+{
+  // If the structure doesn't have a name, set it to the locator
+  if(structure.getName().empty())
+    structure.setName(io::stemString(locator.path()) + locator.id());
+
+  structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+}
+
+void StructureReadWriteManager::postWrite(
   common::Structure & structure,
   const ResourceLocator & locator
 ) const

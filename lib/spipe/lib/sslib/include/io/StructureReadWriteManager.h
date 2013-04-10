@@ -123,7 +123,8 @@ private:
     const size_t maxDepth,
     const size_t currentDepth = 0) const;
 
-  void updateStructure(common::Structure & structure, const ResourceLocator & locator) const;
+  void postRead(common::Structure & structure, const ResourceLocator & locator) const;
+  void postWrite(common::Structure & structure, const ResourceLocator & locator) const;
 
   ::std::string myDefaultWriteExtension;
 
