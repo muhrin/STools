@@ -36,8 +36,6 @@ const ::std::string CastepReader::CELL_TITLE("Unit Cell");
 const ::std::string CastepReader::CONTENTS_TITLE("Cell Contents");
 const ::std::string CastepReader::CONTENTS_BOX_BEGIN("x----------------------------------------------------------x");
 const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
-const ::boost::regex CastepReader::RE_LATTICE_PARAM("[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")[[:blank:]]*[[:word:]]*[[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")");
-const ::boost::regex CastepReader::RE_ATOM_INFO("x[[:blank:]]*([[:word:]]+)[[:blank:]]+[[:digit:]]+[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")");
 
 ::std::vector<std::string> CastepReader::getSupportedFileExtensions() const
 {
@@ -79,12 +77,33 @@ size_t CastepReader::readStructures(
   fs::ifstream strFile;
 	strFile.open(filepath);
 
-  const size_t numRead = readStructures(outStructures, strFile, speciesDb);
+  size_t numRead = 0;
+  if(locator.id().empty())
+    numRead = readStructures(outStructures, strFile, speciesDb);
+  else
+  {
+    size_t structureIndex;
+    try
+    {
+      structureIndex = ::boost::lexical_cast<size_t>(locator.id());
+      StructuresContainer tempStructures;
+      readStructures(tempStructures, strFile, speciesDb);
+      if(structureIndex < tempStructures.size())
+      {
+        outStructures.push_back(
+          tempStructures.release(tempStructures.begin() + structureIndex).release()
+        );
+        numRead = 1;
+      }
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
+  }
 
   if(strFile.is_open())
     strFile.close();
 
-  return numRead;
+  return outStructures.size();
 }
 
 ::sstbx::common::types::StructurePtr CastepReader::readStructure(
@@ -109,18 +128,17 @@ size_t CastepReader::readStructures(
 {
   common::UnitCell currentCell;
   std::string line;
-  bool errorParsing = false;
-  while(!errorParsing && ::std::getline(inputStream, line))
+  bool cellUpToDate = false;
+  while(::std::getline(inputStream, line))
   {
     if(::boost::find_first(line, CELL_TITLE))
-      errorParsing = !parseCell(currentCell, inputStream);
-    else if(::boost::find_first(line, CONTENTS_TITLE))
+      cellUpToDate = parseCell(currentCell, inputStream);
+    else if(cellUpToDate && ::boost::find_first(line, CONTENTS_TITLE))
     {
       common::types::StructurePtr structure(
         new common::Structure(makeUniquePtr(new common::UnitCell(currentCell)))
       );
-      errorParsing = !parseContents(*structure, inputStream, speciesDb);
-      if(!errorParsing)
+      if(parseContents(*structure, inputStream, speciesDb))
         outStructures.push_back(structure.release());
     }
   }
@@ -129,6 +147,8 @@ size_t CastepReader::readStructures(
 
 bool CastepReader::parseCell(common::UnitCell & unitCell, ::std::istream & inputStream) const
 {
+  static const ::boost::regex RE_LATTICE_PARAM("[a|b|c][[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")[[:blank:]]+[[:alpha:]]+[[:blank:]]*=[[:blank:]]*(" + io::PATTERN_FLOAT + ")");
+
   double latticeParams[6];
   std::string line;
   bool gotParams = false, foundParams = false;;
@@ -148,7 +168,7 @@ bool CastepReader::parseCell(common::UnitCell & unitCell, ::std::istream & input
           ::boost::regex_search(line, match, RE_LATTICE_PARAM)) // Get 'a = ' line
         {
           param.assign(match[1].first, match[1].second);
-          angle.assign(match[2].first, match[2].second);
+          angle.assign(match[3].first, match[3].second);
           try
           {
             latticeParams[i] = ::boost::lexical_cast<double>(param);
@@ -179,6 +199,8 @@ bool CastepReader::parseContents(
 {
   using namespace utility::cart_coords_enum;
 
+  static const ::boost::regex RE_ATOM_INFO("x[[:blank:]]*([[:word:]]+)[[:blank:]]+[[:digit:]]+[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")[[:blank:]]+(" + io::PATTERN_FLOAT + ")");
+
   SSLIB_ASSERT(structure.getUnitCell());
 
   const common::UnitCell & unitCell = *structure.getUnitCell();
@@ -203,8 +225,8 @@ bool CastepReader::parseContents(
       {
         species.assign(match[1].first, match[1].second);
         x.assign(match[2].first, match[2].second);
-        y.assign(match[3].first, match[3].second);
-        z.assign(match[4].first, match[4].second);
+        y.assign(match[4].first, match[4].second);
+        z.assign(match[6].first, match[6].second);
         try
         {
           posVec(X) = ::boost::lexical_cast<double>(x);

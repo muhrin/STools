@@ -59,9 +59,6 @@ private:
   static const ::std::string LATTICE_PARAMS_TITLE;
   static const ::std::string CONTENTS_TITLE;
   static const ::std::string CONTENTS_BOX_BEGIN;
-  
-  static const ::boost::regex RE_LATTICE_PARAM;
-  static const ::boost::regex RE_ATOM_INFO;
 
   bool parseCell(common::UnitCell & unitCell, ::std::istream & inputStream) const;
   bool parseContents(

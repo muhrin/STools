@@ -97,7 +97,6 @@ int main(const int argc, char * argv[])
             ++numKept;
           }
         }
-
       }
       else
         numKept = numLoadedFromFile;
