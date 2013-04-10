@@ -131,7 +131,7 @@ public:
   void setRelativeTo(const T relativeValue);
 
 protected:
-  typedef TypedToken<T>::StructureValue StructureValue;
+  typedef typename TypedToken<T>::StructureValue StructureValue;
 
   virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
 
