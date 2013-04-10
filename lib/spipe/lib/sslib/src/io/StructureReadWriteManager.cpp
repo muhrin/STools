@@ -252,13 +252,16 @@ size_t StructureReadWriteManager::readStructures(
 		  return 0; /*unknown extension*/
 
 	  // Finally pass it on the the correct reader
-    return it->second->readStructures(outStructures, locator, speciesDb);
+    const size_t numRead =
+      it->second->readStructures(outStructures, locator, speciesDb);
 
     // Set the path to where it was read from
     BOOST_FOREACH(common::Structure & structure, outStructures)
     {
       postRead(structure, locator);
     }
+
+    return numRead;
   }
   else if(fs::is_directory(locator.path()))
   {
