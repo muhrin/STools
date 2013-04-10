@@ -85,10 +85,10 @@ size_t CastepReader::readStructures(
     common::types::StructurePtr str(readStructure(strFile, speciesDb, locator.id()));
     if(str.get())
     {
-      ::std::string name = io::stemString(locator.path());
-      if(!locator.id().empty())
-        name += "-" + locator.id();
-      str->setName(name);
+      ::std::stringstream ss;
+      ss << io::stemString(locator.path()) << "-" << numRead;
+      str->setName(ss.str());
+
       outStructures.push_back(str);
       numRead = 1;
     }
