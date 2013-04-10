@@ -181,7 +181,7 @@ CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTe
 
   for(unsigned int row = 0; row < 3; ++row)
   {
-    myCellFileStream << ::std::string(row, ' ');
+    myCellFileStream << ::std::string(row, '\t');
     for(unsigned int col = row; col < 3; ++col)
     {
       myCellFileStream << pressureTensor(row, col) << " ";

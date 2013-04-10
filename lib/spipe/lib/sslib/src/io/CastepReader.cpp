@@ -69,7 +69,6 @@ size_t CastepReader::readStructures(
 	const common::AtomSpeciesDatabase & speciesDb
 ) const
 {
-  common::types::StructurePtr structure;
   const fs::path filepath(locator.path());
 	if(!filepath.has_filename())
     return 0; // Can't write out structure without filepath
@@ -78,26 +77,16 @@ size_t CastepReader::readStructures(
 	strFile.open(filepath);
 
   size_t numRead = 0;
-  if(locator.id().empty())
+  if(locator.id().empty()) // Get them all
     numRead = readStructures(outStructures, strFile, speciesDb);
   else
-  {
-    size_t structureIndex;
-    try
+  { // Get a single structure from the identifier
+    common::types::StructurePtr str(readStructure(strFile, speciesDb, locator.id()));
+    if(str.get())
     {
-      structureIndex = ::boost::lexical_cast<size_t>(locator.id());
-      StructuresContainer tempStructures;
-      readStructures(tempStructures, strFile, speciesDb);
-      if(structureIndex < tempStructures.size())
-      {
-        outStructures.push_back(
-          tempStructures.release(tempStructures.begin() + structureIndex).release()
-        );
-        numRead = 1;
-      }
+      outStructures.push_back(str);
+      numRead = 1;
     }
-    catch(const ::boost::bad_lexical_cast & /*e*/)
-    {}
   }
 
   if(strFile.is_open())
@@ -108,14 +97,37 @@ size_t CastepReader::readStructures(
 
 ::sstbx::common::types::StructurePtr CastepReader::readStructure(
   ::std::istream & inputStream,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+	const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
+  const ::std::string & id
 ) const
 {
   common::types::StructurePtr structure;
 
   StructuresContainer container;
-  if(readStructures(container, inputStream, speciesDb) > 0)
-    structure.reset(container.pop_back().release());
+  // If no id or the id requests the last structure then get them all
+  // and only keep the last
+  if(id.empty() || id.find("last") != ::std::string::npos)
+  {
+    if(readStructures(container, inputStream, speciesDb) > 0)
+      structure.reset(container.pop_back().release());
+  }
+  else
+  { // The id should be an integer
+    size_t structureIndex;
+    try
+    {
+      structureIndex = ::boost::lexical_cast<size_t>(id);
+      readStructures(container, inputStream, speciesDb);
+      if(structureIndex < container.size())
+      {
+        structure.reset(
+          container.release(container.begin() + structureIndex).release()
+        );
+      }
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
+  }
 
   return structure;
 }

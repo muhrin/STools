@@ -9,6 +9,7 @@
 #include "io/StructureReadWriteManager.h"
 
 #include "common/Structure.h"
+#include "io/BoostFilesystem.h"
 #include "io/ResourceLocator.h"
 
 #include <boost/foreach.hpp>
@@ -20,6 +21,7 @@ namespace sstbx {
 namespace io {
 
 namespace fs = ::boost::filesystem;
+namespace properties = common::structure_properties;
 
 StructureReadWriteManager::WritersIterator
 StructureReadWriteManager::beginWriters()
@@ -196,6 +198,12 @@ bool StructureReadWriteManager::writeStructure(
   // Finally pass it on the the correct writer
 	it->second->writeStructure(str, locator, atomSpeciesDb);
 
+  // If the structure doesn't have a name, set it to the locator
+  if(str.getName().empty())
+    str.setName(io::stemString(locator.path()) + locator.id());
+
+  str.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+
   // TODO: The write may have failed so provide better and accurate feedback!
   return true;
 }
@@ -246,6 +254,12 @@ size_t StructureReadWriteManager::readStructures(
 
 	  // Finally pass it on the the correct reader
     return it->second->readStructures(outStructures, locator, speciesDb);
+
+    // Set the path to where it was read from
+    BOOST_FOREACH(common::Structure & structure, outStructures)
+    {
+      structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+    }
   }
   else if(fs::is_directory(locator.path()))
   {

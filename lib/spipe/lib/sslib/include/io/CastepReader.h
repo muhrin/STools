@@ -43,7 +43,8 @@ public:
 
   virtual common::types::StructurePtr readStructure(
     ::std::istream & inputStream,
-		const common::AtomSpeciesDatabase & speciesDb
+		const common::AtomSpeciesDatabase & speciesDb,
+    const ::std::string & id = ""
   ) const;
   virtual size_t readStructures(
     StructuresContainer & outStructures,

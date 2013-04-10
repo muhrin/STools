@@ -83,7 +83,6 @@ public:
   void registerReader(IStructureReader & reader);
   void deregisterReader(IStructureReader & reader);
 
-	
 	bool writeStructure(
 		common::Structure & str,
 		ResourceLocator locator,
