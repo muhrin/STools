@@ -202,7 +202,7 @@ bool StructureReadWriteManager::writeStructure(
   if(str.getName().empty())
     str.setName(io::stemString(locator.path()) + locator.id());
 
-  str.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+  updateStructure(str, locator);
 
   // TODO: The write may have failed so provide better and accurate feedback!
   return true;
@@ -227,6 +227,9 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
 
 	// Finally pass it on the the correct reader
   structure = it->second->readStructure(locator, speciesDb);
+  
+  if(structure.get())
+    updateStructure(*structure, locator);
 
   // TODO: The write may have failed so provide better and accurate feedback!
   return structure;
@@ -258,7 +261,7 @@ size_t StructureReadWriteManager::readStructures(
     // Set the path to where it was read from
     BOOST_FOREACH(common::Structure & structure, outStructures)
     {
-      structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
+      updateStructure(structure, locator);
     }
   }
   else if(fs::is_directory(locator.path()))
@@ -346,6 +349,14 @@ size_t StructureReadWriteManager::doReadAllStructuresFromPath(
   }
 
   return numRead;
+}
+
+void StructureReadWriteManager::updateStructure(
+  common::Structure & structure,
+  const ResourceLocator & locator
+) const
+{
+  structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
 }
 
 }
