@@ -62,8 +62,9 @@ int main(const int argc, char * argv[])
   StructureInfoTable infoTable;
   StructuresContainer structures;
   ssu::UniqueStructureSet<ssc::Structure *> uniqueStructures(
-    ::sstbx::makeUniquePtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
+    ssu::IStructureComparatorPtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
   );
+
   SortedKeys sortedKeys;
 
   DataGatherer gatherer;
