@@ -240,6 +240,8 @@ size_t StructureReadWriteManager::readStructures(
   if(!fs::exists(locator.path()))
     return 0;
 
+  const size_t originalSize = outStructures.size();
+
   if(fs::is_regular_file(locator.path()))
   {
     ::std::string ext;
@@ -256,9 +258,9 @@ size_t StructureReadWriteManager::readStructures(
       it->second->readStructures(outStructures, locator, speciesDb);
 
     // Set the path to where it was read from
-    BOOST_FOREACH(common::Structure & structure, outStructures)
+    for(size_t i = originalSize; i < originalSize + numRead; ++i)
     {
-      postRead(structure, locator);
+      postRead(outStructures[i], locator);
     }
 
     return numRead;
