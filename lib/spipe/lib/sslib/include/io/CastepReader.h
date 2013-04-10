@@ -16,6 +16,8 @@
 
 #include <boost/regex.hpp>
 
+#include "OptionalTypes.h"
+
 namespace sstbx {
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
@@ -56,6 +58,13 @@ public:
   virtual bool multiStructureSupport() const { return true; }
 
 private:
+
+  struct AuxInfo
+  {
+    OptionalDouble pressure;
+    OptionalDouble enthalpy;
+  };
+
   static const ::std::string CELL_TITLE;
   static const ::std::string LATTICE_PARAMS_TITLE;
   static const ::std::string CONTENTS_TITLE;
@@ -67,7 +76,15 @@ private:
     ::std::istream & inputStream,
     const common::AtomSpeciesDatabase & speciesDb
   ) const;
-
+  bool parseAuxInfo(
+    AuxInfo & auxInfo,
+    ::std::istream & inputStream,
+    const ::std::string & line
+  ) const;
+  void updateStructure(common::Structure & structure, const AuxInfo & auxInfo) const;
+  bool parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inputStream) const;
+  bool parseOptimisationTable(AuxInfo & auxInfo, ::std::istream & inputStream) const;
+  bool inBox(const ::std::string & line) const;
 };
 
 }

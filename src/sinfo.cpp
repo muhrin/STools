@@ -113,13 +113,20 @@ int main(const int argc, char * argv[])
   }
 
   // Set any values gathered from the collection of structures loaded
-  ::boost::optional<double> energy;
-  energy = gatherer.getLowestEnergy();
+  ::boost::optional<double> energy = gatherer.getLowestEnergy();
   if(energy)
-    customisable.lowestEnergy->setRelativeEnergy(*energy);
+    customisable.lowestEnergy->setRelativeTo(*energy);
   energy = gatherer.getLowestEnergyPerAtom();
   if(energy)
-    customisable.lowestEnergyPerAtom->setRelativeEnergy(*energy);
+    customisable.lowestEnergyPerAtom->setRelativeTo(*energy);
+   
+  ::boost::optional<double> enthalpy = gatherer.getLowestEnthalpy();
+  if(enthalpy)
+    customisable.lowestEnthalpy->setRelativeTo(*enthalpy);
+  enthalpy = gatherer.getLowestEnthalpyPerAtom();
+  if(enthalpy)
+    customisable.lowestEnthalpyPerAtom->setRelativeTo(*enthalpy);
+
 
   // Populate the information table
   BOOST_FOREACH(const ssc::Structure & structure, structures)

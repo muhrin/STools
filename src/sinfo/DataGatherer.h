@@ -33,12 +33,16 @@ public:
   void gather(const ::sstbx::common::Structure & structure);
 
   ::boost::optional<double> getLowestEnergy() const;
-
   ::boost::optional<double> getLowestEnergyPerAtom() const;
+
+  ::boost::optional<double> getLowestEnthalpy() const;
+  ::boost::optional<double> getLowestEnthalpyPerAtom() const;
 
 private:
   double myLowestEnergy;
   double myLowestEnergyPerAtom;
+  double myLowestEnthalpy;
+  double myLowestEnthalpyPerAtom;
 };
 
 }

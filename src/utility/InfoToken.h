@@ -29,7 +29,6 @@ namespace utility {
 class InfoToken
 {
 public:
-
   typedef const ::sstbx::common::Structure * TableKey;
   typedef ::sstbx::utility::TypedDataTable<TableKey> StructureInfoTable;
   typedef ::sstbx::utility::Column<TableKey> Column;
@@ -50,7 +49,6 @@ public:
   const ::std::string & getDefaultFormatString() const;
 
 private:
-
   const ::std::string mySymbol;
   const ::std::string myDefaultFormatString;
 };
@@ -107,6 +105,39 @@ protected:
 
 private:
   PropertyKey myKey;
+};
+
+template <typename T>
+class RelativeValueToken : public StructurePropertyToken<T>
+{
+public:
+  typedef ::sstbx::utility::Key<T> PropertyKey;
+
+  RelativeValueToken(
+    const ::std::string & name,
+    const ::std::string & symbol,
+    PropertyKey & propertyKey,
+    const ::std::string & defaultFormatString = "",
+    const bool usePerAtom = false
+  );
+  RelativeValueToken(
+    const ::std::string & name,
+    const ::std::string & symbol,
+    PropertyKey & propertyKey,
+    const T relativeValue,
+    const ::std::string & defaultFormatString = "",
+    const bool usePerAtom = false
+  );
+  void setRelativeTo(const T relativeValue);
+
+protected:
+  typedef TypedToken<T>::StructureValue StructureValue;
+
+  virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
+
+private:
+  T myRelativeTo; // The value that all values will be relative to
+  const bool myUsePerAtom;  // Divide the quantity by the number of atoms
 };
 
 template <typename T, typename Getter>

@@ -89,6 +89,58 @@ StructurePropertyToken<T>::doGetValue(const ::sstbx::common::Structure & structu
   return value;
 }
 
+
+
+// RELATIVE VALUE TOKEN
+
+template <typename T>
+RelativeValueToken<T>::RelativeValueToken(
+  const ::std::string & name,
+  const ::std::string & symbol,
+  PropertyKey & propertyKey,
+  const ::std::string & defaultFormatString,
+  const bool usePerAtom):
+StructurePropertyToken<T>(name, symbol, propertyKey, defaultFormatString),
+myRelativeTo(0.0),
+myUsePerAtom(usePerAtom)
+{}
+
+template <typename T>
+RelativeValueToken<T>::RelativeValueToken(
+  const ::std::string & name,
+  const ::std::string & symbol,
+  PropertyKey & propertyKey,
+  const T relativeTo,
+  const ::std::string & defaultFormatString,
+  const bool usePerAtom
+):
+StructurePropertyToken<T>(name, symbol, propertyKey, defaultFormatString),
+myRelativeTo(relativeTo),
+myUsePerAtom(usePerAtom)
+{}
+
+template <typename T>
+void RelativeValueToken<T>::setRelativeTo(const T relativeValue)
+{
+  myRelativeTo = relativeValue;
+}
+
+template <typename T>
+typename RelativeValueToken<T>::StructureValue
+RelativeValueToken<T>::doGetValue(const ::sstbx::common::Structure & structure) const
+{
+  StructureValue relativeValue = StructurePropertyToken<T>::doGetValue(structure);
+
+  if(relativeValue)
+    relativeValue.reset(
+    (myUsePerAtom ? *relativeValue / structure.getNumAtoms() : *relativeValue)
+    - myRelativeTo);
+
+  return relativeValue;
+}
+
+// END TOKEN
+
 template <typename T, typename Getter>
 FunctionToken<T, Getter>::FunctionToken(
   const ::std::string & name,

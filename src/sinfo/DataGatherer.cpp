@@ -24,7 +24,9 @@ namespace structure_properties = ssc::structure_properties;
 
 DataGatherer::DataGatherer():
 myLowestEnergy(::std::numeric_limits<double>::max()),
-myLowestEnergyPerAtom(::std::numeric_limits<double>::max())
+myLowestEnergyPerAtom(::std::numeric_limits<double>::max()),
+myLowestEnthalpy(::std::numeric_limits<double>::max()),
+myLowestEnthalpyPerAtom(::std::numeric_limits<double>::max())
 {}
 
 void DataGatherer::gather(const ssc::Structure & structure)
@@ -34,6 +36,12 @@ void DataGatherer::gather(const ssc::Structure & structure)
   {
     myLowestEnergy = ::std::min(myLowestEnergy, *energy);
     myLowestEnergyPerAtom = ::std::min(myLowestEnergyPerAtom, *energy / structure.getNumAtoms());
+  }
+  const double * const enthalpy = structure.getProperty(structure_properties::general::ENTHALPY);
+  if(enthalpy)
+  {
+    myLowestEnthalpy = ::std::min(myLowestEnthalpy, *enthalpy);
+    myLowestEnthalpyPerAtom = ::std::min(myLowestEnthalpyPerAtom, *enthalpy / structure.getNumAtoms());
   }
 }
 
@@ -50,6 +58,22 @@ void DataGatherer::gather(const ssc::Structure & structure)
   ::boost::optional<double> lowest;
   if(myLowestEnergyPerAtom != ::std::numeric_limits<double>::max())
     lowest.reset(myLowestEnergyPerAtom);
+  return lowest;
+}
+
+::boost::optional<double> DataGatherer::getLowestEnthalpy() const
+{
+  ::boost::optional<double> lowest;
+  if(myLowestEnthalpy != ::std::numeric_limits<double>::max())
+    lowest.reset(myLowestEnthalpy);
+  return lowest;
+}
+
+::boost::optional<double> DataGatherer::getLowestEnthalpyPerAtom() const
+{
+  ::boost::optional<double> lowest;
+  if(myLowestEnthalpyPerAtom != ::std::numeric_limits<double>::max())
+    lowest.reset(myLowestEnthalpyPerAtom);
   return lowest;
 }
 

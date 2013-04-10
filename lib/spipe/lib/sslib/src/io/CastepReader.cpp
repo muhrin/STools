@@ -13,6 +13,7 @@
 #include <boost/algorithm/string/find.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include "common/AtomSpeciesDatabase.h"
@@ -32,6 +33,7 @@ namespace sstbx {
 namespace io {
 
 namespace fs = ::boost::filesystem;
+namespace properties = common::structure_properties;
 
 const ::std::string CastepReader::CELL_TITLE("Unit Cell");
 const ::std::string CastepReader::CONTENTS_TITLE("Cell Contents");
@@ -61,6 +63,11 @@ const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
  if(strFile.is_open())
     strFile.close();
 
+  // The above call will set the name of the structure to the index in the
+  // .castep file.  Now, prepend the file stem to complete the name.
+  if(structure.get())
+    structure->setName(stemString(locator.path()) + "-" + structure->getName());
+
  return structure;
 }
 
@@ -85,10 +92,6 @@ size_t CastepReader::readStructures(
     common::types::StructurePtr str(readStructure(strFile, speciesDb, locator.id()));
     if(str.get())
     {
-      ::std::stringstream ss;
-      ss << io::stemString(locator.path()) << "-" << numRead;
-      str->setName(ss.str());
-
       outStructures.push_back(str);
       numRead = 1;
     }
@@ -96,6 +99,13 @@ size_t CastepReader::readStructures(
 
   if(strFile.is_open())
     strFile.close();
+
+  // The above call will set the name of the structures to the index in the
+  // .castep file.  Now, prepend the file stem to complete the name.
+  BOOST_FOREACH(common::Structure & structure, outStructures)
+  {
+    structure.setName(stemString(locator.path()) + "-" + structure.getName());
+  }
 
   return numRead;
 }
@@ -147,6 +157,9 @@ size_t CastepReader::readStructures(
   std::string line;
   bool cellUpToDate = false;
   size_t numRead = 0;
+  common::Structure * lastStructure = NULL;
+  AuxInfo auxInfo;
+
   while(::std::getline(inputStream, line))
   {
     if(::boost::find_first(line, CELL_TITLE))
@@ -158,9 +171,19 @@ size_t CastepReader::readStructures(
       );
       if(parseContents(*structure, inputStream, speciesDb))
       {
+        // Save the last structure we loaded so we can update it with information from
+        // the castep file that comes later
+        lastStructure = structure.get();
+
+        structure->setName(::boost::lexical_cast< ::std::string>(numRead));
         outStructures.push_back(structure.release());
         ++numRead;
       }
+    }
+    else if(lastStructure && parseAuxInfo(auxInfo, inputStream, line))
+    {
+      // If there is new auxiliary info then update the structure with it
+      updateStructure(*lastStructure, auxInfo);
     }
   }
   return numRead;
@@ -267,6 +290,103 @@ bool CastepReader::parseContents(
   }
   
   return gotAtoms;
+}
+
+bool CastepReader::parseAuxInfo(AuxInfo & auxInfo, ::std::istream & inputStream, const ::std::string & line) const
+{
+  if(line.find("* Stress Tensor *") != ::std::string::npos)
+    return parseStressTensorBox(auxInfo, inputStream);
+  else if(line.find("Step    |   lambda    |   F.delta   |    enthalpy") != ::std::string::npos)
+    return parseOptimisationTable(auxInfo, inputStream);
+
+  return false;
+}
+
+void CastepReader::updateStructure(common::Structure & structure, const AuxInfo & auxInfo) const
+{
+  if(auxInfo.pressure)
+    structure.setProperty(properties::general::PRESSURE_INTERNAL, *auxInfo.pressure);
+  if(auxInfo.enthalpy)
+    structure.setProperty(properties::general::ENTHALPY, *auxInfo.enthalpy);
+}
+
+bool CastepReader::parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inputStream) const
+{
+  static const ::boost::regex RE_PRESSURE("Pressure:[[:blank:]]+(" + PATTERN_FLOAT + ")");
+
+  auxInfo.pressure.reset();
+
+  ::std::string line;
+  ::boost::smatch match;
+  while(::std::getline(inputStream, line) && inBox(line))
+  {
+    if(::boost::regex_search(line, match, RE_PRESSURE))
+    {
+      try
+      {
+        const ::std::string pressureString(match[1].first, match[1].second);
+        auxInfo.pressure.reset(::boost::lexical_cast<double>(pressureString));
+        return true;
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+      break;
+    }
+  }
+  return false;
+}
+
+bool CastepReader::parseOptimisationTable(AuxInfo & auxInfo, ::std::istream & inputStream) const
+{
+  static const ::boost::regex RE_OPTIMISER_ROW("\\|[^|]+\\|[^|]+\\|[^|]+\\|[[:blank:]]+(" + PATTERN_FLOAT + ")[[:blank:]]+\\|");
+
+  auxInfo.enthalpy.reset();
+
+  ::std::string line;
+  ::boost::smatch match;
+  // Keep going around reading in the enthalpy
+  while(::std::getline(inputStream, line) && inBox(line))
+  {
+    if(::boost::regex_search(line, match, RE_OPTIMISER_ROW))
+    {
+      try
+      {
+        const ::std::string enthalpyString(match[1].first, match[1].second);
+        auxInfo.enthalpy.reset(::boost::lexical_cast<double>(enthalpyString));
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+    }
+  }
+  return auxInfo.enthalpy.is_initialized();
+}
+
+bool CastepReader::inBox(const ::std::string & line) const
+{
+  // Find the first non-whitespace character
+  char firstNonBlank = ' ';
+  for(size_t i = 0; i < line.size(); ++i)
+  {
+    if(::std::isspace(line[i]) == 0)
+    {
+      firstNonBlank = line[i];
+      break;
+    }
+  }
+
+  if(firstNonBlank == ' ')
+    return false;
+
+  if(firstNonBlank == '*')
+    return true;
+  else if(firstNonBlank == 'x')
+    return true;
+  else if (firstNonBlank == '|')
+    return true;
+  else if (firstNonBlank == '+')
+    return true;
+
+  return false;
 }
 
 }

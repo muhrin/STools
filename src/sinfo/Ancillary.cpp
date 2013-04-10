@@ -40,7 +40,7 @@ const ::std::string VAR_BRACKET("$");
 const ::std::string VAR_FORMAT("%");
 const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
-const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ea$ $rea$ $sg$ $tf$\\n");
+const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ha$ $rha$ $sg$ $tf$\\n");
 
 ::std::string mapEnvToOptionName(const ::std::string & envVariable)
 {
@@ -80,7 +80,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
     desc.add_options()
       ("help", "Show help message")
       ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
-      ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("rea"), "sort token")
+      ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("rha"), "sort token")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
@@ -150,30 +150,66 @@ void addToken(TokensMap & map, TokenPtr token)
 CustomisableTokens generateTokens(TokensMap & map)
 {
   typedef ::std::auto_ptr<utility::EnergyToken> EnergyTokenPtr;
+  typedef utility::RelativeValueToken<double> RelativeValue;
+  typedef ::std::auto_ptr<RelativeValue> RelativeValueTokenPtr;
 
   CustomisableTokens customisable;
 
-  EnergyTokenPtr lowestEnergy(new utility::EnergyToken("Rel. energy", "re", "%.4f"));
-  EnergyTokenPtr lowestEnergyPerAtom(new utility::EnergyToken("Rel. energy/atom", "rea", "%.4f", true));
+  RelativeValueTokenPtr lowestEnergy(new RelativeValue(
+    "Rel. energy",
+    "ru",
+    structure_properties::general::ENERGY_INTERNAL,
+    "%.4f"
+  ));
+  RelativeValueTokenPtr lowestEnergyPerAtom(new RelativeValue(
+    "Rel. energy/atom",
+    "rua",
+    structure_properties::general::ENERGY_INTERNAL,
+    "%.4f",
+    true // Per atom
+  ));
+  RelativeValueTokenPtr lowestEnthalpy(new RelativeValue(
+    "H/atom",
+    "rh",
+    structure_properties::general::ENTHALPY,
+    "%.4f"
+  ));
+  RelativeValueTokenPtr lowestEnthalpyPerAtom(new RelativeValue(
+    "Rel. H/atom",
+    "rha",
+    structure_properties::general::ENTHALPY,
+    "%.4f",
+    true // Per atom
+  ));
+
   // Leave behind non-owning observers
   customisable.lowestEnergy = lowestEnergy.get();
   customisable.lowestEnergyPerAtom = lowestEnergyPerAtom.get();
+  customisable.lowestEnthalpy = lowestEnthalpy.get();
+  customisable.lowestEnthalpyPerAtom = lowestEnthalpyPerAtom.get();
+
   // And place in the map
   addToken(map, lowestEnergy.operator ::std::auto_ptr<utility::InfoToken>());
   addToken(map, lowestEnergyPerAtom.operator ::std::auto_ptr<utility::InfoToken>());
+  addToken(map, lowestEnthalpy.operator ::std::auto_ptr<utility::InfoToken>());
+  addToken(map, lowestEnthalpyPerAtom.operator ::std::auto_ptr<utility::InfoToken>());
+
+  // Rest of the tokens
 
   addToken(map, utility::makeFunctionToken< ::std::string>("Name", "n", utility::functions::getName, "%|-|"));
   addToken(map, utility::makeFunctionToken<double>("Volume", "v", utility::functions::getVolume, "%.2f"));
-  addToken(map, utility::makeFunctionToken<double>("Volume/atom", "va", utility::functions::getVolumePerAtom, "%.2f"));
-  addToken(map, TokenPtr(new utility::EnergyToken("Energy/atom", "ea", "%.4f", true)));
+  addToken(map, utility::makeFunctionToken<double>("Vol./atom", "va", utility::functions::getVolumePerAtom, "%.2f"));
+  addToken(map, TokenPtr(new RelativeValue("Energy/atom", "ua", structure_properties::general::ENERGY_INTERNAL, 0.0, "%.4f", true)));
+  addToken(map, TokenPtr(new RelativeValue("H/atom", "ha", structure_properties::general::ENTHALPY, 0.0, "%.4f", true)));
   addToken(map, utility::makeFunctionToken<unsigned int>("N atoms", "na", utility::functions::getNumAtoms));
   
   addToken(map, utility::makeFunctionToken< ::std::string>("Spgroup", "sg", utility::functions::getSpaceGroupSymbol, "%|-|"));
   addToken(map, utility::makeFunctionToken<unsigned int>("Spgroup no.", "sgn", utility::functions::getSpaceGroupNumber, "%|-|"));
 
-  addToken(map, utility::makeStructurePropertyToken("Energy", "e", structure_properties::general::ENERGY_INTERNAL, "%.4f"));
+  addToken(map, utility::makeStructurePropertyToken("Energy", "u", structure_properties::general::ENERGY_INTERNAL, "%.4f"));
+  addToken(map, utility::makeStructurePropertyToken("Enthalpy", "h", structure_properties::general::ENTHALPY, "%.4f"));
   addToken(map, utility::makeStructurePropertyToken("Pressure", "p", structure_properties::general::PRESSURE_INTERNAL, "%.4f"));
-  addToken(map, utility::makeStructurePropertyToken("Times found", "tf", structure_properties::searching::TIMES_FOUND));
+  addToken(map, utility::makeStructurePropertyToken("x found", "tf", structure_properties::searching::TIMES_FOUND));
 
   addToken(map, utility::makeFunctionToken< ::sstbx::io::ResourceLocator>("File", "f", utility::functions::getRelativeLoadPath, "%|-|"));
 

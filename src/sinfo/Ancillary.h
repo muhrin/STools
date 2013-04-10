@@ -30,6 +30,8 @@ namespace stools {
 namespace utility {
 class EnergyToken;
 class InfoToken;
+template <typename T>
+class RelativeValueToken;
 }
 
 namespace sinfo {
@@ -74,9 +76,13 @@ struct CustomisableTokens
   {
     lowestEnergy = NULL;
     lowestEnergyPerAtom = NULL;
+    lowestEnthalpy = NULL;
+    lowestEnthalpyPerAtom = NULL;
   }
-  utility::EnergyToken * lowestEnergy;
-  utility::EnergyToken * lowestEnergyPerAtom;
+  utility::RelativeValueToken<double> * lowestEnergy;
+  utility::RelativeValueToken<double> * lowestEnergyPerAtom;
+  utility::RelativeValueToken<double> * lowestEnthalpy;
+  utility::RelativeValueToken<double> * lowestEnthalpyPerAtom;
 };
 
 struct TokensInfo

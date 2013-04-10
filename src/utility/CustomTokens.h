@@ -36,15 +36,15 @@ public:
     const ::std::string & name,
     const ::std::string & symbol,
     const ::std::string & defaultFormatString = "",
-    const bool usePerAtom = false);
-
+    const bool usePerAtom = false
+  );
   EnergyToken(
     const ::std::string & name,
     const ::std::string & symbol,
     const double relativeEnergy,
     const ::std::string & defaultFormatString = "",
-    const bool usePerAtom = false);
-
+    const bool usePerAtom = false
+  );
   void setRelativeEnergy(const double relativeEnergy);
 
 protected:
