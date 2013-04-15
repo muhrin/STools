@@ -44,8 +44,7 @@ namespace ssys  = ::sstbx::yaml_schema;
 struct InputOptions
 {
   ::std::string inputOptionsFile;
-  unsigned int numRandomStructures;
-  double optimisationPressure;
+  ::std::vector< ::std::string> additionalOptions;
 };
 
 // CONSTANTS /////////////////////////////////
@@ -65,11 +64,15 @@ int main(const int argc, char * argv[])
   if(!fs::exists(in.inputOptionsFile))
     return 1;
 
-  // Load up the yaml options
+  // Read the yaml options
   YAML::Node searchNode;
   result = ::stools::input::parseYaml(searchNode, in.inputOptionsFile);
   if(result != 0)
     return result;
+
+  // Add any additional options specified at the command line
+  if(!::stools::input::insertScalarValues(searchNode, in.additionalOptions))
+    return false;
   
   // Parse the yaml
   ssys::SchemaParse parse;
@@ -118,8 +121,9 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     po::options_description general("ssearch\nUsage: " + exeName + " [options] inpue_file...\nOptions");
     general.add_options()
       ("help", "Show help message")
-      ("num,n", po::value<unsigned int>(&in.numRandomStructures)->default_value(100), "Number of random starting structures")
       ("input,i", po::value< ::std::string>(&in.inputOptionsFile), "The input options file")
+      ("define,D", po::value< ::std::vector< ::std::string> >(&in.additionalOptions)->composing(),
+      "Define program options on the command line as if they had been included in the input file")
     ;
 
     po::positional_options_description p;

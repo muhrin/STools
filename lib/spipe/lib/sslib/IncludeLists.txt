@@ -213,6 +213,7 @@ source_group("Header Files\\utility\\detail" FILES ${sslib_Header_Files__utility
 
 set(sslib_Header_Files__yaml
   include/yaml/HelperTypes.h
+  include/yaml/ProgramOptions.h
   include/yaml/Transcode.h
   include/yaml/TranscodeBuildCell.h
   include/yaml/TranscodeCommon.h

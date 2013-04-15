@@ -19,6 +19,9 @@
 
 #include <factory/MapEntries.h>
 
+// From SSLib
+#include <yaml/ProgramOptions.h>
+
 // NAMESPACES ////////////////////////////////
 
 namespace stools {
@@ -36,6 +39,19 @@ int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
     return 1;
   }
   return 0;
+}
+
+bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> & scalarValues)
+{
+  BOOST_FOREACH(const ::std::string & keyValueString, scalarValues)
+  {
+    if(!sstbx::yaml::insertScalar(node, keyValueString))
+    {
+      std::cerr << "Invalid input: " << keyValueString;
+      return false;
+    }
+  }
+  return true;
 }
 
 void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & options)

@@ -10,6 +10,7 @@
 
 // INCLUDES //////////////////////////////////
 #include <string>
+#include <vector>
 
 #include <pipelib/PipeRunner.h>
 
@@ -28,6 +29,7 @@ namespace stools {
 namespace input {
 
 int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile);
+bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> & scalarValues);
 
 void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & schemaOptions);
 

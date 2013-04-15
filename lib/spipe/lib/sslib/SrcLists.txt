@@ -132,6 +132,7 @@ source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
 ## yaml
 
 set(sslib_Source_Files__yaml
+  src/yaml/ProgramOptions.cpp
   src/yaml/TranscodeBuildCell.cpp
   src/yaml/TranscodeCommon.cpp
   src/yaml/TranscodeFactory.cpp

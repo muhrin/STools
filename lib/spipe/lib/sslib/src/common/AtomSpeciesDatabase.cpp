@@ -34,7 +34,7 @@ AtomSpeciesDatabase::AtomSpeciesDatabase()
   setAll(AtomSpeciesId::SI,   "Si", "Silicon",    1.11);
   setAll(AtomSpeciesId::P,    "P",  "Phosphorus", 1.07);
 	setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
-  setAll(AtomSpeciesId::AS,   "As", "Arsenic",   1.19);
+  setAll(AtomSpeciesId::AS,   "As", "Arsenic",    1.19);
 }
 
 const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId::Value id) const
