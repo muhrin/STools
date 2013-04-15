@@ -48,8 +48,7 @@ struct Castep : public yaml_schema::SchemaHeteroMap
 {
   Castep()
   {
-    addScalarEntry("exe", CASTEP_EXE)->element()
-      ->defaultValue("castep");
+    addScalarEntry("exe", CASTEP_EXE);
     addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()
       ->defaultValue(false);
     addScalarEntry("seed", CASTEP_SEED)->required();

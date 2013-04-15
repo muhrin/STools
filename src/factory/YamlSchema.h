@@ -67,8 +67,8 @@ struct Search : public ::sstbx::yaml_schema::SchemaHeteroMap
 
     // Global options
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
-    addScalarEntry("castepExe", ssf::CASTEP_EXE);
-
+    addScalarEntry("castepExe", ssf::CASTEP_EXE)->element()
+      ->defaultValue("castep");
 
     addEntry(
       "paramSweep",
