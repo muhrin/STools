@@ -236,7 +236,7 @@ SsLibFactoryYaml::createGeometryOptimiser(
     // Read in the settings
     potential::CastepGeomOptimiseSettings settings;
     const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
-    const int * const numRoughSteps = castepOptions->find(CASTEP_NUM_SELF_CONSISTENT);
+    const int * const numRoughSteps = castepOptions->find(CASTEP_NUM_ROUGH_STEPS);
     const int * const numSelfConsistent = castepOptions->find(CASTEP_NUM_SELF_CONSISTENT);
     if(keepIntermediates)
       settings.keepIntermediateFiles = *keepIntermediates;
