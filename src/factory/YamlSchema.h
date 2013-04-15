@@ -63,8 +63,13 @@ struct Search : public ::sstbx::yaml_schema::SchemaHeteroMap
   Search()
   {
     namespace spf = ::spipe::factory;
+    namespace ssf = ::sstbx::factory;
 
+    // Global options
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
+    addScalarEntry("castepExe", ssf::CASTEP_EXE);
+
+
     addEntry(
       "paramSweep",
       spf::PARAM_SWEEP,

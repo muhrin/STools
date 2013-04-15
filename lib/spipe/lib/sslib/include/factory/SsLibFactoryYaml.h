@@ -50,47 +50,26 @@ public:
   typedef UniquePtr<potential::IGeomOptimiser>::Type GeomOptimiserPtr;
   typedef UniquePtr<utility::UniqueStructureSet<> >::Type UniqueStructureSetPtr;
 
-  enum ErrorCode
-  {
-    UNKNOWN,
-    BAD_TAG,
-    UNRECOGNISED_KEYWORD,
-    REQUIRED_KEYWORD_MISSING,
-    MALFORMED_VALUE,
-    SEQUENCE_LENGTH_INVALID
-  };
-
   SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb);
-
-  //common::StructurePtr                  createStructure(const YAML::Node & structureNode) const;
-  //common::UnitCellPtr                   createUnitCell(const OptionsMap & map) const;
   
   GeomOptimiserPtr createGeometryOptimiser(
-    const OptionsMap & optimiserMap,
-    const OptionsMap * potentialMap = NULL
+    const OptionsMap & optimiserOptions,
+    const OptionsMap * potentialOptions = NULL,
+    const OptionsMap * globalOptions = NULL
   ) const;
-
   build_cell::IStructureGeneratorPtr createStructureGenerator(const OptionsMap & map) const;
-
   build_cell::StructureBuilderPtr createStructureBuilder(const OptionsMap & map) const;
-
   build_cell::AtomsGeneratorPtr createAtomsGenerator(
     const OptionsMap & map,
     io::AtomFormatParser & parser
   ) const;
-
   build_cell::AtomsDescriptionPtr createAtomsDescription(
     const AtomsDataEntry & atomsEntry,
     const io::AtomFormatParser & parser
   ) const;
-
   build_cell::RandomUnitCellPtr createRandomCellGenerator(const OptionsMap & map) const;
-
   potential::IPotentialPtr createPotential(const OptionsMap & map) const;
   utility::IStructureComparatorPtr createStructureComparator(const OptionsMap & map) const;
-  //UniqueStructureSetPtr                 createStructureSet(const YAML::Node & desc);
-  //io::IStructureWriter *                createStructureWriter(const YAML::Node & node);
-
 
 private:
 
@@ -104,9 +83,32 @@ private:
 
   StructureContentType::Value getStructureContentType(const AtomsDataEntry & atomsEntry) const;
 
+	template<typename T>
+	const T * find(
+    const utility::Key<T> & key,
+    const OptionsMap & options,
+    const OptionsMap * globalOptions
+  ) const;
+
   common::AtomSpeciesDatabase & myAtomSpeciesDb;
   const GenShapeFactory myShapeFactory;
 };
+
+template <typename T>
+const T * SsLibFactoryYaml::find(
+  const utility::Key<T> & key,
+  const OptionsMap & options,
+  const OptionsMap * globalOptions
+) const
+{
+  const T * value = options.find(key);
+  // If the value isn't present and we have global options then
+  // try to find it there
+  if(!value && globalOptions)
+    value = globalOptions->find(key);
+
+  return value;
+}
 
 }
 }

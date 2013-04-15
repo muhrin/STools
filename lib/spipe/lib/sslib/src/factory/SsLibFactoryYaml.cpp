@@ -203,7 +203,8 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
 SsLibFactoryYaml::GeomOptimiserPtr
 SsLibFactoryYaml::createGeometryOptimiser(
   const OptionsMap & optimiserMap,
-  const OptionsMap * potentialMap
+  const OptionsMap * potentialMap,
+  const OptionsMap * globalOptions
 ) const
 {
   GeomOptimiserPtr opt;
@@ -229,7 +230,7 @@ SsLibFactoryYaml::createGeometryOptimiser(
   }
   else if(castepOptions)
   {
-    const ::std::string * const castepExe = castepOptions->find(CASTEP_EXE);
+    const ::std::string * const castepExe = find(CASTEP_EXE, *castepOptions, globalOptions);
     const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
     const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
     if(castepExe && keepIntermediates && seed)

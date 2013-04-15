@@ -88,7 +88,7 @@ Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
   const OptionsMap * const preGeomOptimiseOptions = options.find(spf::PRE_GEOM_OPTIMISE);
   if(preGeomOptimiseOptions)
   {
-    if(createGeomOptimiseBlock(block, *preGeomOptimiseOptions))
+    if(createGeomOptimiseBlock(block, *preGeomOptimiseOptions, &options))
     {
       lastBlock = addAndConnect(*pipe, lastBlock, block.release());
     }
@@ -99,7 +99,7 @@ Factory::createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const
   const OptionsMap * const geomOptimiseOptions = options.find(spf::GEOM_OPTIMISE);
   if(geomOptimiseOptions)
   {
-    if(createGeomOptimiseBlock(block, *geomOptimiseOptions))
+    if(createGeomOptimiseBlock(block, *geomOptimiseOptions, &options))
     {
       lastBlock = addAndConnect(*pipe, lastBlock, block.release());
     }
@@ -179,7 +179,8 @@ bool Factory::createSearchPipeExtended(PipePtr & pipeOut, const OptionsMap & opt
 
 bool Factory::createGeomOptimiseBlock(
   BlockPtr & blockOut,
-  const OptionsMap & geomOptimiseOptions
+  const OptionsMap & geomOptimiseOptions,
+  const OptionsMap * globalOptions
 ) const
 {
   // Try to find the optimiser options
@@ -204,7 +205,8 @@ bool Factory::createGeomOptimiseBlock(
     blockOut,
     *optimiserOptions,
     potentialOptions,
-    &optimisationSettings
+    &optimisationSettings,
+    globalOptions
   ); 
 }
 

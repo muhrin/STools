@@ -194,8 +194,6 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(
     }
   }
 
-  // TODO: Deal with possible runtime exception as a result of
-  // ortho matrix being singular
   try
   {
     cellOut.reset(new common::UnitCell(params));
@@ -204,7 +202,6 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(
   {
     return GenerationOutcome::failure("Cell parameters caused singular orthogonalisation matrix.");
   }
-
 
   if(!(!myTargetVolume && cellFullySpecified()))
     cellOut->setVolume(generateVolume());

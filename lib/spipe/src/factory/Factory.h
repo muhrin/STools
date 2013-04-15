@@ -54,7 +54,8 @@ public:
     BlockPtr & blockOut,
     const OptionsMap & optimiserOptions,
     const OptionsMap * const potentialOptions = NULL,
-    const ::sstbx::potential::OptimisationSettings * optimisationSettings = NULL
+    const ::sstbx::potential::OptimisationSettings * optimisationSettings = NULL,
+    const OptionsMap * const globalOptions = NULL
   ) const;
   bool createRandomStructureBlock(BlockPtr & blockOut, const OptionsMap & options) const;
   bool createRemoveDuplicatesBlock(BlockPtr & blockOut, const OptionsMap & options) const;

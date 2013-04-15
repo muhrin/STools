@@ -50,7 +50,8 @@ public:
 
   bool createGeomOptimiseBlock(
     BlockPtr & blockOut,
-    const OptionsMap & geomOptimiseOptions
+    const OptionsMap & geomOptimiseOptions,
+    const OptionsMap * globalOptions = NULL
   ) const;
 
 private:

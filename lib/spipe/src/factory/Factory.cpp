@@ -92,10 +92,15 @@ bool Factory::createPotentialGeomOptimiseBlock(
   BlockPtr & blockOut,
   const OptionsMap & optimiserOptions,
   const OptionsMap * const potentialOptions,
-  const ssp::OptimisationSettings * optimisationSettings
+  const ssp::OptimisationSettings * optimisationSettings,
+  const OptionsMap * const globalOptions
 ) const
 {
-  ssp::IGeomOptimiserPtr optimiser = mySsLibFactory.createGeometryOptimiser(optimiserOptions, potentialOptions);
+  ssp::IGeomOptimiserPtr optimiser = mySsLibFactory.createGeometryOptimiser(
+    optimiserOptions,
+    potentialOptions,
+    globalOptions
+  );
 
   bool potentialIsParameterisable =
     optimiser->getPotential() && optimiser->getPotential()->getParameterisable();
