@@ -52,6 +52,8 @@ extern utility::Key<utility::HeterogeneousMap> CASTEP;
 extern utility::Key< ::std::string> CASTEP_EXE;
 extern utility::Key< ::std::string> CASTEP_SEED;
 extern utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
+extern utility::Key<int> CASTEP_NUM_SELF_CONSISTENT;
+extern utility::Key<int> CASTEP_NUM_ROUGH_STEPS;
 extern utility::Key<double> PRESSURE;
 extern utility::Key<int> MAX_STEPS;
 

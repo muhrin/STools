@@ -26,15 +26,31 @@ namespace sstbx {
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace potential {
 
+struct CastepGeomOptimiseSettings
+{
+  CastepGeomOptimiseSettings();
+  int numRoughSteps;
+  int numConsistentRelaxations;
+  bool keepIntermediateFiles;
+};
+
 class CastepGeomOptimiser : public IGeomOptimiser
 {
 public:
+
+  typedef CastepGeomOptimiseSettings Settings;
+
   static const ::std::string FINAL_ENTHALPY;
 
   CastepGeomOptimiser(
     const ::std::string & castepExe,
+    const ::std::string & castepSeed
+  );
+
+  CastepGeomOptimiser(
+    const ::std::string & castepExe,
     const ::std::string & castepSeed,
-    const bool keepIntermediates
+    const Settings & settings
   );
 
   // From IGeomOptimiser ////////
@@ -53,12 +69,14 @@ public:
   ) const;
   // End from IGeomOptimiser //////////////
 
+  void applySettings(const Settings & settings);
+
 private:
+  Settings mySettings;
   const ::std::string myCastepSeed;
   const io::CellReaderWriter myCellReaderWriter;
   const io::CastepReader myCastepReader;
   const common::AtomSpeciesDatabase mySpeciesDb; // HACK: Keep a copy here for now
-  const bool myKeepIntermediates;
   const ::std::string myCastepExe;
 };
 
@@ -71,9 +89,9 @@ public:
     const OptimisationSettings & optimisationSettings,
     const ::std::string & originalSeed,
     const ::std::string & newSeed,
-    const bool keepIntermediates,
     const io::CellReaderWriter & myCellReaderWriter,
-    const io::CastepReader & myCastepReader
+    const io::CastepReader & myCastepReader,
+    const CastepGeomOptimiseSettings & settings
   );
   ~CastepGeomOptRun();
 
@@ -81,8 +99,7 @@ public:
     common::Structure & structure,
     OptimisationData & data,
     const ::std::string & castepExeAndArgs,
-    const common::AtomSpeciesDatabase & speciesDb,
-    const int numConsistentRelaxations = 3
+    const common::AtomSpeciesDatabase & speciesDb
   );
   OptimisationOutcome updateStructure(
     common::Structure & structure,
@@ -118,9 +135,9 @@ private:
   );
 
   CastepRun myCastepRun;
+  const CastepGeomOptimiseSettings mySettings;
   const ::boost::filesystem::path myOrigCellFile;
   const ::boost::filesystem::path myOrigParamFile;
-  const bool myKeepIntermediates;
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
   const OptimisationSettings & myOptimisationSettings;

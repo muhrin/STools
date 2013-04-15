@@ -33,13 +33,18 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
   ssio::CastepReader castepReader;
   ssio::CellReaderWriter cellReader;
   ssp::OptimisationSettings optSettings;
+
+  ssp::CastepGeomOptimiseSettings runSettings;
+  // Keep intermediates so we don't delete the input files
+  runSettings.keepIntermediateFiles = true;
+
   ssp::detail::CastepGeomOptRun optRun(
     optSettings,
     "successful",
     "successful",
-    true, // Keep intermediates so we don't delete the input files
     cellReader,
-    castepReader
+    castepReader,
+    runSettings
   );
   ssp::OptimisationData optimisationData;
   const bool updatedSuccessfully = optRun.updateStructure(structure, optimisationData, speciesDb).isSuccess();

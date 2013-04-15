@@ -52,6 +52,11 @@ struct Castep : public yaml_schema::SchemaHeteroMap
     addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()
       ->defaultValue(false);
     addScalarEntry("seed", CASTEP_SEED)->required();
+    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()
+      ->defaultValue(0);
+    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()
+      ->defaultValue(2);
+
   }
 };
 

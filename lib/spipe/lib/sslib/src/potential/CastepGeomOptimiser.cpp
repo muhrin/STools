@@ -26,14 +26,31 @@ namespace potential {
 
 namespace fs = ::boost::filesystem;
 
+CastepGeomOptimiseSettings::CastepGeomOptimiseSettings()
+{
+  numRoughSteps = 0;
+  numConsistentRelaxations = 2;
+  keepIntermediateFiles = false;
+}
+
 CastepGeomOptimiser::CastepGeomOptimiser(
   const ::std::string & castepExe,
-  const ::std::string & castepSeed,
-  const bool keepIntermediates
+  const ::std::string & castepSeed
 ):
 myCastepExe(castepExe),
 myCastepSeed(castepSeed),
-myKeepIntermediates(keepIntermediates),
+myCellReaderWriter(),
+myCastepReader()
+{}
+
+CastepGeomOptimiser::CastepGeomOptimiser(
+  const ::std::string & castepExe,
+  const ::std::string & castepSeed,
+  const Settings & settings
+):
+myCastepExe(castepExe),
+myCastepSeed(castepSeed),
+mySettings(settings),
 myCellReaderWriter(),
 myCastepReader()
 {}
@@ -57,9 +74,9 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
     options,
     myCastepSeed,
     outSeedName,
-    myKeepIntermediates,
     myCellReaderWriter,
-    myCastepReader
+    myCastepReader,
+    mySettings
   );
 
   const OptimisationOutcome outcome =
@@ -67,6 +84,11 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
   optimisationData.saveToStructure(structure);
   
   return outcome;
+}
+
+void CastepGeomOptimiser::applySettings(const Settings & settings)
+{
+  mySettings = settings;
 }
 
 namespace detail {
@@ -77,22 +99,22 @@ CastepGeomOptRun::CastepGeomOptRun(
   const OptimisationSettings & optimisationSettings,
   const ::std::string & originalSeed,
   const ::std::string & newSeed,
-  const bool keepIntermediates,
   const io::CellReaderWriter & cellReaderWriter,
-  const io::CastepReader & castepReader
+  const io::CastepReader & castepReader,
+  const CastepGeomOptimiseSettings & settings
 ):
 myOrigCellFile(originalSeed + ".cell"),
 myOrigParamFile(originalSeed + ".param"),
 myCastepRun(newSeed, cellReaderWriter, castepReader),
-myKeepIntermediates(keepIntermediates),
 myCellReaderWriter(cellReaderWriter),
 myCastepReader(castepReader),
-myOptimisationSettings(optimisationSettings)
+myOptimisationSettings(optimisationSettings),
+mySettings(settings)
 {}
 
 CastepGeomOptRun::~CastepGeomOptRun()
 {
-  if(!myKeepIntermediates)
+  if(!mySettings.keepIntermediateFiles)
     myCastepRun.deleteAllFiles();
 }
 
@@ -100,8 +122,7 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
   common::Structure & structure,
   OptimisationData & data,
   const ::std::string & castepExeAndArgs,
-  const common::AtomSpeciesDatabase & speciesDb,
-  const int numRelaxations
+  const common::AtomSpeciesDatabase & speciesDb
 )
 {
   if(!fs::exists(myOrigParamFile))
@@ -123,7 +144,8 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
   OptimisationOutcome outcome;
   int successfulRelaxations = 0;
   int i;
-  for(i = 0; successfulRelaxations < numRelaxations && i < MAX_RELAX_ATTEMPTS; ++i)
+  for(i = 0; successfulRelaxations < mySettings.numConsistentRelaxations &&
+    i < MAX_RELAX_ATTEMPTS; ++i)
   {
     outcome = doRelaxation(structure, data, speciesDb, castepExeAndArgs);
     if(!outcome.isSuccess())
@@ -236,6 +258,9 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
   const ::std::string & castepExeAndArgs
 )
 {
+  if(mySettings.numRoughSteps <= 0)
+    return OptimisationOutcome::success();
+
   const fs::path origParamFile(myCastepRun.getParamFile().string() + ".orig");
   fs::copy_file(myCastepRun.getParamFile(), origParamFile, fs::copy_option::overwrite_if_exists);
 
@@ -244,7 +269,7 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
   myCastepRun.insertParams(paramsMap);
 
   // Do short relaxations
-  for(size_t i = 0;  i < 2;  ++i)
+  for(int i = 0;  i < mySettings.numRoughSteps;  ++i)
     doRelaxation(structure, optimisationData, speciesDb, castepExeAndArgs);
 
   // Copy the original back

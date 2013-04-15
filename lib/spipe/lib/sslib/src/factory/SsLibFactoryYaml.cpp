@@ -231,10 +231,23 @@ SsLibFactoryYaml::createGeometryOptimiser(
   else if(castepOptions)
   {
     const ::std::string * const castepExe = find(CASTEP_EXE, *castepOptions, globalOptions);
-    const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
     const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
+
+    // Read in the settings
+    potential::CastepGeomOptimiseSettings settings;
+    const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
+    const int * const numRoughSteps = castepOptions->find(CASTEP_NUM_SELF_CONSISTENT);
+    const int * const numSelfConsistent = castepOptions->find(CASTEP_NUM_SELF_CONSISTENT);
+    if(keepIntermediates)
+      settings.keepIntermediateFiles = *keepIntermediates;
+    if(numRoughSteps)
+      settings.numRoughSteps = *numRoughSteps;
+    if(numSelfConsistent)
+      settings.numConsistentRelaxations = *numSelfConsistent;
+
+
     if(castepExe && keepIntermediates && seed)
-      opt.reset(new potential::CastepGeomOptimiser(*castepExe, *seed, *keepIntermediates));
+      opt.reset(new potential::CastepGeomOptimiser(*castepExe, *seed, settings));
     else
     {
       // TODO: Emit error
