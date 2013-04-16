@@ -74,6 +74,8 @@ void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & option
     if(!userSuppliedSeed && rngSeed->find("time"))
       ssm::seed();
   }
+  else
+    ssm::seed();
 }
 
 } // namespace stools

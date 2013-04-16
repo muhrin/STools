@@ -240,7 +240,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems
-  if(numLastEvaluationsWithProblem == 0)
+  if(numLastEvaluationsWithProblem != 0)
     return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
   if(!converged)
   {
@@ -424,7 +424,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems
-  if(numLastEvaluationsWithProblem == 0)
+  if(numLastEvaluationsWithProblem != 0)
     return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
   if(!converged)
   {

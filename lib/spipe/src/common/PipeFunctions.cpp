@@ -8,10 +8,14 @@
 // INCLUDES //////////////////////////////////
 #include "PipeFunctions.h"
 
+#include <utility/UtilFunctions.h>
+
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
 namespace common {
+
+namespace ssu = ::sstbx::utility;
 
 ::std::string getOutputFileStem(const MemoryAccessType & memory)
 {
@@ -20,6 +24,15 @@ namespace common {
     stem += "-";
   stem += memory.shared().getInstanceName();
   return stem;
+}
+
+::std::string generateStructureName(const MemoryAccessType & memory)
+{
+  ::std::string name = memory.global().getSeedName();
+  if(!name.empty())
+    name += "-";
+  name += ssu::generateUniqueName(4);
+  return name;
 }
 
 }

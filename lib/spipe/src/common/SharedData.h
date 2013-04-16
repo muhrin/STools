@@ -21,7 +21,6 @@
 // From SSTbx
 #include <build_cell/IStructureGenerator.h>
 #include <build_cell/BuildCellFwd.h>
-#include <common/AtomSpeciesDatabase.h>
 #include <io/BoostFilesystem.h>
 
 // Local includes
@@ -71,9 +70,6 @@ public:
   template <class T>
   void setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
-  ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
-  const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
-
   ::sstbx::utility::HeterogeneousMap  objectsStore;
 
 private:
@@ -83,7 +79,6 @@ private:
   void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   IStructureGeneratorPtr myStructureGenerator;
-  ::sstbx::common::AtomSpeciesDatabase mySpeciesDatabase;
   ::boost::filesystem::path myOutputDir;
   ::std::string  myInstanceName;
 

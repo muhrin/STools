@@ -119,7 +119,7 @@ WriteStructure::generateLocator(
 {
   // Check if the structure has a name already, otherwise give it one
   if(structure.getName().empty())
-	  structure.setName(ssu::generateUniqueName());
+    structure.setName(common::generateStructureName(getRunner()->memory()));
 
   // Create the path to store the structure
   fs::path p(getRunner()->memory().shared().getOutputPath(*getRunner()));

@@ -85,16 +85,6 @@ const ssbc::IStructureGenerator * SharedData::getStructureGenerator() const
   return myStructureGenerator.get();
 }
 
-ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase()
-{
-  return mySpeciesDatabase;
-}
-
-const ssc::AtomSpeciesDatabase & SharedData::getSpeciesDatabase() const
-{
-  return mySpeciesDatabase;
-}
-
 void SharedData::reset()
 {
   // Reset everything

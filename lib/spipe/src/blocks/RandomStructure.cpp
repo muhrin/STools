@@ -23,6 +23,7 @@
 #include <utility/UtilFunctions.h>
 
 // Local includes
+#include "common/PipeFunctions.h"
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
@@ -120,12 +121,8 @@ void RandomStructure::in(::spipe::common::StructureData & data)
 		data.setStructure(str);
 
 		// Build up the name
-		if(!data.getStructure()->getName().empty())
-		{
-			std::stringstream ss;
-			ss << ssu::generateUniqueName();
-			data.getStructure()->setName(ss.str());
-		}
+		if(data.getStructure()->getName().empty())
+      data.getStructure()->setName(common::generateStructureName(getRunner()->memory()));
 
 		// Send it down the pipe
 		out(data);
@@ -154,7 +151,7 @@ RandomStructure::getStructureGenerator()
 {
   // Build up the name
   ::std::stringstream ss;
-  ss << ssu::generateUniqueName() << "-" << structureNum;
+  ss << common::generateStructureName(runner.memory()) << "-" << structureNum;
   return ss.str();
 }
 

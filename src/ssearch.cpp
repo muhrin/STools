@@ -54,6 +54,10 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int main(const int argc, char * argv[])
 {
+  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  typedef sp::SpSingleThreadedEngine Engine;
+  typedef Engine::RunnerPtr RunnerPtr;
+
   // Program options
   InputOptions in;
 
@@ -86,10 +90,12 @@ int main(const int argc, char * argv[])
   }
   ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
-  ssc::AtomSpeciesDatabase speciesDb;
+  // Create the pipe the run the search
+  Engine pipeEngine;
+  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
+  runner->memory().global().setSeedName(::sstbx::io::stemString(in.inputOptionsFile));
 
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
-  ::stools::factory::Factory factory(speciesDb);
+  ::stools::factory::Factory factory(runner->memory().global().getSpeciesDatabase());
 
   PipePtr pipe;
   if(!factory.createSearchPipeExtended(pipe, schemaOptions))
@@ -98,13 +104,6 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
-  // Now run the pipe
-  typedef sp::SpSingleThreadedEngine Engine;
-  typedef Engine::RunnerPtr RunnerPtr;
-
-  Engine pipeEngine;
-  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-  runner->memory().global().setSeedName(::sstbx::io::stemString(in.inputOptionsFile));
   runner->run(*pipe);
 
   return 0;

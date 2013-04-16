@@ -22,6 +22,7 @@
 #include <utility/UtilFunctions.h>
 
 // Local includes
+#include "common/PipeFunctions.h"
 #include "common/SharedData.h"
 #include "common/StructureData.h"
 #include "common/UtilityFunctions.h"
@@ -73,7 +74,7 @@ void LoadSeedStructures::start()
     
     // Set up the structure name if needed
     if(structure.getName().empty())
-      structure.setName(ssu::generateUniqueName());
+      structure.setName(common::generateStructureName(getRunner()->memory()));
 
     unitCell = structure.getUnitCell();
     if(myTryToScaleVolumes && unitCell)

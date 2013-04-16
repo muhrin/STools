@@ -39,19 +39,22 @@ char randomChar(const int seed = -1)
   return result;
 }
 
-std::string generateUniqueName(const size_t randPostfixLength)
+std::string generateUniqueName(const ::std::string & prefix, const size_t randPostfixLength)
 {
-  // Use boost as portable way to get the process id
-  const os::ProcessId processId = os::getProcessId();
-  const time_t currTime = time(NULL);
- 
   // Build up the name
   std::stringstream ss;	//create a stringstream
-  ss << processId << "-" << randomChar(static_cast<int>(currTime));
+  if(!prefix.empty())
+    ss << prefix << "-";
+  ss << randomChar(static_cast<int>(time(NULL)));
   if(randPostfixLength > 0)
     ss << randomString(randPostfixLength);
 
   return ss.str();
+}
+
+std::string generateUniqueName(const size_t randPostfixLength)
+{
+  return generateUniqueName("", randPostfixLength);
 }
 
 

@@ -123,6 +123,7 @@ bool setObject(
 }
 
 ::std::string getOutputFileStem(const MemoryAccessType & memory);
+::std::string generateStructureName(const MemoryAccessType & memory);
 
 }
 }
