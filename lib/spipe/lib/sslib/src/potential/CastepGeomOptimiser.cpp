@@ -353,12 +353,12 @@ bool CastepGeomOptRun::parseOptimisationInfo(
 
   // Pressure
   const double * const pressure = structure.getProperty(properties::general::PRESSURE_INTERNAL);
+  if(pressure)
+    data.pressure.reset(*pressure);
 
   // Internal energy
-  if(readSuccessfully)
-    data.internalEnergy.reset(*data.enthalpy -
-    *data.pressure * structure.getUnitCell()->getVolume()
-  );
+  if(data.enthalpy && data.pressure)
+    data.internalEnergy.reset(*data.enthalpy - *data.pressure * structure.getUnitCell()->getVolume());
 
   return readSuccessfully;
 }
