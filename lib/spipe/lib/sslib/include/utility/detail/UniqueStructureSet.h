@@ -179,7 +179,7 @@ template <typename Key>
 typename UniqueStructureSet<Key>::insert_return_type
 UniqueStructureSet<Key>::insert(const Key & key, common::Structure & correspondingStructure)
 {
-  MapInsertReturn pair = insertStructure(key, correspondingStructure);
+  MapInsertReturn pair = this->insertStructure(key, correspondingStructure);
   return insert_return_type(iterator(pair.first), pair.second);
 }
 

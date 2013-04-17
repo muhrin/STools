@@ -45,7 +45,7 @@ public:
 template <typename Key, typename T>
 const T & MapEx<Key, T>::operator ()(const Key & key) const
 {
-  const_iterator it = find(key);
+  const_iterator it = this->find(key);
 
   if(it == base_t::end())
   {

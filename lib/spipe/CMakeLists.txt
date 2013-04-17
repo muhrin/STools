@@ -45,7 +45,7 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex)
 
 ## Armadillo ##
 if(NOT ARMADILLO_INCLUDE_DIRS)
-  find_package(Armadillo)
+  find_package(Armadillo CONFIG REQUIRED)
   if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
     set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
   endif()

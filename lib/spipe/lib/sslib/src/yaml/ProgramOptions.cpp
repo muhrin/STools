@@ -10,6 +10,8 @@
 
 #ifdef SSLIB_USE_YAML
 
+#include <vector>
+
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -33,17 +35,17 @@ bool insertScalar(YAML::Node & node, const ::std::string & path, const ::std::st
   boost::split(pathEntries, path, ::boost::is_any_of("."));
 
   bool foundErrors = false;
-  YAML::Node * currentLocation = &node;
+  ::std::vector<YAML::Node> pathStack(1, node);
   BOOST_FOREACH(const ::std::string & pathEntry, pathEntries)
   {
     if(!pathEntry.empty())
     {
-      currentLocation = &(*currentLocation)[pathEntry];
+      pathStack.push_back(pathStack.back()[pathEntry]);
     }
     else
       foundErrors = true;
   }
-  *currentLocation = value;
+  pathStack.back() = value;
 
   return !foundErrors;
 }

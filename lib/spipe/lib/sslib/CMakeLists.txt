@@ -54,17 +54,17 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
 
 #
 # LAPACK #
-if(SSLIB_USE_LAPACK)
-  find_package(LAPACK REQUIRED)
-  if(NOT LAPACK_FOUND)
-    message(STATUS "LAPACK Not found")
-  endif(NOT LAPACK_FOUND)
-endif(SSLIB_USE_LAPACK)
+#if(SSLIB_USE_LAPACK)
+#  find_package(LAPACK REQUIRED)
+#  if(NOT LAPACK_FOUND)
+#    message(STATUS "LAPACK Not found")
+#  endif(NOT LAPACK_FOUND)
+#endif(SSLIB_USE_LAPACK)
 
 #
 # Armadillo #
 if(NOT ARMADILLO_INCLUDE_DIRS)
-  find_package(Armadillo)
+  find_package(Armadillo CONFIG REQUIRED)
   if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
     set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
   endif()
@@ -107,6 +107,9 @@ include_directories(
   ${SPGLIB_INCLUDE_DIRS}
 )
 
+
+
+
 # Include YAML if we're using it
 if(SSLIB_USE_YAML)
   include_directories(${YAML_CPP_INCLUDE_DIRS})
@@ -137,17 +140,19 @@ target_link_libraries(sslib
   ${ARMADILLO_LIBRARIES}
 )
 
+message(STATUS "ARMADILLO: ${ARMADILLO_LIBRARIES}")
+
 if(SSLIB_USE_YAML)
   target_link_libraries(sslib
     ${YAML_CPP_LIBRARIES}
   )
 endif(SSLIB_USE_YAML)
 
-if(SSLIB_USE_LAPACK)
-  target_link_libraries(sslib
-    ${LAPACK_LIBRARIES}
-  )
-endif(SSLIB_USE_LAPACK)
+#if(SSLIB_USE_LAPACK)
+#  target_link_libraries(sslib
+#    ${LAPACK_LIBRARIES}
+#  )
+#endif(SSLIB_USE_LAPACK)
 
 
 ###########
