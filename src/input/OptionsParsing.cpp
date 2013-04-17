@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "input/OptionsParsing.h"
 
+#include <ctime>
 #include <iostream>
 
 #include <boost/lexical_cast.hpp>
@@ -20,6 +21,7 @@
 #include <factory/MapEntries.h>
 
 // From SSLib
+#include <os/Process.h>
 #include <yaml/ProgramOptions.h>
 
 // NAMESPACES ////////////////////////////////
@@ -60,10 +62,10 @@ void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & option
   namespace ssm = ::sstbx::math;
 
   const ::std::string * const rngSeed = options.find(spf::RNG_SEED);
+  bool userSuppliedSeed = false;
   if(rngSeed)
   {
     // Is it an integer?
-    bool userSuppliedSeed = false;
     try
     {
       ssm::seed(::boost::lexical_cast<unsigned int>(*rngSeed));
@@ -71,11 +73,9 @@ void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & option
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {}
-    if(!userSuppliedSeed && rngSeed->find("time"))
-      ssm::seed();
   }
-  else
-    ssm::seed();
+  if(!userSuppliedSeed)
+    ssm::seed(static_cast<unsigned int>(time(NULL)) * static_cast<unsigned int>(::sstbx::os::getProcessId()));
 }
 
 } // namespace stools
