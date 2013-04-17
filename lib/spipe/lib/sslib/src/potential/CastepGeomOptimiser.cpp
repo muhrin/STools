@@ -95,6 +95,8 @@ namespace detail {
 
 const int CastepGeomOptRun::MAX_RELAX_ATTEMPTS = 20;
 
+namespace properties = common::structure_properties;
+
 CastepGeomOptRun::CastepGeomOptRun(
   const OptimisationSettings & optimisationSettings,
   const ::std::string & originalSeed,
@@ -174,13 +176,13 @@ OptimisationOutcome CastepGeomOptRun::updateStructure(
     if(updateResult == CastepRunResult::OUTPUT_NOT_FOUND)
     {
       ::std::stringstream ss;
-      ss << "Castep output: " << myCastepRun.getCellOutFile().string() << " not found.";
+      ss << "Castep output: " << myCastepRun.getCastepFile().string() << " not found.";
       return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
     }
     else if(updateResult == CastepRunResult::FAILED_TO_READ_STRUCTURE)
     {
       ::std::stringstream ss;
-      ss << "Failed to read structure from " << myCastepRun.getCellOutFile().string() << ".";
+      ss << "Failed to read structure from " << myCastepRun.getCastepFile().string() << ".";
       return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
     }
     else
@@ -328,16 +330,7 @@ bool CastepGeomOptRun::parseOptimisationInfo(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  static const ::std::string FINAL_ENTHALPY("Final Enthalpy");
   static const ::std::string FORCES("* Forces *");
-  static const ::std::string STRESS_TENSOR("* Stress Tensor *");
-
-  static const ::boost::regex RE_TENSOR_ROW(
-    ::std::string("[x|y|z][[:blank:]]+") +
-    "(" + io::PATTERN_FLOAT + ")[[:blank:]]+" +
-    "(" + io::PATTERN_FLOAT + ")[[:blank:]]+" +
-    "(" + io::PATTERN_FLOAT + ")"
-  );
 
   fs::ifstream * castepFileStream;
   myCastepRun.openCastepFile(&castepFileStream);
@@ -346,16 +339,9 @@ bool CastepGeomOptRun::parseOptimisationInfo(
   std::string line;
 
   // Enthalpy
-  if(io::findLastLine(line, *castepFileStream, FINAL_ENTHALPY))
-  {
-    double enthalpy;
-    if(io::findFirstFloat(enthalpy, line))
-    {
-      data.enthalpy.reset(enthalpy);
-    }
-  }
-  else
-    readSuccessfully = false;
+  const double * const enthalpy = structure.getProperty(properties::general::ENTHALPY);
+  if(enthalpy)
+    data.enthalpy.reset(*enthalpy);
 
   // Forces
   if(io::findNextLine(line, *castepFileStream, FORCES))
@@ -365,47 +351,8 @@ bool CastepGeomOptRun::parseOptimisationInfo(
   else
     readSuccessfully = false;
 
-  // Stress tensor and pressure
-  if(io::findNextLine(line, *castepFileStream, STRESS_TENSOR))
-  {
-    ::arma::mat33 stressTensor;
-    ::std::string tensorLine;
-    int row = 0;
-    while(::std::getline(*castepFileStream, tensorLine) &&
-      tensorLine.size() > 2 &&
-      tensorLine.substr(0, 2) == " *")
-    {
-      ::boost::smatch match;
-      ::std::string x, y, z;
-      if(::boost::regex_search(tensorLine, match, RE_TENSOR_ROW))
-      {
-        x.assign(match[1].first, match[1].second);
-        y.assign(match[3].first, match[3].second);
-        z.assign(match[5].first, match[5].second);
-        try
-        {
-          stressTensor(row, 0) = ::boost::lexical_cast<double>(x);
-          stressTensor(row, 1) = ::boost::lexical_cast<double>(y);
-          stressTensor(row, 2) = ::boost::lexical_cast<double>(z);
-          ++row;
-        }
-        catch(const ::boost::bad_lexical_cast & /*e*/)
-        {
-          readSuccessfully = false;
-        }
-      }
-      if(row == 3)
-      {
-        data.stressMtx.reset(stressTensor);
-        data.pressure.reset(-::arma::trace(stressTensor) / 3.0);
-        break;
-      }
-    }
-    if(row != 3)
-      readSuccessfully = false;
-  }
-  else
-    readSuccessfully = false;
+  // Pressure
+  const double * const pressure = structure.getProperty(properties::general::PRESSURE_INTERNAL);
 
   // Internal energy
   if(readSuccessfully)

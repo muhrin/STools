@@ -13,6 +13,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <armadillo>
+
 #include "utility/HeterogeneousMap.h"
 #include "utility/NamedProperty.h"
 
@@ -34,6 +36,7 @@ extern utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL;
 extern utility::NamedKey<double>             PRESSURE_INTERNAL;
 extern utility::NamedKey<double>             ENERGY_INTERNAL;
 extern utility::NamedKey<double>             ENTHALPY;
+extern utility::Key< ::arma::mat33>          STRESS_TENSOR;
 
 
 } // namespace general

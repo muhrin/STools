@@ -63,6 +63,7 @@ private:
   {
     OptionalDouble pressure;
     OptionalDouble enthalpy;
+    OptionalArmaMat33 stressTensor;
   };
 
   static const ::std::string CELL_TITLE;

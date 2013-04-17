@@ -44,7 +44,7 @@ std::string generateUniqueName(const ::std::string & prefix, const size_t randPo
   // Build up the name
   std::stringstream ss;	//create a stringstream
   if(!prefix.empty())
-    ss << prefix << "-";
+    ss << prefix << "-" << os::getProcessId() << "-";
   ss << randomChar(static_cast<int>(time(NULL)));
   if(randPostfixLength > 0)
     ss << randomString(randPostfixLength);

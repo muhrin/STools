@@ -310,31 +310,64 @@ void CastepReader::updateStructure(common::Structure & structure, const AuxInfo 
     structure.setProperty(properties::general::PRESSURE_INTERNAL, *auxInfo.pressure);
   if(auxInfo.enthalpy)
     structure.setProperty(properties::general::ENTHALPY, *auxInfo.enthalpy);
+  if(auxInfo.stressTensor)
+    structure.setProperty(properties::general::STRESS_TENSOR, *auxInfo.stressTensor);
 }
 
 bool CastepReader::parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inputStream) const
 {
+  static const ::boost::regex RE_TENSOR_ROW(
+    ::std::string("[x|y|z][[:blank:]]+") +
+    "(" + io::PATTERN_FLOAT + ")[[:blank:]]+" +
+    "(" + io::PATTERN_FLOAT + ")[[:blank:]]+" +
+    "(" + io::PATTERN_FLOAT + ")"
+  );
   static const ::boost::regex RE_PRESSURE("Pressure:[[:blank:]]+(" + PATTERN_FLOAT + ")");
 
   auxInfo.pressure.reset();
 
+  ::arma::mat33 stressTensor;
   ::std::string line;
   ::boost::smatch match;
+  int row = 0;
+  ::std::string x, y, z;
   while(::std::getline(inputStream, line) && inBox(line))
   {
-    if(::boost::regex_search(line, match, RE_PRESSURE))
+    if(row < 3 && ::boost::regex_search(line, match, RE_TENSOR_ROW))
+    {
+      x.assign(match[1].first, match[1].second);
+      y.assign(match[3].first, match[3].second);
+      z.assign(match[5].first, match[5].second);
+      try
+      {
+        stressTensor(row, 0) = ::boost::lexical_cast<double>(x);
+        stressTensor(row, 1) = ::boost::lexical_cast<double>(y);
+        stressTensor(row, 2) = ::boost::lexical_cast<double>(z);
+        ++row;
+      }
+      catch(const ::boost::bad_lexical_cast & /*e*/)
+      {}
+    }
+    else if(::boost::regex_search(line, match, RE_PRESSURE))
     {
       try
       {
         const ::std::string pressureString(match[1].first, match[1].second);
         auxInfo.pressure.reset(::boost::lexical_cast<double>(pressureString));
-        return true;
+        break;
       }
       catch(const ::boost::bad_lexical_cast & /*e*/)
       {}
       break;
     }
   }
+  
+  if(row == 3) // Did we get the entire stress tensor?
+  {
+    auxInfo.stressTensor.reset(stressTensor);
+    return true;
+  }
+
   return false;
 }
 

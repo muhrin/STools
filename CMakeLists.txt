@@ -45,7 +45,14 @@ find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
 
 #
 # Armadillo #
-find_package(Armadillo CONFIG REQUIRED)
+find_package(Armadillo NO_MODULE)
+if(NOT Armadillo_FOUND)
+  # Try finding using FindArmadillo
+  find_package(Armadillo)
+endif()
+if(NOT Armadillo_FOUND)
+  message(FATAL_ERROR "Armadillo not found, specify location via CMAKE_PREFIX_PATH or otherwise")
+endif()
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()

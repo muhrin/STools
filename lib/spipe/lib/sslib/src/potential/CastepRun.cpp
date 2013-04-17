@@ -36,7 +36,6 @@ CastepRun::CastepRun(
 myCellFile(seed + ".cell"),
 myParamFile(seed + ".param"),
 myCastepFile(seed + ".castep"),
-myCellOutFile(seed + "-out.cell"),
 myCellReaderWriter(cellReaderWriter),
 myCastepReader(castepReader)
 {}
@@ -59,11 +58,6 @@ const fs::path & CastepRun::getCellFile() const
 const fs::path & CastepRun::getCastepFile() const
 {
   return myCastepFile;
-}
-
-const fs::path & CastepRun::getCellOutFile() const
-{
-  return myCellOutFile;
 }
 
 CastepRunResult::Value CastepRun::openNewCellFile(fs::ofstream * * ofstream)
@@ -97,25 +91,6 @@ CastepRunResult::Value CastepRun::openCastepFile(fs::ifstream * * ifstream)
 
   if(ifstream)
     *ifstream = &myCastepFileStream;
-
-  return CastepRunResult::SUCCESS;
-}
-
-CastepRunResult::Value CastepRun::openCellOutFile(::boost::filesystem::ifstream * * ifstream)
-{
-  if(!fs::exists(myCellOutFile))
-    return CastepRunResult::OUTPUT_NOT_FOUND;
-
-  if(!myCellOutFileStream.is_open())
-    myCellOutFileStream.open(myCellOutFile);
-  else
-  { // Move the file to the beginning
-    myCellOutFileStream.clear(); // Clear the EoF flag
-    myCellOutFileStream.seekg(0, myCellOutFileStream.beg);
-  }
-
-  if(ifstream)
-    *ifstream = &myCellOutFileStream;
 
   return CastepRunResult::SUCCESS;
 }
@@ -199,8 +174,6 @@ void CastepRun::closeAllStreams()
     myCastepFileStream.close();
   if(myCellFileStream.is_open())
     myCellFileStream.close();
-  if(myCellOutFileStream.is_open())
-    myCellOutFileStream.close();
 }
 
 CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeString)
@@ -226,14 +199,11 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  if(!fs::exists(myCellOutFile))
-    return CastepRunResult::OUTPUT_NOT_FOUND;
-
-  CastepRunResult::Value result = openCellOutFile();
+  CastepRunResult::Value result = openCastepFile();
   if(result != CastepRunResult::SUCCESS)
     return result;
 
-  common::types::StructurePtr newStructure = myCellReaderWriter.readStructure(myCellOutFileStream, speciesDb);
+  common::types::StructurePtr newStructure = myCastepReader.readStructure(myCastepFileStream, speciesDb, "last");
   if(!newStructure.get())
     return CastepRunResult::FAILED_TO_READ_STRUCTURE;
 
@@ -255,7 +225,7 @@ CastepRunResult::Value CastepRun::deleteAllOutput()
   const ::std::string stem(io::stemString(myCellFile));
 
   fs::remove_all(myCastepFile);
-  fs::remove_all(myCellOutFile);
+  fs::remove_all(stem + "-out.cell");
   fs::remove_all(stem + ".bands");
   fs::remove_all(stem + ".bib");
   fs::remove_all(stem + ".castep_bin");
