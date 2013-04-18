@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
 {
   // Settings
   static const double FINAL_ENTHALPY = -1.79788727e2;
-  static const double FINAL_PRESSURE = -0.0081436;
+  static const double FINAL_PRESSURE = -0.0081437;
 
   ssc::Structure structure;
   ssc::AtomSpeciesDatabase speciesDb;
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
 
   // Pressure
   BOOST_REQUIRE(optimisationData.pressure);
-  BOOST_REQUIRE(ssu::StableComp::eq(*optimisationData.pressure, FINAL_PRESSURE, 1e-5));
+  BOOST_REQUIRE(ssu::StableComp::eq(*optimisationData.pressure, FINAL_PRESSURE, 1e-4));
 
   const double * strPressure = structure.getProperty(ssc::structure_properties::general::PRESSURE_INTERNAL);
   BOOST_REQUIRE(strPressure && ssu::StableComp::eq(*strPressure, FINAL_PRESSURE));
