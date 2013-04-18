@@ -84,6 +84,25 @@ StructurePtr Structure::clone() const
   return StructurePtr(new Structure(*this));
 }
 
+void Structure::updateWith(const Structure & structure)
+{
+  // Update the unit cell
+  if(structure.getUnitCell())
+    setUnitCell(structure.getUnitCell()->clone());
+  else
+    setUnitCell(UnitCellPtr());
+
+  // Update the atoms
+  clearAtoms();
+  BOOST_FOREACH(const Atom & atom, structure.myAtoms)
+  {
+    newAtom(atom);
+  }
+
+  // Update the properties
+  myTypedProperties.insert(structure.myTypedProperties);
+}
+
 const std::string & Structure::getName() const
 {
 	return myName;

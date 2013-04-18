@@ -50,6 +50,8 @@ public:
   template <typename T>
   bool insert(value_type<T> & x);
 
+  void insert(const HeterogeneousMap & map);
+
   template <typename T>
   T & operator [](Key<T> & x);
 

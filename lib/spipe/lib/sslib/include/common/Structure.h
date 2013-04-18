@@ -53,6 +53,8 @@ public:
   Structure & operator =(const Structure & rhs);
   StructurePtr clone() const;
 
+  void updateWith(const Structure & structure);
+
 	const std::string & getName() const;
 	void setName(const std::string & name);
 

@@ -23,6 +23,7 @@ HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)
 
 HeterogeneousMap & HeterogeneousMap::operator =(const HeterogeneousMap & rhs)
 {
+  clear();
   myAnyMap.insert(rhs.myAnyMap.begin(), rhs.myAnyMap.end());
   // Now tell all the keys that they have been inserted into the map
   BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
@@ -50,6 +51,11 @@ size_t HeterogeneousMap::size() const
 size_t HeterogeneousMap::max_size() const
 {
   return myAnyMap.max_size();
+}
+
+void HeterogeneousMap::insert(const HeterogeneousMap & map)
+{
+  myAnyMap.insert(map.myAnyMap.begin(), map.myAnyMap.end());
 }
 
 void HeterogeneousMap::clear()

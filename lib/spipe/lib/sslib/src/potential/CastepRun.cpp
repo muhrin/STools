@@ -209,7 +209,7 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
     return CastepRunResult::FAILED_TO_READ_STRUCTURE;
 
   // Copy over the structure
-  structure = *newStructure;
+  structure.updateWith(*newStructure);
 
   return CastepRunResult::SUCCESS;
 }
