@@ -63,9 +63,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
     ssc::Structure structure;
     structure.setUnitCell(ssc::UnitCellPtr(new ssc::UnitCell(
-      ssm::randu(0.1, 5.0) * cellDim,
-      ssm::randu(0.1, 5.0) * cellDim, 
-      ssm::randu(0.1, 5.0) * cellDim, 90.0, 90.0, 90.0)));
+      ssm::randu(1.0, 5.0) * cellDim,
+      ssm::randu(1.0, 5.0) * cellDim, 
+      ssm::randu(1.0, 5.0) * cellDim, 90.0, 90.0, 90.0)));
 
     for(size_t i = 0; i < numAtoms; ++i)
       structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());

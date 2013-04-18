@@ -24,6 +24,7 @@
 #include <common/UnitCell.h>
 #include <common/Types.h>
 #include <math/Random.h>
+#include <utility/StableComparison.h>
 
 namespace ssbc = ::sstbx::build_cell;
 namespace ssc = ::sstbx::common;
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
           const ::arma::vec & pos2 = structure.getAtom(l).getPosition();
           dr = distanceCalc.getDistMinImg(pos1, pos2);
 
-          BOOST_REQUIRE(dr * dr >= minsepSq);
+          BOOST_REQUIRE(::sstbx::utility::StableComp::geq(dr * dr, minsepSq));
         }
       }
     }
