@@ -229,14 +229,8 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 	ifstream strFile;
 	strFile.open(filepath);
 
-  // Set up our tokenizer to split around space and tab
-	typedef boost::tokenizer<boost::char_separator<char> > Tok;
-	const boost::char_separator<char> sep(" \t");
-
-  bool foundTitle, foundSfac;
   if(strFile.is_open())
   {
-    bool fileReadSuccessfully = true;
     str.reset(new common::Structure());
 
     str->setProperty(
@@ -244,121 +238,18 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
       io::ResourceLocator(io::absolute(filepath)));
 
     std::string line;
-
-    // We're expecting the TITL line
-    foundTitle = false;
-    for(getline(strFile, line); !foundTitle && strFile.good(); getline(strFile, line))
+    for(getline(strFile, line); strFile.good(); getline(strFile, line))
     {
-      Tok toker(line, sep);
-      Tok::iterator tokIt = toker.begin();
-      if(*tokIt == "TITL")
-      {
+      if(line.find("TITL") != ::std::string::npos)
         parseTitle(*str, line);
-        foundTitle = true;
-      }
-    } // end for
-
-    // We're expecting the CELL line
-    bool finishedCell = false;
-    for(; !finishedCell && strFile.good(); getline(strFile, line))
-    {
-      if(line.find("CELL") != ::std::string::npos)
-      {
+      else if(line.find("CELL") != ::std::string::npos)
         parseCell(*str, line);
-        finishedCell = true;
-      }
-    } // while !finishedCell
-
-
-    // Look for SFAC line
-    foundSfac = false;
-    for(; // The previous for statement will have called one last getline
-      !foundSfac && strFile.good();
-      getline(strFile, line))
-    {
-      Tok toker(line, sep);
-      Tok::iterator tokIt = toker.begin();
-      if(*tokIt == "SFAC")
-      {
-        foundSfac = true;
-
-        // Skip over the first line, it just outlines overall species
-        getline(strFile, line);
-
-        // Now loop over all atoms
-        bool foundEnd = false;
-        for(; // The previous for statement will have called one last getline
-          !foundEnd && strFile.good();
-          getline(strFile, line))
-        {
-          bool atomFound = true;      
-
-          Tok atomToker(line, sep);
-          Tok::iterator atomTokIt = atomToker.begin();
-
-          if(atomTokIt == atomToker.end() || *atomTokIt == "END")
-          {
-            foundEnd = true;
-            break;
-          }
-
-          // Try finding the species id
-          const AtomSpeciesId::Value id = speciesDb.getIdFromSymbol(*atomTokIt);
-
-          if(id != sstbx::common::AtomSpeciesId::DUMMY)
-          {
-            bool hasMore = true;
-
-            // Skip over first value
-            hasMore = (++atomTokIt != atomToker.end());
-
-            if(hasMore)
-            {
-              // Try to get the coordinates
-              bool readCoordinates = true;
-              arma::vec3 pos;
-              unsigned int coord = 0;
-              for(++atomTokIt;
-                coord < 3 && atomTokIt != atomToker.end();
-                ++coord, ++atomTokIt)
-              {
-                try
-                {
-                  pos(coord) = lexical_cast<double>(*atomTokIt);
-                }
-                catch(const bad_lexical_cast &)
-                {
-                  readCoordinates = false;
-                  break;
-                }
-              }
-              readCoordinates = readCoordinates && coord == 3;
-
-              if(readCoordinates)
-              {
-                const common::UnitCell * const cell = str->getUnitCell();
-                Atom & atom = str->newAtom(id);
-                // Try to orthoginalise the position
-                if(cell)
-                {
-                  cell->fracToCartInplace(pos);
-                }
-                atom.setPosition(pos);
-              }
-            } // end if(hasMore)
-          }
-
-        } // for all atoms
-
-      } // end if(*tokIt == "SFAC")
-    } // while !foundSfac
+      else if(line.find("SFAC") != ::std::string::npos)
+        parseAtoms(*str, strFile, line, speciesDb);
+    } // end for
   
     strFile.close();
-  } // end if(strFile.is_open())
-
-
-  if(!foundSfac)
-    str.reset();
+  }
 
   return str;
 }
@@ -480,6 +371,67 @@ bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::stri
     return true;
   }
   return false;
+}
+
+bool ResReaderWriter::parseAtoms(
+  common::Structure & structure,
+  ::std::istream & inStream,
+  const ::std::string & sfacLine,
+  const common::AtomSpeciesDatabase & speciesDb
+) const
+{
+  using namespace utility::cart_coords_enum;
+
+  ::std::string line;
+
+  Tok atomToker(line, sep);
+
+  ::std::vector< ::std::string> atomTokens;
+  common::AtomSpeciesId::Value atomId;
+  bool encounteredProblem = false;
+  ::arma::vec3 pos;
+  while(::std::getline(inStream, line))
+  {
+    atomTokens.clear();
+    ::boost::split(atomTokens, line, boost::is_any_of(" "));
+
+    if(atomTokens.empty())
+    {
+      encounteredProblem = true;
+      continue;
+    }
+
+    // Try finding the species id
+    atomId = speciesDb.getIdFromSymbol(atomTokens[0]);
+    if(atomId == sstbx::common::AtomSpeciesId::DUMMY)
+    {
+      encounteredProblem = true;
+      continue;
+    }
+
+    // Try to get the coordinates at positions 2, 3 and 4
+    if(atomTokens.size() < 5)
+    {
+      encounteredProblem = true;
+      continue;
+    }
+    try
+    {
+      pos(X) = ::boost::lexical_cast<double>(atomTokens[X + 2]);
+      pos(Y) = ::boost::lexical_cast<double>(atomTokens[Y + 2]);
+      pos(Z) = ::boost::lexical_cast<double>(atomTokens[Z + 2]);
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {
+      encounteredProblem = true;
+      continue;
+    }
+
+    if(structure.getUnitCell())
+      structure.getUnitCell()->fracToCartInplace(pos);
+    structure.newAtom(atomId).setPosition(pos);
+  }
+  return !encounteredProblem;
 }
 
 void ResReaderWriter::writeTitle(::std::ostream & os, const common::Structure & structure) const
