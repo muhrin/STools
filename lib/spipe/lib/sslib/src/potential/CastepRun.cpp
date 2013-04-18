@@ -150,13 +150,14 @@ CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTe
   if(!fs::exists(myCellFile))
     return CastepRunResult::INPUT_NOT_FOUND;
 
-  openNewCellFile();
+  if(!myCellFileStream.is_open())
+    myCellFileStream.open(myCellFile, std::ios::out | std::ios::app);
 
-  myCellFileStream << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
+  myCellFileStream << ::std::endl << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
 
   for(unsigned int row = 0; row < 3; ++row)
   {
-    myCellFileStream << ::std::string(row, '\t');
+    myCellFileStream << ::std::string(row, ' ');
     for(unsigned int col = row; col < 3; ++col)
     {
       myCellFileStream << pressureTensor(row, col) << " ";
