@@ -393,7 +393,7 @@ bool ResReaderWriter::parseAtoms(
   while(::std::getline(inStream, line))
   {
     atomTokens.clear();
-    ::boost::split(atomTokens, line, boost::is_any_of(" "));
+    ::boost::split(atomTokens, line, ::boost::is_any_of(" "), ::boost::token_compress_on);
 
     if(atomTokens.empty())
     {

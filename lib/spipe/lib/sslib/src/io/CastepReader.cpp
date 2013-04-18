@@ -322,7 +322,7 @@ bool CastepReader::parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inpu
     "(" + io::PATTERN_FLOAT + ")[[:blank:]]+" +
     "(" + io::PATTERN_FLOAT + ")"
   );
-  static const ::boost::regex RE_PRESSURE("Pressure:[[:blank:]]+(" + PATTERN_FLOAT + ")");
+  //static const ::boost::regex RE_PRESSURE("Pressure:[[:blank:]]+(" + PATTERN_FLOAT + ")");
 
   auxInfo.pressure.reset();
 
@@ -348,23 +348,12 @@ bool CastepReader::parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inpu
       catch(const ::boost::bad_lexical_cast & /*e*/)
       {}
     }
-    else if(::boost::regex_search(line, match, RE_PRESSURE))
-    {
-      try
-      {
-        const ::std::string pressureString(match[1].first, match[1].second);
-        auxInfo.pressure.reset(::boost::lexical_cast<double>(pressureString));
-        break;
-      }
-      catch(const ::boost::bad_lexical_cast & /*e*/)
-      {}
-      break;
-    }
   }
   
   if(row == 3) // Did we get the entire stress tensor?
   {
     auxInfo.stressTensor.reset(stressTensor);
+    auxInfo.pressure.reset(::arma::trace(stressTensor) / -3.0);
     return true;
   }
 
