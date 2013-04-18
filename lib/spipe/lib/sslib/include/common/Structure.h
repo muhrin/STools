@@ -50,6 +50,7 @@ public:
 
 	explicit Structure(UnitCellPtr cell = UnitCellPtr());
   Structure(const Structure & toCopy);
+  Structure & operator =(const Structure & rhs);
   StructurePtr clone() const;
 
 	const std::string & getName() const;

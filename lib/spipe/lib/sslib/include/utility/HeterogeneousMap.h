@@ -36,6 +36,7 @@ public:
 
   HeterogeneousMap() {}
   HeterogeneousMap(const HeterogeneousMap & toCopy);
+  HeterogeneousMap & operator =(const HeterogeneousMap & rhs);
   ~HeterogeneousMap();
  
   // Capacity methods

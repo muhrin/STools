@@ -52,20 +52,31 @@ myDistanceCalculator(*this)
 {}
 
 Structure::Structure(const Structure & toCopy):
-myName(toCopy.myName),
-myNumAtoms(0),  // These'll be added in one by one below
-myTypedProperties(toCopy.myTypedProperties),
 myDistanceCalculator(*this)
 {
+  // Use the equals operator so we don't duplicate code
+  *this = toCopy;
+}
+
+Structure & Structure::operator =(const Structure & rhs)
+{
+  myName = rhs.myName;
+
   // Copy over the unit cell (if exists)
-  if(toCopy.myCell.get())
-    setUnitCell(toCopy.myCell->clone());
+  if(rhs.myCell.get())
+    setUnitCell(rhs.myCell->clone());
+
+  // Copy over properties
+  myTypedProperties = rhs.myTypedProperties;
 
   // Copy over the atoms
-  BOOST_FOREACH(const Atom & atom, toCopy.myAtoms)
+  clearAtoms();
+  BOOST_FOREACH(const Atom & atom, rhs.myAtoms)
   {
     newAtom(atom);
   }
+
+  return *this;
 }
 
 StructurePtr Structure::clone() const

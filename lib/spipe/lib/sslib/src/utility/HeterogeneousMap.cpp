@@ -17,12 +17,19 @@ namespace utility {
 
 HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)
 {
-  myAnyMap.insert(toCopy.myAnyMap.begin(), toCopy.myAnyMap.end());
+  // Use equals operator to reduce code replication
+  *this = toCopy;
+}
+
+HeterogeneousMap & HeterogeneousMap::operator =(const HeterogeneousMap & rhs)
+{
+  myAnyMap.insert(rhs.myAnyMap.begin(), rhs.myAnyMap.end());
   // Now tell all the keys that they have been inserted into the map
   BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
   {
     value.first->insertedIntoMap(*this);
   }
+  return *this;
 }
 
 HeterogeneousMap::~HeterogeneousMap()

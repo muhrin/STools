@@ -207,14 +207,8 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
   if(!newStructure.get())
     return CastepRunResult::FAILED_TO_READ_STRUCTURE;
 
-  structure.clearAtoms();
-
-  // Copy over the unit cell
-  structure.setUnitCell(makeUniquePtr(new common::UnitCell(*newStructure->getUnitCell())));
-
-  // Copy over the atoms
-  for(size_t i = 0; i < newStructure->getNumAtoms(); ++i)
-    structure.newAtom(newStructure->getAtom(i));
+  // Copy over the structure
+  structure = *newStructure;
 
   return CastepRunResult::SUCCESS;
 }

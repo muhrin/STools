@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
   //comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
-  const size_t MAX_STRUCTURES = 5;
-  const double ALLOWED_FAIL_RATE = 0.005;
+  const size_t MAX_STRUCTURES = 100;
+  const double ALLOWED_FAIL_RATE = 0.02;
   const unsigned int MAX_NUM_WRONG = (unsigned int)ceil((double)MAX_STRUCTURES * ALLOWED_FAIL_RATE);
 
   BOOST_REQUIRE(fs::exists(referenceStructuresPath));
