@@ -10,11 +10,14 @@
 #include "SSLibAssert.h"
 #include "math/Matrix.h"
 #include "utility/StableComparison.h"
+#include "utility/IndexingEnums.h"
 
 #include <limits>
 
 namespace sstbx {
 namespace math {
+
+using namespace arma;
 
 namespace comp = utility::StableComp;
 
@@ -90,6 +93,67 @@ bool isReal(const ::arma::cx_mat & mat, const double tolerance)
 {
   const ::arma::vec im(::arma::imag(mat));
   return comp::eq(im.max(), 0.0, tolerance);
+}
+
+::arma::vec3 getTranslation(const mat44 & transform)
+{
+  using namespace utility::cart_coords_enum;
+  return transform.col(3).rows(X, Z);
+}
+
+void setTranslation(::arma::mat44 & transform, const vec3 & translation)
+{
+  using namespace utility::cart_coords_enum;
+  transform.col(3).rows(X, Z) = translation;
+}
+
+::arma::mat33 getRotation(const ::arma::mat44 & transform)
+{
+  return transform.submat(0, 0, 2, 2);
+}
+
+void setRotation(::arma::mat44 & transform, const vec4 & axisAngle)
+{
+  using namespace utility::cart_coords_enum;
+
+  // Using Rodrigues' rotation formula
+  // see: http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+  vec3 axis(axisAngle.rows(X, Z));
+  normalise(axis);
+  const double theta = axisAngle(3);
+
+  mat33 crossProductMtx;
+  crossProductMtx.zeros();
+  crossProductMtx(0, 1) = -axis(Z);
+  crossProductMtx(0, 2) = axis(Y);
+  crossProductMtx(1, 2) = -axis(X);
+  // Skew symmetric replication
+  crossProductMtx(1,0) = axis(Z);
+  crossProductMtx(2,0) = -axis(Y);
+  crossProductMtx(2,1) = axis(X);
+
+  transform.submat(0, 0, 2, 2) =
+    eye<mat>(3,3) * cos(theta) +
+    sin(theta) * crossProductMtx +
+    (1.0 - cos(theta)) * kron(axis, axis.t());
+}
+
+void transform(::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
+{
+  using namespace utility::cart_coords_enum;
+
+  ::arma::vec4 transformed;
+  transformed.rows(X, Z) = vec;
+  transformed(3) = 1.0;
+  transformed = transformMtx * transformed;
+  vec = transformed.rows(X, Z);
+}
+
+::arma::vec3 transformCopy(const ::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
+{
+  ::arma::vec3 copy(vec);
+  transform(copy, transformMtx);
+  return copy;
 }
 
 }

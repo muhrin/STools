@@ -13,6 +13,7 @@
 #include "SSLib.h"
 
 #include <boost/noncopyable.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
@@ -26,6 +27,19 @@ namespace build_cell {
 class AtomsDescription;
 class BuildAtomInfo;
 
+// TODO: Put in construction info object so that AtomsGenerator is immutable
+struct AtomsGeneratorConstructionInfo
+{
+  AtomsGeneratorConstructionInfo():
+  numReplicas(1)
+  {}
+
+  int numReplicas;
+  UniquePtr<IGeneratorShape>::Type genShape;
+  OptionalArmaVec3 pos;
+  OptionalArmaVec4 rot;
+};
+
 class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
   typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
@@ -36,7 +50,18 @@ public:
   typedef Atoms::const_iterator const_iterator;
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
-  AtomsGenerator() {}
+  struct TransformSettings
+  {
+    enum Value
+    {
+      FIXED         = 0x00, // 000
+      RAND_POS      = 0x01, // 001
+      RAND_ROT_DIR  = 0x02, // 010
+      RAND_ROT_ANGLE= 0x04  // 100
+    };
+  };
+
+  AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo);
   AtomsGenerator(const AtomsGenerator & toCopy);
 
   size_t numAtoms() const;
@@ -49,7 +74,6 @@ public:
   void eraseAtoms(iterator pos);
 
   const IGeneratorShape * getGeneratorShape() const;
-  void setGeneratorShape(GenShapePtr shere);
   
   // From IFragmentGenerator ////////
   virtual GenerationOutcome generateFragment(
@@ -72,32 +96,46 @@ public:
 private:
   typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
   typedef ::std::map<const AtomsDescription *, int> AtomCounts;
-  typedef ::std::map<GenerationTicket::IdType, AtomCounts> TicketsMap;
+
+  struct GenerationInfo
+  {
+    AtomCounts atomCounts;
+    ::arma::mat44 shapeTransform;
+  };
+
+  typedef ::std::map<GenerationTicket::IdType, GenerationInfo> TicketsMap;
 
   AtomPosition generatePosition(
     BuildAtomInfo & atomInfo,
     const AtomsDescription & atom,
     const StructureBuild & build,
-    const unsigned int multiplicity
+    const unsigned int multiplicity,
+    const ::arma::mat44 & transformation
   ) const;
-
   bool generateSpecialPosition(
     ::arma::vec3 & posOut,
     SymmetryGroup::OpMask & opMaskOut,
     const SymmetryGroup::EigenspacesAndMasks & spaces,
-    const IGeneratorShape & genShape
+    const IGeneratorShape & genShape,
+    const ::arma::mat44 & transformation
   ) const;
-
   OptionalArmaVec3 generateSpeciesPosition(
     const SymmetryGroup::Eigenspace & eigenspace,
-    const IGeneratorShape & genShape) const;
-
+    const IGeneratorShape & genShape,
+    const ::arma::mat44 & transformation
+  ) const;
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
   const IGeneratorShape & getGenShape(const StructureBuild & build) const;
 
+  ::arma::mat44 generateTransform(const StructureBuild & build) const;
+
   Atoms myAtoms;
-  GenShapePtr myGenShape;
+  const ::boost::scoped_ptr<IGeneratorShape> myGenShape;
+  int myTransformMask;
+  const unsigned int myNumReplicas;
+  ::arma::vec3 myTranslation;
+  ::arma::vec4 myRotation;
   TicketsMap myTickets;
   GenerationTicket::IdType myLastTicketId;
 };

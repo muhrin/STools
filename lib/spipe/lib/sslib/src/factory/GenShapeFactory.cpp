@@ -13,6 +13,7 @@
 #include "build_cell/GenBox.h"
 #include "build_cell/GenSphere.h"
 #include "factory/SsLibElements.h"
+#include "math/Matrix.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -63,14 +64,20 @@ bool GenShapeFactory::createBox(GenShapePtr & shapeOut, const OptionsMap & boxOp
   const double * const height = boxOptions.find(ssf::HEIGHT);
   const double * const depth = boxOptions.find(ssf::DEPTH);
   const ::arma::vec3 * const pos = boxOptions.find(ssf::POSITION);
+  const ::arma::vec4 * const rot = boxOptions.find(ssf::ROT_AXIS_ANGLE);
   const double * const thickness = boxOptions.find(ssf::SHELL_THICKNESS);
+
+  ::arma::mat44 transform;
+  transform.eye();
+  if(pos)
+    math::setTranslation(transform, *pos);
+  if(rot)
+    math::setRotation(transform, *rot);
 
   if(!width || !height || !depth)
     return false;
 
-  UniquePtr<ssbc::GenBox>::Type box(new ssbc::GenBox(*width, *height, *depth));
-  if(pos)
-    box->setPosition(*pos);
+  UniquePtr<ssbc::GenBox>::Type box(new ssbc::GenBox(*width, *height, *depth, transform));
 
   if(thickness)
     box->setShellThickness(*thickness);

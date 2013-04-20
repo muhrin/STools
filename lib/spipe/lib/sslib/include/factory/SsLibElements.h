@@ -38,12 +38,14 @@ namespace factory {
 
 // GENERAL /////////////////////////////////////////////////
 extern utility::Key< ::arma::vec3> POSITION;
+extern utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
 extern utility::Key<double> RADIUS;
 extern utility::Key<double> TOLERANCE;
 extern utility::Key<double> CUTOFF;
 extern utility::Key<double> MIN;
 extern utility::Key<double> MAX;
 extern utility::Key<double> MAX_RATIO;
+extern utility::Key<int> NUM;
 
 // OPTIMISERS //////////////////////////////////////////////
 extern utility::Key<utility::HeterogeneousMap> OPTIMISER;

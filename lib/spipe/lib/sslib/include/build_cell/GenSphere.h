@@ -28,27 +28,40 @@ public:
   GenSphere(const double radius);
   GenSphere(const GenSphere & toCopy);
 
-  const ::arma::vec3 & getPosition() const;
+  ::arma::vec3 getPosition() const;
   void setPosition(const ::arma::vec3 & pos);
 
   const ShellThickness & getShellThickness() const;
   void setShellThickness(const ShellThickness thickness);
 
   // From IGeneratorShape
-  virtual ::arma::vec3 randomPoint() const;
-  virtual void randomPoints(::std::vector< ::arma::vec3> & pointsOut, const unsigned int num) const;
+  virtual ::arma::vec3 randomPoint(const ::arma::mat44 * const transform = NULL) const;
+  virtual void randomPoints(
+    ::std::vector< ::arma::vec3> & pointsOut,
+    const unsigned int num,
+    const ::arma::mat44 * const transform = NULL
+  ) const;
+  virtual OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis, const ::arma::mat44 * const transform = NULL) const;
+  virtual OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b, const ::arma::mat44 * const transform = NULL) const;
 
-  virtual OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis) const;
-  virtual OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b) const;
+  virtual const ::arma::mat44 & getTransform() const;
+  virtual void setTransform(const ::arma::mat44 & transform);
 
   virtual UniquePtr<IGeneratorShape>::Type clone() const;
   // End from IGeneratorShape
 
 private:
-
   double generateRadius() const;
+  ::arma::vec3 randomPoint(const ::arma::mat44 & fullTransform) const;
+  void randomPoints(
+    ::std::vector< ::arma::vec3> & pointsOut,
+    const unsigned int num,
+    const ::arma::mat44 & fullTransform
+  ) const;
+  OptionalArmaVec3 randomPointOnAxis(const ::arma::vec3 & axis, const ::arma::mat44 & fullTransform) const;
+  OptionalArmaVec3 randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b, const ::arma::mat44 & fullTransform) const;
 
-  ::arma::vec3 myPosition;
+  ::arma::mat44 myTransform;
   double myRadius;
   ShellThickness myShellThickness;
 };

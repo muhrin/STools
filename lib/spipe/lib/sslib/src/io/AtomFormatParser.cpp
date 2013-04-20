@@ -81,6 +81,7 @@ void AtomFormatParser::init()
 {
   addEntry("spec", factory::SPECIES);
   addEntry("radius", factory::RADIUS);
+  addEntry("pos", factory::POSITION);
 }
 
 }

@@ -35,12 +35,12 @@ struct convert< ::sstbx::yaml::VectorAsString<T> >
   static bool decode(const Node & node, ::sstbx::yaml::VectorAsString<T> & vector);
 };
 
-// Armadillo vec3
-template<>
-struct convert<arma::vec3>
+// Armadillo fixed vectors
+template<unsigned int size>
+struct convert<arma::vec::fixed<size> >
 {
-  static Node encode(const arma::vec3 & rhs);
-  static bool decode(const Node & node, arma::vec3 & rhs);
+  static Node encode(const arma::vec::fixed<size> & rhs);
+  static bool decode(const Node & node, arma::vec::fixed<size> & rhs);
 };
 
 // Armadillo vec

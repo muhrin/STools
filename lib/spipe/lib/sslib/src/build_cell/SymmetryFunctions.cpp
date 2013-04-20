@@ -14,6 +14,7 @@
 #include "build_cell/SymmetryGroup.h"
 #include "common/Constants.h"
 #include "math/Random.h"
+#include "math/Matrix.h"
 #include "utility/IndexingEnums.h"
 
 namespace sstbx {
@@ -87,31 +88,6 @@ generateMultiplicities(
   }
   // Couldn't do it.  Return empty multiplicities vector
   return multiplicities;
-}
-
-void makeZRotation(::arma::mat44 & matOut, const double theta, const ::arma::vec3 & axis)
-{
-  using namespace utility::cart_coords_enum;
-  using namespace arma;
-
-  // Using Rodrigues' rotation formula
-  // see: http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-
-  ::arma::mat33 crossProductMtx;
-  crossProductMtx.zeros();
-  crossProductMtx(0, 1) = -axis(Z);
-  crossProductMtx(0, 2) = axis(Y);
-  crossProductMtx(1, 2) = -axis(X);
-  // Skew symmetric replication
-  crossProductMtx(1,0) = axis(Z);
-  crossProductMtx(2,0) = -axis(Y);
-  crossProductMtx(2,1) = axis(X);
-
-  matOut.eye();
-  matOut.submat(0, 0, 2, 2) =
-    eye< ::arma::mat>(3,3) * cos(theta) +
-    sin(theta) * crossProductMtx +
-    (1 - cos(theta)) * kron(axis, axis.t());
 }
 
 void makeZRotation(::arma::mat44 & matOut, const double angle)

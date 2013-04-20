@@ -313,13 +313,16 @@ SsLibFactoryYaml::createAtomsDescription(
   if(!speciesAndCount)
     return atomsDescription;
 
-  const common::AtomSpeciesId::Value species =
-    myAtomSpeciesDb.getIdFromSymbol(speciesAndCount->species);
+  const common::AtomSpeciesId::Value species = myAtomSpeciesDb.getIdFromSymbol(speciesAndCount->species);
   atomsDescription.reset(new build_cell::AtomsDescription(species, speciesAndCount->count));
 
-  ::boost::optional<double> radius = parser.getValue(RADIUS, atomsEntry);
+  const OptionalDouble radius = parser.getValue(RADIUS, atomsEntry);
   if(radius)
     atomsDescription->setRadius(*radius);
+
+  const OptionalArmaVec3 pos = parser.getValue(POSITION, atomsEntry);
+  if(pos)
+    atomsDescription->setPosition(*pos);
 
   return atomsDescription;
 }
@@ -402,7 +405,23 @@ SsLibFactoryYaml::createAtomsGenerator(
   io::AtomFormatParser & parser
 ) const
 {
-  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator());
+  build_cell::AtomsGeneratorConstructionInfo constructInfo;
+  
+  // Try creating a generator shape
+  myShapeFactory.createShape(constructInfo.genShape, map);
+
+  const ::arma::vec3 * const pos = map.find(POSITION);
+  const ::arma::vec4 * const rot = map.find(ROT_AXIS_ANGLE);
+  const int * const num = map.find(NUM);
+
+  if(pos)
+    constructInfo.pos.reset(*pos);
+  if(rot)
+    constructInfo.rot.reset(*rot);
+  if(num)
+    constructInfo.numReplicas = *num;
+
+  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator(constructInfo));
 
   // Check if there is a 'global' radius
   {
@@ -416,22 +435,16 @@ SsLibFactoryYaml::createAtomsGenerator(
   const AtomsDataEntryList * const atomsList = map.find(ATOMS);
   if(atomsList)
   {
-      BOOST_FOREACH(const AtomsDataEntry & atomData, *atomsList)
+    BOOST_FOREACH(const AtomsDataEntry & atomData, *atomsList)
+    {
+      if(getStructureContentType(atomData) == StructureContentType::ATOMS)
       {
-        if(getStructureContentType(atomData) == StructureContentType::ATOMS)
-        {
-          build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
-          if(atomsDescription.get())
-            atomsGenerator->addAtoms(*atomsDescription);
-        }
+        build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
+        if(atomsDescription.get())
+          atomsGenerator->addAtoms(*atomsDescription);
       }
+    }
   }
-
-  // Try creating a generator shape
-  UniquePtr<build_cell::IGeneratorShape>::Type shape;
-  myShapeFactory.createShape(shape, map);
-  if(shape.get())
-    atomsGenerator->setGeneratorShape(shape);
 
   return atomsGenerator;
 }

@@ -18,16 +18,36 @@
 #include "build_cell/SymmetryFunctions.h"
 #include "common/Atom.h"
 #include "common/AtomSpeciesDatabase.h"
+#include "common/Constants.h"
 #include "common/Structure.h"
+#include "math/Matrix.h"
 #include "math/Random.h"
+#include "utility/IndexingEnums.h"
 #include "utility/SharedHandle.h"
 
 namespace sstbx {
 namespace build_cell {
 
+AtomsGenerator::AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo):
+myNumReplicas(constructionInfo.numReplicas),
+myGenShape(constructionInfo.genShape.release())
+{
+  myTransformMask = 0;
+  if(!constructionInfo.pos)
+    myTransformMask |= TransformSettings::RAND_POS;
+  else
+    myTranslation = *constructionInfo.pos;
+  if(!constructionInfo.rot)
+    myTransformMask |= TransformSettings::RAND_ROT_DIR | TransformSettings::RAND_ROT_ANGLE;
+  else
+    myRotation = *constructionInfo.rot;
+}
+
 AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
+myNumReplicas(toCopy.myNumReplicas),
 myAtoms(toCopy.myAtoms),
-myGenShape(toCopy.myGenShape->clone())
+myGenShape(toCopy.myGenShape->clone()),
+myTransformMask(toCopy.myTransformMask)
 {}
 
 size_t AtomsGenerator::numAtoms() const
@@ -70,11 +90,6 @@ const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
   return myGenShape.get();
 }
 
-void AtomsGenerator::setGeneratorShape(GenShapePtr shape)
-{
-  myGenShape = shape;
-}
-
 GenerationOutcome
 AtomsGenerator::generateFragment(
   StructureBuild & build,
@@ -87,7 +102,9 @@ AtomsGenerator::generateFragment(
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
   SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
-  const AtomCounts & counts = it->second;
+  const AtomCounts & counts = it->second.atomCounts;
+  if(counts.empty())
+    return GenerationOutcome::success();
 
   GenerationOutcome outcome;
 
@@ -96,7 +113,6 @@ AtomsGenerator::generateFragment(
   // Do we have any symmetry?
   const bool usingSymmetry = build.getSymmetryGroup() != NULL;
 
-  // First insert all the atoms into the structure
   AtomPosition position;
   Multiplicities multiplicities;
   Multiplicities possibleMultiplicities;
@@ -108,40 +124,44 @@ AtomsGenerator::generateFragment(
   else
     possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
 
-  BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
+  ::arma::mat44 transform;
+  for(size_t i = 0; i < myNumReplicas; ++i)
   {
-    if(atomsDesc.first->getPosition())
-    {
-      // If the atom has a fixed position then we should not apply symmetry
-      // and the multiplicity should be 1
-      // TODO: Check if this position is compatible with our symmetry operators!
-      multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
-    }
-    else
-    {
-      multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
-    }
+    transform = generateTransform(build);
 
-    if(multiplicities.empty())
+    BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
     {
-      outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
-      return outcome;
+      if(atomsDesc.first->getPosition())
+      {
+        // If the atom has a fixed position then we should not apply symmetry
+        // and the multiplicity should be 1
+        // TODO: Check if this position is compatible with our symmetry operators!
+        multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
+      }
+      else
+        multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
+
+      if(multiplicities.empty())
+      {
+        outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
+        return outcome;
+      }
+
+      // Go over the multiplicities inserting the atoms
+      BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
+      {
+        common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
+        BuildAtomInfo & info = build.createAtomInfo(atom);
+        info.setMultiplicity(multiplicity);
+
+        position = generatePosition(info, *atomsDesc.first, build, multiplicity, transform);
+        atom.setPosition(position.first);
+        info.setFixed(position.second);
+
+        atom.setRadius(getRadius(*atomsDesc.first, speciesDb));
+      }
+      multiplicities.clear(); // Reset for next loop
     }
-
-    // Go over the multiplicities inserting the atoms
-    BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
-    {
-      common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
-      BuildAtomInfo & info = build.createAtomInfo(atom);
-      info.setMultiplicity(multiplicity);
-
-      position = generatePosition(info, *atomsDesc.first, build, multiplicity);
-      atom.setPosition(position.first);
-      info.setFixed(position.second);
-
-      atom.setRadius(getRadius(*atomsDesc.first, speciesDb));
-    }
-    multiplicities.clear(); // Reset for next loop
   }
 
   // Finally solve any atom overlap
@@ -168,26 +188,27 @@ AtomsGenerator::GenerationTicket AtomsGenerator::getTicket()
     else
       counts[&atomsDesc] = math::randu(count.lower(), count.upper());
   }
-  myTickets[ticketId] = counts;
+  myTickets[ticketId].atomCounts = counts;
   return GenerationTicket(ticketId);
 }
 
 StructureContents AtomsGenerator::getGenerationContents(
   const GenerationTicket ticket,
-  const common::AtomSpeciesDatabase & speciesDb) const
+  const common::AtomSpeciesDatabase & speciesDb
+) const
 {
   StructureContents contents;
 
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
   SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
-  const AtomCounts & counts = it->second;
+  const AtomCounts & counts = it->second.atomCounts;
 
   double radius;
   BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
     radius = getRadius(*atomsDesc.first, speciesDb);
-    contents.addAtoms(static_cast<size_t>(atomsDesc.second), radius);
+    contents.addAtoms(static_cast<size_t>(atomsDesc.second * myNumReplicas), radius);
   }
 
   return contents;
@@ -211,7 +232,8 @@ AtomsGenerator::generatePosition(
   BuildAtomInfo & atomInfo,
   const AtomsDescription & atom,
   const StructureBuild & build,
-  const unsigned int multiplicity
+  const unsigned int multiplicity,
+  const ::arma::mat44 & transformation
 ) const
 {
   SSLIB_ASSERT_MSG(
@@ -231,12 +253,12 @@ AtomsGenerator::generatePosition(
   if(optionalPosition)
   {
     // Position is fixed
-    position.first = *optionalPosition;
+    position.first = math::transformCopy(*optionalPosition, transformation);
     position.second = true;
   }
   else
   {
-    position.first = getGenShape(build).randomPoint();
+    position.first = getGenShape(build).randomPoint(&transformation);
 
     // Do we need to apply symmetry and does the atom need to be on a 'special' position
     if(usingSymmetry)
@@ -253,7 +275,7 @@ AtomsGenerator::generatePosition(
 
         ::arma::vec3 newPos;
         SymmetryGroup::OpMask opMask;
-        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build)))
+        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build), transformation))
         {
           // TODO: return error
           return position;
@@ -274,7 +296,9 @@ bool AtomsGenerator::generateSpecialPosition(
   ::arma::vec3 & posOut,
   SymmetryGroup::OpMask & opMaskOut,
   const SymmetryGroup::EigenspacesAndMasks & spaces,
-  const IGeneratorShape & genShape) const
+  const IGeneratorShape & genShape,
+  const ::arma::mat44 & transformation
+) const
 {
   typedef ::std::vector<size_t> Indices;
   // Generate a list of the indices
@@ -288,7 +312,7 @@ bool AtomsGenerator::generateSpecialPosition(
   {
     // Get a random one in the list
     it = indices.begin() + math::randu<size_t>(indices.size());
-    pos = generateSpeciesPosition(spaces[*it].first, genShape);
+    pos = generateSpeciesPosition(spaces[*it].first, genShape, transformation);
     if(pos)
     {
       // Copy over the position and mask
@@ -303,13 +327,15 @@ bool AtomsGenerator::generateSpecialPosition(
 
 OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
   const SymmetryGroup::Eigenspace & space,
-  const IGeneratorShape & genShape) const
+  const IGeneratorShape & genShape,
+  const ::arma::mat44 & transformation
+) const
 {
   // Select the correct function depending on the number of eigenvectors
   if(space.n_cols == 1)
-    return genShape.randomPointOnAxis(space);
+    return genShape.randomPointOnAxis(space, &transformation);
   else if(space.n_cols == 2)
-    return genShape.randomPointInPlane(space.col(0), space.col(1));
+    return genShape.randomPointInPlane(space.col(0), space.col(1), &transformation);
   return OptionalArmaVec3(::arma::zeros< ::arma::vec>(3));
 }
 
@@ -344,6 +370,31 @@ const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build
     return *myGenShape;
   else
     return build.getGenShape();
+}
+
+::arma::mat44 AtomsGenerator::generateTransform(const StructureBuild & build) const
+{
+  using namespace utility::cart_coords_enum;
+
+  ::arma::vec4 axisAngle = myRotation;
+  if(myTransformMask & TransformSettings::RAND_ROT_DIR)
+    axisAngle.rows(X, Z) = math::normaliseCopy(::arma::randu< ::arma::vec>(3));
+  if(myTransformMask & TransformSettings::RAND_ROT_ANGLE)
+    axisAngle(3) = math::randu(0.0, common::constants::TWO_PI);
+
+  ::arma::vec3 pos = myTranslation;
+  if(myTransformMask & TransformSettings::RAND_POS)
+  {
+    // Create a random point somewhere within the global generation shape
+    pos = build.getGenShape().randomPoint();
+  }
+
+  ::arma::mat44 transform;
+  transform.eye();
+  math::setTranslation(transform, pos);
+  math::setRotation(transform, axisAngle);
+
+  return transform;
 }
 
 }

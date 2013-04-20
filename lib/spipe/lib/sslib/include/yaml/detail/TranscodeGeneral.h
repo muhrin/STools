@@ -82,6 +82,45 @@ bool convert<ssy::VectorAsString<T> >::decode(const Node & node, ssy::VectorAsSt
   return true;
 }
 
+template <unsigned int size>
+Node convert< ::arma::vec::fixed<size> >::encode(const ::arma::vec::fixed<size> & rhs)
+{
+  Node node;
+  ::std::stringstream ss;
+  ss << ::std::setprecision(12);
+  for(size_t i = 0; i < rhs.size() - 1; ++i)
+    ss << rhs(i) << " ";
+  ss << rhs(rhs.size() - 1); // Do the last one separately so we don't have a trailing space
+  node = ss.str();
+  return node;
+}
+
+template <unsigned int size>
+bool convert< ::arma::vec::fixed<size> >::decode(const Node & node, ::arma::vec::fixed<size> & rhs)
+{
+  typedef ssy::VectorAsString<double> DoublesVec;
+  // Maybe it is a string separated by spaces
+  DoublesVec doublesVec;
+
+  try
+  {
+    doublesVec = node.as<DoublesVec>();
+  }
+  catch(const YAML::TypedBadConversion<DoublesVec> & /*e*/)
+  {
+    return false;
+  }
+
+  if(doublesVec->size() != size)
+    return false; // Expecting 3 coordinates
+
+  // Copy over values
+  for(size_t i = 0; i < size; ++i)
+    rhs(i) = (*doublesVec)[i];
+
+  return true;
+}
+
 template <typename T>
 Node convert< ::sstbx::utility::Range<T> >::encode(const ::sstbx::utility::Range<T> & rhs)
 {

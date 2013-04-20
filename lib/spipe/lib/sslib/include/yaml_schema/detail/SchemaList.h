@@ -68,6 +68,12 @@ bool SchemaList<EntrySchema>::nodeToValue(
     return false;
   }
 
+  if(myLength != -1 && myLength != node.size())
+  {
+    parse.logError(SchemaParseErrorCode::SEQUENCE_LENGTH_MISMATCH, "Sequence is wrong length");
+    return false;
+  }
+
   for(size_t i = 0; i < node.size(); ++i)
   {
     ::std::stringstream ss;
@@ -78,6 +84,7 @@ bool SchemaList<EntrySchema>::nodeToValue(
     if(myEntrySchema.nodeToValue(parse, entryValue, node[i], useDefaultOnFail))
       list.push_back(entryValue);
   }
+
   return true;
 }
 

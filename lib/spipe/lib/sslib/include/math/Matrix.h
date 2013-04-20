@@ -35,6 +35,15 @@ bool isReal(const ::arma::cx_vec & vec, const double tolerance);
 bool isReal(const ::arma::cx_mat & mat);
 bool isReal(const ::arma::cx_mat & mat, const double tolerance);
 
+::arma::vec3 getTranslation(const ::arma::mat44 & transform);
+void setTranslation(::arma::mat44 & transform, const ::arma::vec3 & translation);
+
+::arma::mat33 getRotation(const ::arma::mat44 & transform);
+void setRotation(::arma::mat44 & transform, const ::arma::vec4 & axisAngle);
+
+void transform(::arma::vec3 & vec, const ::arma::mat44 & transformMtx);
+::arma::vec3 transformCopy(const ::arma::vec3 & vec, const ::arma::mat44 & transformMtx);
+
 }
 }
 

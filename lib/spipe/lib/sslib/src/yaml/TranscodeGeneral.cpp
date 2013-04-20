@@ -23,44 +23,6 @@ namespace ssy = ::sstbx::yaml;
 
 namespace YAML {
 
-Node convert<arma::vec3>::encode(const arma::vec3 & rhs)
-{
-  using namespace ssu::cart_coords_enum;
-
-  Node node;
-  ::std::stringstream ss;
-  ss << ::std::setprecision(12) << rhs(X) << " " << rhs(Y) << " " << rhs(Z);
-  node = ss.str();
-  return node;
-}
-
-bool convert<arma::vec3>::decode(const Node & node, arma::vec3 & rhs)
-{
-  using namespace ssu::cart_coords_enum;
-
-  typedef ssy::VectorAsString<double> DoublesVec;
-  // Maybe it is a string separated by spaces
-  DoublesVec doublesVec;
-
-  try
-  {
-    doublesVec = node.as<DoublesVec>();
-  }
-  catch(const YAML::TypedBadConversion<DoublesVec> & /*e*/)
-  {
-    return false;
-  }
-
-  if(doublesVec->size() != 3)
-    return false; // Expecting 3 coordinates
-
-  // Copy over values
-  for(size_t i = X; i <= Z; ++i)
-    rhs(i) = (*doublesVec)[i];
-
-  return true;
-}
-
 Node convert<arma::vec>::encode(const arma::vec & rhs)
 {
   Node node;

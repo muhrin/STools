@@ -157,6 +157,8 @@ struct GenSphere : public yaml_schema::SchemaHeteroMap
     addScalarEntry("radius", RADIUS)->required();
     addScalarEntry("pos", POSITION)->element()
       ->defaultValue(::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()
+      ->defaultValue(::arma::zeros< ::arma::vec>(4));
     addScalarEntry("shell", SHELL_THICKNESS);
   };
 };
@@ -168,6 +170,8 @@ struct GenBox : public yaml_schema::SchemaHeteroMap
   {
     addScalarEntry("pos", POSITION)->element()
       ->defaultValue(::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()
+      ->defaultValue(::arma::zeros< ::arma::vec>(4));
     addScalarEntry("shell", SHELL_THICKNESS);
     addScalarEntry("width", WIDTH)->required();
     addScalarEntry("height", HEIGHT)->required();
@@ -211,6 +215,7 @@ struct SimpleAtomsDataMap : public yaml_schema::SchemaHeteroMap
   {
     addScalarEntry("spec", SPECIES);
     addScalarEntry("radius", RADIUS);
+    addScalarEntry("pos", POSITION);
   }
 };
 
@@ -230,6 +235,10 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addEntry("genBox", GEN_BOX, new GenBox());
     addEntry("atoms", ATOMS, new SimpleAtomsListSchema())->required();
     addScalarEntry("atomsRadius", RADIUS);
+    addScalarEntry("pos", POSITION);
+    addScalarEntry("rot", ROT_AXIS_ANGLE);
+    addScalarEntry("num", NUM)->element()
+      ->defaultValue(1);
   }
 };
 
@@ -238,7 +247,6 @@ struct ExtendedAtomsDataMap : public SimpleAtomsDataMap
   typedef utility::HeterogeneousMap BindingType;
   ExtendedAtomsDataMap()
   {
-    addScalarEntry("spec", SPECIES);
     addEntry("group", ATOMS_GROUP, new AtomsGroup());
   }
 };

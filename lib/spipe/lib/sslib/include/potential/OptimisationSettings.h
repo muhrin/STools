@@ -40,7 +40,7 @@ struct OptimisationSettings
   {
     enum Value
     {
-      ATOMS             = 0x01, // 000
+      ATOMS             = 0x01, // 001
       LATTICE           = 0x02, // 010
       ATOMS_AND_LATTICE = 0x03  // 011
     };

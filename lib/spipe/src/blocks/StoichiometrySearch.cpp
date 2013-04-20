@@ -126,7 +126,9 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        ssbc::AtomsGeneratorPtr atomsGenerator(new ssbc::AtomsGenerator());
+        ssbc::AtomsGeneratorPtr atomsGenerator(
+          new ssbc::AtomsGenerator(ssbc::AtomsGeneratorConstructionInfo())
+        );
         atomsGenerator->addAtoms(ssbc::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies));
         builder->addGenerator(atomsGenerator);
       }

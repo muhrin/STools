@@ -15,12 +15,14 @@ namespace factory {
 
 // GENERAL /////////////////////////////////////////////////
 utility::Key< ::arma::vec3> POSITION;
+utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
 utility::Key<double> RADIUS;
 utility::Key<double> TOLERANCE;
 utility::Key<double> CUTOFF;
 utility::Key<double> MIN;
 utility::Key<double> MAX;
 utility::Key<double> MAX_RATIO;
+utility::Key<int> NUM;
 
 // OPTIMISERS //////////////////////////////////////////////
 utility::Key<utility::HeterogeneousMap> OPTIMISER;
