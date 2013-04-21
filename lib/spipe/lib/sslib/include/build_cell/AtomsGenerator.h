@@ -26,10 +26,7 @@ namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
 class BuildAtomInfo;
-class AtomsGeneratorConstructionInfo;
-
-// TODO: Put in construction info object so that AtomsGenerator is immutable
-
+struct AtomsGeneratorConstructionInfo;
 
 class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
@@ -56,13 +53,8 @@ public:
   AtomsGenerator(const AtomsGenerator & toCopy);
 
   size_t numAtoms() const;
-  iterator beginAtoms();
   const_iterator beginAtoms() const;
-  iterator endAtoms();
   const_iterator endAtoms() const;
-
-  iterator addAtoms(const AtomsDescription & atoms);
-  void eraseAtoms(iterator pos);
 
   const IGeneratorShape * getGeneratorShape() const;
   
@@ -121,7 +113,7 @@ private:
 
   ::arma::mat44 generateTransform(const StructureBuild & build) const;
 
-  Atoms myAtoms;
+  const Atoms myAtoms;
   const ::boost::scoped_ptr<IGeneratorShape> myGenShape;
   int myTransformMask;
   const unsigned int myNumReplicas;
@@ -133,12 +125,14 @@ private:
 
 struct AtomsGeneratorConstructionInfo
 {
+  typedef ::std::vector<AtomsDescription> Atoms;
   AtomsGeneratorConstructionInfo():
   numReplicas(1),
   transformMask(AtomsGenerator::TransformSettings::FIXED)
   {}
 
   int numReplicas;
+  Atoms atoms;
   UniquePtr<IGeneratorShape>::Type genShape;
   int transformMask;
   OptionalArmaVec3 pos;

@@ -60,6 +60,8 @@ utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
 utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
 utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
+utility::Key<double> UNIT_CELL_BUILDER_VOLUME_DELTA;
+utility::Key<double> UNIT_CELL_BUILDER_MULTIPLIER;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
 // Shape generators

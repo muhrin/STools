@@ -83,6 +83,8 @@ extern utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
 extern utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
 extern utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
+extern utility::Key<double> UNIT_CELL_BUILDER_VOLUME_DELTA;
+extern utility::Key<double> UNIT_CELL_BUILDER_MULTIPLIER;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
 extern utility::Key< ::std::string> POSITION_STRING;

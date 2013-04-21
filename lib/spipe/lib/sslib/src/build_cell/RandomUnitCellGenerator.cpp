@@ -27,6 +27,8 @@ const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCellGenerator::DEFAULT_VOLUME_DELTA = 0.25;
 const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 4.0;
+const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER = 4.0;
+const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER = 10.0;
 
 RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMin(const size_t param) const
 {
@@ -144,6 +146,11 @@ void RandomUnitCellGenerator::setVolumeDelta(const OptionalDouble delta)
   myVolumeDelta = delta;
 }
 
+void RandomUnitCellGenerator::setContentsMultiplier(const OptionalDouble contentsMultiplier)
+{
+  myContentsMultiplier = contentsMultiplier;
+}
+
 void RandomUnitCellGenerator::setMaxLengthRatio(const OptionalDouble maxLengthRatio)
 {
   myMaxLengthRatio = maxLengthRatio;
@@ -166,66 +173,31 @@ RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMaxLengthRatio()
 
 GenerationOutcome RandomUnitCellGenerator::generateCell(
   common::UnitCellPtr & cellOut,
-  const bool structureIsCluster) const
+  const bool structureIsCluster
+) const
 {
-  using namespace utility::cell_params_enum;
+  GenerationOutcome outcome = generateLatticeParameters(cellOut);
+  if(!outcome.isSuccess())
+    return outcome;
 
-  double params[6];
-  size_t i;
-  generateLengths(params);
+  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(), structureIsCluster);
+  cellOut->setVolume(generateVolume(volAndDelta));
 
-  bool anglesValid = false;
-  for(size_t iters = 0; iters < 1000 && !anglesValid; ++iters)
-  {
-    for(i = ALPHA; i <= GAMMA; ++i)
-    {
-      params[i] = generateParameter(i);
-    }
-    anglesValid = areParametersValid(params);
-  }
-
-  // If the angles still aren't valid then use the
-  // minimum values for all of them
-  if(!anglesValid)
-  {
-    for(i = ALPHA; i <= GAMMA; ++i)
-    {
-      params[i] = getMin(i).first;
-    }
-  }
-
-  try
-  {
-    cellOut.reset(new common::UnitCell(params));
-  }
-  catch(const ::std::runtime_error & /*e*/)
-  {
-    return GenerationOutcome::failure("Cell parameters caused singular orthogonalisation matrix.");
-  }
-
-  if(!(!myTargetVolume && cellFullySpecified()))
-    cellOut->setVolume(generateVolume());
-
-  return GenerationOutcome::success();
+  return outcome.success();
 }
 
 GenerationOutcome RandomUnitCellGenerator::generateCell(
   common::UnitCellPtr & cellOut,
   const StructureContents & structureContents,
-  const bool structureIsCluster) const
+  const bool structureIsCluster
+) const
 {
-  const GenerationOutcome & outcome = generateCell(cellOut);
-  if(!outcome.success())
+  GenerationOutcome outcome = generateLatticeParameters(cellOut);
+  if(!outcome.isSuccess())
     return outcome;
 
-  if(structureIsCluster && myClusterVolMultiplier &&!cellFullySpecified())
-  {
-    cellOut->setVolume(*myClusterVolMultiplier * structureContents.getVolume()); 
-  }
-  else if(!myTargetVolume && !cellFullySpecified())
-  {
-    cellOut->setVolume(2.0 * structureContents.getVolume()); 
-  }
+  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(), structureIsCluster, &structureContents);
+  cellOut->setVolume(generateVolume(volAndDelta));
 
   return outcome;
 }
@@ -253,6 +225,42 @@ double RandomUnitCellGenerator::generateParameter(const size_t param) const
 
     return math::randu(min, max);    
   }
+}
+
+GenerationOutcome RandomUnitCellGenerator::generateLatticeParameters(common::UnitCellPtr & cellOut) const
+{
+  using namespace utility::cell_params_enum;
+
+  double params[6];
+  size_t i;
+  generateLengths(params);
+
+  bool anglesValid = false;
+  for(size_t iters = 0; iters < 1000 && !anglesValid; ++iters)
+  {
+    for(i = ALPHA; i <= GAMMA; ++i)
+      params[i] = generateParameter(i);
+
+    anglesValid = areParametersValid(params);
+  }
+
+  // If the angles still aren't valid then use the
+  // minimum values for all of them
+  if(!anglesValid)
+  {
+    for(i = ALPHA; i <= GAMMA; ++i)
+      params[i] = getMin(i).first;
+  }
+
+  try
+  {
+    cellOut.reset(new common::UnitCell(params));
+  }
+  catch(const ::std::runtime_error & /*e*/)
+  {
+    return GenerationOutcome::failure("Cell parameters caused singular orthogonalisation matrix.");
+  }
+  return GenerationOutcome::success();
 }
 
 void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
@@ -328,16 +336,12 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
   }
 }
 
-double RandomUnitCellGenerator::generateVolume(const double overrideVolume) const
+double RandomUnitCellGenerator::generateVolume(const VolAndDelta & volAndDelta) const
 {
-  double target = overrideVolume;
-  if(target == 0.0)
-  {
-    target = myTargetVolume ? *myTargetVolume : DEFAULT_TARGET_VOLUME;
-  }
-
-  const double delta = myVolumeDelta ? *myVolumeDelta : DEFAULT_VOLUME_DELTA;
-  return math::randu(target * (1.0 - delta), target * (1 + delta));
+  return math::randu(
+    volAndDelta.first * (1.0 - volAndDelta.second),
+    volAndDelta.first * (1.0 + volAndDelta.second)
+  );
 }
 
 RandomUnitCellGenerator::MinMaxIndex RandomUnitCellGenerator::getMinMaxLengths(const double (&params)[6]) const
@@ -387,6 +391,38 @@ bool RandomUnitCellGenerator::cellFullySpecified() const
     fullySpecified &= myParameters[i].first && myParameters[i].second;
   }
   return fullySpecified;
+}
+
+::std::pair<double, double> RandomUnitCellGenerator::generateVolumeParams(
+  const double currentVolume,
+  const bool isCluster,
+  const StructureContents * const structureContents
+) const
+{
+  VolAndDelta volAndDelta;
+  
+  if(myTargetVolume)
+    volAndDelta.first = *myTargetVolume;
+  else if(cellFullySpecified())
+    volAndDelta.first = currentVolume;
+  else if(structureContents)
+  {
+    double multiplier;
+    if(myContentsMultiplier)
+      multiplier = *myContentsMultiplier;
+    else if(isCluster)
+      multiplier = DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
+    else
+      multiplier = DEFAULT_BULK_CONTENTS_MULTIPLIER;
+
+    volAndDelta.first = multiplier * structureContents->getVolume();
+  }
+  else
+    volAndDelta.first = currentVolume;
+
+  volAndDelta.second = myVolumeDelta ? *myVolumeDelta : DEFAULT_VOLUME_DELTA;
+
+  return volAndDelta;
 }
 
 }

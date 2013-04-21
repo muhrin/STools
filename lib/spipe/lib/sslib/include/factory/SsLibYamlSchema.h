@@ -202,6 +202,8 @@ struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
       new yaml_schema::SchemaWrapper<yaml::VectorAsString<DoubleRange> >()
     );
     addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
+    addScalarEntry("delta", UNIT_CELL_BUILDER_VOLUME_DELTA);
+    addScalarEntry("mul", UNIT_CELL_BUILDER_MULTIPLIER);
     addEntry("lengths", UNIT_CELL_BUILDER_LENGTHS, new MinMaxRatio());
     addEntry("angles", UNIT_CELL_BUILDER_ANGLES, new MinMaxRatio());
 

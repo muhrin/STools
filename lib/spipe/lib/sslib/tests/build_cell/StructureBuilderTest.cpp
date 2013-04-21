@@ -42,13 +42,11 @@ BOOST_AUTO_TEST_CASE(StructureBuilderClusterTest)
   
   ssbc::StructureBuilder builder;
   {
-    ssbc::AtomsGeneratorPtr atomsGenerator(
-      new ssbc::AtomsGenerator(ssbc::AtomsGeneratorConstructionInfo())
-    );
+    ssbc::AtomsGeneratorConstructionInfo constructionInfo;
     BOOST_FOREACH(const SpeciesCount & speciesCount, toGenerate)
-      atomsGenerator->addAtoms(ssbc::AtomsDescription(speciesCount.first, speciesCount.second));
+      constructionInfo.atoms.push_back(ssbc::AtomsDescription(speciesCount.first, speciesCount.second));
     
-    builder.addGenerator(atomsGenerator);
+    builder.addGenerator(::sstbx::makeUniquePtr(new ssbc::AtomsGenerator(constructionInfo)));
   }
 
   ssc::AtomSpeciesDatabase speciesDb;

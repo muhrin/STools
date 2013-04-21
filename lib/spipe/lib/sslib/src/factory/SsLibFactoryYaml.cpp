@@ -66,6 +66,18 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
   }
 
   {
+    const double * const contentsMultiplier = map.find(UNIT_CELL_BUILDER_MULTIPLIER);
+    if(contentsMultiplier)
+      cell->setContentsMultiplier(*contentsMultiplier);
+  }
+
+  {
+    const double * const volDelta = map.find(UNIT_CELL_BUILDER_VOLUME_DELTA);
+    if(volDelta)
+      cell->setVolumeDelta(*volDelta);
+  }
+
+  {
     const OptionsMap * const angles = map.find(UNIT_CELL_BUILDER_ANGLES);
     if(angles)
     {
@@ -431,8 +443,6 @@ SsLibFactoryYaml::createAtomsGenerator(
       build_cell::AtomsGenerator::TransformSettings::RAND_ROT_ANGLE;
   }
 
-  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator(constructInfo));
-
   // Check if there is a 'global' radius
   {
     const double * const radius = map.find(RADIUS);
@@ -451,10 +461,12 @@ SsLibFactoryYaml::createAtomsGenerator(
       {
         build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
         if(atomsDescription.get())
-          atomsGenerator->addAtoms(*atomsDescription);
+          constructInfo.atoms.push_back(*atomsDescription);
       }
     }
   }
+
+  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator(constructInfo));
 
   return atomsGenerator;
 }

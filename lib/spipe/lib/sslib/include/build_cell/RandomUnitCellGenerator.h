@@ -32,6 +32,8 @@ public:
   static const double DEFAULT_TARGET_VOLUME;
   static const double DEFAULT_VOLUME_DELTA; // Volume can be +/- this value as a percentage of the target
   static const double DEFAULT_MAX_LENGTH_RATIO;
+  static const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER;
+  static const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
 
   ParamValue getMin(const size_t param) const;
   ParamValue getMax(const size_t param) const;
@@ -47,6 +49,7 @@ public:
 
   void setTargetVolume(const OptionalDouble volume = OptionalDouble());
   void setVolumeDelta(const OptionalDouble delta = OptionalDouble());
+  void setContentsMultiplier(const OptionalDouble contentsMultiplier = OptionalDouble());
 
   void setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
   ParamValue getMaxLengthRatio() const;
@@ -66,31 +69,36 @@ public:
   // End from IUnitCellGenerator //////
 
 private:
-
   typedef ::std::pair<OptionalDouble, OptionalDouble> MinMax;
   typedef ::std::pair<size_t, size_t> MinMaxIndex;
+  typedef ::std::pair<double, double> VolAndDelta;
 
   inline bool isLength(const size_t param) const { return param <= utility::cell_params_enum::C; }
 
   double generateParameter(const size_t param) const;
+  GenerationOutcome generateLatticeParameters(common::UnitCellPtr & cellOut) const;
 
   void generateLengths(double (&latticeParams)[6]) const;
 
-  double generateVolume(const double overrideVolume = 0.0) const;
+  double generateVolume(const VolAndDelta & volAndDelta) const;
 
   MinMaxIndex getMinMaxLengths(const double (&latticeParams)[6]) const;
 
   bool areParametersValid(const double (&latticeParams)[6]) const;
-
   bool cellFullySpecified() const;
+  VolAndDelta generateVolumeParams(
+    const double currentVolume,
+    const bool isCluster,
+    const StructureContents * const structureContents = NULL
+  ) const;
 
   /** An array of the optional min/max values of the unit cell lattice parameters. */
   MinMax myParameters[6];
 
   OptionalDouble myTargetVolume;
+  OptionalDouble myContentsMultiplier;
   OptionalDouble myVolumeDelta;
   OptionalDouble myMaxLengthRatio;
-  OptionalDouble myClusterVolMultiplier;
 };
 
 }

@@ -30,7 +30,8 @@ namespace build_cell {
 
 AtomsGenerator::AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo):
 myNumReplicas(constructionInfo.numReplicas),
-myGenShape(constructionInfo.genShape.release())
+myGenShape(constructionInfo.genShape.release()),
+myAtoms(constructionInfo.atoms.begin(), constructionInfo.atoms.end())
 {
   myTransformMask = constructionInfo.transformMask;
 
@@ -62,34 +63,14 @@ size_t AtomsGenerator::numAtoms() const
   return myAtoms.size();
 }
 
-AtomsGenerator::iterator AtomsGenerator::beginAtoms()
-{
-  return myAtoms.begin();
-}
-
 AtomsGenerator::const_iterator AtomsGenerator::beginAtoms() const
 {
   return myAtoms.begin();
 }
 
-AtomsGenerator::iterator AtomsGenerator::endAtoms()
-{
-  return myAtoms.end();
-}
-
 AtomsGenerator::const_iterator AtomsGenerator::endAtoms() const
 {
   return myAtoms.end();
-}
-
-AtomsGenerator::iterator AtomsGenerator::addAtoms(const AtomsDescription & atoms)
-{
-  return myAtoms.insert(myAtoms.end(), atoms);
-}
-
-void AtomsGenerator::eraseAtoms(AtomsGenerator::iterator pos)
-{
-  myAtoms.erase(pos);
 }
 
 const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
