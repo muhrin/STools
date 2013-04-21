@@ -39,6 +39,7 @@ public:
   typedef ::std::set<size_t> FixedSet;
   typedef UniquePtr<SymmetryGroup>::Type SymmetryGroupPtr;
   typedef AtomInfoList::iterator AtomInfoIterator;
+  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   class RadiusCalculator
   {
@@ -56,6 +57,11 @@ public:
     common::Structure & structure,
     const StructureContents & intendedContents,
     const RadiusCalculator & radiusCalculator = RadiusCalculator()
+  );
+  StructureBuild(
+    common::Structure & structure,
+    const StructureContents & intendedContents,
+    GenShapePtr genShape
   );
 
   common::Structure & getStructure();
@@ -81,7 +87,6 @@ public:
   bool extrudeAtoms();
 
 private:
-  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
   void atomRemoved(common::Atom & atom);

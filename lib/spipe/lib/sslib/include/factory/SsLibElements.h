@@ -85,6 +85,8 @@ extern utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_
 extern utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
+extern utility::Key< ::std::string> POSITION_STRING;
+extern utility::Key< ::std::string> ROTATION_STRING;
 // Shape generators
 extern utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 extern utility::Key<utility::HeterogeneousMap> GEN_BOX;

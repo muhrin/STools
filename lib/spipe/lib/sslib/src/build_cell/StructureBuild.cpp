@@ -53,6 +53,15 @@ myIntendedContents(intendedContents)
   myGenShape.reset(new GenSphere(radiusCalculator.getRadius(myIntendedContents.getVolume())));
 }
 
+StructureBuild::StructureBuild(
+  common::Structure & structure,
+  const StructureContents & intendedContents,
+  GenShapePtr genShape):
+myStructure(structure),
+myIntendedContents(intendedContents),
+myGenShape(genShape)
+{}
+
 common::Structure & StructureBuild::getStructure()
 {
   return myStructure;

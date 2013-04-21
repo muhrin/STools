@@ -409,17 +409,27 @@ SsLibFactoryYaml::createAtomsGenerator(
   
   // Try creating a generator shape
   myShapeFactory.createShape(constructInfo.genShape, map);
-
+  
+  const int * const num = map.find(NUM);
   const ::arma::vec3 * const pos = map.find(POSITION);
   const ::arma::vec4 * const rot = map.find(ROT_AXIS_ANGLE);
-  const int * const num = map.find(NUM);
+
+  if(num)
+    constructInfo.numReplicas = *num;
 
   if(pos)
     constructInfo.pos.reset(*pos);
+  else
+    constructInfo.transformMask |= build_cell::AtomsGenerator::TransformSettings::RAND_POS;
+
   if(rot)
     constructInfo.rot.reset(*rot);
-  if(num)
-    constructInfo.numReplicas = *num;
+  else
+  {
+    constructInfo.transformMask |=
+      build_cell::AtomsGenerator::TransformSettings::RAND_ROT_DIR |
+      build_cell::AtomsGenerator::TransformSettings::RAND_ROT_ANGLE;
+  }
 
   build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator(constructInfo));
 

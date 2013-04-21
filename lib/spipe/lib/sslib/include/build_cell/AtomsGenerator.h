@@ -26,19 +26,10 @@ namespace sstbx {
 namespace build_cell {
 class AtomsDescription;
 class BuildAtomInfo;
+class AtomsGeneratorConstructionInfo;
 
 // TODO: Put in construction info object so that AtomsGenerator is immutable
-struct AtomsGeneratorConstructionInfo
-{
-  AtomsGeneratorConstructionInfo():
-  numReplicas(1)
-  {}
 
-  int numReplicas;
-  UniquePtr<IGeneratorShape>::Type genShape;
-  OptionalArmaVec3 pos;
-  OptionalArmaVec4 rot;
-};
 
 class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
 {
@@ -138,6 +129,20 @@ private:
   ::arma::vec4 myRotation;
   TicketsMap myTickets;
   GenerationTicket::IdType myLastTicketId;
+};
+
+struct AtomsGeneratorConstructionInfo
+{
+  AtomsGeneratorConstructionInfo():
+  numReplicas(1),
+  transformMask(AtomsGenerator::TransformSettings::FIXED)
+  {}
+
+  int numReplicas;
+  UniquePtr<IGeneratorShape>::Type genShape;
+  int transformMask;
+  OptionalArmaVec3 pos;
+  OptionalArmaVec4 rot;
 };
 
 }

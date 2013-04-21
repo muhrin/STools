@@ -32,21 +32,28 @@ AtomsGenerator::AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo
 myNumReplicas(constructionInfo.numReplicas),
 myGenShape(constructionInfo.genShape.release())
 {
-  myTransformMask = 0;
-  if(!constructionInfo.pos)
-    myTransformMask |= TransformSettings::RAND_POS;
-  else
+  myTransformMask = constructionInfo.transformMask;
+
+  if(constructionInfo.pos)
     myTranslation = *constructionInfo.pos;
-  if(!constructionInfo.rot)
-    myTransformMask |= TransformSettings::RAND_ROT_DIR | TransformSettings::RAND_ROT_ANGLE;
   else
+    myTranslation.zeros();
+
+  if(constructionInfo.rot)
     myRotation = *constructionInfo.rot;
+  else
+  {
+    myRotation.zeros();
+    myRotation(2) = 1.0; // Need this so we don't get NaNs in calculating roation
+  }
 }
 
 AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
 myNumReplicas(toCopy.myNumReplicas),
 myAtoms(toCopy.myAtoms),
 myGenShape(toCopy.myGenShape->clone()),
+myTranslation(toCopy.myTranslation),
+myRotation(toCopy.myRotation),
 myTransformMask(toCopy.myTransformMask)
 {}
 
