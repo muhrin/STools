@@ -23,7 +23,7 @@ namespace build_cell {
 class RandomUnitCellGenerator : public IUnitCellGenerator
 {
 public:
-  typedef ::std::pair<double, bool> ParamValue;
+  typedef ::std::pair<double, bool> ParameterValueAndSpecific;
 
   static const double DEFAULT_MIN_ANGLE;
   static const double DEFAULT_MAX_ANGLE;
@@ -35,8 +35,8 @@ public:
   static const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER;
   static const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
 
-  ParamValue getMin(const size_t param) const;
-  ParamValue getMax(const size_t param) const;
+  ParameterValueAndSpecific getMin(const size_t param) const;
+  ParameterValueAndSpecific getMax(const size_t param) const;
 
   void setMin(const size_t param, const OptionalDouble min = OptionalDouble());
   void setMax(const size_t param, const OptionalDouble max = OptionalDouble());
@@ -52,7 +52,7 @@ public:
   void setContentsMultiplier(const OptionalDouble contentsMultiplier = OptionalDouble());
 
   void setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
-  ParamValue getMaxLengthRatio() const;
+  ParameterValueAndSpecific getMaxLengthRatio() const;
 
   // From IUnitCellGenerator ////
   virtual GenerationOutcome generateCell(
@@ -95,6 +95,10 @@ private:
   /** An array of the optional min/max values of the unit cell lattice parameters. */
   MinMax myParameters[6];
 
+  OptionalDouble myMinLength;
+  OptionalDouble myMaxLength;
+  OptionalDouble myMinAngle;
+  OptionalDouble myMaxAngle;
   OptionalDouble myTargetVolume;
   OptionalDouble myContentsMultiplier;
   OptionalDouble myVolumeDelta;

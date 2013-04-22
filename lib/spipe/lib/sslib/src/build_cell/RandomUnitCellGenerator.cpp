@@ -30,11 +30,12 @@ const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 4.0;
 const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER = 4.0;
 const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER = 10.0;
 
-RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMin(const size_t param) const
+RandomUnitCellGenerator::ParameterValueAndSpecific
+RandomUnitCellGenerator::getMin(const size_t param) const
 {
   SSLIB_ASSERT(param < 6);
 
-  ParamValue returnVal;
+  ParameterValueAndSpecific returnVal;
   if(myParameters[param].first)
   {
     returnVal.first = *myParameters[param].first;
@@ -42,25 +43,22 @@ RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMin(const size_t
   }
   else
   {
-    if(param < 3)
-    {
-      returnVal.first = DEFAULT_MIN_LENGTH;
-    }
+    if(isLength(param))
+      returnVal.first = myMinLength ? *myMinLength : DEFAULT_MIN_LENGTH;
     else
-    {
-      returnVal.first = DEFAULT_MIN_ANGLE;
-    }
+      returnVal.first = myMinAngle ? * myMinAngle : DEFAULT_MIN_ANGLE;
     returnVal.second = false;
   }
 
   return returnVal;
 }
 
-RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMax(const size_t param) const
+RandomUnitCellGenerator::ParameterValueAndSpecific
+RandomUnitCellGenerator::getMax(const size_t param) const
 {
   SSLIB_ASSERT(param < 6);
 
-  ParamValue returnVal;
+  ParameterValueAndSpecific returnVal;
   if(myParameters[param].second)
   {
     returnVal.first = *myParameters[param].second;
@@ -68,14 +66,10 @@ RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMax(const size_t
   }
   else
   {
-    if(param < 3)
-    {
-      returnVal.first = DEFAULT_MAX_LENGTH;
-    }
+    if(isLength(param))
+      returnVal.first = myMaxLength ? *myMaxLength : DEFAULT_MAX_LENGTH;
     else
-    {
-      returnVal.first = DEFAULT_MAX_ANGLE;
-    }
+      returnVal.first = myMaxAngle ? * myMaxAngle : DEFAULT_MAX_ANGLE;
     returnVal.second = false;
   }
 
@@ -98,42 +92,22 @@ void RandomUnitCellGenerator::setMax(const size_t param, const OptionalDouble ma
 
 void RandomUnitCellGenerator::setMinLengths(const OptionalDouble length)
 {
-  using namespace utility::cell_params_enum;
-
-  for(size_t i = A; i <= C; ++i)
-  {
-    myParameters[i].first = length;
-  }
+  myMinLength = length;
 }
 
 void RandomUnitCellGenerator::setMaxLengths(const OptionalDouble length)
 {
-  using namespace utility::cell_params_enum;
-
-  for(size_t i = A; i <= C; ++i)
-  {
-    myParameters[i].second = length;
-  }
+  myMaxLength = length;
 }
 
 void RandomUnitCellGenerator::setMinAngles(const OptionalDouble angle)
 {
-  using namespace utility::cell_params_enum;
-
-  for(size_t i = ALPHA; i <= GAMMA; ++i)
-  {
-    myParameters[i].first = angle;
-  }
+  myMinAngle = angle;
 }
 
 void RandomUnitCellGenerator::setMaxAngles(const OptionalDouble angle)
 {
-  using namespace utility::cell_params_enum;
-  
-  for(size_t i = ALPHA; i <= GAMMA; ++i)
-  {
-    myParameters[i].second = angle;
-  }
+  myMaxAngle = angle;
 }
 
 void RandomUnitCellGenerator::setTargetVolume(const OptionalDouble volume)
@@ -163,12 +137,13 @@ void RandomUnitCellGenerator::setMaxLengthRatio(const OptionalDouble maxLengthRa
   }
 }
 
-RandomUnitCellGenerator::ParamValue RandomUnitCellGenerator::getMaxLengthRatio() const
+RandomUnitCellGenerator::ParameterValueAndSpecific
+RandomUnitCellGenerator::getMaxLengthRatio() const
 {
   if(myMaxLengthRatio)
-    return ParamValue(*myMaxLengthRatio, true);
+    return ParameterValueAndSpecific(*myMaxLengthRatio, true);
   else
-    return ParamValue(DEFAULT_MAX_LENGTH_RATIO, false);
+    return ParameterValueAndSpecific(DEFAULT_MAX_LENGTH_RATIO, false);
 }
 
 GenerationOutcome RandomUnitCellGenerator::generateCell(
@@ -210,21 +185,7 @@ IUnitCellGeneratorPtr RandomUnitCellGenerator::clone() const
 double RandomUnitCellGenerator::generateParameter(const size_t param) const
 {
   SSLIB_ASSERT(param < 6);
-
-  if(isLength(param))
-  {
-    const double min = myParameters[param].first ? *myParameters[param].first : DEFAULT_MIN_LENGTH;
-    const double max = myParameters[param].second ? *myParameters[param].second : DEFAULT_MAX_LENGTH;
-
-    return math::randu(min, max);
-  }
-  else
-  {
-    const double min = myParameters[param].first ? *myParameters[param].first : DEFAULT_MIN_ANGLE;
-    const double max = myParameters[param].second ? *myParameters[param].second : DEFAULT_MAX_ANGLE;
-
-    return math::randu(min, max);    
-  }
+  return math::randu(getMin(param).first, getMax(param).first);
 }
 
 GenerationOutcome RandomUnitCellGenerator::generateLatticeParameters(common::UnitCellPtr & cellOut) const
