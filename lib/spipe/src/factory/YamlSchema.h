@@ -96,9 +96,9 @@ struct RemoveDuplicates : public ::sstbx::yaml_schema::SchemaHeteroMap
       new ::sstbx::factory::Comparator()
     );
 
-    ::sstbx::utility::HeterogeneousMap defaultOptions;
-    defaultOptions[::sstbx::factory::COMPARATOR];
-    defaultValue(defaultOptions);
+    //::sstbx::utility::HeterogeneousMap defaultOptions;
+    //defaultOptions[::sstbx::factory::COMPARATOR];
+    //defaultValue(defaultOptions);
   }
 };
 
