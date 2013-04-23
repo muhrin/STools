@@ -45,11 +45,12 @@ private:
 };
 
 Structure::Structure(UnitCellPtr cell):
-myCell(cell),
 myAtomPositionsCurrent(false),
 myNumAtoms(0),
 myDistanceCalculator(*this)
-{}
+{
+  setUnitCell(cell);
+}
 
 Structure::Structure(const Structure & toCopy):
 myDistanceCalculator(*this)
