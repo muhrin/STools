@@ -100,7 +100,7 @@ void Structure::updateWith(const Structure & structure)
   }
 
   // Update the properties
-  myTypedProperties.insert(structure.myTypedProperties);
+  myTypedProperties.insert(structure.myTypedProperties, true);
 }
 
 const std::string & Structure::getName() const

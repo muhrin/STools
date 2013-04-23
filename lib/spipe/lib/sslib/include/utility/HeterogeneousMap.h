@@ -51,6 +51,7 @@ public:
   bool insert(value_type<T> & x);
 
   void insert(const HeterogeneousMap & map);
+  void insert(const HeterogeneousMap & map, const bool overwrite);
 
   template <typename T>
   T & operator [](Key<T> & x);
@@ -71,6 +72,7 @@ public:
 private:
 
   ::std::pair<AnyMap::iterator, bool> insert(const AnyMap::value_type & value);
+  ::std::pair<AnyMap::iterator, bool> insert(const AnyMap::value_type & value, const bool overwrite);
 
   size_t eraseNoNotify(KeyId & key);
 

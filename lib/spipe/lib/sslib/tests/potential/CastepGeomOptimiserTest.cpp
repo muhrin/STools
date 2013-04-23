@@ -22,7 +22,7 @@ namespace ssio = ::sstbx::io;
 namespace ssp = ::sstbx::potential;
 namespace ssu = ::sstbx::utility;
 
-void testCastepOutput(const ::std::string & seed, const double enthalpy, const double pressure);
+void testCastepOutput(ssc::Structure structure, const ::std::string & seed, const double enthalpy, const double pressure);
 
 BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
 {
@@ -33,16 +33,24 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
   static const double PRESSURES[] = {-0.0081437, 100.040623};
 
   for(size_t i = 0; i < NUM_FILES; ++i)
-    testCastepOutput(SEEDS[i], ENTHALPIES[i], PRESSURES[i]);
+  {
+    ssc::Structure structure;
+    testCastepOutput(structure, SEEDS[i], ENTHALPIES[i], PRESSURES[i]);
+  }
+  // Now test that it also works if you update a pre-existing structure
+  ssc::Structure structure;
+  for(size_t i = 0; i < NUM_FILES; ++i)
+  {
+    testCastepOutput(structure, SEEDS[i], ENTHALPIES[i], PRESSURES[i]);
+  }
 }
 
-void testCastepOutput(const ::std::string & seed, const double enthalpy, const double pressure)
+void testCastepOutput(ssc::Structure structure, const ::std::string & seed, const double enthalpy, const double pressure)
 {
   static const ssc::AtomSpeciesDatabase SPECIES_DB;
   static const ssio::CastepReader CASTEP_READER;
   static const ssio::CellReaderWriter CELL_READER;
 
-  ssc::Structure structure;
   ssp::OptimisationSettings optSettings;
 
   ssp::CastepGeomOptimiseSettings runSettings;

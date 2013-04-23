@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "utility/HeterogeneousMap.h"
 
+#include <utility>
+
 #include <boost/foreach.hpp>
 
 // NAMESPACES ////////////////////////////////
@@ -56,6 +58,14 @@ void HeterogeneousMap::insert(const HeterogeneousMap & map)
   }
 }
 
+void HeterogeneousMap::insert(const HeterogeneousMap & map, const bool overwrite)
+{
+  BOOST_FOREACH(const AnyMap::value_type & value, map.myAnyMap)
+  {
+    insert(value, overwrite);
+  }
+}
+
 void HeterogeneousMap::clear()
 {
   // Tell all the keys that they are being removed from the map
@@ -88,6 +98,21 @@ HeterogeneousMap::insert(const AnyMap::value_type & value)
   {
     // Tell the key that it now stores a value in this map
     value.first->insertedIntoMap(*this);
+  }
+
+	return result;
+}
+
+::std::pair<HeterogeneousMap::AnyMap::iterator, bool>
+HeterogeneousMap::insert(const AnyMap::value_type & value, const bool overwrite)
+{
+  ::std::pair<AnyMap::iterator, bool> result = insert(value);
+
+  // If it wasn't inserted and we should overwrite the value then do so
+  if(!result.second && overwrite)
+  {
+    result.first->second = value.second;
+    result.second = true; // The value _was_ inserted
   }
 
 	return result;
