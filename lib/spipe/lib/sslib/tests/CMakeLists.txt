@@ -60,8 +60,8 @@ set(tests_Source_Files__potential
 )
 source_group("Source Files\\potential" FILES ${tests_Source_Files__potential})
 set(tests_Input_Files__potential
-  potential/input/successful.castep
-  potential/input/successful-out.cell
+  potential/input/run1.castep
+  potential/input/run2.castep
 )
 
 ## tests/utility

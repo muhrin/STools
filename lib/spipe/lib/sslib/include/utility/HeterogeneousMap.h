@@ -70,6 +70,8 @@ public:
 
 private:
 
+  ::std::pair<AnyMap::iterator, bool> insert(const AnyMap::value_type & value);
+
   size_t eraseNoNotify(KeyId & key);
 
 	AnyMap myAnyMap;

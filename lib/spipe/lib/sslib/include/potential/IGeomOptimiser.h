@@ -57,12 +57,19 @@ struct OptimisationData
   OptionalArmaMat ionicForces;
 
   void saveToStructure(common::Structure & structure) const;
+  void loadFromStructure(const common::Structure & structure);
 private:
   template <typename T>
   void setProperty(
     common::Structure & structure,
     utility::Key<T> & key,
     const ::boost::optional<T> & value
+  ) const;
+  template <typename T>
+  bool setOptimisationDataValue(
+    ::boost::optional<T> & value,
+    const common::Structure & structure,
+    const utility::Key<T> & key
   ) const;
 };
 
@@ -100,6 +107,15 @@ inline void OptimisationData::saveToStructure(common::Structure & structure) con
   setProperty(structure, properties::general::PRESSURE_INTERNAL, pressure);
 }
 
+inline void OptimisationData::loadFromStructure(const common::Structure & structure)
+{
+  namespace properties = common::structure_properties;
+
+  setOptimisationDataValue(internalEnergy, structure, properties::general::ENERGY_INTERNAL);
+  setOptimisationDataValue(enthalpy, structure, properties::general::ENTHALPY);
+  setOptimisationDataValue(pressure, structure, properties::general::PRESSURE_INTERNAL);
+}
+
 template <typename T>
 void OptimisationData::setProperty(
   common::Structure & structure,
@@ -112,6 +128,22 @@ void OptimisationData::setProperty(
   else
     structure.eraseProperty(key);
 }
+
+template <typename T>
+bool OptimisationData::setOptimisationDataValue(
+  ::boost::optional<T> & value,
+  const common::Structure & structure,
+  const utility::Key<T> & key
+) const
+{
+  const T * structureValue = structure.getProperty(key);
+  if(!structureValue)
+    return false;
+
+  value.reset(*structureValue);
+  return true;
+}
+  
 
 }
 }

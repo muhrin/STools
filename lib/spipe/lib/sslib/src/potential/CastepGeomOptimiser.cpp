@@ -336,29 +336,17 @@ bool CastepGeomOptRun::parseOptimisationInfo(
   myCastepRun.openCastepFile(&castepFileStream);
 
   bool readSuccessfully = true;
-  std::string line;
+  //std::string line;
 
-  // Enthalpy
-  const double * const enthalpy = structure.getProperty(properties::general::ENTHALPY);
-  if(enthalpy)
-    data.enthalpy.reset(*enthalpy);
+  data.loadFromStructure(structure);
 
   // Forces
-  if(io::findNextLine(line, *castepFileStream, FORCES))
-  {
-    // TODO: READ FORCES
-  }
-  else
-    readSuccessfully = false;
-
-  // Pressure
-  const double * const pressure = structure.getProperty(properties::general::PRESSURE_INTERNAL);
-  if(pressure)
-    data.pressure.reset(*pressure);
-
-  // Internal energy
-  if(data.enthalpy && data.pressure)
-    data.internalEnergy.reset(*data.enthalpy - *data.pressure * structure.getUnitCell()->getVolume());
+  //if(io::findNextLine(line, *castepFileStream, FORCES))
+  //{
+  //  // TODO: READ FORCES
+  //}
+  //else
+  //  readSuccessfully = false;
 
   return readSuccessfully;
 }

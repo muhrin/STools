@@ -19,29 +19,13 @@ namespace utility {
 template <typename T>
 bool HeterogeneousMap::insert(Key<T> & key, T value)
 {
-  ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(key.getId(), value));
-
-  if(result.second)
-  {
-    // Tell the key that it now stores a value in this map
-    key.getId()->insertedIntoMap(*this);
-  }
-
-	return result.second;
+  return insert(AnyMap::value_type(key.getId(), value)).second;
 }
 
 template <typename T>
 bool HeterogeneousMap::insert(value_type<T> & x)
 {
-  ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(x.first.getId(), x.second));
-
-  if(result.second)
-  {
-    // Tell the key that it now stores a value in this map
-    x.first.insertedIntoMap(*this);
-  }
-
-  return result.second;
+  return insert(AnyMap::value_type(x.first.getId(), x.second)).second;
 }
 
 template <typename T>
@@ -52,10 +36,8 @@ T & HeterogeneousMap::operator [](Key<T> & key)
   if(!value)
   {
     // Insert default value
-    ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(key.getId(), T()));
+    ::std::pair<AnyMap::iterator, bool> result = insert(AnyMap::value_type(key.getId(), T()));
     value = ::boost::any_cast<T>(&result.first->second);
-    // Tell the key that it now stores a value in this map
-    key.getId()->insertedIntoMap(*this);
   }
 
   return *value;

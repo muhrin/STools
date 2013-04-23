@@ -24,12 +24,7 @@ HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)
 HeterogeneousMap & HeterogeneousMap::operator =(const HeterogeneousMap & rhs)
 {
   clear();
-  myAnyMap.insert(rhs.myAnyMap.begin(), rhs.myAnyMap.end());
-  // Now tell all the keys that they have been inserted into the map
-  BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
-  {
-    value.first->insertedIntoMap(*this);
-  }
+  insert(rhs);
   return *this;
 }
 
@@ -55,7 +50,10 @@ size_t HeterogeneousMap::max_size() const
 
 void HeterogeneousMap::insert(const HeterogeneousMap & map)
 {
-  myAnyMap.insert(map.myAnyMap.begin(), map.myAnyMap.end());
+  BOOST_FOREACH(const AnyMap::value_type & value, map.myAnyMap)
+  {
+    insert(value);
+  }
 }
 
 void HeterogeneousMap::clear()
@@ -79,6 +77,20 @@ size_t HeterogeneousMap::erase(KeyId & key)
   myAnyMap.erase(it);
   key.removedFromMap(*this);
   return 1;
+}
+
+::std::pair<HeterogeneousMap::AnyMap::iterator, bool>
+HeterogeneousMap::insert(const AnyMap::value_type & value)
+{
+  const ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(value);
+
+  if(result.second)
+  {
+    // Tell the key that it now stores a value in this map
+    value.first->insertedIntoMap(*this);
+  }
+
+	return result;
 }
 
 size_t HeterogeneousMap::eraseNoNotify(KeyId & key)
