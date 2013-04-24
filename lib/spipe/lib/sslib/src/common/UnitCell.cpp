@@ -18,22 +18,26 @@
 namespace sstbx {
 namespace common {
 
-UnitCell::UnitCell()
+UnitCell::UnitCell():
+myStructure(NULL)
 {
   init(1.0, 1.0, 1.0, 90.0, 90.0, 90.0);
 }
 
-UnitCell::UnitCell(const double a, const double b, const double c, const double alpha, const double beta, const double gamma)
+UnitCell::UnitCell(const double a, const double b, const double c, const double alpha, const double beta, const double gamma):
+myStructure(NULL)
 {
   init(a, b, c, alpha, beta, gamma);
 }
 
-UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix)
+UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix):
+myStructure(NULL)
 {
   init(orthoMatrix);
 }
 
-UnitCell::UnitCell(const double (&latticeParams)[6])
+UnitCell::UnitCell(const double (&latticeParams)[6]):
+myStructure(NULL)
 {
   using namespace utility::cell_params_enum;
 
