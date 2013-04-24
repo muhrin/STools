@@ -12,6 +12,7 @@
 
 #include "common/DistanceCalculator.h"
 #include "common/UnitCell.h"
+#include "utility/IndexingEnums.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -195,6 +196,7 @@ void SimplePairPotential::setParams(const IParameterisable::PotentialParams & pa
 
 bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePairPotentialData & data) const
 {
+  using namespace utility::cart_coords_enum;
 	using ::std::vector;
 
 	double rSq;
@@ -279,7 +281,6 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 					// stress, diagonal is element wise multiplication of force and position
 					// vector components
 					data.stressMtx.diag() += f % r;
-					
 					data.stressMtx(1, 2) += 0.5 * (f(1)*r(2)+f(2)*r(1));
 					data.stressMtx(2, 0) += 0.5 * (f(2)*r(0)+f(0)*r(2));
 					data.stressMtx(0, 1) += 0.5 * (f(0)*r(1)+f(1)*r(0));
@@ -294,11 +295,17 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 	data.stressMtx(0, 2) = data.stressMtx(2, 0);
 	data.stressMtx(1, 0) = data.stressMtx(0, 1);
 
-  const common::UnitCell * const unitCell = structure.getUnitCell();
+	// Now balance forces
+	// (do sum of values for each component and divide by number of particles)
+  f = sum(data.forces, 1) / static_cast<double>(data.numParticles);
+	data.forces.row(X) -= f(Y);
+	data.forces.row(Y) -= f(X);
+	data.forces.row(Z) -= f(Z);
 
+  // Convert stress matrix to absolute values
+  const common::UnitCell * const unitCell = structure.getUnitCell();
   if(unitCell)
   {
-	  // And convert to absoloute values
 	  const double invVolume = 1.0 / unitCell->getVolume();
 	  data.stressMtx *= invVolume;
   }

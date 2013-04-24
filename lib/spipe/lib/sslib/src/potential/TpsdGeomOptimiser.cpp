@@ -205,14 +205,6 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       numLastEvaluationsWithProblem = 0;
     }
 
-		// Now balance forces
-		// (do sum of values for each component and divide by number of particles)
-		f = sum(data.forces, 1) / data.numParticles;
-
-		data.forces.row(0) += f(0);
-		data.forces.row(1) += f(1);
-		data.forces.row(2) += f(2);
-
 		h = data.internalEnergy;
 
 		deltaF = data.forces - f0;
@@ -227,8 +219,8 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
 
 		// Move the particles on by a step, saving the old positions
-		deltaPos		= step * data.forces;
-		data.pos		+= deltaPos;
+		deltaPos = step * data.forces;
+		data.pos += deltaPos;
 
     // Tell the structure about the new positions
     structure.setAtomPositions(data.pos);
@@ -326,14 +318,6 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       // That evaluation was fine, so reset counter
       numLastEvaluationsWithProblem = 0;
     }
-
-		// Now balance forces
-		// (do sum of values for each component and divide by number of particles)
-		f = sum(data.forces, 1) / data.numParticles;
-
-		data.forces.row(0) += f(0);
-		data.forces.row(1) += f(1);
-		data.forces.row(2) += f(2);
 
 		// TODO: Check this gamma = 0 as it seems a little odd
 		gamma = 0.0;
