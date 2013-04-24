@@ -1,0 +1,22 @@
+
+randomStructures:
+  num: 1
+  atoms:
+    - spec: P 2
+  unitCell:
+
+geomOptimise:
+  pressure: 0.0
+  optimiser:
+    castep:
+      keep: true
+      seed: P
+
+removeDuplicates:
+  comparator:
+    sortedDist:
+
+output:
+  multiWrite: true
+  fileType: res
+
