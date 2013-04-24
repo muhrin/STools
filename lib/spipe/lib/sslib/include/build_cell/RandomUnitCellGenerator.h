@@ -32,8 +32,8 @@ public:
   static const double DEFAULT_TARGET_VOLUME;
   static const double DEFAULT_VOLUME_DELTA; // Volume can be +/- this value as a percentage of the target
   static const double DEFAULT_MAX_LENGTH_RATIO;
-  static const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER;
-  static const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
+  static const double DEFAULT_BULK_CONTENTS_MULTIPLIER;
+  static const double DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
 
   ParameterValueAndSpecific getMin(const size_t param) const;
   ParameterValueAndSpecific getMax(const size_t param) const;
