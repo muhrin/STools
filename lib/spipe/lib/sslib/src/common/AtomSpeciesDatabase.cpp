@@ -35,6 +35,7 @@ AtomSpeciesDatabase::AtomSpeciesDatabase()
   setAll(AtomSpeciesId::P,    "P",  "Phosphorus", 1.07);
 	setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
   setAll(AtomSpeciesId::FE,   "Fe", "Iron",       1.26);
+  setAll(AtomSpeciesId::NI,   "Ni", "Nickel",     1.24);
   setAll(AtomSpeciesId::AS,   "As", "Arsenic",    1.19);
 }
 
