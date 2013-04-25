@@ -37,8 +37,8 @@ SimplePairPotential::SimplePairPotential(
 	const ::arma::mat &		        sigma,
 	const double 			            cutoffFactor,
 	const ::arma::mat &		        beta,
-	const double 			            m,
-	const double    			        n,
+	const double 			            n,
+	const double    			        m,
   const CombiningRule::Value    combiningRule):
 	myName("Simple pair potential"),
   myAtomSpeciesDb(atomSpeciesDb),
@@ -251,23 +251,23 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 
 					sigmaOModR = mySigma(speciesI, speciesJ) / modR;
 
-					invRM = pow(sigmaOModR, myM);
-					invRN = pow(sigmaOModR, myN) * myBeta(speciesI, speciesJ);
+					invRN = pow(sigmaOModR, myN);
+					invRM = pow(sigmaOModR, myM) * myBeta(speciesI, speciesJ);
 
 					// Calculate the energy delta
-					dE = 2.0 * myEpsilon(speciesI, speciesJ) * (invRM - invRN) -
+					dE = 4.0 * myEpsilon(speciesI, speciesJ) * (invRN - invRM) -
 						eShift(speciesI, speciesJ) + (modR - rCutoff(speciesI, speciesJ)) * fShift(speciesI, speciesJ);
 
 					// Magnitude of the force
-					modF = 2.0 *  myEpsilon(speciesI, speciesJ) *
-						(myM * invRM - myN * invRN) / modR - fShift(speciesI, speciesJ);
+					modF = 4.0 *  myEpsilon(speciesI, speciesJ) *
+						(myN * invRN - myM * invRM) / modR - fShift(speciesI, speciesJ);
 					f = modF / modR * r;
 
 					// Make sure we get energy/force correct for self-interaction
-					if(i != j)
+					if(i == j)
 					{
-						f *= 2.0;
-						dE *= 2.0;
+						f *= 0.5;
+						dE *= 0.5;
 					}
 
 					// Update system values
@@ -281,10 +281,10 @@ bool SimplePairPotential::evaluate(const common::Structure & structure, SimplePa
 					// stress, diagonal is element wise multiplication of force and position
 					// vector components
 					data.stressMtx.diag() += f % r;
-					data.stressMtx(1, 2) += 0.5 * (f(1)*r(2)+f(2)*r(1));
-					data.stressMtx(2, 0) += 0.5 * (f(2)*r(0)+f(0)*r(2));
-					data.stressMtx(0, 1) += 0.5 * (f(0)*r(1)+f(1)*r(0));
 
+					data.stressMtx(Y, Z) += 0.5 * (f(Y)*r(Z)+f(Z)*r(Y));
+					data.stressMtx(Z, X) += 0.5 * (f(Z)*r(X)+f(X)*r(Z));
+					data.stressMtx(X, Y) += 0.5 * (f(X)*r(Y)+f(Y)*r(X));
 				}
 			}
 		}

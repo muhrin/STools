@@ -67,7 +67,7 @@ extern utility::Key<factory::AtomSpeciesIdVector> SPECIES_LIST;
 extern utility::Key< ::arma::mat> LJ_EPSILON;
 extern utility::Key< ::arma::mat> LJ_SIGMA;
 extern utility::Key< ::arma::mat> LJ_BETA;
-extern utility::Key< ::arma::vec> LJ_POWERS;
+extern utility::Key< ::arma::vec2> LJ_POWERS;
 extern utility::Key<potential::CombiningRule::Value> POT_COMBINING;
 
 // STRUCTURE //////////////////////////////////////

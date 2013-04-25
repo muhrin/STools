@@ -44,7 +44,7 @@ utility::Key<factory::AtomSpeciesIdVector> SPECIES_LIST;
 utility::Key< ::arma::mat> LJ_EPSILON;
 utility::Key< ::arma::mat> LJ_SIGMA;
 utility::Key< ::arma::mat> LJ_BETA;
-utility::Key< ::arma::vec> LJ_POWERS;
+utility::Key< ::arma::vec2> LJ_POWERS;
 utility::Key<potential::CombiningRule::Value> POT_COMBINING;
 
 // STRUCTURE //////////////////////////////////////
