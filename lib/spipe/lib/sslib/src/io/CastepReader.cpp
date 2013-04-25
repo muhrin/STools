@@ -42,7 +42,10 @@ const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
 
 ::std::vector<std::string> CastepReader::getSupportedFileExtensions() const
 {
-  return ::std::vector< ::std::string>(1, "castep");
+  ::std::vector< ::std::string> extensions;
+  extensions.push_back("castep");
+  extensions.push_back("history");
+  return extensions;
 }
 
 ::sstbx::common::types::StructurePtr CastepReader::readStructure(
