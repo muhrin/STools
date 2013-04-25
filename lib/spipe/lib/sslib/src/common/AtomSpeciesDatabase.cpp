@@ -37,6 +37,7 @@ AtomSpeciesDatabase::AtomSpeciesDatabase()
   setAll(AtomSpeciesId::FE,   "Fe", "Iron",       1.26);
   setAll(AtomSpeciesId::NI,   "Ni", "Nickel",     1.24);
   setAll(AtomSpeciesId::AS,   "As", "Arsenic",    1.19);
+  setAll(AtomSpeciesId::IN,   "In", "Indium",     1.67);
 }
 
 const ::std::string * AtomSpeciesDatabase::getName(const AtomSpeciesId::Value id) const
