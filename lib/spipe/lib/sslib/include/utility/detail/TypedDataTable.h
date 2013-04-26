@@ -112,6 +112,40 @@ const T * TypedDataTable<Key>::get(const Key & key, const TypedColumn<T, Key> & 
 }
 
 template <typename Key>
+typename TypedDataTable<Key>::RowIterator
+TypedDataTable<Key>::beginRows()
+{
+  return myTable.begin();
+}
+
+template <typename Key>
+typename TypedDataTable<Key>::RowIterator
+TypedDataTable<Key>::endRows()
+{
+  return myTable.end();
+}
+
+template <typename Key>
+typename TypedDataTable<Key>::RowIterator
+TypedDataTable<Key>::findRow(const Key & key)
+{
+  return map.find(key);
+}
+
+template <typename Key>
+void TypedDataTable<Key>::eraseRow(RowIterator pos)
+{
+  return myTable.erase(row);
+}
+
+template <typename Key>
+void TypedDataTable<Key>::eraseRow(const Key & key)
+{
+  myTable.erase(myTable.find(key));
+}
+
+
+template <typename Key>
 template <typename T>
 void TypedDataTable<Key>::getAscending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const
 {
