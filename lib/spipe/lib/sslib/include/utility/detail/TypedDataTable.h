@@ -129,13 +129,13 @@ template <typename Key>
 typename TypedDataTable<Key>::RowIterator
 TypedDataTable<Key>::findRow(const Key & key)
 {
-  return map.find(key);
+  return myTable.find(key);
 }
 
 template <typename Key>
 void TypedDataTable<Key>::eraseRow(RowIterator pos)
 {
-  return myTable.erase(row);
+  return myTable.erase(pos);
 }
 
 template <typename Key>
