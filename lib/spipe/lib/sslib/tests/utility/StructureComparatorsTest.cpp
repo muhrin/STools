@@ -64,6 +64,7 @@ struct Result
   double mean;
 };
 
+static const fs::path REFERENCE_STRUCTURES_PATH("similarStructures");
 
 BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 {
@@ -76,7 +77,6 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 
 
   // SETTINGS ////////////////
-  const fs::path referenceStructuresPath("similarStructures");
   // List of comparators to test
   Comparators comparators;
   comparators.push_back(new ssu::SortedDistanceComparator(
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   const unsigned int MAX_NUM_WRONG = static_cast<unsigned int>(
     ceil(static_cast<double>(MAX_STRUCTURES) * ALLOWED_FAIL_RATE));
 
-  BOOST_REQUIRE(fs::exists(referenceStructuresPath));
-  BOOST_REQUIRE(fs::is_directory(referenceStructuresPath));
+  BOOST_REQUIRE(fs::exists(REFERENCE_STRUCTURES_PATH));
+  BOOST_REQUIRE(fs::is_directory(REFERENCE_STRUCTURES_PATH));
 
   ::std::vector<Result> results(NUM_COMPARATORS);
   ComparisonHandles comparisonHandles;
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   std::vector< ::std::string> inputFiles;
 
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
-  for(fs::directory_iterator it(referenceStructuresPath); it != dirEnd; ++it )
+  for(fs::directory_iterator it(REFERENCE_STRUCTURES_PATH); it != dirEnd; ++it )
   {
     // Skip if not a file
     if( !fs::is_regular_file(it->status())) continue;
@@ -188,7 +188,6 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   typedef ::std::vector<BufferedComparatorPtr> BufferedComparators;
 
   // SETTINGS ////////////////
-  const fs::path referenceStructuresPath("similarStructures");
   // List of comparators to test
   Comparators comparators;
   comparators.push_back(new ssu::SortedDistanceComparator(
@@ -201,8 +200,8 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   const unsigned int MAX_NUM_WRONG = (unsigned int)ceil((double)MAX_STRUCTURES * ALLOWED_FAIL_RATE);
   const size_t SUPERCELL_DIMS[] = {1, 1, 2};
 
-  BOOST_REQUIRE(fs::exists(referenceStructuresPath));
-  BOOST_REQUIRE(fs::is_directory(referenceStructuresPath));
+  BOOST_REQUIRE(fs::exists(REFERENCE_STRUCTURES_PATH));
+  BOOST_REQUIRE(fs::is_directory(REFERENCE_STRUCTURES_PATH));
 
   ::std::vector<Result> results(NUM_COMPARATORS);
 
@@ -218,7 +217,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   const boost::regex resFileFilter(".*\\.res");
   std::vector<ssio::ResourceLocator> inputFiles;
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
-  for(fs::directory_iterator it(referenceStructuresPath); it != dirEnd; ++it )
+  for(fs::directory_iterator it(REFERENCE_STRUCTURES_PATH); it != dirEnd; ++it )
   {
       // Skip if not a file
       if( !fs::is_regular_file(it->status())) continue;

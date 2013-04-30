@@ -12,6 +12,10 @@
 // INCLUDES /////////////////////////////////////////////
 #include <istream>
 
+// TODO: Move following to _detail file
+#include <string>
+#include <boost/algorithm/string/find.hpp>
+
 namespace sstbx {
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -35,6 +39,13 @@ bool findLastLine(
   const bool caseSensitive = true
 );
 
+template <typename FinderT> 
+bool findLastLineFinder(
+  ::std::string & matchingLine,
+  ::std::istream & inputStream,
+  const FinderT & finder
+);
+
 bool findFirstFloat(
   double & number,
   const ::std::string & line
@@ -42,6 +53,35 @@ bool findFirstFloat(
 
 ::std::string getLastLine(::std::istream & is);
 ::std::string getLastNonEmptyLine(::std::istream & is);
+
+
+// IMPLEMENTAITON ///////////////////////////////////////
+
+template <typename FinderT> 
+bool findLastLineFinder(
+  ::std::string & matchingLine,
+  ::std::istream & inputStream,
+  const FinderT & finder
+)
+{
+  int foundPos = -1;
+  ::std::string line;
+  while(::std::getline(inputStream, line))
+  {
+    if(::boost::find(line, finder))
+    {
+      foundPos = inputStream.tellg();
+      matchingLine = line;
+    }
+  }
+  if(foundPos != -1)
+  {
+    inputStream.clear(); // Clear the EoF flag
+    inputStream.seekg(foundPos, inputStream.beg);
+    return true;
+  }
+  return false;
+}
 
 }
 }
