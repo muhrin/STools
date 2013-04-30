@@ -45,6 +45,11 @@ struct GeomOptimise : ::sstbx::yaml_schema::SchemaHeteroMap
       new ::sstbx::factory::Optimiser()
     );
     addEntry(
+      "landscapeExplorer",
+      ::sstbx::factory::LANDSCAPE_EXPLORER,
+      new ::sstbx::factory::LandscapeExplorerOptimiser()
+    );
+    addEntry(
       "potential",
       ::sstbx::factory::POTENTIAL,
       new ::sstbx::factory::Potential()

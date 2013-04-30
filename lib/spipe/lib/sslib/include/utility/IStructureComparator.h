@@ -31,7 +31,6 @@ namespace utility {
 class IStructureComparator
 {
 public:
-
 	virtual ~IStructureComparator() {}
 
 	virtual double compareStructures(

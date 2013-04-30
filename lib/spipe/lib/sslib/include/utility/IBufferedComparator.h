@@ -38,14 +38,15 @@ public:
 
 	virtual double compareStructures(
 		const ComparisonDataHandle & str1,
-		const ComparisonDataHandle & str2) = 0;
-
+		const ComparisonDataHandle & str2
+  ) = 0;
 	virtual bool areSimilar(
 		const ComparisonDataHandle & str1,
-		const ComparisonDataHandle & str2) = 0;
-
+		const ComparisonDataHandle & str2
+  ) = 0;
   virtual ComparisonDataHandle generateComparisonData(
-    const sstbx::common::Structure & structure) = 0;
+    const sstbx::common::Structure & structure
+  ) = 0;
   virtual const IStructureComparator & getComparator() const = 0;
 
 protected:

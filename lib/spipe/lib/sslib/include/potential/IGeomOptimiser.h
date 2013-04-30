@@ -31,6 +31,7 @@ namespace common {
 class Structure;
 }
 namespace potential {
+class IControllable;
 class IPotential;
 struct OptimisationSettings;
 
@@ -41,6 +42,7 @@ struct OptimisationError
     FAILED_TO_CONVERGE,
     PROBLEM_WITH_STRUCTURE,
     ERROR_EVALUATING_POTENTIAL,
+    OPTIMISATION_INTERRUPTED,
     INTERNAL_ERROR
   };
 };

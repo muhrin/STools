@@ -32,7 +32,55 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 typedef yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> > SchemaDoubleList;
 
+// FORWARD DECLARATIONS ///////////////////////////////////////
+
+
+// STRUCTURE COMPARATORS //////////////////////////
+
+struct SortedDistance : public yaml_schema::SchemaHeteroMap
+{
+  SortedDistance()
+  {
+    addScalarEntry("tol", TOLERANCE)->element()
+      ->defaultValue(utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
+    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()
+      ->defaultValue(false);
+    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()
+      ->defaultValue(true);
+  }
+};
+
+struct Comparator : public yaml_schema::SchemaHeteroMap
+{
+  Comparator()
+  {
+    addEntry("sortedDist", SORTED_DISTANCE, new SortedDistance());
+
+    // Defaults
+    utility::HeterogeneousMap comparatorDefault;
+    comparatorDefault[SORTED_DISTANCE];
+    defaultValue(comparatorDefault);
+  }
+};
+
 // OPTIMISERS ////////////////////////////////////////////////
+struct LandscapeExplorerOptimiser : public yaml_schema::SchemaHeteroMap
+{
+  LandscapeExplorerOptimiser()
+  {
+    addEntry(
+      "comparator",
+      ::sstbx::factory::COMPARATOR,
+      new Comparator()
+    );
+
+    // Defaults
+    utility::HeterogeneousMap comparatorDefault;
+    comparatorDefault[COMPARATOR];
+    defaultValue(comparatorDefault);
+  }
+};
+
 struct Tpsd : public yaml_schema::SchemaHeteroMap
 {
   Tpsd()
@@ -295,34 +343,6 @@ struct Builder : public yaml_schema::SchemaHeteroMap
 };
 
 } // namespace builder
-
-// STRUCTURE COMPARATORS //////////////////////////
-
-struct SortedDistance : public yaml_schema::SchemaHeteroMap
-{
-  SortedDistance()
-  {
-    addScalarEntry("tol", TOLERANCE)->element()
-      ->defaultValue(utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
-    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()
-      ->defaultValue(false);
-    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()
-      ->defaultValue(true);
-  }
-};
-
-struct Comparator : public yaml_schema::SchemaHeteroMap
-{
-  Comparator()
-  {
-    addEntry("sortedDist", SORTED_DISTANCE, new SortedDistance());
-
-    // Defaults
-    utility::HeterogeneousMap comparatorDefault;
-    comparatorDefault[SORTED_DISTANCE];
-    defaultValue(comparatorDefault);
-  }
-};
 
 // UNIT CELL //////////////////////////////////////////
 

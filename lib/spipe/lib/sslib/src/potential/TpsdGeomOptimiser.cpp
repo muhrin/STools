@@ -12,6 +12,7 @@
 
 #include "SSLib.h"
 #include "common/UnitCell.h"
+#include "potential/IOptimisationController.h"
 #include "potential/OptimisationSettings.h"
 
 #define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
@@ -66,7 +67,8 @@ static const double INITIAL_STEPSIZE = 0.02;
 TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential):
 myPotential(potential),
 myTolerance(DEFAULT_TOLERANCE),
-myMaxSteps(DEFAULT_MAX_STEPS)
+myMaxSteps(DEFAULT_MAX_STEPS),
+myController(NULL)
 {}
 
 double TpsdGeomOptimiser::getTolerance() const
@@ -125,6 +127,9 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
   if(!localSettings.optimisationType)
     localSettings.optimisationType.reset(OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
   
+  if(myController)
+    myController->optimisationStarting(structure);
+
   OptimisationOutcome outcome;
   if(unitCell)
   {
@@ -150,7 +155,20 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 
   data.saveToStructure(structure);
 
+  if(myController)
+    myController->optimisationFinished(outcome, structure, data);
+
 	return outcome;
+}
+
+IOptimisationController * TpsdGeomOptimiser::getController()
+{
+  return myController;
+}
+
+void TpsdGeomOptimiser::setController(IOptimisationController & controller)
+{
+  myController = &controller;
 }
 
 OptimisationOutcome TpsdGeomOptimiser::optimise(
@@ -227,8 +245,20 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
     structure.setAtomPositions(data.pos);
 
 		dH = h - h0;
-
 		converged = fabs(dH) < eTol;
+
+    if(myController)
+    {
+      populateOptimistaionData(optimisationData, structure, data);
+      // Does out controller want us to continue?
+      if(!myController->stepFinished(i, structure, optimisationData))
+      {
+        return OptimisationOutcome::failure(
+          OptimisationError::OPTIMISATION_INTERRUPTED,
+          "The optimisation controller stopped this optimisation"
+        );
+      }
+    }
 	}
 
   // Only a successful optimisation if it has converged
@@ -401,6 +431,19 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
         OptimisationError::PROBLEM_WITH_STRUCTURE,
         "Unit cell has collapsed."
       );
+    }
+
+    if(myController)
+    {
+      populateOptimistaionData(optimisationData, structure, data);
+      // Does out controller want us to continue?
+      if(!myController->stepFinished(i, structure, optimisationData))
+      {
+        return OptimisationOutcome::failure(
+          OptimisationError::OPTIMISATION_INTERRUPTED,
+          "The optimisation controller stopped this optimisation"
+        );
+      }
     }
 	}
 

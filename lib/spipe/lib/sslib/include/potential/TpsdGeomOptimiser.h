@@ -18,6 +18,7 @@
 #include <armadillo>
 
 #include "potential/IGeomOptimiser.h"
+#include "potential/IControllableOptimiser.h"
 #include "potential/IPotential.h"
 #include "potential/IPotentialEvaluator.h"
 
@@ -34,7 +35,7 @@ class UnitCell;
 }
 namespace potential {
 
-class TpsdGeomOptimiser : public IGeomOptimiser
+class TpsdGeomOptimiser : public IControllableOptimiser
 {
 public:
 
@@ -66,6 +67,11 @@ public:
   ) const;
 
 	// End IGeomOptimiser interface
+
+  // IControllable interface
+  virtual IOptimisationController * getController();
+  virtual void setController(IOptimisationController & controller);
+  // End IControllable interface
 
 	OptimisationOutcome optimise(
     common::Structure & structure,
@@ -100,6 +106,7 @@ private:
 
 	PotentialPtr myPotential;
 
+  IOptimisationController * myController;
 	double myTolerance;
   unsigned int myMaxSteps;
 };

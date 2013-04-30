@@ -30,6 +30,7 @@
 #include "factory/SsLibElements.h"
 #include "io/ResReaderWriter.h"
 #include "potential/CastepGeomOptimiser.h"
+#include "potential/LandscapeExplorerOptimiser.h"
 #include "potential/TpsdGeomOptimiser.h"
 #include "potential/Types.h"
 #include "utility/IndexingEnums.h"
@@ -210,8 +211,6 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
   return pot;
 }
 
-
-
 SsLibFactoryYaml::GeomOptimiserPtr
 SsLibFactoryYaml::createGeometryOptimiser(
   const OptionsMap & optimiserMap,
@@ -221,26 +220,13 @@ SsLibFactoryYaml::createGeometryOptimiser(
 {
   GeomOptimiserPtr opt;
 
-  const OptionsMap * const tpsdOptions = optimiserMap.find(TPSD);
+  // Maybe it's a controllable optimiser.  Try that first
+  opt = createControllableOptimiser(optimiserMap, potentialMap, globalOptions);
+  if(opt.get())
+    return opt;
+  
   const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
-  if(tpsdOptions)
-  {
-    // Have to have a potential with this optimiser
-    if(!potentialMap)
-      return opt; // TODO: Emit error
-    potential::IPotentialPtr potential = createPotential(*potentialMap);
-    if(!potential.get())
-      return opt; // TODO: Emit error
-
-    const double * const tolerance = tpsdOptions->find(TOLERANCE);
-    
-    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
-    if(tolerance)
-      tpsd->setTolerance(*tolerance);
-
-    opt = tpsd;      
-  }
-  else if(castepOptions)
+  if(castepOptions)
   {
     const ::std::string * const castepExe = find(CASTEP_EXE, *castepOptions, globalOptions);
     const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
@@ -267,6 +253,63 @@ SsLibFactoryYaml::createGeometryOptimiser(
   }
 
   return opt;
+}
+
+SsLibFactoryYaml::ControllableOptimiserPtr
+SsLibFactoryYaml::createControllableOptimiser(
+  const OptionsMap & optimiserOptions,
+  const OptionsMap * potentialOptions,
+  const OptionsMap * globalOptions
+) const
+{
+  ControllableOptimiserPtr opt;
+
+  const OptionsMap * const tpsdOptions = optimiserOptions.find(TPSD);
+  if(tpsdOptions)
+  {
+    // Have to have a potential with this optimiser
+    if(!potentialOptions)
+      return opt; // TODO: Emit error
+    potential::IPotentialPtr potential = createPotential(*potentialOptions);
+    if(!potential.get())
+      return opt; // TODO: Emit error
+
+    const double * const tolerance = tpsdOptions->find(TOLERANCE);
+    
+    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
+    if(tolerance)
+      tpsd->setTolerance(*tolerance);
+
+    opt = tpsd;
+  }
+
+  return opt;
+}
+
+SsLibFactoryYaml::ExplorerOptimiserPtr
+SsLibFactoryYaml::createLandscapeExplorerOptimiser(
+  const OptionsMap & explorerOptions,
+  const OptionsMap & optimiserOptions,
+  const OptionsMap * potentialOptions,
+  const OptionsMap * globalOptions
+) const
+{
+  ExplorerOptimiserPtr explorer;
+
+  ControllableOptimiserPtr optimiser = createControllableOptimiser(optimiserOptions, potentialOptions, globalOptions);
+  if(!optimiser.get())
+    return explorer;
+
+  const OptionsMap * const comparatorOptions = explorerOptions.find(COMPARATOR);
+  if(!comparatorOptions)
+    return explorer;
+
+  utility::IStructureComparatorPtr comparator = createStructureComparator(*comparatorOptions);
+  if(!comparator.get())
+    return explorer;
+
+  explorer.reset(new potential::LandscapeExplorerOptimiser(optimiser, comparator));
+  return explorer;
 }
 
 utility::IStructureComparatorPtr

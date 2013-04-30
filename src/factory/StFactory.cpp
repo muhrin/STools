@@ -201,13 +201,28 @@ bool Factory::createGeomOptimiseBlock(
     optimisationSettings.pressure.reset(pressureMtx);
   }
 
-  return mySpFactory.createPotentialGeomOptimiseBlock(
-    blockOut,
-    *optimiserOptions,
-    potentialOptions,
-    &optimisationSettings,
-    globalOptions
-  ); 
+  const OptionsMap * const explorerOptions = geomOptimiseOptions.find(ssf::LANDSCAPE_EXPLORER);
+  if(explorerOptions)
+  {
+    return mySpFactory.createPotentialGeomOptimiseBlock(
+      blockOut,
+      *explorerOptions,
+      *optimiserOptions,
+      potentialOptions,
+      &optimisationSettings,
+      globalOptions
+    );
+  }
+  else
+  {
+    return mySpFactory.createPotentialGeomOptimiseBlock(
+      blockOut,
+      *optimiserOptions,
+      potentialOptions,
+      &optimisationSettings,
+      globalOptions
+    );
+  }
 }
 
 ::spipe::SpBlock * Factory::addWriteStructuresBlock(

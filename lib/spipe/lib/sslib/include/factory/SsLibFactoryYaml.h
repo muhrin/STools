@@ -40,6 +40,10 @@ namespace sstbx {
 namespace common {
 class AtomSpeciesDatabase;
 }
+namespace potential {
+class IControllableOptimiser;
+class LandscapeExplorerOptimiser;
+}
 
 namespace factory {
 
@@ -48,11 +52,24 @@ class SsLibFactoryYaml : ::boost::noncopyable
   typedef utility::HeterogeneousMap OptionsMap;
 public:
   typedef UniquePtr<potential::IGeomOptimiser>::Type GeomOptimiserPtr;
+  typedef UniquePtr<potential::IControllableOptimiser>::Type ControllableOptimiserPtr;
+  typedef UniquePtr<potential::LandscapeExplorerOptimiser>::Type ExplorerOptimiserPtr;
   typedef UniquePtr<utility::UniqueStructureSet<> >::Type UniqueStructureSetPtr;
 
   SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb);
   
   GeomOptimiserPtr createGeometryOptimiser(
+    const OptionsMap & optimiserOptions,
+    const OptionsMap * potentialOptions = NULL,
+    const OptionsMap * globalOptions = NULL
+  ) const;
+  ControllableOptimiserPtr createControllableOptimiser(
+    const OptionsMap & optimiserOptions,
+    const OptionsMap * potentialOptions = NULL,
+    const OptionsMap * globalOptions = NULL
+  ) const;
+  ExplorerOptimiserPtr createLandscapeExplorerOptimiser(
+    const OptionsMap & explorerOptions,
     const OptionsMap & optimiserOptions,
     const OptionsMap * potentialOptions = NULL,
     const OptionsMap * globalOptions = NULL

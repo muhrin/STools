@@ -10,6 +10,7 @@
 
 // SSLib includes
 #include <potential/Types.h>
+#include <potential/LandscapeExplorerOptimiser.h>
 #include <utility/UtilityFwd.h>
 #include <factory/SsLibElements.h>
 
@@ -101,6 +102,46 @@ bool Factory::createPotentialGeomOptimiseBlock(
     potentialOptions,
     globalOptions
   );
+
+  bool potentialIsParameterisable =
+    optimiser->getPotential() && optimiser->getPotential()->getParameterisable();
+
+  if(!optimiser.get())
+    return false;
+
+  if(optimisationSettings)
+  {
+    if(potentialIsParameterisable)
+      blockOut.reset(new blocks::ParamPotentialGo(optimiser, *optimisationSettings));
+    else
+      blockOut.reset(new blocks::PotentialGo(optimiser, *optimisationSettings));
+  }
+  else
+  {
+    if(potentialIsParameterisable)
+      blockOut.reset(new blocks::ParamPotentialGo(optimiser));
+    else
+      blockOut.reset(new blocks::PotentialGo(optimiser));
+  }
+
+  return true;
+}
+
+bool Factory::createPotentialGeomOptimiseBlock(
+  BlockPtr & blockOut,
+  const OptionsMap & explorerOptions,
+  const OptionsMap & optimiserOptions,
+  const OptionsMap * const potentialOptions,
+  const ssp::OptimisationSettings * optimisationSettings,
+  const OptionsMap * const globalOptions
+) const
+{
+  ssp::IGeomOptimiserPtr optimiser(mySsLibFactory.createLandscapeExplorerOptimiser(
+    explorerOptions,
+    optimiserOptions,
+    potentialOptions,
+    globalOptions
+  ).release());
 
   bool potentialIsParameterisable =
     optimiser->getPotential() && optimiser->getPotential()->getParameterisable();

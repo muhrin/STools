@@ -105,6 +105,8 @@ set(sslib_Source_Files__potential
   src/potential/CastepRun.cpp
   src/potential/CombiningRules.cpp
   src/potential/FixedLatticeShapeConstraint.cpp
+  src/potential/LandscapeExplorer.cpp
+  src/potential/LandscapeExplorerOptimiser.cpp
   src/potential/OptimisationSettings.cpp
   src/potential/PotentialData.cpp
   src/potential/SimplePairPotential.cpp

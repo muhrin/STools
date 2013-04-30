@@ -51,6 +51,7 @@ extern utility::Key<int> NUM;
 extern utility::Key<utility::HeterogeneousMap> OPTIMISER;
 extern utility::Key<utility::HeterogeneousMap> TPSD;
 extern utility::Key<utility::HeterogeneousMap> CASTEP;
+extern utility::Key<utility::HeterogeneousMap> LANDSCAPE_EXPLORER;
 extern utility::Key< ::std::string> CASTEP_EXE;
 extern utility::Key< ::std::string> CASTEP_SEED;
 extern utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
