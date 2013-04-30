@@ -56,8 +56,9 @@ const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
 const double TpsdGeomOptimiser::DEFAULT_TOLERANCE = 1e-13;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
-const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 355.0;
+const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
 const double TpsdGeomOptimiser::MAX_STEPSIZE = 10.0;
+static const double INITIAL_STEPSIZE = 0.02;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
@@ -185,7 +186,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
   size_t numLastEvaluationsWithProblem = 0;
 
 	// Set the initial step size so get mooving
-	double step = 0.2;
+	double step = INITIAL_STEPSIZE;
 	for(size_t i = 0; !converged && i < *settings.maxSteps; ++i)
 	{
     // Save the energy and forces from last time around
@@ -216,7 +217,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 	  gg		= accu(deltaF % deltaF);
 
 		if(fabs(xg) > 0.0)
-      step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
+      step = fabs(xg / gg);
 
 		// Move the particles on by a step, saving the old positions
 		deltaPos = step * data.forces;
@@ -296,7 +297,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 	bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
 	// Set the initial step size so get mooving
-	double step = eTol * 1e8;
+	double step = INITIAL_STEPSIZE;
 	for(unsigned int i = 0; !converged && i < *settings.maxSteps; ++i)
 	{
 		h0 = h;
@@ -352,7 +353,7 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
 
 
 		if(fabs(xg) > 0.0)
-      step = ::std::min(fabs(xg / gg), MAX_STEPSIZE);
+      step = ::std::fabs(xg / gg);
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
     {

@@ -61,9 +61,6 @@ int main(const int argc, char * argv[])
 
   StructureInfoTable infoTable;
   StructuresContainer structures;
-  ssu::UniqueStructureSet<ssc::Structure *> uniqueStructures(
-    ssu::IStructureComparatorPtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
-  );
 
   SortedKeys sortedKeys;
 
@@ -82,25 +79,7 @@ int main(const int argc, char * argv[])
         speciesDb
       );
       
-      numKept = 0;
-      if(in.uniqueMode)
-      {
-        // Get an interator to the first new structure
-        StructuresContainer::iterator it = structures.begin() + numLoaded;
-        while(it != structures.end())
-        {
-          // Have we seen this structure before?
-          if(uniqueStructures.insert(&*it).second == false)
-            it = structures.erase(it);  // Yes
-          else
-          { // No
-            ++it;
-            ++numKept;
-          }
-        }
-      }
-      else
-        numKept = numLoadedFromFile;
+      numKept = numLoadedFromFile;
 
       // Preprocess the structure
       for(size_t i = numLoaded; i < numLoaded + numKept; ++i)
@@ -149,6 +128,27 @@ int main(const int argc, char * argv[])
     const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
     if(it != tokensMap.end())
       it->second->sort(sortedKeys, infoTable);
+  }
+
+  if(in.uniqueMode)
+  {
+    ssu::UniqueStructureSet<ssc::Structure *> uniqueStructures(
+      ssu::IStructureComparatorPtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
+    );
+    int idx = 0;
+    SortedKeys::iterator it = sortedKeys.begin();
+    while(it != sortedKeys.end())
+    {
+      // Have we seen this structure before?
+      // TODO: Have to remove this const cast by fixing unique structures to accept const Structure as well
+      if(uniqueStructures.insert(const_cast<ssc::Structure * >(*it)).second == false)
+      {
+        infoTable.eraseRow(*it);
+        it = sortedKeys.erase(it);
+      }
+      else
+        ++it;
+    }
   }
 
   const size_t numToPrint = in.printTop == PRINT_ALL ? sortedKeys.size() : ::std::min(sortedKeys.size(), (size_t)in.printTop);

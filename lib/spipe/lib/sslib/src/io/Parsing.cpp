@@ -10,7 +10,6 @@
 
 #include <sstream>
 
-#include <boost/algorithm/string/find.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 

@@ -152,7 +152,7 @@ int main(const int argc, char * argv[])
   }
   else if(in.comparator == "dm")
   {
-    comp.reset(new ssu::DistanceMatrixComparator(in.maxAtoms));
+    comp.reset(new ssu::DistanceMatrixComparator(in.tolerance, in.maxAtoms));
   }
   else
   {

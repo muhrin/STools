@@ -45,6 +45,7 @@ public:
   static const Enumerator FE;
   static const Enumerator NI;
   static const Enumerator AS;
+  static const Enumerator IN;
   static const Enumerator CUSTOM_1;
   static const Enumerator CUSTOM_2;
   static const Enumerator CUSTOM_3;

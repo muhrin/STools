@@ -27,6 +27,7 @@ namespace utility {
 typedef ::std::pair<size_t, double> IndexDoublePair;
 
 const double DistanceMatrixComparator::STRUCTURES_INCOMPARABLE = ::std::numeric_limits<double>::max();
+const double DistanceMatrixComparator::DEFAULT_TOLERANCE = 0.001;
 
 bool indexDoubleLessThan(const IndexDoublePair & p1, const IndexDoublePair & p2)
 { return p1.second < p2.second; }
@@ -101,9 +102,17 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(const common::Structu
 }
 
 DistanceMatrixComparator::DistanceMatrixComparator(const size_t fastComparisonAtomsLimit):
+myFastComparisonAtomsLimit(fastComparisonAtomsLimit),
+myTolerance(DEFAULT_TOLERANCE)
+{}
+
+DistanceMatrixComparator::DistanceMatrixComparator(
+  const double tolerance,
+  const size_t fastComparisonAtomsLimit
+):
+myTolerance(tolerance),
 myFastComparisonAtomsLimit(fastComparisonAtomsLimit)
-{
-}
+{}
 
 double DistanceMatrixComparator::compareStructures(
 	const common::Structure & str1,
@@ -139,7 +148,7 @@ bool DistanceMatrixComparator::areSimilar(
   const DataTyp & str1Data,
   const DataTyp & str2Data) const
 {
-  return compareStructures(str1Data, str2Data) < 0.001;
+  return compareStructures(str1Data, str2Data) < myTolerance;
 }
 
 double DistanceMatrixComparator::compareStructures(

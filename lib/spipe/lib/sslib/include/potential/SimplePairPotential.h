@@ -65,8 +65,8 @@ public:
 		const ::arma::mat &		        sigma,
 		const double 			            cutoffFactor,
 		const ::arma::mat &	          beta,
-		const double  			          m,
-		const double 	  		          n,
+		const double  			          n,
+		const double 	  		          m,
     const CombiningRule::Value    combiningRule = CombiningRule::NONE);
 
 	virtual const ::std::string & getName() const;

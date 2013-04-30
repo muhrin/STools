@@ -46,11 +46,11 @@ struct DistanceMatrixComparisonData
 class DistanceMatrixComparator : public IStructureComparator
 {
 public:
-
   typedef DistanceMatrixComparisonData DataTyp;
-  typedef ::sstbx::UniquePtr<DataTyp>::Type ComparisonDataPtr;
+  typedef UniquePtr<DataTyp>::Type ComparisonDataPtr;
 
   static const double STRUCTURES_INCOMPARABLE;
+  static const double DEFAULT_TOLERANCE;
 
   /**
   /* fastComparisonAtomLimit - above this many atoms use fast comparison method as
@@ -58,6 +58,7 @@ public:
   /*
   /**/
   DistanceMatrixComparator(const size_t fastComparisonAtomsLimit = 12);
+  DistanceMatrixComparator(const double tolerance, const size_t fastComparisonAtomsLimit = 12);
 
   // From IStructureComparator ////////////////
 
@@ -100,7 +101,7 @@ private:
     const DataTyp & str2Data) const;
 
   const size_t myFastComparisonAtomsLimit;
-
+  const double myTolerance;
 };
 
 }

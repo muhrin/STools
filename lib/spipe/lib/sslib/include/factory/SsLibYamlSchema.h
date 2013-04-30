@@ -104,7 +104,10 @@ struct LennardJones : public yaml_schema::SchemaHeteroMap
       new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
     )->required();
 
-    addScalarEntry("pow", LJ_POWERS)->required();
+    ::arma::vec2 powers;
+    powers(0) = 12;
+    powers(1) = 6;
+    addScalarEntry("pow", LJ_POWERS)->element()->defaultValue(powers);
 
     addEntry(
       "combining",

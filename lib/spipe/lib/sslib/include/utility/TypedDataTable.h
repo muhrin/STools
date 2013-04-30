@@ -84,9 +84,11 @@ private:
 template <typename Key>
 class TypedDataTable : private ::boost::noncopyable
 {
+  typedef ::sstbx::utility::HeterogeneousMap Row;
+  typedef ::std::map<Key, Row> Table;
 public:
-
   typedef ::std::vector<Key> SortedKeys;
+  typedef typename Table::iterator RowIterator;
 
   template <typename T>
   void set(const Key & key, TypedColumn<T, Key> & column, const T & value);
@@ -97,15 +99,18 @@ public:
   template <typename T>
   const T * get(const Key & key, const TypedColumn<T, Key> & column) const;
 
+  RowIterator beginRows();
+  RowIterator endRows();
+  RowIterator findRow(const Key & key);
+  void eraseRow(RowIterator pos);
+  void eraseRow(const Key & key);
+
   template <typename T>
   void getAscending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const;
 
   size_t size() const;
 
 private:
-  typedef ::sstbx::utility::HeterogeneousMap Row;
-  typedef ::std::map<Key, Row> Table;
-
   Table myTable;
 };
 
