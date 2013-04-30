@@ -19,6 +19,7 @@
 // FORWARD DECLARES ////////////////////////////////
 namespace sstbx {
 namespace common {
+class AtomSpeciesDatabase;
 class Structure;
 }
 namespace io {
@@ -53,9 +54,23 @@ protected:
   virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
 
 private:
-
   double myRelativeTo; // The energy that all energies will be relative to
   const bool myUsePerAtom;  // Use the energy/atom when comparing
+};
+
+class FormulaToken : public TypedToken< ::std::string>
+{
+public:
+  FormulaToken(
+    const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
+    const ::std::string & name,
+    const ::std::string & symbol,
+    const ::std::string & defaultFormatString = ""
+  );
+protected:
+  virtual ::boost::optional< ::std::string> doGetValue(const ::sstbx::common::Structure & structure) const;
+private:
+  const ::sstbx::common::AtomSpeciesDatabase & mySpeciesDb;
 };
 
 
@@ -68,6 +83,7 @@ namespace functions {
 ::boost::optional< ::std::string> getSpaceGroupSymbol(const ::sstbx::common::Structure & structure);
 ::boost::optional<unsigned int> getSpaceGroupNumber(const ::sstbx::common::Structure & structure);
 ::boost::optional< ::sstbx::io::ResourceLocator> getRelativeLoadPath(const ::sstbx::common::Structure & structure);
+
 }
 
 }

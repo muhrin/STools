@@ -147,7 +147,7 @@ void addToken(TokensMap & map, TokenPtr token)
   map.insert(symbol, token);
 }
 
-CustomisableTokens generateTokens(TokensMap & map)
+CustomisableTokens generateTokens(TokensMap & map, const ssc::AtomSpeciesDatabase & speciesDb)
 {
   typedef ::std::auto_ptr<utility::EnergyToken> EnergyTokenPtr;
   typedef utility::RelativeValueToken<double> RelativeValue;
@@ -197,6 +197,8 @@ CustomisableTokens generateTokens(TokensMap & map)
   // Rest of the tokens
 
   addToken(map, utility::makeFunctionToken< ::std::string>("Name", "n", utility::functions::getName, "%|-|"));
+  addToken(map, TokenPtr(new utility::FormulaToken(speciesDb, "Formula", "fo")));
+
   addToken(map, utility::makeFunctionToken<double>("Volume", "v", utility::functions::getVolume, "%.2f"));
   addToken(map, utility::makeFunctionToken<double>("Vol./atom", "va", utility::functions::getVolumePerAtom, "%.2f"));
   addToken(map, TokenPtr(new RelativeValue("Energy/atom", "ua", structure_properties::general::ENERGY_INTERNAL, 0.0, "%.4f", true)));

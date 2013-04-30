@@ -42,9 +42,11 @@ int main(const int argc, char * argv[])
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
 
+  ssc::AtomSpeciesDatabase speciesDb;
+
   // Set up the tokens that we know about
   TokensMap tokensMap;
-  CustomisableTokens customisable = generateTokens(tokensMap);
+  CustomisableTokens customisable = generateTokens(tokensMap, speciesDb);
 
   // Process input and detect errors
   InputOptions in;
@@ -65,7 +67,6 @@ int main(const int argc, char * argv[])
   SortedKeys sortedKeys;
 
   DataGatherer gatherer;
-  ssc::AtomSpeciesDatabase speciesDb;
   ::std::string inputFile;
   ssio::ResourceLocator structureLocator;
   size_t numKept, numLoaded = 0;
