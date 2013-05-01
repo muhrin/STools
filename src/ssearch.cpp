@@ -66,7 +66,10 @@ int main(const int argc, char * argv[])
     return result;
 
   if(!fs::exists(in.inputOptionsFile))
+  {
+    ::std::cerr << "Couldn't find input file " << in.inputOptionsFile << ::std::endl;
     return 1;
+  }
 
   // Read the yaml options
   YAML::Node searchNode;
