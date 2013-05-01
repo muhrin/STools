@@ -29,11 +29,15 @@ namespace utility {
 
 const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
 const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 2e-4;
-//const double SortedDistanceComparator::CUTOFF_FACTOR        = 0.5;
 const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.5;
 
 
-SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structure & structure, const bool volumeAgnostic, const bool usePrimitive)
+SortedDistanceComparisonData::SortedDistanceComparisonData(
+  const common::Structure & structure,
+  const bool volumeAgnostic,
+  const bool usePrimitive,
+  const double cutoffFactor
+)
 {
   // This needs to be in this scope so it lasts until we return
   common::StructurePtr primitive(new common::Structure(structure));
@@ -55,7 +59,7 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(const common::Structu
   {
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
     const double longestDiag = sqrt(::arma::dot(diag, diag));
-    cutoff = SortedDistanceComparator::CUTOFF_FACTOR * longestDiag;
+    cutoff = cutoffFactor * longestDiag;
     volume = unitCell->getVolume();
   }
   else
@@ -131,8 +135,19 @@ void SortedDistanceComparisonData::initSpeciesDistancesMap()
 SortedDistanceComparator::SortedDistanceComparator(const double tolerance, const bool volumeAgnostic, const bool usePrimitive):
 myScaleVolumes(volumeAgnostic),
 myUsePrimitive(usePrimitive),
-myTolerance(tolerance)
+myTolerance(tolerance),
+myCutoffFactor(CUTOFF_FACTOR)
 {}
+
+void SortedDistanceComparator::setCutoffFactor(const double cutoffFactor)
+{
+  myCutoffFactor = cutoffFactor;
+}
+
+double SortedDistanceComparator::getCutoffFactor() const
+{
+  return myCutoffFactor;
+}
 
 double SortedDistanceComparator::compareStructures(
 	const sstbx::common::Structure & str1,
@@ -203,7 +218,7 @@ bool SortedDistanceComparator::areSimilar(
 SortedDistanceComparator::ComparisonDataPtr
 SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure & str) const
 {
-  return ComparisonDataPtr(new SortedDistanceComparisonData(str, myScaleVolumes, myUsePrimitive));
+  return ComparisonDataPtr(new SortedDistanceComparisonData(str, myScaleVolumes, myUsePrimitive, myCutoffFactor));
 }
 
 ::boost::shared_ptr<SortedDistanceComparator::BufferedTyp> SortedDistanceComparator::generateBuffered() const
@@ -237,38 +252,6 @@ void SortedDistanceComparator::calcProperties(
       stats.insert(2.0 * ::std::abs(d1 - d2) / sum);
   }
 }
-
-//void SortedDistanceComparator::calcProperties(
-//  math::RunningStats & deltaStats,
-//  math::RunningStats & productStats,
-//  math::RunningStats & dist2Stats,
-//  const DistancesVec & dist1,
-//  const StridedIndexAdapter<size_t> & adapt1,
-//  const DistancesVec & dist2,
-//  const StridedIndexAdapter<size_t> & adapt2
-//) const
-//{
-//  const size_t maxIdx = ::std::min(adapt1.inv(dist1.size()), adapt2.inv(dist2.size()));
-//
-//  double d1, d2, sum, product;
-//  for(size_t i = 0; i < maxIdx; ++i)
-//  {
-//    d1 = dist1[adapt1(i)];
-//    d2 = dist2[adapt2(i)];
-//
-//#if SORTED_DIST_COMP_DEBUG
-//    if(std::abs(d1 - d2) > 1e-5)
-//      std::cout << "Diff is: " << std::abs(d1 - d2) << std::endl;
-//#endif
-//    sum = d1 + d2;
-//    if(sum > 0.0)
-//    {
-//      deltaStats.insert(::std::abs(d1 - d2) / sum);
-//      productStats.insert(d1 * d2);
-//
-//    }
-//  }
-//}
 
 }
 }

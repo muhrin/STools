@@ -71,6 +71,7 @@ struct InputOptions
   bool volumeAgnostic;
   bool dontUsePrimitive;
   bool summaryOnly;
+  double cutoffFactor;
 };
 
 // FORWARD DECLARES //////////
@@ -99,6 +100,7 @@ int main(const int argc, char * argv[])
       ("no-primitive,p", po::value<bool>(&in.dontUsePrimitive)->default_value(false)->zero_tokens(), "Do not transform structures to primitive setting before comparison")
       ("mode,m", po::value<char>(&in.mode)->default_value('d'), "Mode:\nd = diff,\nu = print list of unique structures (first if duplicates),\ns = print list of similar structures (excluding first)")
       ("summary,s", po::value<bool>(&in.summaryOnly)->default_value(false)->zero_tokens(), "Show summary only")
+      ("cutoff", po::value<double>(&in.cutoffFactor)->default_value(1.5), "Set the atom distances comparison cutoff as a multiple of the longest unit cell diagonal")
     ;
 
     po::positional_options_description p;
@@ -141,10 +143,12 @@ int main(const int argc, char * argv[])
   }
 
   ::boost::scoped_ptr<ssu::IStructureComparator> comp;
-
   if(in.comparator == "sd")
   {
-    comp.reset(new ssu::SortedDistanceComparator(in.tolerance, false, false));
+    ::sstbx::UniquePtr<ssu::SortedDistanceComparator>::Type
+      sortedDist(new ssu::SortedDistanceComparator(in.tolerance, false, false));
+    sortedDist->setCutoffFactor(in.cutoffFactor);
+    comp.reset(sortedDist.release());
   }
   else if(in.comparator == "sdex")
   {
