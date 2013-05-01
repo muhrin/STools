@@ -322,7 +322,7 @@ void doDiff(
       maxJ = in.printFull ? numStructures: i;
       for(size_t j = 0; j < maxJ; ++j)
       {
-        ::std::cout << diffs(i, j) << " ";
+        ::std::cout << diffs(i, j) << "\t";
       }
       ::std::cout << ::std::endl;
     }
