@@ -29,6 +29,7 @@ namespace utility {
 
 const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
 const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 2e-4;
+//const double SortedDistanceComparator::CUTOFF_FACTOR        = 0.5;
 const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.5;
 
 
