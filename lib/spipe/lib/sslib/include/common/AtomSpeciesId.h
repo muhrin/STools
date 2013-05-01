@@ -42,9 +42,11 @@ public:
   static const Enumerator SI;
   static const Enumerator P;
   static const Enumerator CL;
+  static const Enumerator TI;
   static const Enumerator FE;
   static const Enumerator NI;
   static const Enumerator AS;
+  static const Enumerator SR;
   static const Enumerator IN;
   static const Enumerator CUSTOM_1;
   static const Enumerator CUSTOM_2;
