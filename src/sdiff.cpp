@@ -377,7 +377,7 @@ void doDiffGroups(
   ComparisonHandles g1ComparisonHandles(g1.size());
   ComparisonHandles g2ComparisonHandles(g2.size());
 
-  ::arma::mat diffs(g1.size(), g1.size());
+  ::arma::mat diffs(g1.size(), g2.size());
   diffs.diag().fill(0.0);
 
   size_t i;
