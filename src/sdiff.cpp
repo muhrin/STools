@@ -404,7 +404,6 @@ void doDiffGroups(
       stats.insert(diffs(i, j));
     }
   }
-  diffs = ::arma::symmatu(diffs);
 
   if(in.summaryOnly)
   {  
