@@ -156,7 +156,7 @@ int main(const int argc, char * argv[])
     desc.add_options()
       ("help", "Show help message")
       ("tol,t", po::value<double>(&in.tolerance)->default_value(ssu::SortedDistanceComparator::DEFAULT_TOLERANCE), "Set comparator tolerance")
-      ("input-file", po::value< ::std::vector<::std::string> >(&in.inputFiles), "input file(s)")
+      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
       ("full", po::value<bool>(&in.printFull)->default_value(false)->zero_tokens(), "Print full matrix, not just lower triangular")
       ("maxatoms", po::value<unsigned int>(&in.maxAtoms)->default_value(12), "The maximum number of atoms before switching to fast comparison method.")
       ("comp,c", po::value< ::std::string>(&in.comparator)->default_value("sd"), "The comparator to use: sd = sorted distance, sdex = sorted distance extended, dm = distance matrix")
@@ -521,7 +521,7 @@ template <typename GroupId>
 const typename StructureGroups<GroupId>::StructuresGroup *
 StructureGroups<GroupId>::getGroup(const GroupId & groupId) const
 {
-  const LocatorGroup::const_iterator it = myGroups.find(groupId);
+  const const_iterator it = myGroups.find(groupId);
   if(it == myGroups.end())
     return NULL;
   

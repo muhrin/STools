@@ -46,8 +46,8 @@ public:
   size_t size() const;
   size_t max_size() const;
 
-	template <typename T>
-	bool insert(KeyEx<T, KeyData> & key, T value);
+  template <typename T>
+  bool insert(KeyEx<T, KeyData> & key, T value);
 
   template <typename T>
   bool insert(value_type<T> & x);
@@ -55,14 +55,14 @@ public:
   template <typename T>
   T & operator [](KeyEx<T, KeyData> & x);
 
-	template<typename T>
-	T * find(const KeyEx<T, KeyData> & key);
+  template<typename T>
+  T * find(const KeyEx<T, KeyData> & key);
 
-	template<typename T>
-	const T * find(const KeyEx<T, KeyData> & key) const;
+  template<typename T>
+  const T * find(const KeyEx<T, KeyData> & key) const;
 
-	template<typename T>
-	size_t erase(KeyEx<T, KeyData> & key);
+  template<typename T>
+  size_t erase(KeyEx<T, KeyData> & key);
 
   size_t erase(IdType & key);
 
@@ -80,7 +80,7 @@ HeterogeneousMapEx<KeyData>::HeterogeneousMapEx(const HeterogeneousMapEx<KeyData
 {
   myAnyMap.insert(toCopy.myAnyMap.begin(), toCopy.myAnyMap.end());
   // Now tell all the keys that they have been inserted into the map
-  BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
+  BOOST_FOREACH(typename AnyMap::value_type & value, myAnyMap)
   {
     value.first->insertedIntoMap(*this);
   }
@@ -114,7 +114,7 @@ template <class KeyData>
 void HeterogeneousMapEx<KeyData>::clear()
 {
   // Tell all the keys that they are being removed from the map
-  BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
+  BOOST_FOREACH(typename AnyMap::value_type & value, myAnyMap)
   {
     value.first->removedFromMap(*this);
   }
@@ -125,7 +125,7 @@ void HeterogeneousMapEx<KeyData>::clear()
 template <class KeyData>
 size_t HeterogeneousMapEx<KeyData>::erase(KeyIdEx<KeyData> & key)
 {
-  const AnyMap::iterator it = myAnyMap.find(&key);
+  const typename AnyMap::iterator it = myAnyMap.find(&key);
 
   if(it == myAnyMap.end())
     return 0;
@@ -139,7 +139,8 @@ template <class KeyData>
 template <typename T>
 bool HeterogeneousMapEx<KeyData>::insert(KeyEx<T, KeyData> & key, T value)
 {
-  ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(key.getId(), value));
+  ::std::pair<typename AnyMap::iterator, bool> result =
+    myAnyMap.insert(typename AnyMap::value_type(key.getId(), value));
 
   if(result.second)
   {
@@ -154,7 +155,7 @@ template <class KeyData>
 template <typename T>
 bool HeterogeneousMapEx<KeyData>::insert(value_type<T> & x)
 {
-  ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(x.first.getId(), x.second));
+  ::std::pair<typename AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(x.first.getId(), x.second));
 
   if(result.second)
   {
@@ -174,7 +175,7 @@ T & HeterogeneousMapEx<KeyData>::operator [](KeyEx<T, KeyData> & key)
   if(!value)
   {
     // Insert default value
-    ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(key.getId(), T()));
+    ::std::pair<typename AnyMap::iterator, bool> result = myAnyMap.insert(AnyMap::value_type(key.getId(), T()));
     value = ::boost::any_cast<T>(&result.first->second);
     // Tell the key that it now stores a value in this map
     key.getId()->insertedIntoMap(*this);
@@ -190,12 +191,12 @@ T * HeterogeneousMapEx<KeyData>::find(const KeyEx<T, KeyData> & key)
   // NOTE: Have to use const_cast<> here as we have a type of const KeyId * but the
   // map key is actually of type KeyId *.  In this case the cast is safe to do as we
   // guarantee that we will not modify the key.
-	const AnyMap::iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
+  const typename AnyMap::iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
 
-	if(it == myAnyMap.end())
-		return NULL;
+  if(it == myAnyMap.end())
+    return NULL;
 
-	return ::boost::any_cast<T>(&it->second);
+  return ::boost::any_cast<T>(&it->second);
 }
 
 template <class KeyData>
@@ -205,24 +206,24 @@ const T * HeterogeneousMapEx<KeyData>::find(const KeyEx<T, KeyData> & key) const
   // NOTE: Have to use const_cast<> here as we have a type of const KeyId * but the
   // map key is actually of type KeyId *.  In this case the cast is safe to do as we
   // guarantee that we will not modify the key.
-	const AnyMap::const_iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
+  const typename AnyMap::const_iterator it = myAnyMap.find(const_cast<KeyIdEx<KeyData> *>(key.getId()));
 
-	if(it == myAnyMap.end())
-		return NULL;
+  if(it == myAnyMap.end())
+    return NULL;
 
-	return ::boost::any_cast<T>(&it->second);
+  return ::boost::any_cast<T>(&it->second);
 }
 
 template <class KeyData>
 template <typename T>
 size_t HeterogeneousMapEx<KeyData>::erase(KeyEx<T, KeyData> & key)
 {
-	const AnyMap::iterator it = myAnyMap.find(key.getId());
+  const typename AnyMap::iterator it = myAnyMap.find(key.getId());
 
-	if(it == myAnyMap.end())
-		return 0;
+  if(it == myAnyMap.end())
+    return 0;
 
-	myAnyMap.erase(it);
+  myAnyMap.erase(it);
   key.getId()->removedFromMap(*this);
   return 1;
 }
