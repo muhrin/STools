@@ -179,7 +179,7 @@ double UnitCell::getNormVolume() const
 UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance) const
 {
   using namespace utility::cell_params_enum;
-  namespace comp = utility::StableComp;
+  namespace comp = utility::stable;
 
   if(comp::eq(myLatticeParams[ALPHA], myLatticeParams[BETA], tolerance) &&
     comp::eq(myLatticeParams[BETA], myLatticeParams[GAMMA], tolerance))
@@ -330,7 +330,7 @@ bool UnitCell::niggliReduce()
   bool ret = false;
 
   // comparison tolerance
-  const double tol = StableComp::STABLE_COMP_TOL * std::pow(a * b * c, 1.0/3.0);
+  const double tol = stable::STABLE_COMP_TOL * std::pow(a * b * c, 1.0/3.0);
 
   // Initialize change of basis matrices:
   //
@@ -383,11 +383,11 @@ bool UnitCell::niggliReduce()
   for (iter = 0; iter < iterations; ++iter) {
     // Step 1:
     if (
-        StableComp::gt(A, B, tol)
+        stable::gt(A, B, tol)
         || (
-            StableComp::eq(A, B, tol)
+            stable::eq(A, B, tol)
             &&
-            StableComp::gt(fabs(xi), fabs(eta), tol)
+            stable::gt(fabs(xi), fabs(eta), tol)
             )
         ) {
       cob *= C1;
@@ -398,11 +398,11 @@ bool UnitCell::niggliReduce()
 
     // Step 2:
     if (
-        StableComp::gt(B, C, tol)
+        stable::gt(B, C, tol)
         || (
-            StableComp::eq(B, C, tol)
+            stable::eq(B, C, tol)
             &&
-            StableComp::gt(fabs(eta), fabs(zeta), tol)
+            stable::gt(fabs(eta), fabs(zeta), tol)
             )
         ) {
       cob *= C2;
@@ -417,9 +417,9 @@ bool UnitCell::niggliReduce()
     if (xi*eta*zeta > 0) {
       // Update change of basis matrix:
       tmpMat
-        << StableComp::sign(xi) << 0 << 0 << arma::endr
-        << 0 << StableComp::sign(eta) << 0 << arma::endr
-        << 0 << 0 << StableComp::sign(zeta) << arma::endr;
+        << stable::sign(xi) << 0 << 0 << arma::endr
+        << 0 << stable::sign(eta) << 0 << arma::endr
+        << 0 << 0 << stable::sign(zeta) << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
@@ -485,15 +485,15 @@ bool UnitCell::niggliReduce()
     }
 
     // Step 5:
-    if (StableComp::gt(fabs(xi), B, tol)
-        || (StableComp::eq(xi, B, tol)
-            && StableComp::lt(2*eta, zeta, tol)
+    if (stable::gt(fabs(xi), B, tol)
+        || (stable::eq(xi, B, tol)
+            && stable::lt(2*eta, zeta, tol)
             )
-        || (StableComp::eq(xi, -B, tol)
-            && StableComp::lt(zeta, 0, tol)
+        || (stable::eq(xi, -B, tol)
+            && stable::lt(zeta, 0, tol)
             )
         ) {
-      double signXi = StableComp::sign(xi);
+      double signXi = stable::sign(xi);
       // Update change of basis matrix:
       tmpMat
         << 1 << 0 << 0 << arma::endr
@@ -510,15 +510,15 @@ bool UnitCell::niggliReduce()
     }
 
     // Step 6:
-    if (StableComp::gt(fabs(eta), A, tol)
-        || (StableComp::eq(eta, A, tol)
-            && StableComp::lt(2*xi, zeta, tol)
+    if (stable::gt(fabs(eta), A, tol)
+        || (stable::eq(eta, A, tol)
+            && stable::lt(2*xi, zeta, tol)
             )
-        || (StableComp::eq(eta, -A, tol)
-            && StableComp::lt(zeta, 0, tol)
+        || (stable::eq(eta, -A, tol)
+            && stable::lt(zeta, 0, tol)
             )
         ) {
-      double signEta = StableComp::sign(eta);
+      double signEta = stable::sign(eta);
       // Update change of basis matrix:
       tmpMat
         << 1 << 0 << -signEta << arma::endr
@@ -535,15 +535,15 @@ bool UnitCell::niggliReduce()
     }
 
     // Step 7:
-    if (StableComp::gt(fabs(zeta), A, tol)
-        || (StableComp::eq(zeta, A, tol)
-            && StableComp::lt(2*xi, eta, tol)
+    if (stable::gt(fabs(zeta), A, tol)
+        || (stable::eq(zeta, A, tol)
+            && stable::lt(2*xi, eta, tol)
             )
-        || (StableComp::eq(zeta, -A, tol)
-            && StableComp::lt(eta, 0, tol)
+        || (stable::eq(zeta, -A, tol)
+            && stable::lt(eta, 0, tol)
             )
         ) {
-      double signZeta = StableComp::sign(zeta);
+      double signZeta = stable::sign(zeta);
       // Update change of basis matrix:
       tmpMat
         << 1 << -signZeta << 0 << arma::endr
@@ -561,9 +561,9 @@ bool UnitCell::niggliReduce()
 
     // Step 8:
     double sumAllButC = A + B + xi + eta + zeta;
-    if (StableComp::lt(sumAllButC, 0, tol)
-        || (StableComp::eq(sumAllButC, 0, tol)
-            && StableComp::gt(2*(A+eta)+zeta, 0, tol)
+    if (stable::lt(sumAllButC, 0, tol)
+        || (stable::eq(sumAllButC, 0, tol)
+            && stable::gt(2*(A+eta)+zeta, 0, tol)
             )
         ) {
       // Update change of basis matrix:
@@ -607,7 +607,7 @@ bool UnitCell::niggliReduce()
   init(myOrthoMtx * cob);
   //setCurrentCellMatrix(cob.transpose() * currentCellMatrix());
 
-  SSLIB_ASSERT_MSG(StableComp::eq(origVolume, getVolume(), tol), "Cell volume changed during Niggli reduction.");
+  SSLIB_ASSERT_MSG(stable::eq(origVolume, getVolume(), tol), "Cell volume changed during Niggli reduction.");
 
   // fix coordinates
   // Apply COB matrix:

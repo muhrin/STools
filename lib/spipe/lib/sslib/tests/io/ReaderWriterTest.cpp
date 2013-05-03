@@ -26,7 +26,7 @@
 namespace fs = ::boost::filesystem;
 namespace ssio = ::sstbx::io;
 namespace ssc = ::sstbx::common;
-namespace compare = ::sstbx::utility::StableComp;
+namespace compare = ::sstbx::utility::stable;
 
 void checkSimilar(const ssc::Structure & str1, const ssc::Structure & str2);
 

@@ -18,7 +18,7 @@
 namespace sstbx {
 namespace build_cell {
 
-namespace comp = utility::StableComp;
+namespace comp = utility::stable;
 
 const SymmetryGroupBuilder::Generator
 SymmetryGroupBuilder::IDENTITY(::arma::eye< ::arma::mat>(4,4));

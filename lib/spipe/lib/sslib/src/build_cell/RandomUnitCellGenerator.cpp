@@ -18,7 +18,7 @@
 namespace sstbx {
 namespace build_cell {
 
-namespace comp = utility::StableComp;
+namespace comp = utility::stable;
 
 const double RandomUnitCellGenerator::DEFAULT_MIN_ANGLE = 35.0;
 const double RandomUnitCellGenerator::DEFAULT_MAX_ANGLE = 135.0;

@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   for(size_t i = 0; i < NUM_COMPARATORS; ++i)
   {
     double diff = comparators[i].compareStructures(*str.get(), *strSupercell.get());
-    BOOST_REQUIRE(ssu::StableComp::eq(diff, 1e-9));
+    BOOST_REQUIRE(ssu::stable::eq(diff, 1e-9));
   }
   
 }

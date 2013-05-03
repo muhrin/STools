@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
           const ::arma::vec & pos2 = structure.getAtom(l).getPosition();
           dr = distanceCalc.getDistMinImg(pos1, pos2);
 
-          BOOST_REQUIRE(::sstbx::utility::StableComp::geq(dr * dr, minsepSq));
+          BOOST_REQUIRE(::sstbx::utility::stable::geq(dr * dr, minsepSq));
         }
       }
     }

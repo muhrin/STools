@@ -286,9 +286,9 @@ bool OrthoCellDistanceCalculator::isValid() const
 
   // All angles equal 90
   return
-    utility::StableComp::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::StableComp::eq(params[BETA], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::StableComp::eq(params[GAMMA], 90.0, VALID_ANGLE_TOLERANCE);
+    utility::stable::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::stable::eq(params[BETA], 90.0, VALID_ANGLE_TOLERANCE) &&
+    utility::stable::eq(params[GAMMA], 90.0, VALID_ANGLE_TOLERANCE);
 }
 
 void OrthoCellDistanceCalculator::unitCellChanged()
