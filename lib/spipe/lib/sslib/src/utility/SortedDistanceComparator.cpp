@@ -28,7 +28,7 @@ namespace sstbx {
 namespace utility {
 
 const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
-const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 2e-4;
+const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 3e-4;
 const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.5;
 
 
@@ -60,7 +60,6 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
     const double longestDiag = sqrt(::arma::dot(diag, diag));
     cutoff = cutoffFactor * longestDiag;
-    volume = unitCell->getVolume();
   }
   else
   {

@@ -71,15 +71,15 @@ void testCastepOutput(ssc::Structure structure, const ::std::string & seed, cons
 
   // Enthalpy
   BOOST_REQUIRE(optimisationData.enthalpy);
-  BOOST_REQUIRE(ssu::StableComp::eq(*optimisationData.enthalpy, enthalpy));
+  BOOST_REQUIRE(ssu::stable::eq(*optimisationData.enthalpy, enthalpy));
 
   const double * strEnthalpy = structure.getProperty(ssc::structure_properties::general::ENTHALPY);
-  BOOST_REQUIRE(strEnthalpy && ssu::StableComp::eq(*strEnthalpy, enthalpy));
+  BOOST_REQUIRE(strEnthalpy && ssu::stable::eq(*strEnthalpy, enthalpy));
 
   // Pressure
   BOOST_REQUIRE(optimisationData.pressure);
-  BOOST_REQUIRE(ssu::StableComp::eq(*optimisationData.pressure, pressure, 1e-4));
+  BOOST_REQUIRE(ssu::stable::eq(*optimisationData.pressure, pressure, 1e-4));
 
   const double * strPressure = structure.getProperty(ssc::structure_properties::general::PRESSURE_INTERNAL);
-  BOOST_REQUIRE(strPressure && ssu::StableComp::eq(*strPressure, pressure));
+  BOOST_REQUIRE(strPressure && ssu::stable::eq(*strPressure, pressure));
 }

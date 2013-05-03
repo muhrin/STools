@@ -22,7 +22,7 @@
 namespace sstbx {
 namespace build_cell {
 
-namespace comp = utility::StableComp;
+namespace comp = utility::stable;
 
 struct EigenvectorsData
 {
@@ -333,7 +333,7 @@ size_t SymmetryGroup::findCompatibleEigenspaces(
   for(const ::std::set<double>::const_iterator end = eigenvalues.end();
     it != end; ++it)
   {
-    if(utility::StableComp::eq(*it, eigenvalue))
+    if(utility::stable::eq(*it, eigenvalue))
       break;
   }
   return it;

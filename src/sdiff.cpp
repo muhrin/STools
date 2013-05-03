@@ -125,7 +125,7 @@ private:
 
 typedef StructureGroups<size_t> LoadedGroups;
 
-const ::std::string LocatorGroups::GROUP_DELIMITER = ":";
+const ::std::string LocatorGroups::GROUP_DELIMITER = ";";
 
 // FORWARD DECLARES //////////
 void preprocessStructure(ssc::Structure & structure, const ssio::ResourceLocator & loadLocation, const InputOptions & options);

@@ -19,7 +19,7 @@ namespace math {
 
 using namespace arma;
 
-namespace comp = utility::StableComp;
+namespace comp = utility::stable;
 
 void normalise(::arma::vec & vec)
 {
