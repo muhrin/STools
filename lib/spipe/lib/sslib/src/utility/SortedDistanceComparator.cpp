@@ -29,8 +29,7 @@ namespace utility {
 
 const size_t SortedDistanceComparator::MAX_CELL_MULTIPLES   = 10;
 const double SortedDistanceComparator::DEFAULT_TOLERANCE    = 3e-4;
-const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.5;
-
+const double SortedDistanceComparator::CUTOFF_FACTOR        = 1.001;
 
 SortedDistanceComparisonData::SortedDistanceComparisonData(
   const common::Structure & structure,
@@ -44,7 +43,7 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
   if(usePrimitive)
     primitive->makePrimitive();
 
-  const common::UnitCell * const unitCell = primitive->getUnitCell();
+  common::UnitCell * const unitCell = primitive->getUnitCell();
   if(volumeAgnostic)
   {
     // If we are to be volume agnostic then set the volume to 1.0 per atom
@@ -57,9 +56,11 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
   numAtoms = primitive->getNumAtoms();
   if(unitCell)
   {
-    ::arma::vec3 diag = unitCell->getLongestDiagonal();
-    const double longestDiag = sqrt(::arma::dot(diag, diag));
-    cutoff = cutoffFactor * longestDiag;
+    //::arma::vec3 diag = unitCell->getLongestDiagonal();
+    //const double longestDiag = sqrt(::arma::dot(diag, diag));
+    //cutoff = cutoffFactor * longestDiag;
+    unitCell->niggliReduce();
+    cutoff = cutoffFactor * unitCell->getLongestCellVectorLength();
   }
   else
   {
