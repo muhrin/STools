@@ -112,6 +112,11 @@ ResourceLocator::makeRelative(const ::boost::filesystem::path & from)
   return *this;
 }
 
+bool equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2)
+{
+  return fs::equivalent(loc1.path(), loc2.path()) && loc1.id() == loc2.id();
+}
+
 ResourceLocator absolute(const ResourceLocator & loc)
 {
   return ResourceLocator(io::absolute(loc.path()), loc.id());

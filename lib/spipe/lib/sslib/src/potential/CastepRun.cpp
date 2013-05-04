@@ -244,13 +244,39 @@ CastepRunResult::Value CastepRun::deleteAllFiles()
 
 bool CastepRun::finishedSuccessfully()
 {
+  static const ::std::string CASTEP_PEAK_MEMORY("Peak memory");
+  static const ::std::string CASTEP_TOTAL_TIME("Total time");
+  static const ::std::string CASTEP_START_LINE("|      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |");
+
   CastepRunResult::Value result = openCastepFile();
   if(result != CastepRunResult::SUCCESS)
     return false;
 
-  const ::std::string lastLine = io::getLastNonEmptyLine(myCastepFileStream);
+  int foundPos = -1;
+  ::std::string line;
+  while(::std::getline(myCastepFileStream, line))
+  {
+    if(::boost::find_first(line, CASTEP_TOTAL_TIME) ||
+      ::boost::find_first(line, CASTEP_PEAK_MEMORY))
+    {
+      foundPos = myCastepFileStream.tellg();
+    }
+  }
 
-  return ::boost::ifind_first(lastLine, "Peak") || ::boost::ifind_first(lastLine, "Total");
+  // Did we find the line we were looking for?
+  if(foundPos != -1)
+  { // Move the stream back to that position
+    myCastepFileStream.clear(); // Clear the EoF flag
+    myCastepFileStream.seekg(foundPos, myCastepFileStream.beg);
+  }
+  else
+    return false;
+
+  // Now check that another castep run hasn't been initiated since
+  if(io::findNextLine(line, myCastepFileStream, CASTEP_START_LINE))
+    return false;
+
+  return true;
 }
 
 }

@@ -1,5 +1,5 @@
 /*
- * StableComparison.h
+ * stablearison.h
  *
  *
  *  Created on: Aug 17, 2011
@@ -15,7 +15,7 @@
 
 namespace sstbx {
 namespace utility {
-namespace StableComp {
+namespace stable {
 
 static const double STABLE_COMP_TOL = 1e-5;
 

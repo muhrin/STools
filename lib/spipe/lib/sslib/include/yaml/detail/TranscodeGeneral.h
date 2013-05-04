@@ -9,6 +9,7 @@
 #define TRANSCODE_GENERAL_DETAIL_H
 
 // INCLUDES //////////////////////////////////
+#include <iomanip>
 #include <sstream>
 #include <string>
 

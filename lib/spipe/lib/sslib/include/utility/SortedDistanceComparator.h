@@ -42,7 +42,12 @@ public:
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
   typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
 
-  SortedDistanceComparisonData(const common::Structure & structure, const bool volumeAgnostic, const bool usePrimitive);
+  SortedDistanceComparisonData(
+    const common::Structure & structure,
+    const bool volumeAgnostic,
+    const bool usePrimitive,
+    const double cutoffFactor
+  );
 
   ::std::vector<common::AtomSpeciesId::Value> species;
   SpeciesDistancesMap       speciesDistancesMap;
@@ -73,16 +78,19 @@ public:
     const bool usePrimitive = true
   );
 
+  void setCutoffFactor(const double cutoffFactor);
+  double getCutoffFactor() const;
+
   // From IStructureComparator ////////////////
 
 	virtual double compareStructures(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const;
-
+		const sstbx::common::Structure & str2
+  ) const;
 	virtual bool areSimilar(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const;
-
+		const sstbx::common::Structure & str2
+  ) const;
   virtual ::boost::shared_ptr<BufferedTyp> generateBuffered() const;
 
   // End from IStructureComparator /////////////
@@ -90,12 +98,12 @@ public:
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
 		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2) const;
-
+		const SortedDistanceComparisonData & dist2
+  ) const;
 	bool areSimilar(
 		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2) const;
-
+		const SortedDistanceComparisonData & dist2
+  ) const;
   ComparisonDataPtr generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 
@@ -111,19 +119,10 @@ private:
     const StridedIndexAdapter<size_t> & adapt2
   ) const;
 
-  //void calcProperties(
-  //  math::RunningStats & deltaStats,
-  //  math::RunningStats & productStats,
-  //  math::RunningStats & dist2Stats,
-  //  const DistancesVec & dist1,
-  //  const StridedIndexAdapter<size_t> & adapt1,
-  //  const DistancesVec & dist2,
-  //  const StridedIndexAdapter<size_t> & adapt2
-  //) const;
-
   const bool myScaleVolumes;
   const bool myUsePrimitive;
 	double myTolerance;
+  double myCutoffFactor;
 };
 
 }

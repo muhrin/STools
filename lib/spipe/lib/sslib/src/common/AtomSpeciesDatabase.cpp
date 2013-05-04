@@ -34,9 +34,11 @@ AtomSpeciesDatabase::AtomSpeciesDatabase()
   setAll(AtomSpeciesId::SI,   "Si", "Silicon",    1.11);
   setAll(AtomSpeciesId::P,    "P",  "Phosphorus", 1.07);
 	setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
+  setAll(AtomSpeciesId::TI,   "Ti", "Titanium",   1.47);
   setAll(AtomSpeciesId::FE,   "Fe", "Iron",       1.26);
   setAll(AtomSpeciesId::NI,   "Ni", "Nickel",     1.24);
   setAll(AtomSpeciesId::AS,   "As", "Arsenic",    1.19);
+  setAll(AtomSpeciesId::SR,   "Sr", "Strontium",  2.15);
   setAll(AtomSpeciesId::IN,   "In", "Indium",     1.67);
 }
 

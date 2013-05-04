@@ -149,28 +149,28 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
       univSum += univVecs[i];
 
 #ifdef DIST_TEST_MANUAL_DEBUG
-      if(!ssu::StableComp::eq(orthoDist[i], referenceDists[i], tolerance))
+      if(!ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance))
         ::std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << ::std::endl;
-      if(!ssu::StableComp::eq(univDist[i], referenceDists[i], tolerance))
+      if(!ssu::stable::eq(univDist[i], referenceDists[i], tolerance))
         ::std::cout << "Diff. in distance (universal - reference)" << univDist[i] - referenceDists[i] << ::std::endl;
 #endif
 
-      BOOST_REQUIRE(ssu::StableComp::eq(orthoDist[i], referenceDists[i], tolerance));
-      BOOST_REQUIRE(ssu::StableComp::eq(univDist[i], referenceDists[i], tolerance));
+      BOOST_REQUIRE(ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance));
+      BOOST_REQUIRE(ssu::stable::eq(univDist[i], referenceDists[i], tolerance));
     }
     // Check that the components of the sum of the vectors match
     for(size_t i = 0; i < 3; ++i)
     {
 
 #ifdef DIST_TEST_MANUAL_DEBUG
-      if(!ssu::StableComp::eq(orthoSum(i), referenceSum(i), 3e-9))
+      if(!ssu::stable::eq(orthoSum(i), referenceSum(i), 3e-9))
         ::std::cout << "Diff: " << orthoSum(i) - referenceSum(i) << ::std::endl;
-      if(!ssu::StableComp::eq(univSum(i), referenceSum(i), 3e-9))
+      if(!ssu::stable::eq(univSum(i), referenceSum(i), 3e-9))
         ::std::cout << "Diff: " << univSum(i) - referenceSum(i) << ::std::endl;
 #endif
 
-      BOOST_REQUIRE(ssu::StableComp::eq(orthoSum(i), referenceSum(i), 3e-9));
-      BOOST_REQUIRE(ssu::StableComp::eq(univSum(i), referenceSum(i), 3e-9));
+      BOOST_REQUIRE(ssu::stable::eq(orthoSum(i), referenceSum(i), 3e-9));
+      BOOST_REQUIRE(ssu::stable::eq(univSum(i), referenceSum(i), 3e-9));
     }
   }
 
@@ -266,22 +266,22 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
       univSum += univVecs[i];
 
 #ifdef DIST_TEST_MANUAL_DEBUG
-      if(!ssu::StableComp::eq(referenceDists[i], univDist[i], tolerance))
+      if(!ssu::stable::eq(referenceDists[i], univDist[i], tolerance))
         ::std::cout << "Diff in distance (refernce - universal): " << referenceDists[i] - univDist[i] << ::std::endl;
 #endif
 
-      BOOST_REQUIRE(ssu::StableComp::eq(referenceDists[i], univDist[i], tolerance));
+      BOOST_REQUIRE(ssu::stable::eq(referenceDists[i], univDist[i], tolerance));
     }
     // Check that the components of the sum of the vectors match
     for(size_t i = 0; i < 3; ++i)
     {
 
 #ifdef DIST_TEST_MANUAL_DEBUG
-      if(!ssu::StableComp::eq(referenceSum(i), univSum(i), 3e-9))
+      if(!ssu::stable::eq(referenceSum(i), univSum(i), 3e-9))
         ::std::cout << "Diff. in vector sum: (refernce - universal)" << referenceSum(i) - univSum(i) << ::std::endl;
 #endif
 
-      BOOST_REQUIRE(ssu::StableComp::eq(referenceSum(i), univSum(i), 3e-9));
+      BOOST_REQUIRE(ssu::stable::eq(referenceSum(i), univSum(i), 3e-9));
     }
   }
 }
@@ -344,12 +344,12 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   for(size_t i = 0; i < numElements; ++i)
   {
 #ifdef DIST_TEST_MANUAL_DEBUG
-    if(!ssu::StableComp::eq(orthoDist[i], referenceDists[i], tolerance))
+    if(!ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance))
       ::std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << ::std::endl;
-    if(!ssu::StableComp::eq(univDist[i], referenceDists[i], tolerance))
+    if(!ssu::stable::eq(univDist[i], referenceDists[i], tolerance))
       ::std::cout << "Diff. in distance (univ - reference): " << univDist[i] - referenceDists[i] << ::std::endl;
 #endif
-    BOOST_REQUIRE(ssu::StableComp::eq(orthoDist[i], referenceDists[i], tolerance));
-    BOOST_REQUIRE(ssu::StableComp::eq(univDist[i], referenceDists[i], tolerance));
+    BOOST_REQUIRE(ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance));
+    BOOST_REQUIRE(ssu::stable::eq(univDist[i], referenceDists[i], tolerance));
   }
 }

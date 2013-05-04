@@ -55,6 +55,8 @@ private:
   ::std::string myResourceId;
 };
 
+bool equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2);
+
 ResourceLocator absolute(const ResourceLocator & loc);
 
 ResourceLocator relative(const ResourceLocator & to);

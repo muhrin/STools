@@ -8,8 +8,11 @@
 // INCLUDES //////////////////////////////////
 #include "utility/CustomTokens.h"
 
+#include <sstream>
+
 // From SSTbx
 #include <analysis/SpaceGroup.h>
+#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
 #include <io/BoostFilesystem.h>
@@ -67,6 +70,41 @@ EnergyToken::doGetValue(const ::sstbx::common::Structure & structure ) const
   return relativeEnergy;
 }
 
+FormulaToken::FormulaToken(
+  const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
+  const ::std::string & name,
+  const ::std::string & symbol,
+  const ::std::string & defaultFormatString
+):
+TypedToken< ::std::string>(name, symbol, defaultFormatString),
+mySpeciesDb(speciesDb)
+{}
+
+::boost::optional< ::std::string>
+FormulaToken::doGetValue(const ::sstbx::common::Structure & structure) const
+{
+  typedef ::std::map< ::std::string, unsigned int> SpeciesCounts;
+  ::std::vector<ssc::AtomSpeciesId::Value> species;
+  structure.getAtomSpecies(species);
+  SpeciesCounts speciesCounts;
+  const ::std::string * speciesSymbol;
+  
+  BOOST_FOREACH(const ssc::AtomSpeciesId & speciesId, species)
+  {
+    speciesSymbol = mySpeciesDb.getSymbol(speciesId);
+    if(speciesSymbol && speciesCounts.find(*speciesSymbol) == speciesCounts.end())
+      speciesCounts[*speciesSymbol] = structure.getNumAtomsOfSpecies(speciesId);
+  }
+
+  ::std::stringstream ss;
+  BOOST_FOREACH(SpeciesCounts::const_reference entry, speciesCounts)
+  {
+    ss << entry.first;
+    if(entry.second > 1)
+      ss << entry.second;
+  }
+  return ss.str();
+}
 
 namespace functions {
 
