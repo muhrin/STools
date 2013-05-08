@@ -239,7 +239,8 @@ bool ColumnComparator<T, TableKey>::operator()(const TableKey & key1, const Tabl
   if(!v1 || !v2)
     return false; // Can't compare as we don't have one or more values
 
-  return myReverseComparison ? !(*v1 < *v2) : (*v1 < *v2);
+  // NOTE: Need to use < and > operators as we need a comparator that produces strict weak ordering
+  return myReverseComparison ? *v1 > *v2 : *v1 < *v2;
 }
 
 
