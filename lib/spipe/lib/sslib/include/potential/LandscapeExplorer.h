@@ -39,6 +39,7 @@ public:
   typedef UniquePtr<utility::IStructureComparator>::Type ComparatorPtr;
 
   LandscapeExplorer(ComparatorPtr comparator);
+  LandscapeExplorer(ComparatorPtr comparator, const bool testingMode);
 
   bool optimisationStarting(common::Structure & structure);
   bool stepFinished(
@@ -114,14 +115,14 @@ private:
     double myBasinSize;
   };
 
-  struct TempStopInfo
+  struct StopInfo
   {
     size_t currentStep;
-    size_t wouldHaveStoppedAt;
+    size_t stopStep;
     void reset()
     {
       currentStep = 0;
-      wouldHaveStoppedAt = 0;
+      stopStep = 0;
     }
   };
 
@@ -133,7 +134,8 @@ private:
   ::boost::shared_ptr<utility::IBufferedComparator> myBufferedComparator;
   OptimisationPathPtr myCurrentPath;
   ::std::vector<LandscapeMinimum> myLandscapeMinima;
-  TempStopInfo myStopInfo;
+  StopInfo myStopInfo;
+  const bool myTestingMode;
 };
 
 

@@ -19,7 +19,7 @@
 namespace sstbx {
 namespace potential {
 
-namespace stable = utility::StableComp;
+namespace stable = utility::stable;
 
 // CONSTANTS ////////////////////////////////////////////////
 const size_t LandscapeExplorer::MAX_PATH_LENGTH = 50;
@@ -148,7 +148,17 @@ LandscapeExplorer::LandscapeMinimum::minimum() const
 LandscapeExplorer::LandscapeExplorer(ComparatorPtr comparator):
 myComparator(comparator),
 myRecordingStartStep(0),
-myMinConvergenceSteps(::std::numeric_limits<int>::max())
+myMinConvergenceSteps(::std::numeric_limits<int>::max()),
+myTestingMode(false)
+{
+  myBufferedComparator = myComparator->generateBuffered();
+}
+
+LandscapeExplorer::LandscapeExplorer(ComparatorPtr comparator, const bool testingMode):
+myComparator(comparator),
+myRecordingStartStep(0),
+myMinConvergenceSteps(::std::numeric_limits<int>::max()),
+myTestingMode(testingMode)
 {
   myBufferedComparator = myComparator->generateBuffered();
 }
@@ -174,7 +184,7 @@ bool LandscapeExplorer::stepFinished(
     return true;
 
   // If we would have stopped then don't bother storing any more of the path
-  if(myStopInfo.wouldHaveStoppedAt != 0)
+  if(myStopInfo.stopStep != 0)
     return true;
 
   myCurrentPath->addToPath(step, structure, optimisationData, *myBufferedComparator);
@@ -191,10 +201,15 @@ bool LandscapeExplorer::stepFinished(
         DEFAULT_ENTHALPY_TOLERANCE
       ))
       {
-        //terminatePath();
-        //return false;
-        if(myStopInfo.wouldHaveStoppedAt == 0)
-          myStopInfo.wouldHaveStoppedAt = step;
+        if(myStopInfo.stopStep == 0)
+        {
+          myStopInfo.stopStep = step;
+          if(!myTestingMode)
+          {
+            terminatePath();
+            return false;
+          }
+        }
       }
     }
   }
@@ -208,7 +223,7 @@ void LandscapeExplorer::optimisationFinished(
   const OptimisationData & optimisationData
 )
 {
-  if(outcome.isSuccess() && myStopInfo.wouldHaveStoppedAt == 0)
+  if(outcome.isSuccess() && myStopInfo.stopStep == 0)
   {
     if(myCurrentPath->empty())
       myMinConvergenceSteps = myStopInfo.currentStep;
