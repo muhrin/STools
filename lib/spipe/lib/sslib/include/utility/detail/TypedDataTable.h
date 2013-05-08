@@ -168,6 +168,28 @@ void TypedDataTable<Key>::getAscending(SortedKeys & sortedKeys, const TypedColum
 }
 
 template <typename Key>
+template <typename T>
+void TypedDataTable<Key>::getDescending(SortedKeys & sortedKeys, const TypedColumn<T, Key> & column) const
+{
+  typedef detail::ColumnComparator<T, Key> Comparator;
+
+  // Empty the container and copy all the current keys
+  sortedKeys.clear();
+  sortedKeys.reserve(myTable.size());
+  typename SortedKeys::iterator insertPoint = sortedKeys.end();
+  BOOST_FOREACH(const typename Table::value_type & entry, myTable)
+  {
+    if(get(entry.first, column))
+      insertPoint = sortedKeys.insert(insertPoint, entry.first) + 1;
+    else
+      insertPoint = sortedKeys.insert(insertPoint, entry.first);
+  }
+
+  // Sort using the custom comparator
+  ::std::sort(sortedKeys.begin(), insertPoint, Comparator(*this, column, true));
+}
+
+template <typename Key>
 size_t TypedDataTable<Key>::size() const
 {
   return myTable.size();
@@ -179,13 +201,14 @@ template <typename T, typename TableKey>
 class ColumnComparator : public ::std::binary_function<const TableKey &, const TableKey &, bool>
 {
 public:
-
   ColumnComparator(const TypedDataTable<TableKey> & table, const TypedColumn<T, TableKey> & column);
+  ColumnComparator(const TypedDataTable<TableKey> & table, const TypedColumn<T, TableKey> & column, const bool reverseComparison);
 
   bool operator()(const TableKey & key1, const TableKey & key2);
 private:
   const TypedDataTable<TableKey> & myTable;
   const TypedColumn<T, TableKey> & myColumn;
+  const bool myReverseComparison;
 };
 
 template <typename T, typename TableKey>
@@ -193,7 +216,18 @@ ColumnComparator<T, TableKey>::ColumnComparator(
   const TypedDataTable<TableKey> & table,
   const TypedColumn<T, TableKey> & column):
 myTable(table),
-myColumn(column)
+myColumn(column),
+myReverseComparison(false)
+{}
+
+template <typename T, typename TableKey>
+ColumnComparator<T, TableKey>::ColumnComparator(
+  const TypedDataTable<TableKey> & table,
+  const TypedColumn<T, TableKey> & column,
+  const bool reverseComparison):
+myTable(table),
+myColumn(column),
+myReverseComparison(reverseComparison)
 {}
 
 template <typename T, typename TableKey>
@@ -205,7 +239,7 @@ bool ColumnComparator<T, TableKey>::operator()(const TableKey & key1, const Tabl
   if(!v1 || !v2)
     return false; // Can't compare as we don't have one or more values
 
-  return *v1 < *v2;
+  return myReverseComparison ? !(*v1 < *v2) : (*v1 < *v2);
 }
 
 

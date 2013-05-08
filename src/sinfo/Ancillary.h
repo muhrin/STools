@@ -61,6 +61,7 @@ struct InputOptions
   ::std::vector< ::std::string> inputFiles;
   ::std::string infoString;
   ::std::string sortToken;
+  bool reverseSortComparison;
   ::std::string emptyString;
   bool freeMode;
   bool noHeader;

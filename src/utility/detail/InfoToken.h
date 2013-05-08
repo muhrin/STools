@@ -54,9 +54,12 @@ bool TypedToken<T>::remove(StructureInfoTable & table)
 }
 
 template <typename T>
-void TypedToken<T>::sort(SortedKeys & keys, const StructureInfoTable & table) const
+void TypedToken<T>::sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComparison) const
 {
-  table.getAscending(keys, myColumn);
+  if(!reverseComparison)
+    table.getAscending(keys, myColumn);
+  else
+    table.getDescending(keys, myColumn);
 }
 
 template <typename T>

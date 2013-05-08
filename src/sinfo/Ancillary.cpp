@@ -81,6 +81,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("help", "Show help message")
       ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
       ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("rha"), "sort token")
+      ("reverse,R", po::value<bool>(&in.reverseSortComparison)->default_value(false)->zero_tokens(), "reverse sort comparison")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")

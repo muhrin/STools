@@ -128,7 +128,7 @@ int main(const int argc, char * argv[])
   {
     const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
     if(it != tokensMap.end())
-      it->second->sort(sortedKeys, infoTable);
+      it->second->sort(sortedKeys, infoTable, in.reverseSortComparison);
   }
 
   if(in.uniqueMode)

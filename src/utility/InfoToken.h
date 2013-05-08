@@ -42,7 +42,7 @@ public:
     StructureInfoTable & table,
     const ::sstbx::common::Structure & structure) = 0;
   virtual bool remove(StructureInfoTable & table) = 0;
-  virtual void sort(SortedKeys & keys, const StructureInfoTable & table) const = 0;
+  virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComparison = false) const = 0;
   virtual const Column & getColumn() const = 0;
 
   const ::std::string & getSymbol() const;
@@ -72,7 +72,7 @@ public:
     StructureInfoTable & table,
     const ::sstbx::common::Structure & structure);
   virtual bool remove(StructureInfoTable & table);
-  virtual void sort(SortedKeys & keys, const StructureInfoTable & table) const;
+  virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComaprison) const;
   virtual const Column & getColumn() const;
 
 protected:
