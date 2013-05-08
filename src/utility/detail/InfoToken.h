@@ -129,6 +129,14 @@ void RelativeValueToken<T>::setRelativeTo(const T relativeValue)
 }
 
 template <typename T>
+void RelativeValueToken<T>::setRelativeTo(const ::sstbx::common::Structure & structure)
+{
+  StructureValue relativeTo = StructurePropertyToken<T>::doGetValue(structure);
+  if(relativeTo)
+    myRelativeTo = myUsePerAtom ? *relativeTo / structure.getNumAtoms() : *relativeTo;
+}
+
+template <typename T>
 typename RelativeValueToken<T>::StructureValue
 RelativeValueToken<T>::doGetValue(const ::sstbx::common::Structure & structure) const
 {

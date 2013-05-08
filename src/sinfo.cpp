@@ -93,24 +93,8 @@ int main(const int argc, char * argv[])
     }
   }
 
-  // Set any values gathered from the collection of structures loaded
-  {
-    ::boost::optional<double> energy = gatherer.getLowestEnergy();
-    if(energy)
-      customisable.lowestEnergy->setRelativeTo(*energy);
-    energy = gatherer.getLowestEnergyPerAtom();
-    if(energy)
-      customisable.lowestEnergyPerAtom->setRelativeTo(*energy);
-  }
-  { 
-    ::boost::optional<double> enthalpy = gatherer.getLowestEnthalpy();
-    if(enthalpy)
-      customisable.lowestEnthalpy->setRelativeTo(*enthalpy);
-    enthalpy = gatherer.getLowestEnthalpyPerAtom();
-    if(enthalpy)
-      customisable.lowestEnthalpyPerAtom->setRelativeTo(*enthalpy);
-  }
-
+  if(structures.empty())
+    return 0;
 
   // Populate the information table
   BOOST_FOREACH(const ssc::Structure & structure, structures)
@@ -129,6 +113,21 @@ int main(const int argc, char * argv[])
     const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
     if(it != tokensMap.end())
       it->second->sort(sortedKeys, infoTable, in.reverseSortComparison);
+  }
+
+  // Set relative values
+  // TODO: Check which of these are used from the tokens map and only apply those
+  customisable.lowestEnergy->setRelativeTo(*sortedKeys.front());
+  customisable.lowestEnergyPerAtom->setRelativeTo(*sortedKeys.front());
+  customisable.lowestEnthalpy->setRelativeTo(*sortedKeys.front());
+  customisable.lowestEnthalpyPerAtom->setRelativeTo(*sortedKeys.front());
+  // Update the table with the new relative values
+  BOOST_FOREACH(const ssc::Structure & structure, structures)
+  {
+    customisable.lowestEnergy->insert(infoTable, structure);
+    customisable.lowestEnergyPerAtom->insert(infoTable, structure);
+    customisable.lowestEnthalpy->insert(infoTable, structure);
+    customisable.lowestEnthalpyPerAtom->insert(infoTable, structure);
   }
 
   if(in.uniqueMode)
