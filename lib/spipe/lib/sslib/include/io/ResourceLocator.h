@@ -70,6 +70,11 @@ inline bool operator<(const ResourceLocator & lhs, const ResourceLocator & rhs)
   return lhs.string() < rhs.string();
 }
 
+inline bool operator>(const ResourceLocator & lhs, const ResourceLocator & rhs)
+{
+  return lhs.string() > rhs.string();
+}
+
 }
 }
 

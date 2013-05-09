@@ -8,6 +8,9 @@
 // INCLUDES //////////////////////////////////
 #include "io/CellReaderWriter.h"
 
+#include <iomanip>
+#include <limits>
+
 #include <boost/algorithm/string/find.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -218,6 +221,9 @@ void CellReaderWriter::writeStructure(
 ) const
 {
   using namespace utility::cell_params_enum;
+
+  // Use full precision when printing numbers
+  os << ::std::setprecision(::std::numeric_limits<double>::digits10);
 
   const common::UnitCell * unitCell = structure.getUnitCell();
 

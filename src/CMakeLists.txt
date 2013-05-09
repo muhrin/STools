@@ -198,13 +198,11 @@ target_link_libraries(sgroup
 
 set(stools_Header_Files__sinfo
   sinfo/Ancillary.h
-  sinfo/DataGatherer.h
 )
 source_group("Header Files\\sinfo" FILES ${stools_Header_Files__sinfo})
 
 set(stools_Source_Files__sinfo
   sinfo/Ancillary.cpp
-  sinfo/DataGatherer.cpp
 )
 source_group("Source Files\\sinfo" FILES ${stools_Source_Files__sinfo})
 

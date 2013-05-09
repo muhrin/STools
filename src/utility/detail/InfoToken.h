@@ -54,9 +54,12 @@ bool TypedToken<T>::remove(StructureInfoTable & table)
 }
 
 template <typename T>
-void TypedToken<T>::sort(SortedKeys & keys, const StructureInfoTable & table) const
+void TypedToken<T>::sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComparison) const
 {
-  table.getAscending(keys, myColumn);
+  if(!reverseComparison)
+    table.getAscending(keys, myColumn);
+  else
+    table.getDescending(keys, myColumn);
 }
 
 template <typename T>
@@ -123,6 +126,14 @@ template <typename T>
 void RelativeValueToken<T>::setRelativeTo(const T relativeValue)
 {
   myRelativeTo = relativeValue;
+}
+
+template <typename T>
+void RelativeValueToken<T>::setRelativeTo(const ::sstbx::common::Structure & structure)
+{
+  StructureValue relativeTo = StructurePropertyToken<T>::doGetValue(structure);
+  if(relativeTo)
+    myRelativeTo = myUsePerAtom ? *relativeTo / structure.getNumAtoms() : *relativeTo;
 }
 
 template <typename T>

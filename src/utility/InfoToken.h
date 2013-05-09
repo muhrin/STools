@@ -38,11 +38,9 @@ public:
   virtual ~InfoToken() {}
 
   virtual ::std::string getName() const = 0;
-  virtual bool insert(
-    StructureInfoTable & table,
-    const ::sstbx::common::Structure & structure) = 0;
+  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure) = 0;
   virtual bool remove(StructureInfoTable & table) = 0;
-  virtual void sort(SortedKeys & keys, const StructureInfoTable & table) const = 0;
+  virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComparison = false) const = 0;
   virtual const Column & getColumn() const = 0;
 
   const ::std::string & getSymbol() const;
@@ -65,14 +63,12 @@ public:
   TypedToken(
     const ::std::string & name,
     const ::std::string & symbol,
-    const ::std::string & defaultFormatString = "");
-
+    const ::std::string & defaultFormatString = ""
+  );
   virtual ::std::string getName() const;
-  virtual bool insert(
-    StructureInfoTable & table,
-    const ::sstbx::common::Structure & structure);
+  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure);
   virtual bool remove(StructureInfoTable & table);
-  virtual void sort(SortedKeys & keys, const StructureInfoTable & table) const;
+  virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComaprison) const;
   virtual const Column & getColumn() const;
 
 protected:
@@ -96,8 +92,8 @@ public:
     const ::std::string & name,
     const ::std::string & symbol,
     PropertyKey & propertyKey,
-    const ::std::string & defaultFormatString);
-
+    const ::std::string & defaultFormatString
+  );
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;
 
@@ -129,6 +125,7 @@ public:
     const bool usePerAtom = false
   );
   void setRelativeTo(const T relativeValue);
+  void setRelativeTo(const ::sstbx::common::Structure & structure);
 
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;
