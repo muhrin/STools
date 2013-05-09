@@ -26,7 +26,6 @@
 
 // My includes //
 #include "sinfo/Ancillary.h"
-#include "sinfo/DataGatherer.h"
 
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;
@@ -66,7 +65,6 @@ int main(const int argc, char * argv[])
 
   SortedKeys sortedKeys;
 
-  DataGatherer gatherer;
   ::std::string inputFile;
   ssio::ResourceLocator structureLocator;
   size_t numKept, numLoaded = 0;
@@ -84,10 +82,7 @@ int main(const int argc, char * argv[])
 
       // Preprocess the structure
       for(size_t i = numLoaded; i < numLoaded + numKept; ++i)
-      {
         sortedKeys.push_back(&structures[i]);
-        gatherer.gather(structures[i]);
-      }
 
       numLoaded += numKept; // Up the counter
     }
