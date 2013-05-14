@@ -12,15 +12,14 @@
 // INCLUDES /////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <string>
 #include <vector>
 
-#include <boost/circular_buffer.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/optional.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "potential/IOptimisationController.h"
+#include "potential/Landscape.h"
 #include "utility/IBufferedComparator.h"
 
 // DEFINES //////////////////////////////////////////////
@@ -30,8 +29,11 @@ namespace sstbx {
 namespace utility {
 class IStructureComparator;
 }
-
 namespace potential {
+namespace detail {
+class ExplorerTester;
+}
+
 
 class LandscapeExplorer : public IOptimisationController
 {
@@ -59,66 +61,11 @@ private:
   static const double DEFAULT_ENTHALPY_TOLERANCE;
   static const double DEFAULT_BASIN_SIZE;
 
-  struct LocationData
-  {
-    int step;
-    utility::IBufferedComparator::ComparisonDataHandle comparisonData;
-    double enthalpy;
-  };
-
-  class OptimisationPath
-  {
-    typedef ::boost::circular_buffer<LocationData> PathBuffer;
-    PathBuffer myPath;
-  public:
-    typedef PathBuffer::const_reverse_iterator const_reverse_iterator;
-
-    OptimisationPath(const size_t maxLength);
-    void addToPath(
-      const int step,
-      const common::Structure & structure,
-      const OptimisationData & optimisationData,
-      utility::IBufferedComparator & comparator
-    );
-
-    bool empty() const;
-
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend() const;
-    const LocationData & back() const;
-  };
-  typedef UniquePtr<OptimisationPath>::Type OptimisationPathPtr;
-
-  class LandscapeMinimum
-  {
-  public:
-    LandscapeMinimum(OptimisationPathPtr path, const double basinSize);
-    void addApproachPath(OptimisationPathPtr path);
-    double calculateDistanceTo(
-      const LocationData & point,
-      utility::IBufferedComparator & comparator
-    ) const;
-    bool isWithinBasin(
-      const LocationData & point,
-      utility::IBufferedComparator & comparator
-    ) const;
-    bool liesOnApproachPath(
-      const LocationData & point,
-      utility::IBufferedComparator & comparator,
-      const double distanceTolerance,
-      const double enthalpyTolerance
-    ) const;
-    const LocationData & minimum() const;
-  private:
-    ::boost::ptr_vector<OptimisationPath> myApproachPaths;
-    size_t myLowestEnthalpyPath;
-    double myBasinSize;
-  };
-
   struct StopInfo
   {
     size_t currentStep;
     size_t stopStep;
+    Landscape::PathQueryReturn queryResult;
     void reset()
     {
       currentStep = 0;
@@ -126,20 +73,60 @@ private:
     }
   };
 
+  struct TerminateAction
+  {
+    enum Value
+    {
+      NONE,
+      ADD_APPROACH_PATH,
+      ADD_NEW_MINIMUM,
+      TERMINATE_PATH
+    };
+  };
+
   void terminatePath();
 
+  Landscape myLandscape;
   int myRecordingStartStep;
   int myMinConvergenceSteps;
-  ComparatorPtr myComparator;
-  ::boost::shared_ptr<utility::IBufferedComparator> myBufferedComparator;
-  OptimisationPathPtr myCurrentPath;
-  ::std::vector<LandscapeMinimum> myLandscapeMinima;
+  ::boost::optional<Landscape::PathsIterator> myCurrentPath;
   StopInfo myStopInfo;
-  const bool myTestingMode;
+  ::boost::scoped_ptr<detail::ExplorerTester> myTester;
+
+  friend class detail::ExplorerTester;
 };
 
+namespace detail {
 
-}
-}
+class ExplorerTester
+{
+public:
+
+  ExplorerTester(LandscapeExplorer & explorer);
+  ~ExplorerTester();
+
+  void optimisationFinished(
+    const OptimisationOutcome & outcome,
+    const common::Structure & structure,
+    const OptimisationData & optimisationData,
+    const LandscapeExplorer::TerminateAction::Value explorerAction
+  );
+private:
+
+  void logMsg(const ::std::string & message) const;
+  void writeStats() const;
+
+  const ::std::string myLogFilename;
+  int myTotalSteps;
+  int myNumFalsePositives;
+  math::RunningStats myOptimisationStats;
+  math::RunningStats myOverallSavingsStats;
+  math::RunningStats mySavingsStats;
+  LandscapeExplorer & myExplorer;
+};
+
+} // namespace detail
+} // namspace potential
+} // naespace sstbx
 
 #endif /* LANDSCAPE_EXPLORER_H */

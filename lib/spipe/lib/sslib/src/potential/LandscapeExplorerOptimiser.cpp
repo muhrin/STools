@@ -19,7 +19,7 @@ LandscapeExplorerOptimiser::LandscapeExplorerOptimiser(
   OptimiserPtr optimiser,
   ComparatorPtr comparator
 ):
-myExplorer(comparator),
+myExplorer(comparator, true),
 myOptimiser(optimiser)
 {
   myOptimiser->setController(myExplorer);

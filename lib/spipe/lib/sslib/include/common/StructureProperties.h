@@ -36,8 +36,8 @@ extern utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL;
 extern utility::NamedKey<double>             PRESSURE_INTERNAL;
 extern utility::NamedKey<double>             ENERGY_INTERNAL;
 extern utility::NamedKey<double>             ENTHALPY;
+extern utility::NamedKey<int>                INDEX;
 extern utility::Key< ::arma::mat33>          STRESS_TENSOR;
-
 
 } // namespace general
 

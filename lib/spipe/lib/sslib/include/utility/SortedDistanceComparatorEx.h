@@ -67,12 +67,13 @@ public:
 
 	virtual double compareStructures(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const;
-
+		const sstbx::common::Structure & str2
+  ) const;
 	virtual bool areSimilar(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const;
-
+		const sstbx::common::Structure & str2
+  ) const;
+  virtual double getTolerance() const;
   virtual ::boost::shared_ptr<BufferedTyp> generateBuffered() const;
 
   // End from IStructureComparator /////////////
@@ -80,12 +81,12 @@ public:
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
 	double compareStructures(
 		const SortedDistanceComparisonDataEx & dist1,
-		const SortedDistanceComparisonDataEx & dist2) const;
-
+		const SortedDistanceComparisonDataEx & dist2
+  ) const;
 	bool areSimilar(
 		const SortedDistanceComparisonDataEx & dist1,
-		const SortedDistanceComparisonDataEx & dist2) const;
-
+		const SortedDistanceComparisonDataEx & dist2
+  ) const;
   ComparisonDataPtr generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 	

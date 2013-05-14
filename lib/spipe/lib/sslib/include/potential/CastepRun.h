@@ -17,8 +17,11 @@
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
+
+#include "os/Process.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -43,6 +46,7 @@ struct CastepRunResult
     INPUT_NOT_FOUND,
     OUTPUT_NOT_FOUND,
     FAILED_TO_RUN,
+    FAILED_ALREADY_RUNNING,
     ERROR_READING_FILE,
     FAILED_TO_READ_STRUCTURE
   };
@@ -74,6 +78,9 @@ public:
   void closeAllStreams();
 
   CastepRunResult::Value runCastep(const ::std::string & castepExeString);
+  CastepRunResult::Value runCastepBlocking(const ::std::string & castepExeString);
+  bool waitTillFinished() const;
+  bool isFinishedRunning() const;
 
   CastepRunResult::Value updateStructureFromOutput(
     common::Structure & structure,
@@ -97,6 +104,8 @@ private:
 
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
+
+  ::boost::scoped_ptr<os::Process> myProcess;
 };
 
 }

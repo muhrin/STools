@@ -13,13 +13,10 @@
 namespace sstbx {
 namespace math {
 
-RunningStats::RunningStats():
-myNum(0),
-mySum(0.0),
-mySqSum(0.0),
-myMin(::std::numeric_limits<double>::max()),
-myMax(-::std::numeric_limits<double>::max())
-{}
+RunningStats::RunningStats()
+{
+  reset();
+}
 
 void RunningStats::insert(const double x)
 {
@@ -63,6 +60,22 @@ double RunningStats::sqSum() const
 double RunningStats::rms() const
 {
   return ::std::sqrt(mySqSum / static_cast<double>(myNum));
+}
+
+void RunningStats::reset()
+{
+  myNum = 0;
+  mySum = 0.0;
+  mySqSum = 0.0;
+  myMin = ::std::numeric_limits<double>::max();
+  myMax = -::std::numeric_limits<double>::max();
+}
+
+::std::ostream & operator <<(::std::ostream & os, const RunningStats & stats)
+{
+  os << "min: " << stats.min() << " max: " << stats.max() << " mean: " << stats.mean()
+    << " sum: " << stats.sum() << " sqSum: " << stats.sqSum() << " rms " << stats.rms();
+  return os;
 }
 
 }

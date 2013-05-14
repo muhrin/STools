@@ -12,8 +12,10 @@
 #include <sstream>
 
 #include <boost/algorithm/string/find.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/thread/thread.hpp>
 
 #include "io/Parsing.h"
 #include "io/BoostFilesystem.h"
@@ -25,6 +27,8 @@ namespace sstbx {
 namespace potential {
 
 namespace fs = ::boost::filesystem;
+
+namespace structure_properties = common::structure_properties;
 
 CastepGeomOptimiseSettings::CastepGeomOptimiseSettings()
 {
@@ -76,7 +80,8 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
     outSeedName,
     myCellReaderWriter,
     myCastepReader,
-    mySettings
+    mySettings,
+    myController
   );
 
   const OptimisationOutcome outcome =
@@ -84,6 +89,16 @@ OptimisationOutcome CastepGeomOptimiser::optimise(
   optimisationData.saveToStructure(structure);
   
   return outcome;
+}
+
+IOptimisationController * CastepGeomOptimiser::getController()
+{
+  return myController;
+}
+
+void CastepGeomOptimiser::setController(IOptimisationController & controller)
+{
+  myController = &controller;
 }
 
 void CastepGeomOptimiser::applySettings(const Settings & settings)
@@ -103,7 +118,8 @@ CastepGeomOptRun::CastepGeomOptRun(
   const ::std::string & newSeed,
   const io::CellReaderWriter & cellReaderWriter,
   const io::CastepReader & castepReader,
-  const CastepGeomOptimiseSettings & settings
+  const CastepGeomOptimiseSettings & settings,
+  IOptimisationController * controller
 ):
 myOrigCellFile(originalSeed + ".cell"),
 myOrigParamFile(originalSeed + ".param"),
@@ -111,7 +127,8 @@ myCastepRun(newSeed, cellReaderWriter, castepReader),
 myCellReaderWriter(cellReaderWriter),
 myCastepReader(castepReader),
 myOptimisationSettings(optimisationSettings),
-mySettings(settings)
+mySettings(settings),
+myController(controller)
 {}
 
 CastepGeomOptRun::~CastepGeomOptRun()
@@ -166,32 +183,13 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
 
 OptimisationOutcome CastepGeomOptRun::updateStructure(
   common::Structure & structure,
-  OptimisationData & data,
+  OptimisationData & optimisationData,
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
-  const CastepRunResult::Value updateResult = myCastepRun.updateStructureFromOutput(structure, speciesDb);
-  if(updateResult != CastepRunResult::SUCCESS)
-  {
-    if(updateResult == CastepRunResult::OUTPUT_NOT_FOUND)
-    {
-      ::std::stringstream ss;
-      ss << "Castep output: " << myCastepRun.getCastepFile().string() << " not found.";
-      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
-    }
-    else if(updateResult == CastepRunResult::FAILED_TO_READ_STRUCTURE)
-    {
-      ::std::stringstream ss;
-      ss << "Failed to read structure from " << myCastepRun.getCastepFile().string() << ".";
-      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
-    }
-    else
-      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR);
-  }
-  parseOptimisationInfo(structure, data, speciesDb);
-  data.saveToStructure(structure);
-
-  return OptimisationOutcome::success();
+  // HACK: REMOVE THIS FUNCTION EVENTUALLY
+  GeomRelaxer relaxer(myCastepRun, "", myCastepReader, NULL);
+  return relaxer.updateStructure(structure, optimisationData, speciesDb);
 }
 
 bool CastepGeomOptRun::copyParamFile() const
@@ -283,28 +281,48 @@ OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
 
 OptimisationOutcome CastepGeomOptRun::doRelaxation(
   common::Structure & structure,
-  OptimisationData & optimistaionData,
+  OptimisationData & optimisationData,
   const common::AtomSpeciesDatabase & speciesDb,
-  const ::std::string & castepExeAndArgs)
+  const ::std::string & castepExeAndArgs
+)
 {
   // 1. Write the .cell file from the current structure
   OptimisationOutcome outcome = makeCellCopy(structure, speciesDb);
   if(!outcome.isSuccess())
     return outcome;
 
-  // 2. Run Castep
-  if(myCastepRun.runCastep(castepExeAndArgs) != CastepRunResult::SUCCESS)
+  GeomRelaxer relaxer(myCastepRun, castepExeAndArgs, myCastepReader, myController);
+  return relaxer.doRelaxation(structure, optimisationData, speciesDb);
+}
+
+OptimisationOutcome CastepGeomOptRun::GeomRelaxer::updateStructure(
+  common::Structure & structure,
+  OptimisationData & data,
+  const common::AtomSpeciesDatabase & speciesDb
+)
+{
+  const CastepRunResult::Value updateResult = myCastepRun.updateStructureFromOutput(structure, speciesDb);
+  if(updateResult != CastepRunResult::SUCCESS)
   {
-    ::std::stringstream ss;
-    ss << "Failed to run castep with: " << castepExeAndArgs << " " << io::stemString(myCastepRun.getParamFile());
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    if(updateResult == CastepRunResult::OUTPUT_NOT_FOUND)
+    {
+      ::std::stringstream ss;
+      ss << "Castep output: " << myCastepRun.getCastepFile().string() << " not found.";
+      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    }
+    else if(updateResult == CastepRunResult::FAILED_TO_READ_STRUCTURE)
+    {
+      ::std::stringstream ss;
+      ss << "Failed to read structure from " << myCastepRun.getCastepFile().string() << ".";
+      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    }
+    else
+      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR);
   }
+  parseOptimisationInfo(structure, data, speciesDb);
+  data.saveToStructure(structure);
 
-  if(!myCastepRun.finishedSuccessfully())
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, "Castep did not finish correctly.");
-
-  // 3. Read in results from -out.cell and update structure
-  return updateStructure(structure, optimistaionData, speciesDb);
+  return OptimisationOutcome::success();
 }
 
 bool CastepGeomOptRun::optimisationSucceeded()
@@ -323,8 +341,69 @@ bool CastepGeomOptRun::optimisationSucceeded()
   return succeeded;
 }
 
+CastepGeomOptRun::GeomRelaxer::GeomRelaxer(
+  CastepRun & castepRun,
+  const ::std::string & castepExeAndArgs,
+  const io::CastepReader & castepReader,
+  IOptimisationController * controller
+):
+myCastepRun(castepRun),
+myCastepExeAndArgs(castepExeAndArgs),
+myCastepReader(castepReader),
+myController(controller)
+{}
 
-bool CastepGeomOptRun::parseOptimisationInfo(
+OptimisationOutcome CastepGeomOptRun::GeomRelaxer::doRelaxation(
+  common::Structure & structure,
+  OptimisationData & optimistaionData,
+  const common::AtomSpeciesDatabase & speciesDb
+)
+{
+  // Try running castep
+  if(myCastepRun.runCastep(myCastepExeAndArgs) != CastepRunResult::SUCCESS)
+  {
+    ::std::stringstream ss;
+    ss << "Failed to run castep with: " << myCastepExeAndArgs << " " << io::stemString(myCastepRun.getParamFile());
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+  }
+
+  return trackProgress(structure, optimistaionData, speciesDb);
+}
+
+OptimisationOutcome CastepGeomOptRun::GeomRelaxer::trackProgress(
+  common::Structure & structure,
+  OptimisationData & optimisationData,
+  const common::AtomSpeciesDatabase & speciesDb
+)
+{
+  if(myController)
+  {
+    myOptimisationStep = 0;
+    myStepTimingStats.reset();
+    while(!myCastepRun.isFinishedRunning())
+    {
+      waitForStepToFinish(structure, optimisationData, speciesDb);
+
+      if(!myController->stepFinished(myOptimisationStep, structure, optimisationData))
+      {
+        return OptimisationOutcome::failure(
+          OptimisationError::OPTIMISATION_INTERRUPTED,
+          "The optimisation controller stopped this optimisation"
+        );
+      }
+    }
+    }
+  else
+    myCastepRun.waitTillFinished();
+
+  if(!myCastepRun.finishedSuccessfully())
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, "Castep did not finish correctly.");
+
+  // Read in results and update structure
+  return updateStructure(structure, optimisationData, speciesDb);
+}
+
+bool CastepGeomOptRun::GeomRelaxer::parseOptimisationInfo(
   common::Structure & structure,
   OptimisationData & data,
   const common::AtomSpeciesDatabase & speciesDb
@@ -349,6 +428,35 @@ bool CastepGeomOptRun::parseOptimisationInfo(
   //  readSuccessfully = false;
 
   return readSuccessfully;
+}
+
+bool CastepGeomOptRun::GeomRelaxer::waitForStepToFinish(
+  common::Structure & structure,
+  OptimisationData & data,
+  const common::AtomSpeciesDatabase & speciesDb
+)
+{
+  using namespace ::boost::posix_time;
+  bool finished = false;
+
+  const ptime t0(microsec_clock::universal_time());
+
+  ::boost::posix_time::time_duration sleepInterval;
+  if(myStepTimingStats.num() != 0)
+    sleepInterval = seconds(static_cast<long>(myStepTimingStats.mean() / 5.0));
+  else
+    sleepInterval = seconds(5);
+
+  while(!finished)
+  {
+    updateStructure(structure, data, speciesDb);
+    const int * const index = structure.getProperty(structure_properties::general::INDEX);
+    if(index && *index > myOptimisationStep && data.enthalpy)
+      break;
+    ::boost::this_thread::sleep(sleepInterval);
+  }
+  myStepTimingStats.insert(static_cast<double>((microsec_clock::universal_time() - t0).seconds()));
+  return true;
 }
 
 } // namespace detail

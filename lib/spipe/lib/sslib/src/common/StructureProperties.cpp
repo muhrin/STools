@@ -18,6 +18,7 @@ utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL("spaceGroup");
 utility::NamedKey<double>             PRESSURE_INTERNAL("pressure");
 utility::NamedKey<double>             ENERGY_INTERNAL("internalEnergy");
 utility::NamedKey<double>             ENTHALPY("enthalpy");
+utility::NamedKey<int>                INDEX("index");
 utility::Key< ::arma::mat33>          STRESS_TENSOR;
 
 } // namespace general

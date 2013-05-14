@@ -35,12 +35,13 @@ public:
 
 	virtual double compareStructures(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const = 0;
-
+		const sstbx::common::Structure & str2
+  ) const = 0;
 	virtual bool areSimilar(
 		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2) const = 0;
-
+		const sstbx::common::Structure & str2
+  ) const = 0;
+  virtual double getTolerance() const = 0;
   virtual ::boost::shared_ptr<IBufferedComparator> generateBuffered() const = 0;
 };
 

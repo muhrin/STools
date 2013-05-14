@@ -132,6 +132,11 @@ bool DistanceMatrixComparator::areSimilar(
   return areSimilar(*comp1.get(), *comp2.get());
 }
 
+double DistanceMatrixComparator::getTolerance() const
+{
+  return myTolerance;
+}
+
 ::boost::shared_ptr<IBufferedComparator> DistanceMatrixComparator::generateBuffered() const
 {
   return ::boost::shared_ptr<IBufferedComparator>(new GenericBufferedComparator<DistanceMatrixComparator>(*this));

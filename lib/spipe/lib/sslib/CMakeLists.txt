@@ -50,7 +50,7 @@ set(CMAKE_PREFIX_PATH
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
-find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem thread)
 
 #
 # LAPACK #

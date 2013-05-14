@@ -16,9 +16,11 @@
 
 #include "common/AtomSpeciesDatabase.h" // TODO: Remove this dependency
 #include "potential/CastepRun.h"
-#include "potential/IGeomOptimiser.h"
+#include "potential/IControllableOptimiser.h"
+#include "potential/IOptimisationController.h"
 #include "io/CastepReader.h"
 #include "io/CellReaderWriter.h"
+#include "math/RunningStats.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -34,7 +36,7 @@ struct CastepGeomOptimiseSettings
   bool keepIntermediateFiles;
 };
 
-class CastepGeomOptimiser : public IGeomOptimiser
+class CastepGeomOptimiser : public IControllableOptimiser
 {
 public:
 
@@ -68,6 +70,10 @@ public:
     const OptimisationSettings & options
   ) const;
   // End from IGeomOptimiser //////////////
+  // From IControllableOptimiser //////////
+  virtual IOptimisationController * getController();
+  virtual void setController(IOptimisationController & controller);
+  // End from IControllableOptimiser //////
 
   void applySettings(const Settings & settings);
 
@@ -78,6 +84,7 @@ private:
   const io::CastepReader myCastepReader;
   const common::AtomSpeciesDatabase mySpeciesDb; // HACK: Keep a copy here for now
   const ::std::string myCastepExe;
+  IOptimisationController * myController;
 };
 
 namespace detail {
@@ -91,7 +98,8 @@ public:
     const ::std::string & newSeed,
     const io::CellReaderWriter & myCellReaderWriter,
     const io::CastepReader & myCastepReader,
-    const CastepGeomOptimiseSettings & settings
+    const CastepGeomOptimiseSettings & settings,
+    IOptimisationController * controller = NULL
   );
   ~CastepGeomOptRun();
 
@@ -109,6 +117,51 @@ public:
 
 private:
   static const int MAX_RELAX_ATTEMPTS;
+
+  class GeomRelaxer
+  {
+  public:
+    GeomRelaxer(
+      CastepRun & castepRun,
+      const ::std::string & castepExeAndArgs,
+      const io::CastepReader & castepReader,
+      IOptimisationController * controller
+    );
+
+    OptimisationOutcome doRelaxation(
+      common::Structure & structure,
+      OptimisationData & optimistaionData,
+      const common::AtomSpeciesDatabase & speciesDb
+    );
+    OptimisationOutcome updateStructure(
+      common::Structure & structure,
+      OptimisationData & data,
+      const common::AtomSpeciesDatabase & speciesDb
+    );
+  private:
+    OptimisationOutcome trackProgress(
+      common::Structure & structure,
+      OptimisationData & optimistaionData,
+      const common::AtomSpeciesDatabase & speciesDb
+    );
+    bool CastepGeomOptRun::GeomRelaxer::parseOptimisationInfo(
+      common::Structure & structure,
+      OptimisationData & data,
+      const common::AtomSpeciesDatabase & speciesDb
+    );
+    bool waitForStepToFinish(
+      common::Structure & structure,
+      OptimisationData & data,
+      const common::AtomSpeciesDatabase & speciesDb
+    );
+
+    CastepRun & myCastepRun;
+    const ::std::string myCastepExeAndArgs;
+    const io::CastepReader & myCastepReader;
+    IOptimisationController * myController;
+    int myOptimisationStep;
+    math::RunningStats myStepTimingStats;
+  };
 
   bool copyParamFile() const;
   OptimisationOutcome makeCellCopy(
@@ -128,11 +181,6 @@ private:
     const ::std::string & castepExeAndArgs
   );
   bool optimisationSucceeded();
-  bool parseOptimisationInfo(
-    common::Structure & structure,
-    OptimisationData & data,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
 
   CastepRun myCastepRun;
   const CastepGeomOptimiseSettings mySettings;
@@ -141,6 +189,7 @@ private:
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
   const OptimisationSettings & myOptimisationSettings;
+  IOptimisationController * myController;
 };
 
 } // namespace detail

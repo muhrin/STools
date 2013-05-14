@@ -179,6 +179,9 @@ void CastepRun::closeAllStreams()
 
 CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeString)
 {
+  if(myProcess.get() && myProcess->getStatus() == os::Process::Status::RUNNING)
+    return CastepRunResult::FAILED_ALREADY_RUNNING;
+
   // Make sure to close all streams so we don't end up in a conflict
   closeAllStreams();
 
@@ -189,10 +192,38 @@ CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeStrin
   os::parseParameters(castepExeAndArgs, castepExeString);
   castepExeAndArgs.push_back(io::stemString(myCellFile));
 
-  if(os::runBlocking(castepExeAndArgs) != 0)
+  myProcess.reset(new os::Process(castepExeString));
+  if(!myProcess->run())
     return CastepRunResult::FAILED_TO_RUN;
 
   return CastepRunResult::SUCCESS;
+}
+
+CastepRunResult::Value CastepRun::runCastepBlocking(const ::std::string & castepExeString)
+{
+  const CastepRunResult::Value result = runCastep(castepExeString);
+  if(result != CastepRunResult::SUCCESS)
+    return result;
+
+  myProcess->waitTillFinished();
+  return CastepRunResult::SUCCESS;
+}
+
+bool CastepRun::waitTillFinished() const
+{
+  if(!myProcess.get())
+    return false;
+
+  myProcess->waitTillFinished();
+  return true;
+}
+
+bool CastepRun::isFinishedRunning() const
+{
+  if(!myProcess.get())
+    return false;
+
+  return myProcess->getStatus() == os::Process::Status::FINISHED;
 }
 
 CastepRunResult::Value CastepRun::updateStructureFromOutput(

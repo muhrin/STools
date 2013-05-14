@@ -145,6 +145,7 @@ set(sslib_Header_Files__potential
   include/potential/IParameterisable.h
   include/potential/IPotential.h
   include/potential/IPotentialEvaluator.h
+  include/potential/Landscape.h
   include/potential/LandscapeExplorer.h
   include/potential/LandscapeExplorerOptimiser.h
   include/potential/OptimisationConstraint.h

@@ -91,6 +91,7 @@ public:
 		const sstbx::common::Structure & str1,
 		const sstbx::common::Structure & str2
   ) const;
+  virtual double getTolerance() const;
   virtual ::boost::shared_ptr<BufferedTyp> generateBuffered() const;
 
   // End from IStructureComparator /////////////

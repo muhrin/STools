@@ -10,6 +10,7 @@
 #define PROCESS_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
 
 #include <string>
 #include <vector>
@@ -39,6 +40,45 @@ namespace sstbx {
 namespace os {
 
 typedef NS_BOOST_IPC_DETAIL::OS_process_id_t ProcessId;
+
+class Process
+{
+public:
+  typedef ::std::vector< ::std::string> Arguments;
+  struct Status
+  {
+    enum Value
+    {
+      READY,
+      RUNNING,
+      FINISHED
+    };
+  };
+
+  Process(const ::std::string & exe);
+  Process(const ::boost::filesystem::path & exe);
+
+  bool run();
+  bool run(const Arguments & argv);
+  bool runBlocking();
+  bool runBlocking(const Arguments & argv);
+  bool waitTillFinished();
+
+  Status::Value getStatus() const;
+  int getExitStatus();
+
+private:
+
+  bool run(const Arguments & argv, const bool blocking);
+  void updateExitStatus();
+
+  ::boost::filesystem::path myExe;
+  Status::Value myStatus;
+  int myExitStatus;
+#ifdef SSLIB_OS_POSIX
+  pid_t myProcessPid;
+#endif
+};
 
 ProcessId getProcessId();
 

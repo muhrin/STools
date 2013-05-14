@@ -221,6 +221,11 @@ SortedDistanceComparator::generateComparisonData(const sstbx::common::Structure 
   return ComparisonDataPtr(new SortedDistanceComparisonData(str, myScaleVolumes, myUsePrimitive, myCutoffFactor));
 }
 
+double SortedDistanceComparator::getTolerance() const
+{
+  return myTolerance;
+}
+
 ::boost::shared_ptr<SortedDistanceComparator::BufferedTyp> SortedDistanceComparator::generateBuffered() const
 {
   return ::boost::shared_ptr<IBufferedComparator>(

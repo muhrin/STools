@@ -223,6 +223,34 @@ target_link_libraries(sinfo
   stools_common
 )
 
+#########################################
+## smanip: Structure manipulation tool ##
+#########################################
+set(stools_Header_Files__smanip
+)
+source_group("Header Files" FILES ${stools_Header_Files__smanip})
+
+set(stools_Source_Files__smanip
+  smanip.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__smanip})
+
+set(stools_Files__smanip
+  ${stools_Header_Files__smanip}
+  ${stools_Source_Files__smanip}
+)
+
+add_executable(smanip
+  ${stools_Files__smanip}
+)
+
+add_dependencies(smanip stools_common)
+
+# Libraries we need to link to
+target_link_libraries(smanip
+  stools_common
+)
+
 ############################################
 ## smeasure: Structural measurements tool ##
 ############################################

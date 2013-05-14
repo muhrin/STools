@@ -178,6 +178,11 @@ bool SortedDistanceComparatorEx::areSimilar(
 	return compareStructures(dist1, dist2) < myTolerance;
 }
 
+double SortedDistanceComparatorEx::getTolerance() const
+{
+  return myTolerance;
+}
+
 ::std::auto_ptr<SortedDistanceComparisonDataEx>
 SortedDistanceComparatorEx::generateComparisonData(const sstbx::common::Structure & str) const
 {

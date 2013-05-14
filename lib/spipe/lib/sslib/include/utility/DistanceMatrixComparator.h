@@ -69,7 +69,7 @@ public:
 	virtual bool areSimilar(
 		const common::Structure & str1,
 		const common::Structure & str2) const;
-
+  virtual double getTolerance() const;
   virtual ::boost::shared_ptr<IBufferedComparator> generateBuffered() const;
 
   // End from IStructureComparator /////////////

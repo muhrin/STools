@@ -11,6 +11,8 @@
 // INCLUDES ////////////
 #include "SSLib.h"
 
+#include <ostream>
+
 // DEFINITION ///////////////////////
 
 namespace sstbx {
@@ -37,6 +39,8 @@ public:
   double sqSum() const;
   double rms() const;
 
+  void reset();
+
 private:
   unsigned int myNum;
   double mySum;
@@ -51,6 +55,8 @@ void RunningStats::insert(InputIterator first, InputIterator last)
   for(InputIterator it = first; it != last; ++it)
     insert(*it);
 }
+
+::std::ostream & operator <<(::std::ostream & os, const RunningStats & stats);
 
 }
 }

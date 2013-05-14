@@ -181,6 +181,7 @@ size_t CastepReader::readStructures(
         lastStructure = structure.get();
 
         structure->setName(::boost::lexical_cast< ::std::string>(numRead));
+        structure->setProperty(properties::general::INDEX, static_cast<int>(numRead));
         outStructures.push_back(structure.release());
         ++numRead;
       }

@@ -8,13 +8,10 @@
 // INCLUDES //////////////////////////////////
 #include "os/Process.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/tokenizer.hpp>
-
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-#  define SSLIB_OS_POSIX
-#endif
 
 #ifdef SSLIB_OS_POSIX
 extern "C"
@@ -30,6 +27,124 @@ extern "C"
 namespace sstbx {
 namespace os {
 
+namespace fs = ::boost::filesystem;
+
+Process::Process(const ::std::string & exe):
+myExe(exe),
+myStatus(Status::READY),
+myExitStatus(-1)
+#ifdef SSLIB_OS_POSIX
+, myProcessPid(-1)
+#endif
+{}
+
+Process::Process(const fs::path & exe):
+myExe(exe),
+myStatus(Status::READY),
+myExitStatus(-1)
+#ifdef SSLIB_OS_POSIX
+, myProcessPid(-1)
+#endif
+{}
+
+bool Process::run()
+{
+  return false;
+}
+
+bool Process::run(const Arguments & argv)
+{
+  return false;
+}
+
+bool Process::runBlocking()
+{
+  myExitStatus = os::runBlocking(myExe, Arguments());
+  return myExitStatus == 0;
+}
+
+bool Process::runBlocking(const Arguments & argv)
+{
+  myExitStatus = os::runBlocking(myExe, argv);
+  return myExitStatus == 0;
+}
+
+bool Process::waitTillFinished()
+{
+  if(getStatus() == Status::READY)
+    return false;
+
+#ifdef SSLIB_OS_POSIX
+  int status;
+  waitpid(myProcessPid, &status, 0);
+  if(WIFEXITED(status))
+    myExitStatus = WEXITSTATUS(status);
+#endif
+  return true;
+}
+
+Process::Status::Value Process::getStatus() const
+{
+  return myStatus;
+}
+
+int Process::getExitStatus()
+{
+  updateExitStatus();
+  return myExitStatus;
+}
+
+bool Process::run(const Arguments & argv, const bool blocking)
+{
+  if(!fs::exists(myExe))
+    return false;
+
+  ::boost::scoped_array<const char *> argvArray(new const char *[argv.size()  + 2]);
+  argvArray[0] = myExe.string().c_str();
+  for(size_t i = 0; i < argv.size(); ++i)
+    argvArray[i + 1] = argv[i].c_str();
+
+  argvArray[argv.size() + 1] = 0;
+#ifdef SSLIB_OS_POSIX
+  myProcessPid = fork();
+  if(myProcessPid < 0)
+  { // Failed to fork
+    return false;
+  }
+  if(myProcessPid == 0)
+  { // We are the child
+    execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
+    return true; // This line doesn't get executed
+  }
+  else
+  { // We are the parent
+    myStatus = Status::RUNNING;
+    if(blocking)
+    {
+      waitpid(myProcessPid, 0, 0);
+      myStatus = Status::FINISHED;
+    }
+
+    updateExitStatus();
+    return true;
+  }
+#else
+  return false;
+#endif
+}
+
+void Process::updateExitStatus()
+{
+  if(getStatus() == Status::FINISHED)
+  {
+#ifdef SSLIB_OS_POSIX
+    int status;
+    waitpid(myProcessPid, &status, WNOHANG);
+    if(WIFEXITED(status))
+      myExitStatus = WEXITSTATUS(status);
+#endif
+  }
+}
 
 ProcessId getProcessId()
 {

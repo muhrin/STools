@@ -21,7 +21,9 @@
 
 #define SSLIB_DEBUG 1
 
-
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#  define SSLIB_OS_POSIX
+#endif
 
 
 #endif /* SSLIB_H */
