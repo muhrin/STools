@@ -182,6 +182,9 @@ CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeStrin
   if(myProcess.get() && myProcess->getStatus() == os::Process::Status::RUNNING)
     return CastepRunResult::FAILED_ALREADY_RUNNING;
 
+  if(castepExeString.empty())
+    return CastepRunResult::FAILED_TO_RUN;
+
   // Make sure to close all streams so we don't end up in a conflict
   closeAllStreams();
 
@@ -192,7 +195,8 @@ CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeStrin
   os::parseParameters(castepExeAndArgs, castepExeString);
   castepExeAndArgs.push_back(io::stemString(myCellFile));
 
-  myProcess.reset(new os::Process(castepExeString));
+  myProcess.reset(new os::Process(castepExeAndArgs[0]));
+  castepExeAndArgs.erase(castepExeAndArgs.begin());
   if(!myProcess->run())
     return CastepRunResult::FAILED_TO_RUN;
 
