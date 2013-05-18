@@ -139,11 +139,6 @@ private:
       const common::AtomSpeciesDatabase & speciesDb
     );
   private:
-    OptimisationOutcome trackProgress(
-      common::Structure & structure,
-      OptimisationData & optimistaionData,
-      const common::AtomSpeciesDatabase & speciesDb
-    );
     bool CastepGeomOptRun::GeomRelaxer::parseOptimisationInfo(
       common::Structure & structure,
       OptimisationData & data,

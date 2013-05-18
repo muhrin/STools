@@ -47,26 +47,42 @@ myExitStatus(-1)
 #endif
 {}
 
-bool Process::run()
+Process::RunResult::Value Process::run()
 {
-  return false;
+  if(!fs::exists(myExe))
+    return RunResult::ERROR_EXE_NOT_FOUND;
+
+  return RunResult::ERROR_RUN_FAILED;
 }
 
-bool Process::run(const Arguments & argv)
+Process::RunResult::Value Process::run(const Arguments & argv)
 {
-  return false;
+  if(!fs::exists(myExe))
+    return RunResult::ERROR_EXE_NOT_FOUND;
+
+  return RunResult::ERROR_RUN_FAILED;
 }
 
-bool Process::runBlocking()
+Process::RunResult::Value Process::runBlocking()
 {
-  myExitStatus = os::runBlocking(myExe, Arguments());
-  return myExitStatus == 0;
+  if(!fs::exists(myExe))
+    return RunResult::ERROR_EXE_NOT_FOUND;
+
+  if(os::runBlocking(myExe, Arguments()) == 0)
+    return RunResult::SUCCESS;
+  else
+    return RunResult::ERROR_RUN_FAILED;
 }
 
-bool Process::runBlocking(const Arguments & argv)
+Process::RunResult::Value Process::runBlocking(const Arguments & argv)
 {
-  myExitStatus = os::runBlocking(myExe, argv);
-  return myExitStatus == 0;
+  if(!fs::exists(myExe))
+    return RunResult::ERROR_EXE_NOT_FOUND;
+
+  if(os::runBlocking(myExe, argv) == 0)
+    return RunResult::SUCCESS;
+  else
+    return RunResult::ERROR_RUN_FAILED;
 }
 
 bool Process::waitTillFinished()
@@ -81,6 +97,18 @@ bool Process::waitTillFinished()
     myExitStatus = WEXITSTATUS(status);
 #endif
   return true;
+}
+
+bool Process::stop()
+{
+  if(getStatus() != Status::RUNNING)
+    return false;
+
+#ifdef SSLIB_OS_POSIX
+  kill(myProcessPid, SIGUSR1);
+#else
+  return false;
+#endif
 }
 
 Process::Status::Value Process::getStatus() const

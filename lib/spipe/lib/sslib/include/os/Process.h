@@ -55,14 +55,26 @@ public:
     };
   };
 
+  struct RunResult
+  {
+    enum Value
+    {
+      SUCCESS,
+      ERROR_EXE_NOT_FOUND,
+      ERROR_RUN_FAILED
+    };
+  };
+
   Process(const ::std::string & exe);
   Process(const ::boost::filesystem::path & exe);
 
-  bool run();
-  bool run(const Arguments & argv);
-  bool runBlocking();
-  bool runBlocking(const Arguments & argv);
+  RunResult::Value run();
+  RunResult::Value run(const Arguments & argv);
+  RunResult::Value runBlocking();
+  RunResult::Value runBlocking(const Arguments & argv);
   bool waitTillFinished();
+
+  bool stop();
 
   Status::Value getStatus() const;
   int getExitStatus();

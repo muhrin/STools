@@ -224,9 +224,39 @@ SsLibFactoryYaml::createGeometryOptimiser(
   opt = createControllableOptimiser(optimiserMap, potentialMap, globalOptions);
   if(opt.get())
     return opt;
-  
-  const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
-  if(castepOptions)
+
+  return opt;
+}
+
+SsLibFactoryYaml::ControllableOptimiserPtr
+SsLibFactoryYaml::createControllableOptimiser(
+  const OptionsMap & optimiserOptions,
+  const OptionsMap * potentialOptions,
+  const OptionsMap * globalOptions
+) const
+{
+  ControllableOptimiserPtr opt;
+
+  const OptionsMap * const tpsdOptions = optimiserOptions.find(TPSD);
+  const OptionsMap * const castepOptions = optimiserOptions.find(CASTEP);
+  if(tpsdOptions)
+  {
+    // Have to have a potential with this optimiser
+    if(!potentialOptions)
+      return opt; // TODO: Emit error
+    potential::IPotentialPtr potential = createPotential(*potentialOptions);
+    if(!potential.get())
+      return opt; // TODO: Emit error
+
+    const double * const tolerance = tpsdOptions->find(TOLERANCE);
+    
+    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
+    if(tolerance)
+      tpsd->setTolerance(*tolerance);
+
+    opt = tpsd;
+  }
+  else if(castepOptions)
   {
     const ::std::string * const castepExe = find(CASTEP_EXE, *castepOptions, globalOptions);
     const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
@@ -250,37 +280,6 @@ SsLibFactoryYaml::createGeometryOptimiser(
     {
       // TODO: Emit error
     }
-  }
-
-  return opt;
-}
-
-SsLibFactoryYaml::ControllableOptimiserPtr
-SsLibFactoryYaml::createControllableOptimiser(
-  const OptionsMap & optimiserOptions,
-  const OptionsMap * potentialOptions,
-  const OptionsMap * globalOptions
-) const
-{
-  ControllableOptimiserPtr opt;
-
-  const OptionsMap * const tpsdOptions = optimiserOptions.find(TPSD);
-  if(tpsdOptions)
-  {
-    // Have to have a potential with this optimiser
-    if(!potentialOptions)
-      return opt; // TODO: Emit error
-    potential::IPotentialPtr potential = createPotential(*potentialOptions);
-    if(!potential.get())
-      return opt; // TODO: Emit error
-
-    const double * const tolerance = tpsdOptions->find(TOLERANCE);
-    
-    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
-    if(tolerance)
-      tpsd->setTolerance(*tolerance);
-
-    opt = tpsd;
   }
 
   return opt;

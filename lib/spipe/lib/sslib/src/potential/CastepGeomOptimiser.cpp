@@ -20,6 +20,7 @@
 #include "io/Parsing.h"
 #include "io/BoostFilesystem.h"
 #include "os/Process.h"
+#include "potential/CastepJob.h"
 #include "potential/OptimisationSettings.h"
 
 // NAMESPACES ////////////////////////////////
@@ -355,46 +356,18 @@ myController(controller)
 
 OptimisationOutcome CastepGeomOptRun::GeomRelaxer::doRelaxation(
   common::Structure & structure,
-  OptimisationData & optimistaionData,
+  OptimisationData & optimisationData,
   const common::AtomSpeciesDatabase & speciesDb
 )
 {
   // Try running castep
-  if(myCastepRun.runCastep(myCastepExeAndArgs) != CastepRunResult::SUCCESS)
+  UniquePtr<CastepGeomJob>::Type castepJob = myCastepRun.createGeomJob(myCastepExeAndArgs);
+  if(castepJob->run() != os::Process::RunResult::SUCCESS)
   {
     ::std::stringstream ss;
     ss << "Failed to run castep with: " << myCastepExeAndArgs << " " << io::stemString(myCastepRun.getParamFile());
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
   }
-
-  return trackProgress(structure, optimistaionData, speciesDb);
-}
-
-OptimisationOutcome CastepGeomOptRun::GeomRelaxer::trackProgress(
-  common::Structure & structure,
-  OptimisationData & optimisationData,
-  const common::AtomSpeciesDatabase & speciesDb
-)
-{
-  if(myController)
-  {
-    myOptimisationStep = 0;
-    myStepTimingStats.reset();
-    while(!myCastepRun.isFinishedRunning())
-    {
-      waitForStepToFinish(structure, optimisationData, speciesDb);
-
-      if(!myController->stepFinished(myOptimisationStep, structure, optimisationData))
-      {
-        return OptimisationOutcome::failure(
-          OptimisationError::OPTIMISATION_INTERRUPTED,
-          "The optimisation controller stopped this optimisation"
-        );
-      }
-    }
-    }
-  else
-    myCastepRun.waitTillFinished();
 
   if(!myCastepRun.finishedSuccessfully())
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, "Castep did not finish correctly.");

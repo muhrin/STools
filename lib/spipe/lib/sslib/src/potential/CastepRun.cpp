@@ -21,6 +21,7 @@
 #include "io/CellReaderWriter.h"
 #include "io/Parsing.h"
 #include "os/Process.h"
+#include "potential/CastepJob.h"
 
 // NAMESPACES ////////////////////////////////
 namespace sstbx {
@@ -33,6 +34,7 @@ CastepRun::CastepRun(
   const io::CellReaderWriter & cellReaderWriter,
   const io::CastepReader & castepReader
 ):
+mySeed(seed),
 myCellFile(seed + ".cell"),
 myParamFile(seed + ".param"),
 myCastepFile(seed + ".castep"),
@@ -43,6 +45,11 @@ myCastepReader(castepReader)
 CastepRun::~CastepRun()
 {
   closeAllStreams();
+}
+
+const ::std::string & CastepRun::getSeed() const
+{
+  return mySeed;
 }
 
 const fs::path & CastepRun::getParamFile() const
@@ -211,6 +218,16 @@ CastepRunResult::Value CastepRun::runCastepBlocking(const ::std::string & castep
 
   myProcess->waitTillFinished();
   return CastepRunResult::SUCCESS;
+}
+
+UniquePtr<CastepJob>::Type CastepRun::createJob(const ::std::string & runCommand) const
+{
+  return UniquePtr<CastepJob>::Type(new CastepJob(runCommand, *this));
+}
+
+UniquePtr<CastepGeomJob>::Type CastepRun::createGeomJob(const ::std::string & runCommand) const
+{
+  return UniquePtr<CastepGeomJob>::Type(new CastepGeomJob(runCommand, *this));
 }
 
 bool CastepRun::waitTillFinished() const

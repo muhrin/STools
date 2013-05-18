@@ -11,6 +11,7 @@
 #define CASTEP_RUN_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "SSLib.h"
 
 #include <map>
 #include <string>
@@ -32,11 +33,12 @@ class AtomSpeciesDatabase;
 class Structure;
 }
 namespace io {
-class CellReaderWriter;
 class CastepReader;
+class CellReaderWriter;
 }
 namespace potential {
-
+class CastepJob;
+class CastepGeomJob;
 
 struct CastepRunResult
 {
@@ -64,6 +66,8 @@ public:
   );
   ~CastepRun();
 
+  const ::std::string & getSeed() const;
+
   const ::boost::filesystem::path & getParamFile() const;
   const ::boost::filesystem::path & getCellFile() const;
   const ::boost::filesystem::path & getCastepFile() const;
@@ -79,6 +83,11 @@ public:
 
   CastepRunResult::Value runCastep(const ::std::string & castepExeString);
   CastepRunResult::Value runCastepBlocking(const ::std::string & castepExeString);
+
+  UniquePtr<CastepJob>::Type createJob(const ::std::string & runCommand) const;
+  UniquePtr<CastepGeomJob>::Type createGeomJob(const ::std::string & runCommand) const;
+
+
   bool waitTillFinished() const;
   bool isFinishedRunning() const;
 
@@ -93,6 +102,7 @@ public:
   bool finishedSuccessfully();
 
 private:
+  const ::std::string mySeed;
   const ::boost::filesystem::path myCellFile;
   const ::boost::filesystem::path myParamFile;
   const ::boost::filesystem::path myCastepFile;

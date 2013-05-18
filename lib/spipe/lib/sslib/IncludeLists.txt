@@ -135,6 +135,8 @@ source_group("Header Files\\os" FILES ${sslib_Header_Files__os})
 
 set(sslib_Header_Files__potential
   include/potential/CastepGeomOptimiser.h
+  include/potential/CastepGeomJob.h
+  include/potential/CastepJob.h
   include/potential/CastepRun.h
   include/potential/CombiningRules.h
   include/potential/FixedLatticeShapeConstraint.h
