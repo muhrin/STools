@@ -43,6 +43,7 @@ public:
   static const Enumerator P;
   static const Enumerator CL;
   static const Enumerator TI;
+  static const Enumerator MN;
   static const Enumerator FE;
   static const Enumerator NI;
   static const Enumerator AS;
