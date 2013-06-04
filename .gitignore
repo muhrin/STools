@@ -1,5 +1,6 @@
 # Ignore the build directory completely
 build/
+build_*/
 
 # Visual Studio files solution/project and build files
 *.sln
@@ -14,3 +15,6 @@ CMakeLocal.txt
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
+
+# KDevelop project files
+*.kdev4
