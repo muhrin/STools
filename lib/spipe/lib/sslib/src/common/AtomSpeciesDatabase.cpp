@@ -28,12 +28,12 @@ AtomSpeciesDatabase::AtomSpeciesDatabase()
   setAll(AtomSpeciesId::O,    "O",  "Oxygen",     0.6);
   setAll(AtomSpeciesId::F,    "F",  "Flourine",   0.5);
   setAll(AtomSpeciesId::NE,   "Ne", "Neon",       0.58);
-	setAll(AtomSpeciesId::NA,   "Na", "Sodium",     1.8);
+  setAll(AtomSpeciesId::NA,   "Na", "Sodium",     1.8);
   setAll(AtomSpeciesId::MG,   "Mg", "Magnesium",  1.6);
   setAll(AtomSpeciesId::AL,   "Al", "Aluminium",  1.43);
   setAll(AtomSpeciesId::SI,   "Si", "Silicon",    1.11);
   setAll(AtomSpeciesId::P,    "P",  "Phosphorus", 1.07);
-	setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
+  setAll(AtomSpeciesId::CL,   "Cl", "Chlorine",   1.0);
   setAll(AtomSpeciesId::TI,   "Ti", "Titanium",   1.47);
   setAll(AtomSpeciesId::FE,   "Fe", "Iron",       1.26);
   setAll(AtomSpeciesId::NI,   "Ni", "Nickel",     1.24);

@@ -141,7 +141,7 @@ bool Process::run(const Arguments & argv, const bool blocking)
   }
   if(myProcessPid == 0)
   { // We are the child
-    execvp(exe.c_str(), const_cast<char **>(argvArray.get()));
+    execvp(myExe.c_str(), const_cast<char **>(argvArray.get()));
     return true; // This line doesn't get executed
   }
   else

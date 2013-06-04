@@ -139,7 +139,7 @@ private:
       const common::AtomSpeciesDatabase & speciesDb
     );
   private:
-    bool CastepGeomOptRun::GeomRelaxer::parseOptimisationInfo(
+    bool parseOptimisationInfo(
       common::Structure & structure,
       OptimisationData & data,
       const common::AtomSpeciesDatabase & speciesDb

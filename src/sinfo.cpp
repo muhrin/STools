@@ -80,7 +80,7 @@ int main(const int argc, char * argv[])
       
       numKept = numLoadedFromFile;
 
-      // Preprocess the structure
+      // Pre-process the structure
       for(size_t i = numLoaded; i < numLoaded + numKept; ++i)
         sortedKeys.push_back(&structures[i]);
 

@@ -174,12 +174,6 @@ void ExplorerTester::optimisationFinished(
   // Record how many steps it took
   myOptimisationStats.insert(myExplorer.myStopInfo.currentStep);
 
-  // Record how much we saved (if anything)
-  if(myExplorer.myStopInfo.stopStep != 0)
-    myOverallSavingsStats.insert(myExplorer.myStopInfo.currentStep - myExplorer.myStopInfo.stopStep);
-  else
-    myOverallSavingsStats.insert(0);
-
   if(outcome.isSuccess())
   {
     if(myExplorer.myStopInfo.stopStep != 0)
@@ -191,8 +185,14 @@ void ExplorerTester::optimisationFinished(
         ++myNumFalsePositives;
       }
       else
+      {
+	// Record how much we saved
         mySavingsStats.insert(myExplorer.myStopInfo.currentStep - myExplorer.myStopInfo.stopStep);
+	myOverallSavingsStats.insert(myExplorer.myStopInfo.currentStep - myExplorer.myStopInfo.stopStep);
+      }
     }
+    else
+      myOverallSavingsStats.insert(0);
   }
   else
   {
