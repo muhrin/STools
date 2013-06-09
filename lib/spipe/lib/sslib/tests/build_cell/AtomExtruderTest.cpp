@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     for(size_t j = 0; j < numAtoms; ++j)
     {
-      ssc::Atom & atom = structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1);
+      ssc::Atom & atom = structure.newAtom("C1");
       atom.setPosition(cell->randomPoint());
     }
 

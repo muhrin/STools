@@ -45,15 +45,12 @@ namespace properties = ssc::structure_properties;
 
 const unsigned int XyzReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
-void XyzReaderWriter::writeStructure(
-	::sstbx::common::Structure & str,
-	const ResourceLocator & locator,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
+void XyzReaderWriter::writeStructure(::sstbx::common::Structure & str, const ResourceLocator & locator) const
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
-	using ::sstbx::common::AtomSpeciesId;
-	using ::std::endl;
+  using ::sstbx::common::AtomSpeciesId;
+  using ::std::endl;
 
   const double * dValue;
   const ::std::string * sValue;
@@ -126,25 +123,23 @@ void XyzReaderWriter::writeStructure(
 	strFile << endl;
 	// End title //////////////////
 
-	////////////////////////////
-	// Start atoms
+  ////////////////////////////
+  // Start atoms
 
-	// Now write out the atom positions along with the spcies
-  const ::std::string * species;
-	for(size_t i = 0; i < str.getNumAtoms(); ++i)
-	{
+  // Now write out the atom positions along with the spcies
+  for(size_t i = 0; i < str.getNumAtoms(); ++i)
+  {
     const common::Atom & atom = str.getAtom(i);
     const ::arma::vec3 & pos = atom.getPosition();
-    species = speciesDb.getSymbol(atom.getSpecies());
 
-    if(species)
-      strFile << *species << " ";
+    if(!atom.getSpecies().empty())
+      strFile << atom.getSpecies() << " ";
     else
       strFile << "DU ";
     strFile << ::std::setprecision(12) << pos(X) << " " << pos(Y) << " " << pos(Z) << ::std::endl;
-	}
+  }
 
-	// End atoms ///////////
+  // End atoms ///////////
 
   str.setProperty(
     properties::io::LAST_ABS_FILE_PATH,

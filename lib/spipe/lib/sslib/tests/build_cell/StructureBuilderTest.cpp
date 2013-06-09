@@ -32,9 +32,9 @@ BOOST_AUTO_TEST_CASE(StructureBuilderClusterTest)
   const unsigned int TIMES_TO_GENERATE = 10;
   
   ::std::vector<SpeciesCount> toGenerate;
-  toGenerate.push_back(SpeciesCount(ssc::AtomSpeciesId::NA, 2));
-  toGenerate.push_back(SpeciesCount(ssc::AtomSpeciesId::CL, 5));
-  toGenerate.push_back(SpeciesCount(ssc::AtomSpeciesId::H, 10));
+  toGenerate.push_back(SpeciesCount("Na", 2));
+  toGenerate.push_back(SpeciesCount("Cl", 5));
+  toGenerate.push_back(SpeciesCount("H", 10));
 
   unsigned int totalAtoms = 0;
   BOOST_FOREACH(const SpeciesCount & speciesCount, toGenerate)

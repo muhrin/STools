@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 {
   //// Settings ////////////////
   const char simpleStructure[] = "RandomStructure.sslib";
-  const ::std::string randStrNode("randomStructure");
+  const ::std::string randStrNode = "randomStructure";
 
   ssc::AtomSpeciesDatabase speciesDb;
 

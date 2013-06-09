@@ -49,32 +49,29 @@ const unsigned int ResReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 typedef boost::tokenizer<boost::char_separator<char> > Tok;
 const boost::char_separator<char> sep(" \t");
 
-void ResReaderWriter::writeStructure(
-	::sstbx::common::Structure & str,
-	const ResourceLocator & locator,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
+void ResReaderWriter::writeStructure(::sstbx::common::Structure & str, const ResourceLocator & locator) const
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
-	using ::sstbx::common::AtomSpeciesId;
-	using ::std::endl;
+  using ::sstbx::common::AtomSpeciesId;
+  using ::std::endl;
 
   const double * dValue;
   const ::std::string * sValue;
   const unsigned int * uiValue;
 
   const fs::path filepath(locator.path());
-	if(!filepath.has_filename())
-		throw "Cannot write out structure without filepath";
+  if(!filepath.has_filename())
+    throw "Cannot write out structure without filepath";
 
   const fs::path dir = filepath.parent_path();
-	if(!dir.empty() && !exists(dir))
-	{
-		create_directories(dir);
-	}
+  if(!dir.empty() && !exists(dir))
+  {
+    create_directories(dir);
+  }
 
   fs::ofstream strFile;
-	strFile.open(filepath);
+  strFile.open(filepath);
 
   const common::UnitCell * const cell = str.getUnitCell();
 
@@ -157,7 +154,7 @@ void ResReaderWriter::writeStructure(
 	using std::set;
 
   ::arma::mat positions;
-	str.getAtomPositions(positions);
+  str.getAtomPositions(positions);
   if(cell)
   {
     cell->cartsToFracInplace(positions);
@@ -165,7 +162,7 @@ void ResReaderWriter::writeStructure(
   }
 
   vector<AtomSpeciesId::Value> species;
-	str.getAtomSpecies(species);
+  str.getAtomSpecies(species);
 
   set<AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
 
@@ -175,59 +172,54 @@ void ResReaderWriter::writeStructure(
 	strFile << "SFAC";
   size_t idx = 1;
   BOOST_FOREACH(const AtomSpeciesId::Value id, uniqueSpecies)
-	{
-		const ::std::string * const name = speciesDb.getSymbol(id);
-		speciesSymbols[id] = name ? *name : "?";
+  {
+    speciesSymbols[id] = id.empty() ? "?" : id;
     speciesOrder[id]   = idx;
     ++idx;
-		strFile << " " << speciesSymbols[id];
-	}
+    strFile << " " << speciesSymbols[id];
+  }
 
-	// Now write out the atom positions along with the spcies
-	for(size_t i = 0; i < positions.n_cols; ++i)
-	{
+  // Now write out the atom positions along with the spcies
+  for(size_t i = 0; i < positions.n_cols; ++i)
+  {
     const AtomSpeciesId::Value id = species[i];
 
-		strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
-			::std::setprecision(12) << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << " 1.0";
-	}
+    strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
+	::std::setprecision(12) << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << " 1.0";
+  }
 
-	// End atoms ///////////
+  // End atoms ///////////
 
-	strFile << endl << "END" << endl;
+  strFile << endl << "END" << endl;
 
-  str.setProperty(
-    properties::io::LAST_ABS_FILE_PATH,
-    io::ResourceLocator(io::absolute(filepath)));
+  str.setProperty(properties::io::LAST_ABS_FILE_PATH, io::ResourceLocator(io::absolute(filepath)));
 
  if(strFile.is_open())
     strFile.close();
 }
 
-ssc::types::StructurePtr ResReaderWriter::readStructure(
-  const ResourceLocator & resourceLocator,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
+ssc::types::StructurePtr ResReaderWriter::readStructure(const ResourceLocator & resourceLocator) const
 {
   namespace utility = ::sstbx::utility;
   using sstbx::common::Atom;
-	using sstbx::common::AtomSpeciesId;
-	using std::endl;
+  using sstbx::common::AtomSpeciesId;
+  using std::endl;
   using std::getline;
   using boost::bad_lexical_cast;
   using boost::lexical_cast;
-	using boost::filesystem::ifstream;
+  using boost::filesystem::ifstream;
 
   const fs::path filepath = resourceLocator.path();
-	if(!filepath.has_filename())
-		throw "Cannot read structure without filepath";
+  if(!filepath.has_filename())
+    throw "Cannot read structure without filepath";
 
   common::types::StructurePtr str;
 
   if(!exists(filepath))
     return str;
 
-	ifstream strFile;
-	strFile.open(filepath);
+  ifstream strFile;
+  strFile.open(filepath);
 
   if(strFile.is_open())
   {
@@ -245,7 +237,7 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
       else if(line.find("CELL") != ::std::string::npos)
         parseCell(*str, line);
       else if(line.find("SFAC") != ::std::string::npos)
-        parseAtoms(*str, strFile, line, speciesDb);
+        parseAtoms(*str, strFile, line);
     } // end for
   
     strFile.close();
@@ -255,12 +247,9 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(
 }
 
 
-size_t ResReaderWriter::readStructures(
-  StructuresContainer & outStructures,
-	const ResourceLocator & resourceLocator,
-	const sstbx::common::AtomSpeciesDatabase & speciesDb) const
+size_t ResReaderWriter::readStructures(StructuresContainer & outStructures, const ResourceLocator & resourceLocator) const
 {
-  ssc::types::StructurePtr structure = readStructure(resourceLocator, speciesDb);
+  ssc::types::StructurePtr structure = readStructure(resourceLocator);
 
   if(structure.get())
   {
@@ -273,9 +262,9 @@ size_t ResReaderWriter::readStructures(
 
 std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
 {
-	std::vector<std::string> ext;
-	ext.push_back("res");
-	return ext;
+  std::vector<std::string> ext;
+  ext.push_back("res");
+  return ext;
 }
 
 bool ResReaderWriter::multiStructureSupport() const
@@ -376,8 +365,7 @@ bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::stri
 bool ResReaderWriter::parseAtoms(
   common::Structure & structure,
   ::std::istream & inStream,
-  const ::std::string & sfacLine,
-  const common::AtomSpeciesDatabase & speciesDb
+  const ::std::string & sfacLine
 ) const
 {
   using namespace utility::cart_coords_enum;
@@ -402,12 +390,7 @@ bool ResReaderWriter::parseAtoms(
     }
 
     // Try finding the species id
-    atomId = speciesDb.getIdFromSymbol(atomTokens[0]);
-    if(atomId == sstbx::common::AtomSpeciesId::DUMMY)
-    {
-      encounteredProblem = true;
-      continue;
-    }
+    atomId = atomTokens[0];
 
     // Try to get the coordinates at positions 2, 3 and 4
     if(atomTokens.size() < 5)

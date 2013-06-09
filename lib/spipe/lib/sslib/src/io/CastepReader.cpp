@@ -48,10 +48,7 @@ const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
   return extensions;
 }
 
-::sstbx::common::types::StructurePtr CastepReader::readStructure(
-  const ResourceLocator & locator,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb
-) const
+::sstbx::common::types::StructurePtr CastepReader::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const fs::path filepath(locator.path());
@@ -61,7 +58,7 @@ const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
   fs::ifstream strFile;
 	strFile.open(filepath);
 
-  structure = readStructure(strFile, speciesDb);
+  structure = readStructure(strFile);
 
  if(strFile.is_open())
     strFile.close();
@@ -74,11 +71,7 @@ const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
  return structure;
 }
 
-size_t CastepReader::readStructures(
-  StructuresContainer & outStructures,
-	const ResourceLocator & locator,
-	const common::AtomSpeciesDatabase & speciesDb
-) const
+size_t CastepReader::readStructures(StructuresContainer & outStructures, const ResourceLocator & locator) const
 {
   const size_t originalSize = outStructures.size();
 
@@ -87,14 +80,14 @@ size_t CastepReader::readStructures(
     return 0; // Can't write out structure without filepath
 
   fs::ifstream strFile;
-	strFile.open(filepath);
+  strFile.open(filepath);
 
   size_t numRead = 0;
   if(locator.id().empty()) // Get them all
-    numRead = readStructures(outStructures, strFile, speciesDb);
+    numRead = readStructures(outStructures, strFile);
   else
   { // Get a single structure from the identifier
-    common::types::StructurePtr str(readStructure(strFile, speciesDb, locator.id()));
+    common::types::StructurePtr str(readStructure(strFile, locator.id()));
     if(str.get())
     {
       outStructures.push_back(str);
@@ -115,11 +108,7 @@ size_t CastepReader::readStructures(
   return numRead;
 }
 
-::sstbx::common::types::StructurePtr CastepReader::readStructure(
-  ::std::istream & inputStream,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
-  const ::std::string & id
-) const
+::sstbx::common::types::StructurePtr CastepReader::readStructure(::std::istream & inputStream,  const ::std::string & id) const
 {
   common::types::StructurePtr structure;
 
@@ -128,7 +117,7 @@ size_t CastepReader::readStructures(
   // and only keep the last
   if(id.empty() || id.find("last") != ::std::string::npos)
   {
-    if(readStructures(container, inputStream, speciesDb) > 0)
+    if(readStructures(container, inputStream) > 0)
       structure.reset(container.pop_back().release());
   }
   else
@@ -137,7 +126,7 @@ size_t CastepReader::readStructures(
     try
     {
       structureIndex = ::boost::lexical_cast<size_t>(id);
-      readStructures(container, inputStream, speciesDb);
+      readStructures(container, inputStream);
       if(structureIndex < container.size())
       {
         structure.reset(
@@ -152,11 +141,7 @@ size_t CastepReader::readStructures(
   return structure;
 }
 
-size_t CastepReader::readStructures(
-  StructuresContainer & outStructures,
-	::std::istream & inputStream,
-	const common::AtomSpeciesDatabase & speciesDb
-) const
+size_t CastepReader::readStructures(StructuresContainer & outStructures, ::std::istream & inputStream) const
 {
   common::UnitCell currentCell;
   std::string line;
@@ -174,7 +159,7 @@ size_t CastepReader::readStructures(
       common::types::StructurePtr structure(
         new common::Structure(makeUniquePtr(new common::UnitCell(currentCell)))
       );
-      if(parseContents(*structure, inputStream, speciesDb))
+      if(parseContents(*structure, inputStream))
       {
         // Save the last structure we loaded so we can update it with information from
         // the castep file that comes later
@@ -242,8 +227,7 @@ bool CastepReader::parseCell(common::UnitCell & unitCell, ::std::istream & input
 
 bool CastepReader::parseContents(
   common::Structure & structure,
-  ::std::istream & inputStream,
-  const common::AtomSpeciesDatabase & speciesDb
+  ::std::istream & inputStream
 ) const
 {
   using namespace utility::cart_coords_enum;
@@ -265,7 +249,6 @@ bool CastepReader::parseContents(
       ::boost::smatch match;
       ::std::string species, x, y, z;
 
-      common::AtomSpeciesId::Value speciesId;
       ::arma::vec3 posVec;
 
       gotAtoms = true;
@@ -286,10 +269,9 @@ bool CastepReader::parseContents(
         {
           gotAtoms = false;
         }
-        speciesId = speciesDb.getIdFromSymbol(species);
         unitCell.fracToCartInplace(posVec);
 
-        structure.newAtom(speciesId).setPosition(posVec);
+        structure.newAtom(species).setPosition(posVec);
       }
     }
   }

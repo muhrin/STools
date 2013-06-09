@@ -40,11 +40,12 @@ struct SimplePairPotentialData : public PotentialData
   /**/
   static const int IGNORE_ATOM = -1;
 
-	SimplePairPotentialData(
+  SimplePairPotentialData(
     const sstbx::common::Structure & structure,
-    const SpeciesList &              speciesList);
+    const SpeciesList &              speciesList
+  );
 
-	std::vector<int> species;
+  std::vector<int> species;
 };
 
 

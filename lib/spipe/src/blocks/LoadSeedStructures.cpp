@@ -128,8 +128,7 @@ int LoadSeedStructures::processFileOrFolder(const ::sstbx::io::ResourceLocator &
   // Try loading the file
   const size_t numLoaded = getRunner()->memory().global().getStructureIo().readStructures(
     myStructures,
-    loc,
-    getRunner()->memory().global().getSpeciesDatabase()
+    loc
   );
   if(numLoaded == 0)
     return -1;

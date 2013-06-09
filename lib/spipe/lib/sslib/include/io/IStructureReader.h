@@ -19,12 +19,10 @@
 #include "common/Types.h"
 #include "io/ResourceLocator.h"
 
-
 namespace sstbx {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
-class AtomSpeciesDatabase;
 class Structure;
 }
 
@@ -36,23 +34,21 @@ class IStructureReader
 {
 public:
 
-	virtual ~IStructureReader() {}
+  virtual ~IStructureReader() {}
 
   virtual common::types::StructurePtr readStructure(
-    const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb) const = 0;
+    const ResourceLocator & resourceLocator
+  ) const = 0;
 
-	/**
-	/* Read structure(s) from disk.
-	/* The user can supply their own species database, however it is up to them
-	/* to make sure that the implementation is thread safe if necessary.
-	/**/
+  /**
+  /* Read structure(s) from disk.
+  /**/
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb) const = 0;
+    const ResourceLocator & resourceLocator
+  ) const = 0;
 
-	virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
+  virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
 
   /**
   /* Does this reader support reading multiple structures from a single file.

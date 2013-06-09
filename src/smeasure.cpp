@@ -85,7 +85,7 @@ int main(const int argc, char * argv[])
   BOOST_FOREACH(const ::std::string & inputFile, in.inputFiles)
   {
     loc.set(inputFile);
-    rwMan.readStructures(structures, loc, speciesDb);
+    rwMan.readStructures(structures, loc);
   }
 
   if(in.calcLengths)

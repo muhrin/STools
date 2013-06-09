@@ -160,12 +160,9 @@ void StructureReadWriteManager::deregisterReader(IStructureReader & reader)
 	}
 }
 
-bool StructureReadWriteManager::writeStructure(
-	::sstbx::common::Structure & str,
-	ResourceLocator locator,
-  const common::AtomSpeciesDatabase & atomSpeciesDb) const
+bool StructureReadWriteManager::writeStructure(::sstbx::common::Structure & str, ResourceLocator locator) const
 {
-	// TODO: Add status return value to this method
+  // TODO: Add status return value to this method
   ::std::string ext;
 
   if(!getExtension(ext, locator))
@@ -180,23 +177,22 @@ bool StructureReadWriteManager::writeStructure(
       return false; // don't know which output format to use
   }
 
-  return writeStructure(str, locator, atomSpeciesDb, ext);
+  return writeStructure(str, locator, ext);
 }
 
 bool StructureReadWriteManager::writeStructure(
   common::Structure & str,
   ResourceLocator locator,
-  const common::AtomSpeciesDatabase & atomSpeciesDb,
   const ::std::string & fileType) const
 {
-	// TODO: Add status return value to this method
-	const WritersMap::const_iterator it = myWriters.find(fileType);
+  // TODO: Add status return value to this method
+  const WritersMap::const_iterator it = myWriters.find(fileType);
 
-	if(it == myWriters.end())
-		return false; // unknown extension
+  if(it == myWriters.end())
+    return false; // unknown extension
 
   // Finally pass it on the the correct writer
-	it->second->writeStructure(str, locator, atomSpeciesDb);
+  it->second->writeStructure(str, locator);
 
   postWrite(str, locator);
 
@@ -204,11 +200,9 @@ bool StructureReadWriteManager::writeStructure(
   return true;
 }
 
-common::types::StructurePtr StructureReadWriteManager::readStructure(
-  const ResourceLocator & locator,
-  const common::AtomSpeciesDatabase & speciesDb) const
+common::types::StructurePtr StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
 {
-	// TODO: Add status return value to this method
+  // TODO: Add status return value to this method
 
   common::types::StructurePtr structure;
 
@@ -216,13 +210,13 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
   if(!getExtension(ext, locator))
     return structure;
 
-	const ReadersMap::const_iterator it = myReaders.find(ext);
+  const ReadersMap::const_iterator it = myReaders.find(ext);
 
-	if(it == myReaders.end())
-		return structure; /*unknown extension*/
+  if(it == myReaders.end())
+    return structure; /*unknown extension*/
 
-	// Finally pass it on the the correct reader
-  structure = it->second->readStructure(locator, speciesDb);
+  // Finally pass it on the the correct reader
+  structure = it->second->readStructure(locator);
   
   if(structure.get())
     postRead(*structure, locator);
@@ -234,8 +228,8 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(
 size_t StructureReadWriteManager::readStructures(
   StructuresContainer & outStructures,
   const ResourceLocator & locator,
-  const common::AtomSpeciesDatabase & speciesDb,
-  const int maxDepth) const
+  const int maxDepth
+) const
 {
   if(!fs::exists(locator.path()))
     return 0;
@@ -255,7 +249,7 @@ size_t StructureReadWriteManager::readStructures(
 
 	  // Finally pass it on the the correct reader
     const size_t numRead =
-      it->second->readStructures(outStructures, locator, speciesDb);
+      it->second->readStructures(outStructures, locator);
 
     // Set the path to where it was read from
     for(size_t i = originalSize; i < originalSize + numRead; ++i)
@@ -267,19 +261,18 @@ size_t StructureReadWriteManager::readStructures(
   }
   else if(fs::is_directory(locator.path()))
   {
-    return doReadAllStructuresFromPath(outStructures, locator.path(), speciesDb, maxDepth);
+    return doReadAllStructuresFromPath(outStructures, locator.path(), maxDepth);
   }
   else
     return 0;
 }
 
-const IStructureWriter * StructureReadWriteManager::getWriter(
-  const ::std::string & ext) const
+const IStructureWriter * StructureReadWriteManager::getWriter(const ::std::string & ext) const
 {
   const WritersMap::const_iterator it = myWriters.find(ext);
 
-	if(it == myWriters.end())
-		return NULL; // unknown extension
+  if(it == myWriters.end())
+    return NULL; // unknown extension
 
   return it->second;
 }
@@ -325,7 +318,6 @@ bool StructureReadWriteManager::getExtension(::std::string & ext, const Resource
 size_t StructureReadWriteManager::doReadAllStructuresFromPath(
  StructuresContainer & outStructures,
  const ::boost::filesystem::path & path,
- const common::AtomSpeciesDatabase & speciesDb,
  const size_t maxDepth,
  const size_t currentDepth) const
 {
@@ -341,11 +333,11 @@ size_t StructureReadWriteManager::doReadAllStructuresFromPath(
   {
     if(fs::is_regular_file(entry))
     {
-      numRead += readStructures(outStructures, entry, speciesDb, maxDepth);
+      numRead += readStructures(outStructures, entry, maxDepth);
     }
     else if(currentDepth < maxDepth && fs::is_directory(entry))
     {
-      numRead += doReadAllStructuresFromPath(outStructures, entry, speciesDb, maxDepth, currentDepth + 1);
+      numRead += doReadAllStructuresFromPath(outStructures, entry, maxDepth, currentDepth + 1);
     }
   }
 

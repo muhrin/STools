@@ -237,7 +237,7 @@ int main(const int argc, char * argv[])
         continue;
       }
 
-      size_t lastLoaded = rwMan.readStructures(loadedStructures, loc, speciesDb);
+      size_t lastLoaded = rwMan.readStructures(loadedStructures, loc);
       if(lastLoaded == 0)
         ::std::cerr << "Couldn't load structure(s) from " << loc.string() << ::std::endl;
       else

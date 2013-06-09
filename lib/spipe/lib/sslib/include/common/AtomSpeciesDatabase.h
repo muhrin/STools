@@ -28,32 +28,26 @@ class AtomSpeciesDatabase : ::boost::noncopyable
 {
 public:
 
-	AtomSpeciesDatabase();
+  AtomSpeciesDatabase();
 
-	virtual void setAll(
+  void setAll(
     AtomSpeciesId::Value id,
-		const ::std::string & symbol,
-		const ::std::string & name,
-    const double radius);
+    const ::std::string & name,
+    const double radius
+  );
 
-  virtual const ::std::string * getName(const AtomSpeciesId::Value id) const;
-  virtual void setName(const AtomSpeciesId::Value id, const ::std::string & name);
+  const ::std::string * getName(const AtomSpeciesId::Value id) const;
+  void setName(const AtomSpeciesId::Value id, const ::std::string & name);
 
-  virtual const ::std::string * getSymbol(const AtomSpeciesId::Value id) const;
-  virtual void setSymbol(const AtomSpeciesId::Value id, const ::std::string & symbol);
-
-  virtual const AtomSpeciesId::Value getIdFromSymbol(const std::string & symbol) const;
-
-  virtual ::boost::optional<double> getRadius(const AtomSpeciesId::Value id) const;
-  virtual void setRadius(const AtomSpeciesId::Value id, const double radius);
+  ::boost::optional<double> getRadius(const AtomSpeciesId::Value id) const;
+  void setRadius(const AtomSpeciesId::Value id, const double radius);
 
 protected:
 
   typedef ::std::map<AtomSpeciesId::Value, ::std::string> SpeciesString;
-  typedef ::std::map<AtomSpeciesId::Value, double>        SpeciesDouble;
+  typedef ::std::map<AtomSpeciesId::Value, double> SpeciesDouble;
 
-	SpeciesString	myNames;
-	SpeciesString	mySymbols;
+  SpeciesString myNames;
   SpeciesDouble myRadii;
 
 };

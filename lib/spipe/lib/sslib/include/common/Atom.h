@@ -36,7 +36,7 @@ public:
   double getRadius() const;
   void setRadius(const double radius);
 
-	const AtomSpeciesId::Value getSpecies() const;
+  const AtomSpeciesId::Value & getSpecies() const;
 
   size_t getIndex() const;
 
@@ -62,11 +62,12 @@ private:
 
   AtomSpeciesId::Value	mySpecies;
   ::arma::vec3          myPosition;
-	double                myRadius;
+  double                myRadius;
 
   friend class Structure;
 };
 
-}} // Close the namespace
+}
+}
 
 #endif /* ATOM_H */

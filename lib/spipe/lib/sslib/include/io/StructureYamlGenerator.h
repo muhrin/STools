@@ -34,11 +34,8 @@ public:
   typedef AtomYamlFormatParser::FormatEntry FormatEntry;
   typedef AtomYamlFormatParser::AtomsFormat AtomsFormat;
 
-  StructureYamlGenerator(const common::AtomSpeciesDatabase & speciesDb);
-  StructureYamlGenerator(
-    const common::AtomSpeciesDatabase & speciesDb,
-    const AtomsFormat & atomsFormat
-  );
+  StructureYamlGenerator();
+  StructureYamlGenerator(const AtomsFormat & atomsFormat);
 
   YAML::Node generateNode(const common::Structure & structure) const;
 
@@ -57,8 +54,6 @@ private:
   void praseProperties(
     common::Structure & structure,
     const YAML::Node & propertiesNode) const;
-
-  const common::AtomSpeciesDatabase & mySpeciesDb;
 
   AtomYamlFormatParser myAtomInfoParser;
 

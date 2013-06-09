@@ -82,8 +82,8 @@ public:
 
   const ::arma::mat33 & getFracMtx() const;
 
-	double getVolume() const;
-	double setVolume(const double volume);
+  double getVolume() const;
+  double setVolume(const double volume);
   double getNormVolume() const;
 
   ::arma::vec3 getLongestDiagonal() const;
@@ -97,8 +97,8 @@ public:
 
   inline ::arma::vec3 & fracToCartInplace(::arma::vec3 & frac) const
   {
-	  frac = myOrthoMtx * frac;
-	  return frac;
+    frac = myOrthoMtx * frac;
+    return frac;
   }
 
   inline ::arma::mat & fracsToCartInplace(::arma::mat & fracs) const
@@ -139,8 +139,8 @@ public:
   {
     SSLIB_ASSERT(carts.n_rows == 3);
 
-	  carts = myFracMtx * carts;
-	  return carts;
+    carts = myFracMtx * carts;
+    return carts;
   }
 
   ::arma::vec3 wrapVec(const ::arma::vec3 & cart) const;

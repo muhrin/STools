@@ -11,7 +11,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include <common/AtomSpeciesDatabase.h>
 #include <common/AtomSpeciesId.h>
 #include <common/Structure.h>
 #include <common/Types.h>
@@ -46,10 +45,9 @@ BOOST_AUTO_TEST_CASE(ReaderWriterTest)
   BOOST_REQUIRE(rwMan.numWriters() == NUM_READER_WRITERS);
 
   // Set up the structure to write
-  ssc::AtomSpeciesDatabase speciesDb;
   ssc::Structure structure;
   ::arma::vec3 pos;
-  ssc::AtomSpeciesId::Value species = ssc::AtomSpeciesId::NA;
+  ssc::AtomSpeciesId::Value species = "Na";
   for(size_t i = 0; i < NUM_ATOMS; ++i)
   {
     pos.randu();
@@ -63,9 +61,9 @@ BOOST_AUTO_TEST_CASE(ReaderWriterTest)
     end = rwMan.endWriters(); it != end; ++it)
   {
     saveTo.setPath(fs::path(SAVE_PATH + "." + it->first));
-    it->second->writeStructure(structure, saveTo, speciesDb);
+    it->second->writeStructure(structure, saveTo);
 
-    loadedStructure = rwMan.readStructure(saveTo, speciesDb);
+    loadedStructure = rwMan.readStructure(saveTo);
     BOOST_CHECK(loadedStructure.get());
 
     if(loadedStructure.get())

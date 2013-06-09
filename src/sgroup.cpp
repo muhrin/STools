@@ -19,7 +19,6 @@
 
 // From SSLib //
 #include <analysis/SpaceGroup.h>
-#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <io/ResourceLocator.h>
@@ -86,7 +85,6 @@ int main(const int argc, char * argv[])
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
 
-  ssc::AtomSpeciesDatabase speciesDb;
   ssio::StructuresContainer loadedStructures;
   ssio::ResourceLocator structureLocator;
   ssa::space_group::SpacegroupInfo sgInfo;
@@ -104,7 +102,7 @@ int main(const int argc, char * argv[])
       continue;
     }
 
-    if(rwMan.readStructures(loadedStructures, structureLocator, speciesDb) > 0)
+    if(rwMan.readStructures(loadedStructures, structureLocator) > 0)
     {
       BOOST_FOREACH(const ssc::Structure & structure, loadedStructures)
       {

@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
       ssm::randu(1.0, 5.0) * cellDim, 90.0, 90.0, 90.0)));
 
     for(size_t i = 0; i < numAtoms; ++i)
-      structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());
+      structure.newAtom("C1").setPosition(structure.getUnitCell()->randomPoint());
 
     ssc::OrthoCellDistanceCalculator orthoCalc(structure);
     ssc::UniversalCrystalDistanceCalculator univCalc(structure);
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     }
 
     for(size_t i = 0; i < numAtoms; ++i)
-      structure.newAtom(ssc::AtomSpeciesId::CUSTOM_1).setPosition(structure.getUnitCell()->randomPoint());
+      structure.newAtom("C1").setPosition(structure.getUnitCell()->randomPoint());
 
     ssc::UniversalCrystalDistanceCalculator univCalc(structure);
     ssc::ReferenceDistanceCalculator referenceCalc(structure);
@@ -296,16 +296,15 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   const double cutoffDist = 5.00;
 
   ssc::Structure structure;
-//  ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, 3.1032310973902493, 89.999998840060258, 90.000001159939757, 89.999999999947718));
   ssc::UnitCellPtr cell(new ssc::UnitCell(cellDim, cellDim, 3.1032310973902493, 89.9999999999, 90.0, 90.0));
 
   structure.setUnitCell(cell);
 
   // Put in four atoms
-  structure.newAtom(ssc::AtomSpeciesId::NA).setPosition(-1.6581022716893747, -2.4672347213487633, -1.3431304885983484);
-  structure.newAtom(ssc::AtomSpeciesId::NA).setPosition(-3.0839601555007641, -0.79937989707630863, -1.3574676571980899);
-  structure.newAtom(ssc::AtomSpeciesId::NA).setPosition(-3.0355997292334425, -2.1869067011837431, 0.34178278728968065);
-  structure.newAtom(ssc::AtomSpeciesId::NA).setPosition(-1.3834008907850099, -0.77711917814879217, 0.029117512324985273);
+  structure.newAtom("Na").setPosition(-1.6581022716893747, -2.4672347213487633, -1.3431304885983484);
+  structure.newAtom("Na").setPosition(-3.0839601555007641, -0.79937989707630863, -1.3574676571980899);
+  structure.newAtom("Na").setPosition(-3.0355997292334425, -2.1869067011837431, 0.34178278728968065);
+  structure.newAtom("Na").setPosition(-1.3834008907850099, -0.77711917814879217, 0.029117512324985273);
 
 
   ssc::ReferenceDistanceCalculator referenceCalc(structure);

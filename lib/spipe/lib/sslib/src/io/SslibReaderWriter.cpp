@@ -53,16 +53,13 @@ namespace kw = factory::sslib_yaml_keywords;
 const unsigned int SslibReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 const ::std::string SslibReaderWriter::DEFAULT_EXTENSION("sslib");
 
-void SslibReaderWriter::writeStructure(
-	common::Structure & str,
-	const ResourceLocator & locator,
-	const common::AtomSpeciesDatabase & speciesDb) const
+void SslibReaderWriter::writeStructure(common::Structure & str,	const ResourceLocator & locator) const
 {
   const fs::path filepath(locator.path());
-	if(!filepath.has_filename())
-		throw "Cannot write out structure without filepath";
+  if(!filepath.has_filename())
+    throw "Cannot write out structure without filepath";
 
-  const io::StructureYamlGenerator generator(speciesDb);
+  const io::StructureYamlGenerator generator;
 
   const fs::path dir = filepath.parent_path();
 	if(!dir.empty() && !exists(dir))
@@ -117,12 +114,10 @@ void SslibReaderWriter::writeStructure(
   }
 }
 
-common::types::StructurePtr SslibReaderWriter::readStructure(
-	const ResourceLocator & locator,
-	const common::AtomSpeciesDatabase & speciesDb) const
+common::types::StructurePtr SslibReaderWriter::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
-  const io::StructureYamlGenerator generator(speciesDb);
+  const io::StructureYamlGenerator generator;
 
   const fs::path filepath(locator.path());
   YAML::Node doc;
@@ -168,14 +163,13 @@ common::types::StructurePtr SslibReaderWriter::readStructure(
 
 size_t SslibReaderWriter::readStructures(
   StructuresContainer & outStructures,
-	const ResourceLocator & locator,
-	const common::AtomSpeciesDatabase & speciesDb) const
+  const ResourceLocator & locator) const
 {
   size_t numLoaded = 0;
 
   if(locator.id().empty())
   {
-    const io::StructureYamlGenerator generator(speciesDb);
+    const io::StructureYamlGenerator generator;
 
     const fs::path filepath(locator.path());
     YAML::Node doc;
@@ -231,7 +225,7 @@ size_t SslibReaderWriter::readStructures(
   else
   {
     // The user has specified a particular id so they only want one structure
-    common::types::StructurePtr structure = readStructure(locator, speciesDb);
+    common::types::StructurePtr structure = readStructure(locator);
 
     if(structure.get())
       outStructures.push_back(structure.release());

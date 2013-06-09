@@ -26,7 +26,6 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace sstbx {
 namespace common {
-class AtomSpeciesDatabase;
 class Structure;
 }
 namespace io {
@@ -77,32 +76,28 @@ public:
   void insertReader(ReaderPtr reader);
   void insertWriter(WriterPtr writer);
 
-	void registerWriter(IStructureWriter & writer);
-	void deregisterWriter(IStructureWriter & writer);
+  void registerWriter(IStructureWriter & writer);
+  void deregisterWriter(IStructureWriter & writer);
 
   void registerReader(IStructureReader & reader);
   void deregisterReader(IStructureReader & reader);
 
-	bool writeStructure(
-		common::Structure & str,
-		ResourceLocator locator,
-    const common::AtomSpeciesDatabase & atomSpeciesDb) const;
+  bool writeStructure(
+    common::Structure & str,
+    ResourceLocator locator) const;
 
   bool writeStructure(
     common::Structure & str,
     ResourceLocator locator,
-    const common::AtomSpeciesDatabase & atomSpeciesDb,
     const ::std::string & fileType) const;
 
-  common::types::StructurePtr readStructure(
-    const ResourceLocator & locator,
-    const common::AtomSpeciesDatabase & speciesDb) const;
+  common::types::StructurePtr readStructure(const ResourceLocator & locator) const;
 
   size_t readStructures(
     StructuresContainer & outStructures,
     const ResourceLocator & locator,
-    const common::AtomSpeciesDatabase & speciesDb,
-    const int maxDepth = 1) const;
+    const int maxDepth = 1
+  ) const;
 
   const IStructureWriter * getWriter(const ::std::string & extension) const;
 
@@ -119,7 +114,6 @@ private:
   size_t doReadAllStructuresFromPath(
     StructuresContainer & outStructures,
     const ::boost::filesystem::path & path,
-    const common::AtomSpeciesDatabase & speciesDb,
     const size_t maxDepth,
     const size_t currentDepth = 0) const;
 
@@ -128,7 +122,7 @@ private:
 
   ::std::string myDefaultWriteExtension;
 
-	WritersMap myWriters;
+  WritersMap myWriters;
   ReadersMap myReaders;
 
   WritersStore myWritersStore;

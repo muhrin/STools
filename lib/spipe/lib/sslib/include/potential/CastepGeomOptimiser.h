@@ -58,12 +58,12 @@ public:
   virtual IPotential * getPotential() { return NULL; }
   virtual const IPotential * getPotential() const { return NULL; };
 
-	virtual OptimisationOutcome optimise(
+  virtual OptimisationOutcome optimise(
     common::Structure & structure,
     const OptimisationSettings & options
   ) const;
-	virtual OptimisationOutcome optimise(
-		common::Structure & structure,
+  virtual OptimisationOutcome optimise(
+    common::Structure & structure,
     OptimisationData & data,
     const OptimisationSettings & options
   ) const;

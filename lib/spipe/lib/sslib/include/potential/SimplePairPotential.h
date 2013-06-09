@@ -38,7 +38,7 @@
 namespace sstbx {
 namespace potential {
 
-class SimplePairPotential :	public IPotential, public IParameterisable
+class SimplePairPotential : public IPotential, public IParameterisable
 {
 public:
 

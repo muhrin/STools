@@ -29,29 +29,25 @@ namespace io {
 class CastepReader :  public IStructureReader
 {
 public:
-	virtual ::std::vector<std::string> getSupportedFileExtensions() const;
+  virtual ::std::vector<std::string> getSupportedFileExtensions() const;
 
   // From IStructureReader //
   virtual common::types::StructurePtr readStructure(
-    const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb
+    const ResourceLocator & resourceLocator
   ) const;
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ResourceLocator & locator,
-		const common::AtomSpeciesDatabase & speciesDb
+    const ResourceLocator & locator
   ) const;
   // End from IStructureReader //
 
   virtual common::types::StructurePtr readStructure(
     ::std::istream & inputStream,
-		const common::AtomSpeciesDatabase & speciesDb,
     const ::std::string & id = ""
   ) const;
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		::std::istream & inputStream,
-		const common::AtomSpeciesDatabase & speciesDb
+    ::std::istream & inputStream
   ) const;
 
   // Multiple structures per file
@@ -74,8 +70,7 @@ private:
   bool parseCell(common::UnitCell & unitCell, ::std::istream & inputStream) const;
   bool parseContents(
     common::Structure & structure,
-    ::std::istream & inputStream,
-    const common::AtomSpeciesDatabase & speciesDb
+    ::std::istream & inputStream
   ) const;
   bool parseAuxInfo(
     AuxInfo & auxInfo,

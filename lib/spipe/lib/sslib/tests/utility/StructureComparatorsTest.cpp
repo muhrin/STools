@@ -18,7 +18,6 @@
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/UnitCell.h>
 #include <io/BoostFilesystem.h>
@@ -125,7 +124,6 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
     inputFiles.push_back(it->path().string());
   }
   
-  ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
   ssio::StructuresContainer structures;
 
@@ -138,7 +136,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
       continue;
     }
 
-    resReader.readStructures(structures, strPath, speciesDb);
+    resReader.readStructures(structures, strPath);
 
     // To make sure this test doesn't take too long limit the number of structures
     if(structures.size() >= MAX_STRUCTURES)
@@ -233,13 +231,12 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
 
   BOOST_REQUIRE(inputFiles.size() > 0);
 
-  ssc::AtomSpeciesDatabase speciesDb;
   ssio::ResReaderWriter resReader;
   ssio::StructuresContainer structures;
   ssc::StructurePtr str;
   ssc::StructurePtr strSupercell;
 
-  str = resReader.readStructure(inputFiles[0], speciesDb);
+  str = resReader.readStructure(inputFiles[0]);
   //strSupercell = resReader.readStructure(inputFiles[0], speciesDb);
   strSupercell.reset(new ssc::Structure());
 
@@ -268,7 +265,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
       }
     }
   }
-  resReader.writeStructure(*strSupercell, ssio::ResourceLocator("supercell.res"), speciesDb);
+  resReader.writeStructure(*strSupercell, ssio::ResourceLocator("supercell.res"));
 
   for(size_t i = 0; i < NUM_COMPARATORS; ++i)
   {

@@ -75,7 +75,7 @@ public:
 
   Atom & newAtom(const AtomSpeciesId::Value species);
   Atom & newAtom(const Atom & toCopy);
-	bool removeAtom(const Atom & atom);
+  bool removeAtom(const Atom & atom);
   size_t clearAtoms();
 
   void getAtomPositions(::arma::mat & posMtx) const;

@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
 
   // SETTINGS ////
   SpeciesParameters speciesParams;
-  speciesParams.push_back(SpeciesParameter(ssc::AtomSpeciesId::NA, 7));
-  speciesParams.push_back(SpeciesParameter(ssc::AtomSpeciesId::CL, 13));
+  speciesParams.push_back(SpeciesParameter("Na", 7));
+  speciesParams.push_back(SpeciesParameter("Cl", 13));
 
 
   ::sstbx::UniquePtr<Pipe>::Type searchPipe(new Pipe());

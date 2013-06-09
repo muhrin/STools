@@ -33,7 +33,6 @@ set(sslib_Source_Files__common
   src/common/Atom.cpp
   src/common/AtomGroup.cpp
   src/common/AtomSpeciesDatabase.cpp
-  src/common/AtomSpeciesId.cpp
   src/common/AtomSpeciesInfo.cpp
   src/common/Constants.cpp
   src/common/DistanceCalculator.cpp

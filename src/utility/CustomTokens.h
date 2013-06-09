@@ -19,7 +19,6 @@
 // FORWARD DECLARES ////////////////////////////////
 namespace sstbx {
 namespace common {
-class AtomSpeciesDatabase;
 class Structure;
 }
 namespace io {
@@ -62,15 +61,12 @@ class FormulaToken : public TypedToken< ::std::string>
 {
 public:
   FormulaToken(
-    const ::sstbx::common::AtomSpeciesDatabase & speciesDb,
     const ::std::string & name,
     const ::std::string & symbol,
     const ::std::string & defaultFormatString = ""
   );
 protected:
   virtual ::boost::optional< ::std::string> doGetValue(const ::sstbx::common::Structure & structure) const;
-private:
-  const ::sstbx::common::AtomSpeciesDatabase & mySpeciesDb;
 };
 
 

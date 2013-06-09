@@ -151,18 +151,10 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
   const OptionsMap * const lj  = potentialOptions.find(LENNARD_JONES);
   if(lj)
   {
-
     // Get the species list
     const AtomSpeciesIdVector * const speciesVec = lj->find(SPECIES_LIST);
     if(!speciesVec)
       return pot; // TODO: Emit error
-
-    ::std::vector<common::AtomSpeciesId::Value> species;
-    species.reserve(speciesVec->size());
-    BOOST_FOREACH(const ::std::string & spec, *speciesVec)
-    {
-      species.push_back(myAtomSpeciesDb.getIdFromSymbol(spec));
-    }
 
     // Build up the potential parameters one by one
     const ::arma::mat * const epsilon = lj->find(LJ_EPSILON);
@@ -196,7 +188,7 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
 
     pot.reset(new potential::SimplePairPotential(
       myAtomSpeciesDb,
-      species,
+      *speciesVec,
       *epsilon,
       *sigma,
       *cutoff,
@@ -317,7 +309,8 @@ SsLibFactoryYaml::getStructureContentType(const AtomsDataEntry & atomsEntry) con
 build_cell::AtomsDescriptionPtr
 SsLibFactoryYaml::createAtomsDescription(
   const AtomsDataEntry & atomsEntry,
-  const io::AtomFormatParser & parser) const
+  const io::AtomFormatParser & parser
+) const
 {
   build_cell::AtomsDescriptionPtr atomsDescription;
 
@@ -325,8 +318,7 @@ SsLibFactoryYaml::createAtomsDescription(
   if(!speciesAndCount)
     return atomsDescription;
 
-  const common::AtomSpeciesId::Value species = myAtomSpeciesDb.getIdFromSymbol(speciesAndCount->species);
-  atomsDescription.reset(new build_cell::AtomsDescription(species, speciesAndCount->count));
+  atomsDescription.reset(new build_cell::AtomsDescription(speciesAndCount->species, speciesAndCount->count));
 
   const OptionalDouble radius = parser.getValue(RADIUS, atomsEntry);
   if(radius)

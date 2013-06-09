@@ -204,7 +204,7 @@ CastepRunResult::Value CastepRun::updateStructureFromOutput(
   if(result != CastepRunResult::SUCCESS)
     return result;
 
-  common::types::StructurePtr newStructure = myCastepReader.readStructure(myCastepFileStream, speciesDb, "last");
+  common::types::StructurePtr newStructure = myCastepReader.readStructure(myCastepFileStream, "last");
   if(!newStructure.get())
     return CastepRunResult::FAILED_TO_READ_STRUCTURE;
 

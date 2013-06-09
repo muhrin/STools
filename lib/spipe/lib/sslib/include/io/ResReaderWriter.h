@@ -25,28 +25,26 @@ public:
 
   static const unsigned int DIGITS_AFTER_DECIMAL;
 
-	/**
-	/* Write a structure out to disk.
-	/* The user can supply their own species database, however it is up to them
-	/* to make sure that the implementation is thread safe if necessary.
-	/**/
-	virtual void writeStructure(
-		::sstbx::common::Structure & str,
-		const ResourceLocator & locator,
-		const common::AtomSpeciesDatabase & speciesDb) const;
+  /**
+  /* Write a structure out to disk.
+  /* The user can supply their own species database, however it is up to them
+  /* to make sure that the implementation is thread safe if necessary.
+  /**/
+  virtual void writeStructure(
+    ::sstbx::common::Structure & str,
+    const ResourceLocator & locator
+  ) const;
 
   // From IStructureReader //
 
-  virtual ::sstbx::common::types::StructurePtr readStructure(
-    const ResourceLocator & resourceLocator,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const;
+  virtual ::sstbx::common::types::StructurePtr readStructure(const ResourceLocator & resourceLocator) const;
 
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb) const;
+    const ResourceLocator & resourceLocator
+  ) const;
 
-	virtual ::std::vector<std::string> getSupportedFileExtensions() const;
+  virtual ::std::vector<std::string> getSupportedFileExtensions() const;
 
   // End from IStructureReader //
 
@@ -61,8 +59,7 @@ private:
   bool parseAtoms(
     common::Structure & structure,
     ::std::istream & inStream,
-    const ::std::string & sfacLine,
-    const common::AtomSpeciesDatabase & speciesDb
+    const ::std::string & sfacLine
   ) const;
 
   void writeTitle(::std::ostream & os, const common::Structure & structure) const;

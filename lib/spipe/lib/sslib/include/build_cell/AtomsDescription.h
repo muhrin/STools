@@ -58,10 +58,10 @@ public:
   void setPosition(const OptionalArmaVec3 & pos);
 
 private:
-  ::sstbx::common::AtomSpeciesId::Value	mySpecies;
+  common::AtomSpeciesId::Value	mySpecies;
   OptionalDouble myRadius;
   OptionalArmaVec3 myPosition;
-	CountRange myCount;
+  CountRange myCount;
 };
 
 

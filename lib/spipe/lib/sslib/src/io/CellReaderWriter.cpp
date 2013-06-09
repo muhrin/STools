@@ -41,19 +41,17 @@ namespace fs = ::boost::filesystem;
   return ::std::vector< ::std::string>(1, "cell");
 }
 
-common::types::StructurePtr CellReaderWriter::readStructure(
-  const ResourceLocator & locator,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb) const
+common::types::StructurePtr CellReaderWriter::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const fs::path filepath(locator.path());
-	if(!filepath.has_filename())
+  if(!filepath.has_filename())
     return structure; // Can't write out structure without filepath
 
   fs::ifstream strFile;
-	strFile.open(filepath);
+    strFile.open(filepath);
 
-  structure = readStructure(strFile, speciesDb);
+  structure = readStructure(strFile);
 
  if(strFile.is_open())
     strFile.close();
@@ -63,10 +61,10 @@ common::types::StructurePtr CellReaderWriter::readStructure(
 
 size_t CellReaderWriter::readStructures(
   StructuresContainer & outStructures,
-	const ResourceLocator & resourceLocator,
-	const common::AtomSpeciesDatabase & speciesDb) const
+  const ResourceLocator & resourceLocator
+) const
 {
-  common::types::StructurePtr structure = readStructure(resourceLocator, speciesDb);
+  common::types::StructurePtr structure = readStructure(resourceLocator);
   if(structure.get())
   {
     outStructures.push_back(structure.release());
@@ -75,10 +73,7 @@ size_t CellReaderWriter::readStructures(
   return 0;
 }
 
-common::types::StructurePtr CellReaderWriter::readStructure(
-  ::std::istream & is,
-	const ::sstbx::common::AtomSpeciesDatabase & speciesDb
-) const
+common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is) const
 {
   using namespace utility::cart_coords_enum;
 
@@ -159,7 +154,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
 
   if(findNextLine(line, is, "%BLOCK positions_", false))
   {
-    common::AtomSpeciesId species;
+    common::AtomSpeciesId::Value species;
     ::arma::vec3 pos;
     const bool fractional = ::boost::ifind_first(line, "_frac");
     const bool cartesian = ::boost::ifind_first(line, "_abs");
@@ -169,10 +164,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
       {
         Tok tok(line, sep);
         Tok::iterator tokIt = tok.begin();
-        species = speciesDb.getIdFromSymbol(*tokIt++);
-
-        if(species == common::AtomSpeciesId::DUMMY)
-          continue;
+        species = *tokIt++;
 
         unsigned int i;
         for(i = X; i <= Z && tokIt != tok.end(); ++i)
@@ -192,10 +184,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(
   return structure;
 }
 
-void CellReaderWriter::writeStructure(
-	common::Structure & structure,
-	const ResourceLocator & locator,
-	const common::AtomSpeciesDatabase & speciesDb) const
+void CellReaderWriter::writeStructure(common::Structure & structure, const ResourceLocator & locator) const
 {
   const fs::path filepath(locator.path());
 	if(!filepath.has_filename())
@@ -208,17 +197,13 @@ void CellReaderWriter::writeStructure(
   fs::ofstream strFile;
 	strFile.open(filepath);
 
-  writeStructure(strFile, structure, speciesDb);
+  writeStructure(strFile, structure);
 
  if(strFile.is_open())
     strFile.close();
 }
 
-void CellReaderWriter::writeStructure(
-  ::std::ostream & os,
-  common::Structure & structure,
-  const common::AtomSpeciesDatabase & speciesDb
-) const
+void CellReaderWriter::writeStructure(::std::ostream & os, common::Structure & structure) const
 {
   using namespace utility::cell_params_enum;
 
@@ -244,7 +229,7 @@ void CellReaderWriter::writeStructure(
 
   writeLatticeBlock(os, *unitCell);
   os << ::std::endl;
-  writePositionsBlock(os, structure, *unitCell, speciesDb);
+  writePositionsBlock(os, structure, *unitCell);
 }
 
 void CellReaderWriter::writeLatticeBlock(::std::ostream & os, const common::UnitCell & unitCell) const
@@ -261,8 +246,7 @@ void CellReaderWriter::writeLatticeBlock(::std::ostream & os, const common::Unit
 void CellReaderWriter::writePositionsBlock(
   ::std::ostream & os,
   const common::Structure & structure,
-  const common::UnitCell & unitCell,
-  const common::AtomSpeciesDatabase & speciesDb
+  const common::UnitCell & unitCell
 ) const
 {
   using namespace utility::cart_coords_enum;
@@ -275,7 +259,7 @@ void CellReaderWriter::writePositionsBlock(
   for(size_t i = 0; i < structure.getNumAtoms(); ++i)
   {
     const common::Atom & atom = structure.getAtom(i);
-    os << *speciesDb.getSymbol(atom.getSpecies()) << " ";
+    os << atom.getSpecies() << " ";
     os << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << ::std::endl;    
   }
   os << "%ENDBLOCK POSITIONS_FRAC" << ::std::endl;

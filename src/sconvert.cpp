@@ -58,13 +58,11 @@ int main(const int argc, char * argv[])
   if(!fileOut.set(in.inputOutputFiles[1]))
     ::std::cerr << "Output file not valid" << ::std::endl;
 
-  ssc::AtomSpeciesDatabase speciesDb;
-
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
 
   ssio::StructuresContainer structures;
-  if(rwMan.readStructures(structures, fileIn, speciesDb) == 0)
+  if(rwMan.readStructures(structures, fileIn) == 0)
   {
     ::std::cerr << "Failed to ready any structures." << ::std::endl;
     return 1;
@@ -72,7 +70,7 @@ int main(const int argc, char * argv[])
 
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
-    if(!rwMan.writeStructure(structure, fileOut, speciesDb))
+    if(!rwMan.writeStructure(structure, fileOut))
     {
       ::std::cerr << "Failed to write structure to " << fileOut << ::std::endl;
     }

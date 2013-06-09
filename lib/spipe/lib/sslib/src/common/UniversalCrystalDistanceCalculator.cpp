@@ -159,9 +159,9 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   aCrossC /= sqrt(::arma::dot(aCrossC, aCrossC));
 
 	// Maximum multiple of cell vectors we need to go to
-  int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff + abs(::arma::dot(dR, bCrossC))));
-	int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff + abs(::arma::dot(dR, aCrossC))));
-	int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff + abs(::arma::dot(dR, aCrossB))));
+  int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff + ::std::abs(::arma::dot(dR, bCrossC))));
+  int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff + ::std::abs(::arma::dot(dR, aCrossC))));
+  int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff + ::std::abs(::arma::dot(dR, aCrossB))));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);

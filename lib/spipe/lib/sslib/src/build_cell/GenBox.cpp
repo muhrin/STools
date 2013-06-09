@@ -113,19 +113,19 @@ void GenBox::setTransform(const ::arma::mat44 & transform)
 
 void GenBox::setWidth(const double width)
 {
-  myWidth = abs(width);
+  myWidth = ::std::abs(width);
   myHalfWidth = 0.5 * myWidth;
 }
 
 void GenBox::setHeight(const double height)
 {
-  myHeight = abs(height);
+  myHeight = ::std::abs(height);
   myHalfHeight = 0.5 * myHeight;
 }
 
 void GenBox::setDepth(const double depth)
 {
-  myDepth = abs(depth);
+  myDepth = ::std::abs(depth);
   myHalfDepth = 0.5 * myDepth;
 }
 

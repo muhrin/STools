@@ -59,9 +59,9 @@ void Atom::setRadius(const double radius)
   myRadius = radius;
 }
 
-const AtomSpeciesId::Value  Atom::getSpecies() const
+const AtomSpeciesId::Value & Atom::getSpecies() const
 {
-	return mySpecies;
+  return mySpecies;
 }
 
 size_t Atom::getIndex() const

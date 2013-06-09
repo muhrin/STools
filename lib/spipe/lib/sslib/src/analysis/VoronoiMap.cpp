@@ -11,15 +11,15 @@
 
 namespace sstbx {
 namespace analysis {
-
-void VoronoiMap::addData(const ::arma::vec2 & point, const ::std::string & tag)
-{
-  Site2 voronoiSite(point(0), point(1));
-
-  ::std::pair<TagSet::iterator, bool> result = myPointTags[voronoiSite].insert(tag);
-
-
-}
+//
+//void VoronoiMap::addData(const ::arma::vec2 & point, const ::std::string & tag)
+//{
+//  Site2 voronoiSite(point(0), point(1));
+//
+//  ::std::pair<TagSet::iterator, bool> result = myPointTags[voronoiSite].insert(tag);
+//
+//
+//}
 
 
 }

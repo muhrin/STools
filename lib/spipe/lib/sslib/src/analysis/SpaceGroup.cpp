@@ -8,6 +8,7 @@
 #include "analysis/SpaceGroup.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
 
 extern "C"
 {
@@ -59,10 +60,18 @@ bool getSpacegroupInfo(
 
   ::std::vector<common::AtomSpeciesId::Value> speciesVec;
   structure.getAtomSpecies(speciesVec);
+  ::std::map<common::AtomSpeciesId::Value, int> speciesIndices;
+  int idx = 0;
+  BOOST_FOREACH(const common::AtomSpeciesId::Value & speciesId, speciesVec)
+  {
+    if(speciesIndices.insert(::std::make_pair(speciesId, idx)).second == true)
+      ++idx;
+  }
+
   ::boost::scoped_array<int> species(new int[speciesVec.size()]);
   for(size_t i = 0; i < speciesVec.size(); ++i)
   {
-    species[i] = speciesVec[i].ordinal();
+    species[i] = speciesIndices[speciesVec[i]];
   }
   
   // Get the space group

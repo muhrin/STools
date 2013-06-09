@@ -187,7 +187,7 @@ double AtomExtruder::calcMaxOverlapFractionSq(
       if(sepSq < sepSqMtx(row, col))
       {
        maxOverlapFractionSq =
-         ::std::max(maxOverlapFractionSq, abs(sepSqMtx(row, col) - sepSq) / sepSqMtx(row, col));
+         ::std::max(maxOverlapFractionSq, ::std::abs(sepSqMtx(row, col) - sepSq) / sepSqMtx(row, col));
       }
     }
   }

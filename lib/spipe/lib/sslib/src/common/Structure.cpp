@@ -294,11 +294,23 @@ bool Structure::makePrimitive()
     }
 
     ::std::vector<AtomSpeciesId::Value> speciesVec;
+    ::std::vector<AtomSpeciesId::Value> speciesIdxVec;
     getAtomSpecies(speciesVec);
+    ::std::map<common::AtomSpeciesId::Value, int> speciesIndices;
+    int idx = 0;
+    BOOST_FOREACH(const common::AtomSpeciesId::Value & speciesId, speciesVec)
+    {
+      if(speciesIndices.insert(::std::make_pair(speciesId, idx)).second == true)
+      {
+        speciesIdxVec.push_back(speciesId);
+        ++idx;
+      }
+    }
+
     ::boost::scoped_array<int> species(new int[speciesVec.size()]);
     for(size_t i = 0; i < speciesVec.size(); ++i)
     {
-      species[i] = speciesVec[i].ordinal();
+      species[i] = speciesIndices[speciesVec[i]];
     }
 
     // Try to find the primitive unit cell
@@ -323,9 +335,10 @@ bool Structure::makePrimitive()
 
       Atom * atom;
       ::arma::vec3 pos;
+
       for(size_t i = 0; i < newNumAtoms; ++i)
       {
-        atom = &newAtom(*AtomSpeciesId::values()[species[i]]);
+        atom = &newAtom(speciesIdxVec[species[i]]);
         pos << positions[i][0] << ::arma::endr
           << positions[i][1] << ::arma::endr
           << positions[i][2] << ::arma::endr;
@@ -341,83 +354,8 @@ bool Structure::makePrimitive()
 
 UniquePtr<Structure>::Type Structure::getPrimitiveCopy() const
 {
-  UniquePtr<Structure>::Type structure;
-
-  if(myNumAtoms > 0 && myCell.get())
-  {
-    // Get the lattice
-    double lattice[3][3];
-    const::arma::mat33 & orthoMtx = myCell->getOrthoMtx();
-    for(size_t i = 0; i < 3; ++i)
-    {
-      for(size_t j = 0; j < 3; ++j)
-      {
-        // Row-major = column-major
-        lattice[i][j] = orthoMtx(i, j);
-      }
-    }
-
-    // Get the atom positions
-    double (*positions)[3] = new double[myNumAtoms][3];
-    ::arma::mat posMtx;
-    getAtomPositions(posMtx);
-    myCell->cartsToFracInplace(posMtx);
-    for(size_t i = 0; i < myNumAtoms; ++i)
-    {
-      for(size_t j = 0; j < 3; ++j)
-      {
-        // Row-major = column-major
-        positions[i][j] = posMtx(j, i);
-      }
-    }
-
-    // Get the atom species
-    ::std::vector<AtomSpeciesId::Value> speciesVec;
-    getAtomSpecies(speciesVec);
-    ::boost::scoped_array<int> species(new int[speciesVec.size()]);
-    for(size_t i = 0; i < speciesVec.size(); ++i)
-    {
-      species[i] = speciesVec[i].ordinal();
-    }
-
-    // Try to find the primitive unit cell
-    const size_t newNumAtoms = (size_t)spg_find_primitive(lattice, positions, species.get(), myNumAtoms, 0.05);
-
-    if(newNumAtoms != 0 && newNumAtoms < myNumAtoms)
-    {
-      structure.reset(new Structure());
-
-      // First deal with lattice
-      ::arma::mat33 newLattice;
-      for(size_t i = 0; i < 3; ++i)
-      {
-        for(size_t j = 0; j < 3; ++j)
-        {
-          newLattice(i, j) = lattice[i][j];
-        }
-      }
-
-      structure->setUnitCell(UnitCellPtr(new UnitCell(newLattice)));
-      const UnitCell * const unitCell = structure->getUnitCell();
-
-      Atom * atom;
-      ::arma::vec3 pos;
-      for(size_t i = 0; i < newNumAtoms; ++i)
-      {
-        atom = &structure->newAtom(*AtomSpeciesId::values()[species[i]]);
-        pos << positions[i][0] << ::arma::endr
-          << positions[i][1] << ::arma::endr
-          << positions[i][2] << ::arma::endr;
-        atom->setPosition(unitCell->fracWrapToCartInplace(pos));
-      }
-
-    }
-    delete [] positions;
-  } // if(myCell)
-
-  if(!structure.get())
-    structure.reset(new Structure(*this));
-
+  UniquePtr<Structure>::Type structure(new Structure(*this));
+  structure->makePrimitive();
   return structure;
 }
 

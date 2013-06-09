@@ -35,8 +35,7 @@ namespace io {
 namespace kw = factory::sslib_yaml_keywords;
 namespace structure_properties = common::structure_properties;
 
-StructureYamlGenerator::StructureYamlGenerator(const common::AtomSpeciesDatabase & speciesDb):
-mySpeciesDb(speciesDb)
+StructureYamlGenerator::StructureYamlGenerator()
 {
   AtomsFormat format;
   const YAML::Node null;
@@ -45,10 +44,7 @@ mySpeciesDb(speciesDb)
   myAtomInfoParser.setFormat(format);
 }
 
-StructureYamlGenerator::StructureYamlGenerator(
-  const common::AtomSpeciesDatabase & speciesDb,
-  const AtomYamlFormatParser::AtomsFormat & format):
-mySpeciesDb(speciesDb),
+StructureYamlGenerator::StructureYamlGenerator(const AtomYamlFormatParser::AtomsFormat & format):
 myAtomInfoParser(format)
 {}
 
@@ -113,10 +109,9 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 
         it = atomInfo.find(kw::STRUCTURE__ATOMS__SPEC);
         if(it != end)
-          species = mySpeciesDb.getIdFromSymbol(it->second.as< ::std::string>());
-
-        if(species != common::AtomSpeciesId::DUMMY)
         {
+          species = it->second.as< ::std::string>();
+
           common::Atom & atom = structure->newAtom(species);
           it = atomInfo.find(kw::STRUCTURE__ATOMS__POS);
           if(it != end)
@@ -152,9 +147,8 @@ YAML::Node StructureYamlGenerator::generateNode(
   {
     if(entry.first == kw::STRUCTURE__ATOMS__SPEC)
     {
-      const ::std::string * const species = mySpeciesDb.getSymbol(atom.getSpecies());
-      if(species)
-        atomInfo[kw::STRUCTURE__ATOMS__SPEC] = *species;
+      if(!atom.getSpecies().empty())
+        atomInfo[kw::STRUCTURE__ATOMS__SPEC] = atom.getSpecies();
     }
     else if(entry.first == kw::STRUCTURE__ATOMS__POS)
       atomInfo[kw::STRUCTURE__ATOMS__POS] = atom.getPosition();

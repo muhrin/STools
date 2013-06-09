@@ -95,9 +95,9 @@ void WriteStructure::in(::spipe::common::StructureData & data)
 
       bool writeSuccessful;
       if(myState == State::USE_CUSTOM_WRITER)
-        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation, getRunner()->memory().global().getSpeciesDatabase(), myFileType);
+        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation, myFileType);
       else
-        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation, getRunner()->memory().global().getSpeciesDatabase());
+        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation);
     	
       if(writeSuccessful)
       {

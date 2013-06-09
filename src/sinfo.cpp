@@ -8,7 +8,6 @@
 // INCLUDES //////////////////////////////////
 
 // From SSLib //
-#include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
 #include <common/Types.h>
@@ -41,11 +40,9 @@ int main(const int argc, char * argv[])
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
 
-  ssc::AtomSpeciesDatabase speciesDb;
-
   // Set up the tokens that we know about
   TokensMap tokensMap;
-  CustomisableTokens customisable = generateTokens(tokensMap, speciesDb);
+  CustomisableTokens customisable = generateTokens(tokensMap);
 
   // Process input and detect errors
   InputOptions in;
@@ -74,8 +71,7 @@ int main(const int argc, char * argv[])
     {
       const size_t numLoadedFromFile = rwMan.readStructures(
         structures,
-        structureLocator,
-        speciesDb
+        structureLocator
       );
       
       numKept = numLoadedFromFile;

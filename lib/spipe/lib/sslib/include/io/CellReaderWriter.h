@@ -37,21 +37,18 @@ public:
 
   // From IStructureReader //
   virtual ::sstbx::common::types::StructurePtr readStructure(
-    const ResourceLocator & resourceLocator,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+    const ResourceLocator & resourceLocator
   ) const;
   virtual size_t readStructures(
     StructuresContainer & outStructures,
-		const ResourceLocator & resourceLocator,
-		const common::AtomSpeciesDatabase & speciesDb
+    const ResourceLocator & resourceLocator
   ) const;
   // End from IStructureReader //
 
   // from IStructureWriter //
-	virtual void writeStructure(
-		::sstbx::common::Structure & str,
-		const ResourceLocator & locator,
-		const common::AtomSpeciesDatabase & speciesDb
+  virtual void writeStructure(
+    ::sstbx::common::Structure & str,
+    const ResourceLocator & locator
   ) const;
   // End from IStructureWriter
 
@@ -59,14 +56,12 @@ public:
   virtual bool multiStructureSupport() const { return false; }
 
   virtual common::types::StructurePtr readStructure(
-    ::std::istream & is,
-		const ::sstbx::common::AtomSpeciesDatabase & speciesDb
+    ::std::istream & is
   ) const;
 
   virtual void writeStructure(
     ::std::ostream & os,
-    common::Structure & structure,
-    const common::AtomSpeciesDatabase & speciesDb
+    common::Structure & structure
   ) const;
 
 private:
@@ -74,8 +69,7 @@ private:
   void writePositionsBlock(
     ::std::ostream & os,
     const common::Structure & structure,
-    const common::UnitCell & unitCell,
-    const common::AtomSpeciesDatabase & speciesDb
+    const common::UnitCell & unitCell
   ) const;
 };
 

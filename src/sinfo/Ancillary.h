@@ -22,7 +22,6 @@
 // FORWARD DECLARES ////////////////////////////////
 namespace sstbx {
 namespace common {
-class AtomSpeciesDatabase;
 class Structure;
 }
 }
@@ -100,7 +99,7 @@ struct TokensInfo
 Result::Value
 processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap);
 
-CustomisableTokens generateTokens(TokensMap & map, const ::sstbx::common::AtomSpeciesDatabase & speciesDb);
+CustomisableTokens generateTokens(TokensMap & map);
 
 Result::Value
 getRequiredTokens(

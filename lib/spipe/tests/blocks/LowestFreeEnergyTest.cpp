@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(LowestFreeEnergyTest)
   typedef Engine::RunnerPtr RunnerPtr;
 
   // SETTINGS /////////////
-  const unsigned int NUM_TO_KEEP    = 2;
+  const size_t NUM_TO_KEEP    = 2;
   const unsigned int NUM_STRUCTURES = 10;
 
   Pipe pipe;

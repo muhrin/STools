@@ -16,7 +16,6 @@ namespace sstbx {
 namespace build_cell {
 
 AtomsDescription::AtomsDescription():
-mySpecies(sstbx::common::AtomSpeciesId::DUMMY),
 myCount(1)
 {}
 

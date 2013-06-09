@@ -117,11 +117,9 @@ void StoichiometrySearch::start()
     ::std::stringstream stoichStringStream;
     size_t                    numAtomsOfSpecies;
     ssc::AtomSpeciesId::Value species;
-    const string *            speciesSymbol;
     for(size_t i = 0; i < currentIdx.dims(); ++i)
     {
       species           = mySpeciesParameters[i].id;
-      speciesSymbol     = atomsDb.getSymbol(species);
       numAtomsOfSpecies = currentIdx[i];
   
       if(numAtomsOfSpecies > 0)
@@ -135,8 +133,8 @@ void StoichiometrySearch::start()
 
 
       // Append the species symbol
-      if(speciesSymbol)
-        stoichStringStream << *speciesSymbol;
+      if(!species.empty())
+        stoichStringStream << species;
 
       // Add delimiter apart from for last species
       if(i + 1 < currentIdx.dims())
@@ -251,17 +249,15 @@ void StoichiometrySearch::updateTable(
   utility::DataTable & table = myTableSupport.getTable();
 
   ssc::AtomSpeciesId::Value species;
-  const string *            speciesSymbol;
   string                    speciesTableColumn;
   size_t                    numAtomsOfSpecies;
   for(size_t i = 0; i < currentIdx.dims(); ++i)
   {
     species           = mySpeciesParameters[i].id;
-    speciesSymbol     = atomsDb.getSymbol(species);
     numAtomsOfSpecies = currentIdx[i];
 
-    if(speciesSymbol)
-      speciesTableColumn = *speciesSymbol;
+    if(!species.empty())
+      speciesTableColumn = species;
     else
       speciesTableColumn = lexical_cast<string>(i);
 

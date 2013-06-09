@@ -26,18 +26,18 @@ public:
 
   static const unsigned int DIGITS_AFTER_DECIMAL;
 
-	/**
-	/* Write a structure out to disk.
-	/* The user can supply their own species database, however it is up to them
-	/* to make sure that the implementation is thread safe if necessary.
-	/**/
-	virtual void writeStructure(
-		::sstbx::common::Structure & str,
-		const ResourceLocator & locator,
-		const common::AtomSpeciesDatabase & speciesDb) const;
+  /**
+  /* Write a structure out to disk.
+  /* The user can supply their own species database, however it is up to them
+  /* to make sure that the implementation is thread safe if necessary.
+  /**/
+  virtual void writeStructure(
+    ::sstbx::common::Structure & str,
+    const ResourceLocator & locator
+  ) const;
 
 
-	virtual ::std::vector<std::string> getSupportedFileExtensions() const;
+  virtual ::std::vector<std::string> getSupportedFileExtensions() const;
 
   /**
   /* Does this reader support reading multiple structures from a single file.

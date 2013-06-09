@@ -13,6 +13,7 @@
 #include "SSLib.h"
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>

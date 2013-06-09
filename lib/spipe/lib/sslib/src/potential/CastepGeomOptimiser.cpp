@@ -218,7 +218,7 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   fs::ofstream * newCellFileStream;
   if(myCastepRun.openNewCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
   {  
-    myCellReaderWriter.writeStructure(*newCellFileStream, structure, speciesDb);
+    myCellReaderWriter.writeStructure(*newCellFileStream, structure);
 
     if(myOptimisationSettings.pressure)
     {
