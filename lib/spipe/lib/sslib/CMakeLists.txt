@@ -93,7 +93,7 @@ endif(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
 
 ## INCLUDE DIRECTORIES ##################################
 
-set(SSLIB_INCLUDE_DIRS
+set(SSLIB_LOCAL_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}/include  # So that we find SSLibConfig.h
   ${PROJECT_SOURCE_DIR}/include
   CACHE FILEPATH INTERNAL FORCE
@@ -103,7 +103,7 @@ set(SSLIB_INCLUDE_DIRS
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
-  ${SSLIB_INCLUDE_DIRS}
+  ${SSLIB_LOCAL_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
 )
 
@@ -114,8 +114,16 @@ endif(SSLIB_USE_YAML)
 
 # Include CGAL if we're using it
 if(SSLIB_USE_CGAL)
-  include_directories(${CGAL_INCLUDE_DIRS} ${CGAL_CORE_INCLUDE_DIR})
+  include_directories(
+    "${CGAL_INCLUDE_DIRS}"
+  )
 endif(SSLIB_USE_CGAL)
+
+get_property(SSLIB_INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+set(SSLIB_INCLUDE_DIRS
+  ${SSLIB_INCLUDE_DIRS}
+  CACHE FILEPATH INTERNAL FORCE
+)
 
 # Process header and source files
 include(IncludeLists.txt)
@@ -150,8 +158,8 @@ endif(SSLIB_USE_YAML)
 #endif(SSLIB_USE_LAPACK)
 
 if(SSLIB_USE_CGAL)
-  message(STATUS "GOT HERE ${CGAL_Core_LIBRARY}")
   target_link_libraries(sslib
+    ${CGAL_LIBRARY}
     ${CGAL_Core_LIBRARY}
   )
 endif(SSLIB_USE_CGAL)
