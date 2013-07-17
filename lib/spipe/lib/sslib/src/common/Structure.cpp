@@ -130,10 +130,10 @@ void Structure::setUnitCell(UnitCellPtr cell)
     return;
 
   if(myCell.get())
-    myCell->setStructure(NULL);
+    myCell->removeListener(*this);
 
-	myCell = cell;
-  myCell->setStructure(this);
+  myCell = cell;
+  myCell->addListener(*this);
   myDistanceCalculator.unitCellChanged();
 }
 
@@ -247,6 +247,22 @@ void Structure::getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) co
 size_t Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 {
   return ::std::count_if(myAtoms.begin(), myAtoms.end(), MatchSpecies(species));
+}
+
+Structure::Composition Structure::getComposition() const
+{
+  Composition comp;
+
+  Composition::iterator it;
+  BOOST_FOREACH(const Atom & atom, myAtoms)
+  {
+    it = comp.find(atom.getSpecies());
+    if(it == comp.end())
+      comp[atom.getSpecies()] = 1;
+    else
+      ++it->second;
+  }
+  return comp;
 }
 
 const DistanceCalculator & Structure::getDistanceCalculator() const
@@ -408,6 +424,17 @@ void Structure::print(::std::ostream & os) const
       os << " " << pos(i);
     os << std::endl;
   }
+}
+
+void Structure::onUnitCellChanged(UnitCell & unitCell)
+{
+  myDistanceCalculator.unitCellChanged();
+}
+
+void Structure::onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+    const double newVol)
+{
+  myDistanceCalculator.unitCellChanged();
 }
 
 void Structure::atomMoved(const Atom & atom) const

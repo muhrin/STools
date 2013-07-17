@@ -366,7 +366,7 @@ bool RandomUnitCellGenerator::cellFullySpecified() const
     volAndDelta.first = *myTargetVolume;
   else if(cellFullySpecified())
     volAndDelta.first = currentVolume;
-  else if(structureContents)
+  else if(structureContents && structureContents->getVolume() != 0.0)
   {
     double multiplier;
     if(myContentsMultiplier)

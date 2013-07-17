@@ -15,104 +15,119 @@
 #include "common/Structure.h"
 #include "utility/IndexingEnums.h"
 
-namespace sstbx {
-namespace common {
+namespace sstbx
+{
+namespace common
+{
 
-UnitCell::UnitCell():
-myStructure(NULL)
+UnitCell::UnitCell()
 {
   init(1.0, 1.0, 1.0, 90.0, 90.0, 90.0);
 }
 
-UnitCell::UnitCell(const double a, const double b, const double c, const double alpha, const double beta, const double gamma):
-myStructure(NULL)
+UnitCell::UnitCell(const double a, const double b, const double c,
+    const double alpha, const double beta, const double gamma)
 {
   init(a, b, c, alpha, beta, gamma);
 }
 
-UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix):
-myStructure(NULL)
+UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix)
 {
   init(orthoMatrix);
 }
 
-UnitCell::UnitCell(const double (&latticeParams)[6]):
-myStructure(NULL)
+UnitCell::UnitCell(const double (&latticeParams)[6])
 {
   using namespace utility::cell_params_enum;
 
   init(latticeParams[A], latticeParams[B], latticeParams[C],
-    latticeParams[ALPHA], latticeParams[BETA], latticeParams[GAMMA]);
+      latticeParams[ALPHA], latticeParams[BETA], latticeParams[GAMMA]);
 }
 
-UnitCell::UnitCell(const UnitCell & toCopy):
-myStructure(toCopy.myStructure),
-myOrthoMtx(toCopy.myOrthoMtx),
-myFracMtx(toCopy.myFracMtx),
-myVolume(toCopy.myVolume)
+UnitCell::UnitCell(const UnitCell & toCopy) :
+    myOrthoMtx(toCopy.myOrthoMtx), myFracMtx(toCopy.myFracMtx), myVolume(
+        toCopy.myVolume)
 {
   memcpy(myLatticeParams, toCopy.myLatticeParams, sizeof(double) * 6);
 }
 
-UnitCellPtr UnitCell::clone() const
+UnitCellPtr
+UnitCell::clone() const
 {
   return UnitCellPtr(new UnitCell(*this));
 }
 
-const double (&UnitCell::getLatticeParams() const)[6]
+const double (& UnitCell::getLatticeParams() const)[6]
 {
   return myLatticeParams;
 }
 
-void UnitCell::setLatticeParams(const double (&params)[6])
+void
+UnitCell::setLatticeParams(const double (&params)[6])
 {
   using namespace utility::cell_params_enum;
 
-  init(params[A], params[B], params[C], params[ALPHA], params[BETA], params[GAMMA]);
+  init(params[A], params[B], params[C], params[ALPHA], params[BETA],
+      params[GAMMA]);
+
+  sendUnitCellChangedMsg();
 }
 
-double UnitCell::getLongestCellVectorLength() const
+double
+UnitCell::getLongestCellVectorLength() const
 {
   using namespace utility::cell_params_enum;
 
-  return ::std::max(myLatticeParams[A], ::std::max(myLatticeParams[B], myLatticeParams[C]));
+  return ::std::max(myLatticeParams[A],
+      ::std::max(myLatticeParams[B], myLatticeParams[C]));
 }
 
-const ::arma::mat33 & UnitCell::getOrthoMtx() const
+const ::arma::mat33 &
+UnitCell::getOrthoMtx() const
 {
   return myOrthoMtx;
 }
 
-bool UnitCell::setOrthoMtx(const ::arma::mat33 & orthoMtx)
+bool
+UnitCell::setOrthoMtx(const ::arma::mat33 & orthoMtx)
 {
-	if(!init(orthoMtx))
+  if (!init(orthoMtx))
     return false;
 
-  if(myStructure)
-    myStructure->unitCellChanged();
+  sendUnitCellChangedMsg();
+
   return true;
 }
 
-const ::arma::mat33 & UnitCell::getFracMtx() const
+const ::arma::mat33 &
+UnitCell::getFracMtx() const
 {
   return myFracMtx;
 }
 
-double UnitCell::getVolume() const
+double
+UnitCell::getVolume() const
 {
   return myVolume;
 }
 
-double UnitCell::setVolume(const double volume)
+double
+UnitCell::setVolume(const double volume)
 {
   SSLIB_ASSERT(volume > 0);
 
-	const double scale = pow(volume / getVolume(), 1.0 / 3.0);
-	init(scale * myOrthoMtx);
+  const double oldVol = getVolume();
+
+  const double scale = pow(volume / oldVol, 1.0 / 3.0);
+  init(scale * myOrthoMtx);
+
+  sendUnitCellVolChangedMsg(oldVol);
+
   return scale;
 }
 
-double UnitCell::getNormVolume() const
+double
+UnitCell::getNormVolume() const
 {
   using namespace utility::cell_params_enum;
 
@@ -129,12 +144,14 @@ double UnitCell::getNormVolume() const
   return std::abs(dot(arma::cross(a, b), c));
 }
 
-::arma::vec3 UnitCell::getLongestDiagonal() const
+::arma::vec3
+UnitCell::getLongestDiagonal() const
 {
-  const ::arma::vec3 A(getAVec());
-  const ::arma::vec3 B(getBVec());
-  const ::arma::vec3 C(getCVec());
+  const ::arma::vec3 A = getAVec();
+  const ::arma::vec3 B = getBVec();
+  const ::arma::vec3 C = getCVec();
 
+  // This doesn't work:
   //::arma::vec3 diag = A;
   //if(::arma::dot(A, B) > 0.0)
   //  diag += B;
@@ -151,7 +168,7 @@ double UnitCell::getNormVolume() const
 
   ::arma::vec3 combination = A + B - C;
   double lengthSq = ::arma::dot(combination, combination);
-  if(lengthSq > maxLengthSq)
+  if (lengthSq > maxLengthSq)
   {
     longest = combination;
     maxLengthSq = lengthSq;
@@ -159,7 +176,7 @@ double UnitCell::getNormVolume() const
 
   combination = A - B + C;
   lengthSq = ::arma::dot(combination, combination);
-  if(lengthSq > maxLengthSq)
+  if (lengthSq > maxLengthSq)
   {
     longest = combination;
     maxLengthSq = lengthSq;
@@ -167,7 +184,7 @@ double UnitCell::getNormVolume() const
 
   combination = A - B - C;
   lengthSq = ::arma::dot(combination, combination);
-  if(lengthSq > maxLengthSq)
+  if (lengthSq > maxLengthSq)
   {
     longest = combination;
     maxLengthSq = lengthSq;
@@ -176,19 +193,20 @@ double UnitCell::getNormVolume() const
   return longest;
 }
 
-UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance) const
+UnitCell::LatticeSystem::Value
+UnitCell::getLatticeSystem(const double tolerance) const
 {
   using namespace utility::cell_params_enum;
   namespace comp = utility::stable;
 
-  if(comp::eq(myLatticeParams[ALPHA], myLatticeParams[BETA], tolerance) &&
-    comp::eq(myLatticeParams[BETA], myLatticeParams[GAMMA], tolerance))
+  if (comp::eq(myLatticeParams[ALPHA], myLatticeParams[BETA], tolerance)
+      && comp::eq(myLatticeParams[BETA], myLatticeParams[GAMMA], tolerance))
   {
-    if(comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
+    if (comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[A], myLatticeParams[B], tolerance))
+      if (comp::eq(myLatticeParams[A], myLatticeParams[B], tolerance))
       {
-        if(comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
+        if (comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
         {
           return LatticeSystem::CUBIC;
         }
@@ -197,7 +215,7 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
           return LatticeSystem::TETRAGONAL;
         }
       } // if(a == b)
-      else if(comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
+      else if (comp::eq(myLatticeParams[A], myLatticeParams[C], tolerance))
       {
         return LatticeSystem::TETRAGONAL;
       } // if(a == c)
@@ -211,9 +229,10 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
   } // if(alpha == beta == gamma)
   else
   {
-    if(comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
+    if (comp::eq(myLatticeParams[ALPHA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[BETA], 90.0, tolerance) || comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
+      if (comp::eq(myLatticeParams[BETA], 90.0, tolerance)
+          || comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
       {
         return LatticeSystem::MONOCLINIC;
       }
@@ -224,9 +243,9 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
         return LatticeSystem::TRICLINIC;
       }
     } // if(alpha == 90)
-    else if(comp::eq(myLatticeParams[BETA], 90.0, tolerance))
+    else if (comp::eq(myLatticeParams[BETA], 90.0, tolerance))
     {
-      if(comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
+      if (comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
       {
         return LatticeSystem::MONOCLINIC;
       }
@@ -237,7 +256,7 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
         return LatticeSystem::TRICLINIC;
       }
     } // if(alpha == 90), else if(beta == 90.0)
-    else if(comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
+    else if (comp::eq(myLatticeParams[GAMMA], 90.0, tolerance))
     {
       return LatticeSystem::MONOCLINIC;
     } // if(alpha == 90), else if(beta == 90), else if(gamma == 90)
@@ -250,7 +269,8 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
   return LatticeSystem::TRICLINIC;
 }
 
-::arma::vec3 UnitCell::wrapVec(const ::arma::vec3 & cart) const
+::arma::vec3
+UnitCell::wrapVec(const ::arma::vec3 & cart) const
 {
   ::arma::vec3 toWrap(cart);
   cartToFracInplace(toWrap); // Fractionalise it
@@ -258,7 +278,8 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
   return fracToCartInplace(toWrap); // Orthogonalise it back
 }
 
-::arma::vec3 & UnitCell::wrapVecInplace(::arma::vec3 & cart) const
+::arma::vec3 &
+UnitCell::wrapVecInplace(::arma::vec3 & cart) const
 {
   cartToFracInplace(cart);
   wrapVecFracInplace(cart);
@@ -266,27 +287,31 @@ UnitCell::LatticeSystem::Value UnitCell::getLatticeSystem(const double tolerance
   return cart;
 }
 
-::arma::vec3 UnitCell::wrapVecFrac(const ::arma::vec3 & frac) const
+::arma::vec3
+UnitCell::wrapVecFrac(const ::arma::vec3 & frac) const
 {
   ::arma::vec3 toWrap(frac);
   wrapVecFracInplace(toWrap);
   return toWrap;
 }
 
-::arma::vec3 & UnitCell::wrapVecFracInplace(::arma::vec3 & frac) const
+::arma::vec3 &
+UnitCell::wrapVecFracInplace(::arma::vec3 & frac) const
 {
   frac -= ::arma::floor(frac);
   return frac;
 }
 
-::arma::vec3 UnitCell::randomPoint() const
+::arma::vec3
+UnitCell::randomPoint() const
 {
   ::arma::vec3 rand;
   rand.randu();
   return fracToCartInplace(rand);
 }
 
-bool UnitCell::niggliReduce()
+bool
+UnitCell::niggliReduce()
 {
 // Borrowed from David Lonie's XtalOpt here:
 // http://github.com/dlonie/XtalComp/blob/master/xtalcomp.cpp#L1538
@@ -311,26 +336,27 @@ bool UnitCell::niggliReduce()
   //QList<Eigen::Vector3d> fcoords = currentFractionalCoords();
 
   // Get cell parameters in storage units, convert deg->rad
-  double a     = myLatticeParams[A];
-  double b     = myLatticeParams[B];
-  double c     = myLatticeParams[C];
+  double a = myLatticeParams[A];
+  double b = myLatticeParams[B];
+  double c = myLatticeParams[C];
   double alpha = myLatticeParams[ALPHA] * constants::DEG_TO_RAD;
-  double beta  = myLatticeParams[BETA] * constants::DEG_TO_RAD;
+  double beta = myLatticeParams[BETA] * constants::DEG_TO_RAD;
   double gamma = myLatticeParams[GAMMA] * constants::DEG_TO_RAD;
 
   // Compute characteristic (step 0)
-  double A    = a*a;
-  double B    = b*b;
-  double C    = c*c;
-  double xi   = 2*b*c*cos(alpha);
-  double eta  = 2*a*c*cos(beta);
-  double zeta = 2*a*b*cos(gamma);
+  double A = a * a;
+  double B = b * b;
+  double C = c * c;
+  double xi = 2 * b * c * cos(alpha);
+  double eta = 2 * a * c * cos(beta);
+  double zeta = 2 * a * b * cos(gamma);
 
   // Return value
   bool ret = false;
 
   // comparison tolerance
-  const double tol = stable::STABLE_COMP_TOL * std::pow(a * b * c, 1.0/3.0);
+  const double tol = stable::STABLE_COMP_TOL
+      * std::pow(a * b * c, 1.0 / 3.0);
 
   // Initialize change of basis matrices:
   //
@@ -349,47 +375,35 @@ bool UnitCell::niggliReduce()
 
   // Swap x,y (Used in Step 1). Negatives ensure proper sign of final
   // determinant.
-  tmpMat
-    << 0 << -1 << 0 << arma::endr
-    << -1 << 0 << 0 << arma::endr
-    << 0 << 0 << -1 << arma::endr;
+  tmpMat << 0 << -1 << 0 << arma::endr << -1 << 0 << 0 << arma::endr << 0
+      << 0 << -1 << arma::endr;
 
   const arma::mat33 C1(tmpMat);
   // Swap y,z (Used in Step 2). Negatives ensure proper sign of final
   // determinant
-  tmpMat
-    << -1 << 0 << 0 << arma::endr
-    << 0 << 0 << -1 << arma::endr
-    << 0 << -1 << 0 << arma::endr;
+  tmpMat << -1 << 0 << 0 << arma::endr << 0 << 0 << -1 << arma::endr << 0
+      << -1 << 0 << arma::endr;
   const arma::mat33 C2(tmpMat);
   // For step 8:
-  tmpMat
-    << 1 << 0 << 1 << arma::endr
-    << 0 << 1 << 1 << arma::endr
-    << 0 << 0 << 1 << arma::endr;
+  tmpMat << 1 << 0 << 1 << arma::endr << 0 << 1 << 1 << arma::endr << 0 << 0
+      << 1 << arma::endr;
   const arma::mat33 C8(tmpMat);
 
   // initial change of basis matrix
-  tmpMat
-    << 1 << 0 << 0 << arma::endr
-    << 0 << 1 << 0 << arma::endr
-    << 0 << 0 << 1 << arma::endr;
+  tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << 0 << arma::endr << 0 << 0
+      << 1 << arma::endr;
   arma::mat33 cob(tmpMat);
 
 //#define NIGGLI_DEBUG(step) std::cout << iter << " " << step << " " << A << " "\
 //  << B << " " << C << " " << xi << " " << eta << " " << zeta << std::endl;
 #define NIGGLI_DEBUG(step)
   unsigned int iter;
-  for (iter = 0; iter < iterations; ++iter) {
+  for (iter = 0; iter < iterations; ++iter)
+  {
     // Step 1:
-    if (
-        stable::gt(A, B, tol)
-        || (
-            stable::eq(A, B, tol)
-            &&
-            stable::gt(fabs(xi), fabs(eta), tol)
-            )
-        ) {
+    if (stable::gt(A, B, tol)
+        || (stable::eq(A, B, tol) && stable::gt(fabs(xi), fabs(eta), tol)))
+    {
       cob *= C1;
       std::swap(A, B);
       std::swap(xi, eta);
@@ -397,14 +411,9 @@ bool UnitCell::niggliReduce()
     }
 
     // Step 2:
-    if (
-        stable::gt(B, C, tol)
-        || (
-            stable::eq(B, C, tol)
-            &&
-            stable::gt(fabs(eta), fabs(zeta), tol)
-            )
-        ) {
+    if (stable::gt(B, C, tol)
+        || (stable::eq(B, C, tol) && stable::gt(fabs(eta), fabs(zeta), tol)))
+    {
       cob *= C2;
       std::swap(B, C);
       std::swap(eta, zeta);
@@ -414,17 +423,17 @@ bool UnitCell::niggliReduce()
 
     // Step 3:
     // Use exact comparisons in steps 3 and 4.
-    if (xi*eta*zeta > 0) {
+    if (xi * eta * zeta > 0)
+    {
       // Update change of basis matrix:
-      tmpMat
-        << stable::sign(xi) << 0 << 0 << arma::endr
-        << 0 << stable::sign(eta) << 0 << arma::endr
-        << 0 << 0 << stable::sign(zeta) << arma::endr;
+      tmpMat << stable::sign(xi) << 0 << 0 << arma::endr << 0
+          << stable::sign(eta) << 0 << arma::endr << 0 << 0
+          << stable::sign(zeta) << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
-      xi   = fabs(xi);
-      eta  = fabs(eta);
+      xi = fabs(xi);
+      eta = fabs(eta);
       zeta = fabs(zeta);
       NIGGLI_DEBUG(3);
       ++iter;
@@ -432,32 +441,41 @@ bool UnitCell::niggliReduce()
 
     // Step 4:
     // Use exact comparisons for steps 3 and 4
-    else { // either step 3 or 4 should run
+    else
+    { // either step 3 or 4 should run
       // Update change of basis matrix:
       double *p = NULL;
       double i = 1;
       double j = 1;
       double k = 1;
-      if (xi > 0) {
+      if (xi > 0)
+      {
         i = -1;
       }
-      else if (!(xi < 0)) {
+      else if (!(xi < 0))
+      {
         p = &i;
       }
-      if (eta > 0) {
+      if (eta > 0)
+      {
         j = -1;
       }
-      else if (!(eta < 0)) {
+      else if (!(eta < 0))
+      {
         p = &j;
       }
-      if (zeta > 0) {
+      if (zeta > 0)
+      {
         k = -1;
       }
-      else if (!(zeta < 0)) {
+      else if (!(zeta < 0))
+      {
         p = &k;
       }
-      if (i*j*k < 0) {
-        if (!p) {
+      if (i * j * k < 0)
+      {
+        if (!p)
+        {
           //QMessageBox::warning
           //    (m_mainwindow,
           //     CE_DIALOG_TITLE,
@@ -470,15 +488,13 @@ bool UnitCell::niggliReduce()
         }
         *p = -1;
       }
-      tmpMat
-        << i << 0 << 0 << arma::endr
-        << 0 << j << 0 << arma::endr
-        << 0 << 0 << k << arma::endr;
+      tmpMat << i << 0 << 0 << arma::endr << 0 << j << 0 << arma::endr << 0
+          << 0 << k << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
-      xi   = -fabs(xi);
-      eta  = -fabs(eta);
+      xi = -fabs(xi);
+      eta = -fabs(eta);
       zeta = -fabs(zeta);
       NIGGLI_DEBUG(4);
       ++iter;
@@ -486,75 +502,57 @@ bool UnitCell::niggliReduce()
 
     // Step 5:
     if (stable::gt(fabs(xi), B, tol)
-        || (stable::eq(xi, B, tol)
-            && stable::lt(2*eta, zeta, tol)
-            )
-        || (stable::eq(xi, -B, tol)
-            && stable::lt(zeta, 0, tol)
-            )
-        ) {
+        || (stable::eq(xi, B, tol) && stable::lt(2 * eta, zeta, tol))
+        || (stable::eq(xi, -B, tol) && stable::lt(zeta, 0, tol)))
+    {
       double signXi = stable::sign(xi);
       // Update change of basis matrix:
-      tmpMat
-        << 1 << 0 << 0 << arma::endr
-        << 0 << 1 << -signXi << arma::endr
-        << 0 << 0 << 1 << arma::endr;
+      tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << -signXi << arma::endr
+          << 0 << 0 << 1 << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
-      C    = B + C - xi*signXi;
-      eta  = eta - zeta*signXi;
-      xi   = xi -   2*B*signXi;
+      C = B + C - xi * signXi;
+      eta = eta - zeta * signXi;
+      xi = xi - 2 * B * signXi;
       NIGGLI_DEBUG(5);
       continue;
     }
 
     // Step 6:
     if (stable::gt(fabs(eta), A, tol)
-        || (stable::eq(eta, A, tol)
-            && stable::lt(2*xi, zeta, tol)
-            )
-        || (stable::eq(eta, -A, tol)
-            && stable::lt(zeta, 0, tol)
-            )
-        ) {
+        || (stable::eq(eta, A, tol) && stable::lt(2 * xi, zeta, tol))
+        || (stable::eq(eta, -A, tol) && stable::lt(zeta, 0, tol)))
+    {
       double signEta = stable::sign(eta);
       // Update change of basis matrix:
-      tmpMat
-        << 1 << 0 << -signEta << arma::endr
-        << 0 << 1 << 0 << arma::endr
-        << 0 << 0 << 1 << arma::endr;
+      tmpMat << 1 << 0 << -signEta << arma::endr << 0 << 1 << 0
+          << arma::endr << 0 << 0 << 1 << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
-      C    = A + C - eta*signEta;
-      xi   = xi - zeta*signEta;
-      eta  = eta - 2*A*signEta;
+      C = A + C - eta * signEta;
+      xi = xi - zeta * signEta;
+      eta = eta - 2 * A * signEta;
       NIGGLI_DEBUG(6);
       continue;
     }
 
     // Step 7:
     if (stable::gt(fabs(zeta), A, tol)
-        || (stable::eq(zeta, A, tol)
-            && stable::lt(2*xi, eta, tol)
-            )
-        || (stable::eq(zeta, -A, tol)
-            && stable::lt(eta, 0, tol)
-            )
-        ) {
+        || (stable::eq(zeta, A, tol) && stable::lt(2 * xi, eta, tol))
+        || (stable::eq(zeta, -A, tol) && stable::lt(eta, 0, tol)))
+    {
       double signZeta = stable::sign(zeta);
       // Update change of basis matrix:
-      tmpMat
-        << 1 << -signZeta << 0 << arma::endr
-        << 0 << 1 << 0 << arma::endr
-        << 0 << 0 << 1 << arma::endr;
+      tmpMat << 1 << -signZeta << 0 << arma::endr << 0 << 1 << 0
+          << arma::endr << 0 << 0 << 1 << arma::endr;
       cob *= tmpMat;
 
       // Update characteristic
-      B    = A + B - zeta*signZeta;
-      xi   = xi - eta*signZeta;
-      zeta = zeta - 2*A*signZeta;
+      B = A + B - zeta * signZeta;
+      xi = xi - eta * signZeta;
+      zeta = zeta - 2 * A * signZeta;
       NIGGLI_DEBUG(7);
       continue;
     }
@@ -563,16 +561,15 @@ bool UnitCell::niggliReduce()
     double sumAllButC = A + B + xi + eta + zeta;
     if (stable::lt(sumAllButC, 0, tol)
         || (stable::eq(sumAllButC, 0, tol)
-            && stable::gt(2*(A+eta)+zeta, 0, tol)
-            )
-        ) {
+            && stable::gt(2 * (A + eta) + zeta, 0, tol)))
+    {
       // Update change of basis matrix:
       cob *= C8;
 
       // Update characteristic
-      C    = sumAllButC + C;
-      xi = 2*B + xi + zeta;
-      eta  = 2*A + eta + zeta;
+      C = sumAllButC + C;
+      xi = 2 * B + xi + zeta;
+      eta = 2 * A + eta + zeta;
       NIGGLI_DEBUG(8);
       continue;
     }
@@ -583,7 +580,8 @@ bool UnitCell::niggliReduce()
   }
 
   // No change
-  if (iter == 0) {
+  if (iter == 0)
+  {
     //QMessageBox::information
     //  (m_mainwindow,
     //   CE_DIALOG_TITLE,
@@ -592,7 +590,8 @@ bool UnitCell::niggliReduce()
     return false;
   }
 
-  if (!ret) {
+  if (!ret)
+  {
     //QMessageBox::warning
     //  (m_mainwindow,
     //   CE_DIALOG_TITLE,
@@ -601,90 +600,126 @@ bool UnitCell::niggliReduce()
     return false;
   }
 
-  SSLIB_ASSERT_MSG(::arma::det(cob) == 1, "Determinant of change of basis matrix must be 1.");
+  SSLIB_ASSERT_MSG(::arma::det(cob) == 1,
+      "Determinant of change of basis matrix must be 1.");
 
   // Update cell
   init(myOrthoMtx * cob);
   //setCurrentCellMatrix(cob.transpose() * currentCellMatrix());
 
-  SSLIB_ASSERT_MSG(stable::eq(origVolume, getVolume(), tol), "Cell volume changed during Niggli reduction.");
+  SSLIB_ASSERT_MSG(stable::eq(origVolume, getVolume(), tol),
+      "Cell volume changed during Niggli reduction.");
 
   // fix coordinates
   // Apply COB matrix:
- /* Eigen::Matrix3d invCob;
-  cob.computeInverse(&invCob);
-  for (QList<Eigen::Vector3d>::iterator
-         it = fcoords.begin(),
-         it_end = fcoords.end();
-       it != it_end; ++it) {
-    *it = invCob * (*it);
-  }
-  setCurrentFractionalCoords(currentAtomicSymbols(), fcoords);*/
+  /* Eigen::Matrix3d invCob;
+   cob.computeInverse(&invCob);
+   for (QList<Eigen::Vector3d>::iterator
+   it = fcoords.begin(),
+   it_end = fcoords.end();
+   it != it_end; ++it) {
+   *it = invCob * (*it);
+   }
+   setCurrentFractionalCoords(currentAtomicSymbols(), fcoords);*/
 
   // wrap:
   //wrapAtomsToCell();
   //orientStandard();
-  if(myStructure)
-    myStructure->unitCellChanged();
+  sendUnitCellChangedMsg();
+
   return true;
 }
 
-void UnitCell::setStructure(const Structure * const structure)
+void
+UnitCell::addListener(UnitCellListener & listener)
 {
-  myStructure = structure;
+  myListeners.insert(&listener);
 }
 
-bool UnitCell::init(
-	const double a, const double b, const double c,
-	const double alpha, const double beta, const double gamma)
+bool
+UnitCell::removeListener(UnitCellListener & listener)
+{
+  Listeners::const_iterator it = myListeners.find(&listener);
+  if (it == myListeners.end())
+    return false;
+
+  myListeners.erase(it);
+  return true;
+}
+
+void
+UnitCell::sendUnitCellChangedMsg()
+{
+  BOOST_FOREACH(UnitCellListener * const l, myListeners)
+  {
+    l->onUnitCellChanged(*this);
+  }
+}
+
+void
+UnitCell::sendUnitCellVolChangedMsg(const double oldVol)
+{
+  BOOST_FOREACH(UnitCellListener * const l, myListeners)
+  {
+    l->onUnitCellVolumeChanged(*this, oldVol, getVolume());
+  }
+}
+
+bool
+UnitCell::init(const double a, const double b, const double c,
+    const double alpha, const double beta, const double gamma)
 {
   using namespace utility::cell_params_enum;
 
   // Sanity checks on parameters
-  SSLIB_ASSERT_MSG(alpha+beta+gamma <= 360.0, "Non-physical lattice parameters supplied - required that alpha+beta+gamma <= 360.0");
-  SSLIB_ASSERT_MSG(abs(alpha-beta) <= gamma, "Non-physical lattice parameters supplied - require that abs(alpha-beta) < gamma");
-  SSLIB_ASSERT_MSG(abs(beta-gamma) <= alpha, "Non-physical lattice parameters supplied - require that abs(beta-gamma) < alpha");
-  SSLIB_ASSERT_MSG(abs(gamma-alpha) <= beta, "Non-physical lattice parameters supplied - require that abs(gamma-alpha) < beta");
+  SSLIB_ASSERT_MSG(alpha+beta+gamma <= 360.0,
+      "Non-physical lattice parameters supplied - required that alpha+beta+gamma <= 360.0");
+  SSLIB_ASSERT_MSG(abs(alpha-beta) <= gamma,
+      "Non-physical lattice parameters supplied - require that abs(alpha-beta) < gamma");
+  SSLIB_ASSERT_MSG(abs(beta-gamma) <= alpha,
+      "Non-physical lattice parameters supplied - require that abs(beta-gamma) < alpha");
+  SSLIB_ASSERT_MSG(abs(gamma-alpha) <= beta,
+      "Non-physical lattice parameters supplied - require that abs(gamma-alpha) < beta");
 
   double oldLatticeParams[6];
   memcpy(oldLatticeParams, myLatticeParams, sizeof(double) * 6);
 
-	myLatticeParams[A] = a;
-	myLatticeParams[B] = b;
-	myLatticeParams[C] = c;
-	myLatticeParams[ALPHA] = alpha;
-	myLatticeParams[BETA]  = beta;
-	myLatticeParams[GAMMA] = gamma;
-	
-	if(!initOrthoAndFracMatrices())
+  myLatticeParams[A] = a;
+  myLatticeParams[B] = b;
+  myLatticeParams[C] = c;
+  myLatticeParams[ALPHA] = alpha;
+  myLatticeParams[BETA] = beta;
+  myLatticeParams[GAMMA] = gamma;
+
+  if (!initOrthoAndFracMatrices())
   {
     // roll-back changes
     memcpy(myLatticeParams, oldLatticeParams, sizeof(double) * 6);
     return false;
   }
-	initRest();
+  initRest();
   return true;
 }
 
-
-bool UnitCell::init(const ::arma::mat33 & orthoMtx)
+bool
+UnitCell::init(const ::arma::mat33 & orthoMtx)
 {
   try
   {
-	  myFracMtx	= arma::inv(orthoMtx); // throws if orthoMtx is singular
-	  myOrthoMtx	= orthoMtx;
-	  initLatticeParams();
-	  initRest();
+    myFracMtx = arma::inv(orthoMtx); // throws if orthoMtx is singular
+    myOrthoMtx = orthoMtx;
+    initLatticeParams();
+    initRest();
   }
-  catch(const ::std::runtime_error & /*e*/)
+  catch (const ::std::runtime_error & /*e*/)
   {
     return false;
   }
   return true;
 }
 
-
-bool UnitCell::initOrthoAndFracMatrices()
+bool
+UnitCell::initOrthoAndFracMatrices()
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
@@ -695,26 +730,26 @@ bool UnitCell::initOrthoAndFracMatrices()
 
   const ::arma::mat33 oldOrthoMtx = myOrthoMtx;
 
-	myOrthoMtx.zeros();
-	// A - col 0
-	myOrthoMtx.at(X, A) = myLatticeParams[A];
-	// B - col 1
-	myOrthoMtx.at(X, B) = myLatticeParams[B] * cos(gammaRad);
-	myOrthoMtx.at(Y, B) = myLatticeParams[B] * sin(gammaRad);
-	// C - col 2
-	myOrthoMtx.at(X, C) = myLatticeParams[C] * cos(betaRad);
-	myOrthoMtx.at(Y, C) = myLatticeParams[C] * (cos(alphaRad) - cos(betaRad) * cos(gammaRad)) / sin(gammaRad);
-	myOrthoMtx.at(Z, C) = sqrt(
-    myLatticeParams[C] * myLatticeParams[C] -
-		myOrthoMtx(X, C) * myOrthoMtx(X, C) -
-		myOrthoMtx(Y, C) * myOrthoMtx(Y, C)
-  );
+  myOrthoMtx.zeros();
+  // A - col 0
+  myOrthoMtx.at(X, A) = myLatticeParams[A];
+  // B - col 1
+  myOrthoMtx.at(X, B) = myLatticeParams[B] * cos(gammaRad);
+  myOrthoMtx.at(Y, B) = myLatticeParams[B] * sin(gammaRad);
+  // C - col 2
+  myOrthoMtx.at(X, C) = myLatticeParams[C] * cos(betaRad);
+  myOrthoMtx.at(Y, C) = myLatticeParams[C]
+      * (cos(alphaRad) - cos(betaRad) * cos(gammaRad)) / sin(gammaRad);
+  myOrthoMtx.at(Z, C) = sqrt(
+      myLatticeParams[C] * myLatticeParams[C]
+          - myOrthoMtx(X, C) * myOrthoMtx(X, C)
+          - myOrthoMtx(Y, C) * myOrthoMtx(Y, C));
 
   try
   {
-	  myFracMtx = inv(myOrthoMtx);
+    myFracMtx = inv(myOrthoMtx);
   }
-  catch(const ::std::runtime_error & /*e*/)
+  catch (const ::std::runtime_error & /*e*/)
   {
     myOrthoMtx = oldOrthoMtx; // rollback changes
     return false;
@@ -722,33 +757,38 @@ bool UnitCell::initOrthoAndFracMatrices()
   return true;
 }
 
-
-void UnitCell::initLatticeParams()
+void
+UnitCell::initLatticeParams()
 {
   using namespace utility::cell_params_enum;
-	using namespace arma;
+  using namespace arma;
 
-	// Get the lattice vectors
+  // Get the lattice vectors
   const ::arma::vec3 a = myOrthoMtx.col(A);
-	const ::arma::vec3 b = myOrthoMtx.col(B);
-	const ::arma::vec3 c = myOrthoMtx.col(C);
+  const ::arma::vec3 b = myOrthoMtx.col(B);
+  const ::arma::vec3 c = myOrthoMtx.col(C);
 
-	myLatticeParams[A] = std::sqrt(dot(a, a));
-	myLatticeParams[B] = std::sqrt(dot(b, b));
-	myLatticeParams[C] = std::sqrt(dot(c, c));
-	myLatticeParams[ALPHA] = acos(dot(b, c) / (myLatticeParams[B] * myLatticeParams[C])) * constants::RAD_TO_DEG;
-	myLatticeParams[BETA] = acos(dot(a, c) / (myLatticeParams[A] * myLatticeParams[C])) * constants::RAD_TO_DEG;
-	myLatticeParams[GAMMA] = acos(dot(a, b) / (myLatticeParams[A] * myLatticeParams[B])) * constants::RAD_TO_DEG;
+  myLatticeParams[A] = std::sqrt(dot(a, a));
+  myLatticeParams[B] = std::sqrt(dot(b, b));
+  myLatticeParams[C] = std::sqrt(dot(c, c));
+  myLatticeParams[ALPHA] = acos(
+      dot(b, c) / (myLatticeParams[B] * myLatticeParams[C]))
+      * constants::RAD_TO_DEG;
+  myLatticeParams[BETA] = acos(
+      dot(a, c) / (myLatticeParams[A] * myLatticeParams[C]))
+      * constants::RAD_TO_DEG;
+  myLatticeParams[GAMMA] = acos(
+      dot(a, b) / (myLatticeParams[A] * myLatticeParams[B]))
+      * constants::RAD_TO_DEG;
 }
 
-
-void UnitCell::initRest()
+void
+UnitCell::initRest()
 {
   using namespace utility::cell_params_enum;
 
-	myVolume = std::fabs(
-		dot(myOrthoMtx.col(A),
-		cross(myOrthoMtx.col(B), myOrthoMtx.col(C))));
+  myVolume = std::fabs(
+      dot(myOrthoMtx.col(A), cross(myOrthoMtx.col(B), myOrthoMtx.col(C))));
 }
 
 }

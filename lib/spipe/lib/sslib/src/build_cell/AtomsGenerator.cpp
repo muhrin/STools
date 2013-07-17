@@ -28,35 +28,31 @@
 namespace sstbx {
 namespace build_cell {
 
-AtomsGenerator::AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo):
-myNumReplicas(constructionInfo.numReplicas),
-myGenShape(constructionInfo.genShape.release()),
-myAtoms(constructionInfo.atoms.begin(), constructionInfo.atoms.end())
+AtomsGenerator::AtomsGenerator():
+myNumReplicas(1),
+myTransformMode(TransformMode::FIXED)
 {
-  myTransformMask = constructionInfo.transformMask;
+  myPos.zeros();
 
-  if(constructionInfo.pos)
-    myTranslation = *constructionInfo.pos;
-  else
-    myTranslation.zeros();
-
-  if(constructionInfo.rot)
-    myRotation = *constructionInfo.rot;
-  else
-  {
-    myRotation.zeros();
-    myRotation(2) = 1.0; // Need this so we don't get NaNs in calculating roation
-  }
+  myRot.zeros();
+  myRot(2) = 1.0; // Need this so we don't get NaNs in calculating roation
 }
 
 AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
-myNumReplicas(toCopy.myNumReplicas),
 myAtoms(toCopy.myAtoms),
 myGenShape(toCopy.myGenShape->clone()),
-myTranslation(toCopy.myTranslation),
-myRotation(toCopy.myRotation),
-myTransformMask(toCopy.myTransformMask)
+myNumReplicas(toCopy.myNumReplicas),
+myTransformMode(toCopy.myTransformMode),
+myPos(toCopy.myPos),
+myRot(toCopy.myRot)
 {}
+
+void AtomsGenerator::insertAtoms(const AtomsDescription & atoms)
+{
+  myAtoms.push_back(atoms);
+  // Invalidate all tickets
+  myTickets.clear();
+}
 
 size_t AtomsGenerator::numAtoms() const
 {
@@ -76,6 +72,56 @@ AtomsGenerator::const_iterator AtomsGenerator::endAtoms() const
 const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
 {
   return myGenShape.get();
+}
+
+void AtomsGenerator::setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape)
+{
+  myGenShape = genShape;
+}
+
+int AtomsGenerator::getNumReplicas() const
+{
+  return myNumReplicas;
+}
+
+void AtomsGenerator::setNumReplicas(const int numReplicas)
+{
+  if(myNumReplicas == numReplicas)
+    return;
+
+  myNumReplicas = numReplicas;
+  // Invalidate all tickets
+  myTickets.clear();
+}
+
+int AtomsGenerator::getTransformMode() const
+{
+  return myTransformMode;
+}
+
+void AtomsGenerator::setTransformMode(const int mode)
+{
+  myTransformMode = mode;
+}
+
+const ::arma::vec3 & AtomsGenerator::getPosition() const
+{
+  return myPos;
+}
+
+void AtomsGenerator::setPosition(const ::arma::vec3 & pos)
+{
+  myPos = pos;
+}
+
+const ::arma::vec4 & AtomsGenerator::getRotation() const
+{
+  return myRot;
+}
+
+void AtomsGenerator::setRotation(const ::arma::vec4 & rot)
+{
+  myRot = rot;
 }
 
 GenerationOutcome
@@ -166,15 +212,18 @@ AtomsGenerator::GenerationTicket AtomsGenerator::getTicket()
   GenerationTicket::IdType ticketId = ++myLastTicketId;
 
   // Generate a random number of atoms
-  AtomsDescription::CountRange count;
+  AtomsDescription::CountRange range;
+  int count;
   AtomCounts counts;
   BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
   {
-    count = atomsDesc.getCount();
-    if(count.nullSpan())
-      counts[&atomsDesc] = count.lower();
+    range = atomsDesc.getCount();
+    if(range.nullSpan())
+      count = range.lower();
     else
-      counts[&atomsDesc] = math::randu(count.lower(), count.upper());
+      count = math::randu(range.lower(), range.upper());
+    if(count != 0)
+      counts[&atomsDesc] = count;
   }
   myTickets[ticketId].atomCounts = counts;
   return GenerationTicket(ticketId);
@@ -189,7 +238,7 @@ StructureContents AtomsGenerator::getGenerationContents(
 
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
-  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
+  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with unrecognised ticket.  Probably changed generator after the ticket was requested.");
   const AtomCounts & counts = it->second.atomCounts;
 
   double radius;
@@ -206,7 +255,9 @@ void AtomsGenerator::handleReleased(const GenerationTicketId & id)
 {
   // Get the ticket
   TicketsMap::iterator it = myTickets.find(id);
-  SSLIB_ASSERT_MSG(it != myTickets.end(), "Being notified of ticket release for a ticket id we don't recognise.");
+  if(it == myTickets.end())
+    return;
+
   myTickets.erase(it);
 }
 
@@ -364,14 +415,14 @@ const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build
 {
   using namespace utility::cart_coords_enum;
 
-  ::arma::vec4 axisAngle = myRotation;
-  if(myTransformMask & TransformSettings::RAND_ROT_DIR)
+  ::arma::vec4 axisAngle = myRot;
+  if(myTransformMode & TransformMode::RAND_ROT_DIR)
     axisAngle.rows(X, Z) = math::normaliseCopy(::arma::randu< ::arma::vec>(3));
-  if(myTransformMask & TransformSettings::RAND_ROT_ANGLE)
+  if(myTransformMode & TransformMode::RAND_ROT_ANGLE)
     axisAngle(3) = math::randu(0.0, common::constants::TWO_PI);
 
-  ::arma::vec3 pos = myTranslation;
-  if(myTransformMask & TransformSettings::RAND_POS)
+  ::arma::vec3 pos = myPos;
+  if(myTransformMode & TransformMode::RAND_POS)
   {
     // Create a random point somewhere within the global generation shape
     pos = build.getGenShape().randomPoint();

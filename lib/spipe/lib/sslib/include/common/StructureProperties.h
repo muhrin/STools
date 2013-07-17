@@ -27,7 +27,6 @@ class ResourceLocator;
 }
 
 namespace common {
-
 namespace structure_properties {
 namespace general {
 

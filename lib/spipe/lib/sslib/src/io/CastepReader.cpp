@@ -21,6 +21,7 @@
 #include "common/UnitCell.h"
 #include "io/BoostFilesystem.h"
 #include "io/Parsing.h"
+#include "potential/StructureProperties.h"
 #include "utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
@@ -108,7 +109,8 @@ size_t CastepReader::readStructures(StructuresContainer & outStructures, const R
   return numRead;
 }
 
-::sstbx::common::types::StructurePtr CastepReader::readStructure(::std::istream & inputStream,  const ::std::string & id) const
+::sstbx::common::types::StructurePtr
+ CastepReader::readStructure(::std::istream & inputStream,  const ::std::string & id) const
 {
   common::types::StructurePtr structure;
 
@@ -166,6 +168,7 @@ size_t CastepReader::readStructures(StructuresContainer & outStructures, ::std::
         lastStructure = structure.get();
 
         structure->setName(::boost::lexical_cast< ::std::string>(numRead));
+        structure->setProperty(potential::INDEX, static_cast<int>(numRead));
         outStructures.push_back(structure.release());
         ++numRead;
       }

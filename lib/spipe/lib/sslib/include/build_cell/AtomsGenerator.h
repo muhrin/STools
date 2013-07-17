@@ -13,7 +13,6 @@
 #include "SSLib.h"
 
 #include <boost/noncopyable.hpp>
-#include <boost/scoped_ptr.hpp>
 
 #include "OptionalTypes.h"
 #include "build_cell/IFragmentGenerator.h"
@@ -38,7 +37,7 @@ public:
   typedef Atoms::const_iterator const_iterator;
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
-  struct TransformSettings
+  struct TransformMode
   {
     enum Value
     {
@@ -49,15 +48,29 @@ public:
     };
   };
 
-  AtomsGenerator(AtomsGeneratorConstructionInfo & constructionInfo);
+  AtomsGenerator();
   AtomsGenerator(const AtomsGenerator & toCopy);
 
+  void insertAtoms(const AtomsDescription & atoms);
   size_t numAtoms() const;
   const_iterator beginAtoms() const;
   const_iterator endAtoms() const;
 
   const IGeneratorShape * getGeneratorShape() const;
+  void setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape);
   
+  int getNumReplicas() const;
+  void setNumReplicas(const int numReplicas);
+
+  int getTransformMode() const;
+  void setTransformMode(const int mode);
+
+  const ::arma::vec3 & getPosition() const;
+  void setPosition(const ::arma::vec3 & pos);
+
+  const ::arma::vec4 & getRotation() const;
+  void setRotation(const ::arma::vec4 & rot);
+
   // From IFragmentGenerator ////////
   virtual GenerationOutcome generateFragment(
     StructureBuild & build,
@@ -113,31 +126,16 @@ private:
 
   ::arma::mat44 generateTransform(const StructureBuild & build) const;
 
-  const Atoms myAtoms;
-  const ::boost::scoped_ptr<IGeneratorShape> myGenShape;
-  int myTransformMask;
-  const unsigned int myNumReplicas;
-  ::arma::vec3 myTranslation;
-  ::arma::vec4 myRotation;
+  Atoms myAtoms;
+  UniquePtr<IGeneratorShape>::Type myGenShape;
+  unsigned int myNumReplicas;
+  int myTransformMode;
+  ::arma::vec3 myPos;
+  ::arma::vec4 myRot;
   TicketsMap myTickets;
   GenerationTicket::IdType myLastTicketId;
 };
 
-struct AtomsGeneratorConstructionInfo
-{
-  typedef ::std::vector<AtomsDescription> Atoms;
-  AtomsGeneratorConstructionInfo():
-  numReplicas(1),
-  transformMask(AtomsGenerator::TransformSettings::FIXED)
-  {}
-
-  int numReplicas;
-  Atoms atoms;
-  UniquePtr<IGeneratorShape>::Type genShape;
-  int transformMask;
-  OptionalArmaVec3 pos;
-  OptionalArmaVec4 rot;
-};
 
 }
 }

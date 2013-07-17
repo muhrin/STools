@@ -114,7 +114,7 @@ endif(SSLIB_USE_YAML)
 
 # Include CGAL if we're using it
 if(SSLIB_USE_CGAL)
-  include_directories(${CGAL_INCLUDE_DIRS})
+  include_directories(${CGAL_INCLUDE_DIRS} ${CGAL_CORE_INCLUDE_DIR})
 endif(SSLIB_USE_CGAL)
 
 # Process header and source files
@@ -149,6 +149,12 @@ endif(SSLIB_USE_YAML)
 #  )
 #endif(SSLIB_USE_LAPACK)
 
+if(SSLIB_USE_CGAL)
+  message(STATUS "GOT HERE ${CGAL_Core_LIBRARY}")
+  target_link_libraries(sslib
+    ${CGAL_Core_LIBRARY}
+  )
+endif(SSLIB_USE_CGAL)
 
 ###########
 ## Tests ##

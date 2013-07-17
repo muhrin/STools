@@ -21,107 +21,102 @@
 #include "utility/IndexAdapters.h"
 #include "utility/MapEx.h"
 
-
-namespace sstbx {
+namespace sstbx
+{
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace common {
+namespace common
+{
 class Structure;
 }
-namespace math {
+namespace math
+{
 class RunningStats;
 }
 
-namespace utility {
+namespace utility
+{
 
 class SortedDistanceComparisonData
 {
 public:
-  typedef ::std::vector<double> DistancesVec;
-  typedef ::boost::shared_ptr<DistancesVec> DistancesVecPtr;
+  typedef ::std::vector< double> DistancesVec;
+  typedef ::boost::shared_ptr< DistancesVec> DistancesVecPtr;
 
-  typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
-  typedef utility::MapEx<common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
+  typedef utility::MapEx< common::AtomSpeciesId::Value, DistancesVecPtr> DistancesMap;
+  typedef utility::MapEx< common::AtomSpeciesId::Value, DistancesMap> SpeciesDistancesMap;
 
-  SortedDistanceComparisonData(
-    const common::Structure & structure,
-    const bool volumeAgnostic,
-    const bool usePrimitive,
-    const double cutoffFactor
-  );
+  SortedDistanceComparisonData(const common::Structure & structure,
+      const bool volumeAgnostic, const bool usePrimitive,
+      const double cutoffFactor);
 
-  ::std::vector<common::AtomSpeciesId::Value> species;
-  SpeciesDistancesMap       speciesDistancesMap;
-  double                    cutoff;
-  size_t                    numAtoms;
-  double                    volume;
+  ::std::vector< common::AtomSpeciesId::Value> species;
+  SpeciesDistancesMap speciesDistancesMap;
+  double cutoff;
+  size_t numAtoms;
+  double volume;
 
 private:
 
-  void initSpeciesDistancesMap();
+  void
+  initSpeciesDistancesMap();
 };
 
 class SortedDistanceComparator : public IStructureComparator
 {
-  typedef ::std::vector<double> DistancesVec;
+  typedef ::std::vector< double> DistancesVec;
 public:
 
-	typedef SortedDistanceComparisonData DataTyp;
-  typedef IBufferedComparator   BufferedTyp;
-  typedef ::sstbx::UniquePtr<DataTyp>::Type ComparisonDataPtr;
+  typedef SortedDistanceComparisonData DataTyp;
+  typedef IBufferedComparator BufferedTyp;
+  typedef ::sstbx::UniquePtr< DataTyp>::Type ComparisonDataPtr;
 
-	static const double DEFAULT_TOLERANCE;
+  static const double DEFAULT_TOLERANCE;
   static const double CUTOFF_FACTOR;
 
-	SortedDistanceComparator(
-    double tolerance = DEFAULT_TOLERANCE,
-    const bool volumeAgnostic = false,
-    const bool usePrimitive = true
-  );
+  SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE,
+      const bool volumeAgnostic = false, const bool usePrimitive = true);
 
-  void setCutoffFactor(const double cutoffFactor);
-  double getCutoffFactor() const;
+  void
+  setCutoffFactor(const double cutoffFactor);
+  double
+  getCutoffFactor() const;
 
   // From IStructureComparator ////////////////
 
-	virtual double compareStructures(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2
-  ) const;
-	virtual bool areSimilar(
-		const sstbx::common::Structure & str1,
-		const sstbx::common::Structure & str2
-  ) const;
-  virtual ::boost::shared_ptr<BufferedTyp> generateBuffered() const;
+  virtual double
+  compareStructures(const sstbx::common::Structure & str1,
+      const sstbx::common::Structure & str2) const;
+  virtual bool
+  areSimilar(const sstbx::common::Structure & str1,
+      const sstbx::common::Structure & str2) const;
+  virtual ::boost::shared_ptr< BufferedTyp>
+  generateBuffered() const;
 
   // End from IStructureComparator /////////////
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
-	double compareStructures(
-		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2
-  ) const;
-	bool areSimilar(
-		const SortedDistanceComparisonData & dist1,
-		const SortedDistanceComparisonData & dist2
-  ) const;
-  ComparisonDataPtr generateComparisonData(const ::sstbx::common::Structure & str) const;
+  double
+  compareStructures(const SortedDistanceComparisonData & dist1,
+      const SortedDistanceComparisonData & dist2) const;
+  bool
+  areSimilar(const SortedDistanceComparisonData & dist1,
+      const SortedDistanceComparisonData & dist2) const;
+  ComparisonDataPtr
+  generateComparisonData(const ::sstbx::common::Structure & str) const;
   // End conformation methods //////////////
 
 private:
 
-	static const size_t MAX_CELL_MULTIPLES;
+  static const size_t MAX_CELL_MULTIPLES;
 
-  void calcProperties(
-    math::RunningStats & deltaStats,
-    const DistancesVec & dist1,
-    const StridedIndexAdapter<size_t> & adapt1,
-    const DistancesVec & dist2,
-    const StridedIndexAdapter<size_t> & adapt2
-  ) const;
+  void
+  calcProperties(math::RunningStats & deltaStats, const DistancesVec & dist1,
+      const StridedIndexAdapter< size_t> & adapt1, const DistancesVec & dist2,
+      const StridedIndexAdapter< size_t> & adapt2) const;
 
   const bool myScaleVolumes;
   const bool myUsePrimitive;
-	double myTolerance;
+  double myTolerance;
   double myCutoffFactor;
 };
 

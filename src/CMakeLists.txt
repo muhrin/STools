@@ -192,6 +192,34 @@ target_link_libraries(sgroup
   stools_common
 )
 
+#############################################
+## shull: Structures convex hull generator ##
+#############################################
+set(stools_Header_Files__shull
+)
+source_group("Header Files" FILES ${stools_Header_Files__shull})
+
+set(stools_Source_Files__shull
+  shull.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__shull})
+
+set(stools_Files__shull
+  ${stools_Header_Files__shull}
+  ${stools_Source_Files__shull}
+)
+
+add_executable(shull
+  ${stools_Files__shull}
+)
+
+add_dependencies(shull stools_common)
+
+# Libraries we need to link to
+target_link_libraries(shull
+  stools_common
+)
+
 ########################################
 ## sinfo: Print info about structures ##
 ########################################
@@ -300,7 +328,7 @@ target_link_libraries(ssearch
   
 ## Installation #####
 
-INSTALL(TARGETS sbuild sconvert sdiff sgroup sinfo ssearch smeasure
+INSTALL(TARGETS sbuild sconvert sdiff sgroup sinfo shull ssearch smeasure
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

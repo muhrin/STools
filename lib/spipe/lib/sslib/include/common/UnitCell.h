@@ -11,6 +11,8 @@
 // INCLUDES ///////////////////////////////////
 #include "SSLibTypes.h"
 
+#include <set>
+
 #include <armadillo>
 
 #include <boost/noncopyable.hpp>
@@ -23,7 +25,6 @@ namespace sstbx {
 namespace common {
 
 // FORWARD DECLARES ///////////////////////////
-class Structure;
 
 class UnitCell
 {
@@ -43,18 +44,29 @@ public:
     };
   };
 
+  class UnitCellListener
+  {
+  public:
+    virtual ~UnitCellListener() {}
+    virtual void onUnitCellChanged(UnitCell & unitCell) = 0;
+    virtual void onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+        const double newVol) = 0;
+  };
+
   UnitCell();
-  UnitCell(
-    const double a, const double b, const double c,
-    const double alpha, const double beta, const double gamma);
-  explicit UnitCell(const double (&latticeParams)[6]);
-  explicit UnitCell(const ::arma::mat33 & orthoMatrix);
+  UnitCell(const double a, const double b, const double c, const double alpha,
+      const double beta, const double gamma);
+  explicit
+  UnitCell(const double (&latticeParams)[6]);
+  explicit
+  UnitCell(const ::arma::mat33 & orthoMatrix);
   UnitCell(const UnitCell & toCopy);
 
-  UnitCellPtr clone() const;
+  UnitCellPtr
+  clone() const;
 
-  const double (&getLatticeParams() const)[6];
-  void setLatticeParams(const double (&params)[6]);
+  const double (&
+  getLatticeParams() const)[6];void setLatticeParams(const double (&params)[6]);
 
   inline ::arma::vec3 getAVec() const
   {
@@ -74,6 +86,7 @@ public:
   double getLongestCellVectorLength() const;
 
   const ::arma::mat33 & getOrthoMtx() const;
+
   /**
   /* Set the orthogonalisation matrix.
   /* Returns false and UnitCell remains unchanged if orthoMtx is singular, true otherwise.
@@ -111,15 +124,15 @@ public:
 
   inline ::arma::vec3 & fracWrapToCartInplace(::arma::vec3 & frac) const
   {
-    frac -= ::arma::floor(frac);  // Wrap
-    frac = myOrthoMtx * frac;     // Convert to cartesian
+    frac -= ::arma::floor(frac); // Wrap
+    frac = myOrthoMtx * frac;// Convert to cartesian
     return frac;
   }
 
   inline ::arma::mat & fracsWrapToCartInplace(::arma::mat & fracs) const
   {
-    fracs -= ::arma::floor(fracs);  // Wrap
-    fracs = myOrthoMtx * fracs;     // Convert to cartesian
+    fracs -= ::arma::floor(fracs); // Wrap
+    fracs = myOrthoMtx * fracs;// Convert to cartesian
     return fracs;
   }
 
@@ -150,9 +163,9 @@ public:
   {
     SSLIB_ASSERT(carts.n_rows == 3);
 
-    carts = myFracMtx * carts;     // cart to frac
-    wrapVecsFracInplace(carts);    // wrap
-    carts = myOrthoMtx * carts;    // frac to cart.  Simple.
+    carts = myFracMtx * carts; // cart to frac
+    wrapVecsFracInplace(carts);// wrap
+    carts = myOrthoMtx * carts;// frac to cart.  Simple.
     return carts;
   }
 
@@ -170,34 +183,38 @@ public:
 
   bool niggliReduce();
 
+  void addListener(UnitCellListener & listener);
+  bool removeListener(UnitCellListener & listener);
+
 private:
 
+  typedef ::std::set<UnitCellListener *> Listeners;
+
   /** Initialise the unit cell from lattice parameters */
-	bool init(
-		const double a, const double b, const double c,
-		const double alpha, const double beta, const double gamma);
+  bool init(
+      const double a, const double b, const double c,
+      const double alpha, const double beta, const double gamma);
 
-	/** Initialise the unit cell from an orthogonalisation matrix */
+  /** Initialise the unit cell from an orthogonalisation matrix */
   bool init(const ::arma::mat33 & orthoMtx);
-	bool initOrthoAndFracMatrices();
-	void initLatticeParams();
-	void initRest();
+  bool initOrthoAndFracMatrices();
+  void initLatticeParams();
+  void initRest();
 
-  void setStructure(const Structure * const structure);
+  void sendUnitCellChangedMsg();
+  void sendUnitCellVolChangedMsg(const double oldVol);
 
-  const Structure * myStructure;
-
-	/** The unit cell matrix where columns represent basis vectors */
+  /** The unit cell matrix where columns represent basis vectors */
   ::arma::mat33 myOrthoMtx;
 
-	/** The inverse of the orthogonalisation matrix */
+  /** The inverse of the orthogonalisation matrix */
   ::arma::mat33 myFracMtx;
 
-	double myLatticeParams[6];
+  double myLatticeParams[6];
 
-	double myVolume;
+  double myVolume;
 
-  friend class Structure;
+  Listeners myListeners;
 };
 
 }

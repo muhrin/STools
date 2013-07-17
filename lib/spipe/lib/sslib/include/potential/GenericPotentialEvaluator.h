@@ -40,7 +40,7 @@ public:
   // From IPotentialEvaluator
   virtual PotentialData & getData();
 
-	virtual EvalResult evalPotential();
+  virtual EvalResult evalPotential();
 
   virtual const IPotential & getPotential() const;
   // End from IPotentialEvaluator

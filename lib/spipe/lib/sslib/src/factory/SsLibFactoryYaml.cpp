@@ -315,7 +315,7 @@ SsLibFactoryYaml::createAtomsDescription(
   build_cell::AtomsDescriptionPtr atomsDescription;
 
   ::boost::optional<AtomSpeciesCount> speciesAndCount = parser.getValue(SPECIES, atomsEntry);
-  if(!speciesAndCount)
+  if(!speciesAndCount || (speciesAndCount->count.nullSpan() &&  speciesAndCount->count.lower() == 0 ))
     return atomsDescription;
 
   atomsDescription.reset(new build_cell::AtomsDescription(speciesAndCount->species, speciesAndCount->count));
@@ -409,30 +409,32 @@ SsLibFactoryYaml::createAtomsGenerator(
   io::AtomFormatParser & parser
 ) const
 {
-  build_cell::AtomsGeneratorConstructionInfo constructInfo;
-  
+  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator());
+
   // Try creating a generator shape
-  myShapeFactory.createShape(constructInfo.genShape, map);
+  UniquePtr<build_cell::IGeneratorShape>::Type genShape;
+  myShapeFactory.createShape(genShape, map);
   
   const int * const num = map.find(NUM);
   const ::arma::vec3 * const pos = map.find(POSITION);
   const ::arma::vec4 * const rot = map.find(ROT_AXIS_ANGLE);
 
   if(num)
-    constructInfo.numReplicas = *num;
+    atomsGenerator->setNumReplicas(*num);
 
   if(pos)
-    constructInfo.pos.reset(*pos);
+    atomsGenerator->setPosition(*pos);
   else
-    constructInfo.transformMask |= build_cell::AtomsGenerator::TransformSettings::RAND_POS;
+    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
+        build_cell::AtomsGenerator::TransformMode::RAND_POS);
 
   if(rot)
-    constructInfo.rot.reset(*rot);
+    atomsGenerator->setRotation(*rot);
   else
   {
-    constructInfo.transformMask |=
-      build_cell::AtomsGenerator::TransformSettings::RAND_ROT_DIR |
-      build_cell::AtomsGenerator::TransformSettings::RAND_ROT_ANGLE;
+    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
+      build_cell::AtomsGenerator::TransformMode::RAND_ROT_DIR |
+      build_cell::AtomsGenerator::TransformMode::RAND_ROT_ANGLE);
   }
 
   // Check if there is a 'global' radius
@@ -453,12 +455,10 @@ SsLibFactoryYaml::createAtomsGenerator(
       {
         build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
         if(atomsDescription.get())
-          constructInfo.atoms.push_back(*atomsDescription);
+          atomsGenerator->insertAtoms(*atomsDescription);
       }
     }
   }
-
-  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator(constructInfo));
 
   return atomsGenerator;
 }

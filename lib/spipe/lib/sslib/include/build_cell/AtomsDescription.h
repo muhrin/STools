@@ -19,51 +19,62 @@
 #include "utility/Range.h"
 
 // FORWARD DECLARES ///////////
-namespace sstbx {
-namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 class AtomConstraintDescription;
 }
 }
 
-namespace sstbx {
-namespace build_cell {
+namespace sstbx
+{
+namespace build_cell
+{
 
 class AtomsDescription
 {
 public:
-  typedef utility::Range<int> CountRange;
+  typedef utility::Range< int> CountRange;
 
-	AtomsDescription();
-	AtomsDescription(
-    const common::AtomSpeciesId::Value species,
-    const size_t count = 1
-  );
-	AtomsDescription(
-    const common::AtomSpeciesId::Value species,
-    const CountRange count
-  );
-	virtual ~AtomsDescription() {}
+  AtomsDescription();
+  AtomsDescription(const common::AtomSpeciesId::Value species,
+      const size_t count = 1);
+  AtomsDescription(const common::AtomSpeciesId::Value species,
+      const CountRange count);
+  virtual
+  ~AtomsDescription()
+  {
+  }
 
-	const common::AtomSpeciesId::Value & getSpecies() const;
-	void setSpecies(const common::AtomSpeciesId::Value species);
+  const common::AtomSpeciesId::Value &
+  getSpecies() const;
+  void
+  setSpecies(const common::AtomSpeciesId::Value species);
 
-	CountRange getCount() const;
-	void setCount(const int count);
-  void setCount(const CountRange count);
+  CountRange
+  getCount() const;
+  void
+  setCount(const int count);
+  void
+  setCount(const CountRange count);
 
-  const OptionalDouble & getRadius() const;
-  void setRadius(const OptionalDouble radius);
+  const OptionalDouble &
+  getRadius() const;
+  void
+  setRadius(const OptionalDouble radius);
 
-  const OptionalArmaVec3 & getPosition() const;
-  void setPosition(const OptionalArmaVec3 & pos);
+  const OptionalArmaVec3 &
+  getPosition() const;
+  void
+  setPosition(const OptionalArmaVec3 & pos);
 
 private:
-  common::AtomSpeciesId::Value	mySpecies;
+  common::AtomSpeciesId::Value mySpecies;
   OptionalDouble myRadius;
   OptionalArmaVec3 myPosition;
   CountRange myCount;
 };
-
 
 }
 }

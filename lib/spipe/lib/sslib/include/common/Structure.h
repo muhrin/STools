@@ -11,6 +11,7 @@
 // INCLUDES ///////////////////////////////////////////////
 #include "SSLib.h"
 
+#include <map>
 #include <memory>
 #include <ostream>
 
@@ -28,162 +29,211 @@
 #include "utility/HeterogeneousMap.h"
 #include "utility/NamedProperty.h"
 
-std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
+std::ostream &
+operator<<(std::ostream & os, const sstbx::common::Structure & p);
 
-std::ostream & operator<<(std::ostream & os, const sstbx::common::Structure & p);
+std::ostream &
+operator<<(std::ostream & os, const sstbx::common::Structure & p);
 
-namespace sstbx {
+namespace sstbx
+{
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace utility {
+namespace utility
+{
 class HeterogeneousMap;
 }
-namespace common {
+namespace common
+{
 class DistanceCalculator;
 class UnitCell;
 
-class Structure
+class Structure : public UnitCell::UnitCellListener
 {
 public:
 
   typedef utility::NamedProperty<utility::HeterogeneousMap> VisibleProperty;
+  typedef ::std::map< ::std::string, int> Composition;
 
-	explicit Structure(UnitCellPtr cell = UnitCellPtr());
+  explicit
+  Structure(UnitCellPtr cell = UnitCellPtr());
   Structure(const Structure & toCopy);
-  Structure & operator =(const Structure & rhs);
-  StructurePtr clone() const;
+  Structure &
+  operator =(const Structure & rhs);
+  StructurePtr
+  clone() const;
 
-  void updateWith(const Structure & structure);
+  void
+  updateWith(const Structure & structure);
 
-	const std::string & getName() const;
-	void setName(const std::string & name);
+  const std::string &
+  getName() const;
+  void
+  setName(const std::string & name);
 
-	// UNIT CELL /////////////////////////////////////////
+  // UNIT CELL /////////////////////////////////////////
 
-	UnitCell * getUnitCell();
-	const UnitCell * getUnitCell() const;
+  UnitCell *
+  getUnitCell();
+  const UnitCell *
+  getUnitCell() const;
 
-	/** Set the unit cell to be used by the structure. */
-	void setUnitCell(UnitCellPtr cell);
+  /** Set the unit cell to be used by the structure. */
+  void
+  setUnitCell(UnitCellPtr cell);
 
-	// ATOMS ///////////////////////////////////////////////
+  // ATOMS ///////////////////////////////////////////////
 
-  size_t getNumAtoms() const;
+  size_t
+  getNumAtoms() const;
 
-  Atom & getAtom(const size_t idx);
-  const Atom & getAtom(const size_t idx) const;
+  Atom &
+  getAtom(const size_t idx);
+  const Atom &
+  getAtom(const size_t idx) const;
 
-  Atom & newAtom(const AtomSpeciesId::Value species);
-  Atom & newAtom(const Atom & toCopy);
-  bool removeAtom(const Atom & atom);
-  size_t clearAtoms();
+  Atom &
+  newAtom(const AtomSpeciesId::Value species);
+  Atom &
+  newAtom(const Atom & toCopy);
+  bool
+  removeAtom(const Atom & atom);
+  size_t
+  clearAtoms();
 
-  void getAtomPositions(::arma::mat & posMtx) const;
-  void getAtomPositions(::arma::subview<double> & posMtx) const;
-  void setAtomPositions(const ::arma::mat & posMtx);
+  void
+  getAtomPositions(::arma::mat & posMtx) const;
+  void
+  getAtomPositions(::arma::subview<double> & posMtx) const;
+  void
+  setAtomPositions(const ::arma::mat & posMtx);
 
-  void getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
-  size_t getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
+  void
+  getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
+  size_t
+  getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
+  Composition getComposition() const;
 
-  const DistanceCalculator & getDistanceCalculator() const;
+  const DistanceCalculator &
+  getDistanceCalculator() const;
 
-  template <typename T>
-  T * getProperty(const utility::Key<T> & key);
+  template<typename T>
+    T *
+    getProperty(const utility::Key<T> & key);
 
-  template <typename T>
-  const T * getProperty(const utility::Key<T> & key) const;
+  template<typename T>
+    const T *
+    getProperty(const utility::Key<T> & key) const;
 
-  template <typename T>
-  void setProperty(utility::Key<T> & key, const T & value);
+  template<typename T>
+    void
+    setProperty(utility::Key<T> & key, const T & value);
 
-  template <typename T>
-  void setPropertyFromString(utility::Key<T> & key, const ::std::string & value);
+  template<typename T>
+    void
+    setPropertyFromString(utility::Key<T> & key, const ::std::string & value);
 
-  template <typename T>
-  bool eraseProperty(utility::Key<T> & key);
+  template<typename T>
+    bool
+    eraseProperty(utility::Key<T> & key);
 
-  ::boost::optional< ::std::string> getVisibleProperty(const VisibleProperty & property) const;
-  void setVisibleProperty(VisibleProperty & property, const ::std::string & value);
+  ::boost::optional< ::std::string>
+  getVisibleProperty(const VisibleProperty & property) const;
+  void
+  setVisibleProperty(VisibleProperty & property, const ::std::string & value);
 
-  bool makePrimitive();
+  bool
+  makePrimitive();
 
-  UniquePtr<Structure>::Type getPrimitiveCopy() const;
+  UniquePtr<Structure>::Type
+  getPrimitiveCopy() const;
 
-  void scale(const double scaleFactor);
+  void
+  scale(const double scaleFactor);
 
-  void print(::std::ostream & os) const;
+  void
+  print(::std::ostream & os) const;
+
+  virtual void
+  onUnitCellChanged(UnitCell & unitCell);
+  virtual void
+  onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+      const double newVol);
 
 private:
 
   typedef ::boost::ptr_vector<Atom> AtomsContainer;
 
-	void atomMoved(const Atom & atom) const;
+  void
+  atomMoved(const Atom & atom) const;
 
-  inline void unitCellChanged() const
-  { myDistanceCalculator.unitCellChanged(); }
+  void
+  updatePosBuffer() const;
 
-  void updatePosBuffer() const;
+  /** The name of this structure, set by calling code */
+  std::string myName;
 
-	/** The name of this structure, set by calling code */
-	std::string		  myName;
+  /** The unit cell for this crystal structure. */
+  UnitCellPtr myCell;
 
-	/** The unit cell for this crystal structure. */
-	UnitCellPtr     myCell;
+  size_t myNumAtoms;
 
-  size_t          myNumAtoms;
+  /** The atoms contained in this group */
+  AtomsContainer myAtoms;
 
-	/** The atoms contained in this group */
-	AtomsContainer  myAtoms;
+  utility::HeterogeneousMap myTypedProperties;
 
-  utility::HeterogeneousMap  myTypedProperties;
+  /**
+   /* Flag to indicate whether the structure has changed since
+   /* the last time that all atom positions were requested
+   /**/
+  mutable bool myAtomPositionsCurrent;
 
-	/**
-	/* Flag to indicate whether the structure has changed since
-	/* the last time that all atom positions were requested
-	/**/
-	mutable bool			    myAtomPositionsCurrent;
+  mutable ::arma::mat myAtomPositionsBuffer;
 
-  mutable ::arma::mat		myAtomPositionsBuffer;
-
-  mutable DistanceCalculatorDelegator  myDistanceCalculator;
+  mutable DistanceCalculatorDelegator myDistanceCalculator;
 
   friend class Atom;
   friend class UnitCell;
 };
 
-template <typename T>
-T * Structure::getProperty(const utility::Key<T> & key)
-{
-  return myTypedProperties.find(key);
-}
+template<typename T>
+  T *
+  Structure::getProperty(const utility::Key<T> & key)
+  {
+    return myTypedProperties.find(key);
+  }
 
-template <typename T>
-const T * Structure::getProperty(const utility::Key<T> & key) const
-{
-  return myTypedProperties.find(key);
-}
+template<typename T>
+  const T *
+  Structure::getProperty(const utility::Key<T> & key) const
+  {
+    return myTypedProperties.find(key);
+  }
 
-template <typename T>
-void Structure::setProperty(utility::Key<T> & key, const T & value)
-{
-  myTypedProperties[key] = value;
-}
+template<typename T>
+  void
+  Structure::setProperty(utility::Key<T> & key, const T & value)
+  {
+    myTypedProperties[key] = value;
+  }
 
-template <typename T>
-void Structure::setPropertyFromString(utility::Key<T> & key, const ::std::string & value)
-{
-  setProperty(key, ::boost::lexical_cast<T>(value));
-}
+template<typename T>
+  void
+  Structure::setPropertyFromString(utility::Key<T> & key,
+      const ::std::string & value)
+  {
+    setProperty(key, ::boost::lexical_cast<T>(value));
+  }
 
-template <typename T>
-bool Structure::eraseProperty(utility::Key<T> & key)
-{
-  return myTypedProperties.erase(key) != 0;
-}
+template<typename T>
+  bool
+  Structure::eraseProperty(utility::Key<T> & key)
+  {
+    return myTypedProperties.erase(key) != 0;
+  }
 
 }
 }
-
-
 
 #endif /* STRUCTURE_H */

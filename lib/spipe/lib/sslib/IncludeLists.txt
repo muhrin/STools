@@ -2,6 +2,10 @@
 ## analysis
 
 set(sslib_Header_Files__analysis
+  include/analysis/AbsConvexHullGenerator.h
+  include/analysis/ConvexHullGenerator.h
+  include/analysis/ConvexHullOutputter.h
+  include/analysis/DynamicConvexHullGenerator.h
   include/analysis/Histogram.h
   include/analysis/SpaceGroup.h
   include/analysis/VoronoiMap.h
@@ -148,6 +152,7 @@ set(sslib_Header_Files__potential
   include/potential/PotentialData.h
   include/potential/SimplePairPotential.h
   include/potential/SimplePairPotentialData.h
+  include/potential/StructureProperties.h
   include/potential/TersoffPotential.h
   include/potential/TersoffPotentialData.h
   include/potential/TpsdGeomOptimiser.h

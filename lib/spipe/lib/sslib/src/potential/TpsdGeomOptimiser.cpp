@@ -23,15 +23,18 @@
 #endif
 
 // NAMESPACES ////////////////////////////////
-namespace sstbx {
-namespace potential {
+namespace sstbx
+{
+namespace potential
+{
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 class TpsdGeomOptimiserDebugger
 {
 public:
   const static unsigned int SAVE_EVERY_N_STEPS = 1000;
-  TpsdGeomOptimiserDebugger() {}
+  TpsdGeomOptimiserDebugger()
+  {}
 
   void postOptStepDebugHook(common::Structure & structure, const unsigned int step) const
   {
@@ -49,7 +52,6 @@ private:
 };
 #endif
 
-
 // CONSTANTS ////////////////////////////////////////////////
 
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
@@ -62,139 +64,130 @@ static const double INITIAL_STEPSIZE = 0.02;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
+TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential) :
+    myPotential(potential), myTolerance(DEFAULT_TOLERANCE), myMaxSteps(
+        DEFAULT_MAX_STEPS)
+{
+}
 
-TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential):
-myPotential(potential),
-myTolerance(DEFAULT_TOLERANCE),
-myMaxSteps(DEFAULT_MAX_STEPS)
-{}
-
-double TpsdGeomOptimiser::getTolerance() const
+double
+TpsdGeomOptimiser::getTolerance() const
 {
   return myTolerance;
 }
 
-void TpsdGeomOptimiser::setTolerance(const double tolerance)
+void
+TpsdGeomOptimiser::setTolerance(const double tolerance)
 {
   myTolerance = tolerance;
 }
 
-unsigned int TpsdGeomOptimiser::getMaxSteps() const
+unsigned int
+TpsdGeomOptimiser::getMaxSteps() const
 {
   return myMaxSteps;
 }
 
-void TpsdGeomOptimiser::setMaxSteps(const unsigned int maxSteps)
+void
+TpsdGeomOptimiser::setMaxSteps(const unsigned int maxSteps)
 {
   myMaxSteps = maxSteps;
 }
 
-IPotential * TpsdGeomOptimiser::getPotential()
+IPotential *
+TpsdGeomOptimiser::getPotential()
 {
-	return myPotential.get();
+  return myPotential.get();
 }
 
-const IPotential * TpsdGeomOptimiser::getPotential() const
+const IPotential *
+TpsdGeomOptimiser::getPotential() const
 {
-	return myPotential.get();
+  return myPotential.get();
 }
 
-OptimisationOutcome TpsdGeomOptimiser::optimise(
-	::sstbx::common::Structure & structure,
-  const OptimisationSettings & options) const
+OptimisationOutcome
+TpsdGeomOptimiser::optimise(::sstbx::common::Structure & structure,
+    const OptimisationSettings & options) const
 {
   OptimisationData optData;
   return optimise(structure, optData, options);
 }
 
-
-OptimisationOutcome TpsdGeomOptimiser::optimise(
-	::sstbx::common::Structure & structure,
-	OptimisationData & data,
-  const OptimisationSettings & options) const
+OptimisationOutcome
+TpsdGeomOptimiser::optimise(::sstbx::common::Structure & structure,
+    OptimisationData & data, const OptimisationSettings & options) const
 {
-  ::boost::shared_ptr<IPotentialEvaluator> evaluator = myPotential->createEvaluator(structure);
+  ::boost::shared_ptr< IPotentialEvaluator> evaluator =
+      myPotential->createEvaluator(structure);
 
   common::UnitCell * const unitCell = structure.getUnitCell();
   OptimisationSettings localSettings = options;
-  
-  if(!localSettings.maxSteps)
+
+  if (!localSettings.maxSteps)
     localSettings.maxSteps.reset(myMaxSteps);
-  if(!localSettings.pressure)
+  if (!localSettings.pressure)
     localSettings.pressure.reset(::arma::zeros< ::arma::mat>(3, 3));
-  if(!localSettings.optimisationType)
-    localSettings.optimisationType.reset(OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
-  
+  if (!localSettings.optimisationType)
+    localSettings.optimisationType.reset(
+        OptimisationSettings::Optimise::ATOMS_AND_LATTICE);
+
   OptimisationOutcome outcome;
-  if(unitCell)
+  if (unitCell)
   {
-	  outcome = optimise(
-      structure,
-      *unitCell,
-      data,
-      *evaluator,
-      myTolerance,
-      localSettings
-    );
+    outcome = optimise(structure, *unitCell, data, *evaluator, myTolerance,
+        localSettings);
   }
   else
   {
-	  outcome = optimise(
-      structure,
-      data,
-      *evaluator,
-      myTolerance,
-      localSettings
-    );
+    outcome = optimise(structure, data, *evaluator, myTolerance, localSettings);
   }
 
   data.saveToStructure(structure);
 
-	return outcome;
+  return outcome;
 }
 
-OptimisationOutcome TpsdGeomOptimiser::optimise(
-  common::Structure & structure,
-  OptimisationData & optimisationData,
-  IPotentialEvaluator & evaluator,
-	const double eTol,
-  const OptimisationSettings & settings) const
+OptimisationOutcome
+TpsdGeomOptimiser::optimise(common::Structure & structure,
+    OptimisationData & optimisationData, IPotentialEvaluator & evaluator,
+    const double eTol, const OptimisationSettings & settings) const
 {
   SSLIB_ASSERT(settings.maxSteps.is_initialized());
 
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
 
-	double h, h0, dH;
+  double h, h0, dH;
 
-	// Position matrices, current are in data.myPos
+  // Position matrices, current are in data.myPos
   ::arma::mat deltaPos(3, data.numParticles);
-	// Forces, current are in data.myForces
+  // Forces, current are in data.myForces
   ::arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
 
-	double xg, gg;
+  double xg, gg;
   ::arma::vec3 f;
 
-	data.forces.ones();
-	deltaPos.zeros();
+  data.forces.ones();
+  deltaPos.zeros();
 
-	// Initialisation of variables
-	dH	= std::numeric_limits<double>::max();
-	h	= 1.0;
+  // Initialisation of variables
+  dH = std::numeric_limits< double>::max();
+  h = 1.0;
 
-	bool converged = false;
+  bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
 
-	// Set the initial step size so get mooving
-	double step = INITIAL_STEPSIZE;
-	for(size_t i = 0; !converged && i < *settings.maxSteps; ++i)
-	{
+  // Set the initial step size so get mooving
+  double step = INITIAL_STEPSIZE;
+  for (size_t i = 0; !converged && i < *settings.maxSteps; ++i)
+  {
     // Save the energy and forces from last time around
-		h0 = h;
-		f0 = data.forces;
+    h0 = h;
+    f0 = data.forces;
 
-		// Evaluate the potential
-		if(!evaluator.evalPotential().second)
+    // Evaluate the potential
+    if (!evaluator.evalPotential().second)
     {
       // Couldn't evaluate potential for some reason.  Probably the unit cell
       // has collapsed and there are too many r12 vectors to evaluate.
@@ -206,53 +199,54 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       numLastEvaluationsWithProblem = 0;
     }
 
-		h = data.internalEnergy;
+    h = data.internalEnergy;
 
-		deltaF = data.forces - f0;
+    deltaF = data.forces - f0;
 
     // The accu function will do the sum of all elements
     // and the % operator does the Shure product i.e.
     // element wise multiplication of two matrices
-	  xg		= accu(deltaPos % deltaF);
-	  gg		= accu(deltaF % deltaF);
+    xg = accu(deltaPos % deltaF);
+    gg = accu(deltaF % deltaF);
 
-		if(fabs(xg) > 0.0)
+    if (fabs(xg) > 0.0)
       step = fabs(xg / gg);
 
-		// Move the particles on by a step, saving the old positions
-		deltaPos = step * data.forces;
-		data.pos += deltaPos;
+    // Move the particles on by a step, saving the old positions
+    deltaPos = step * data.forces;
+    data.pos += deltaPos;
 
     // Tell the structure about the new positions
     structure.setAtomPositions(data.pos);
 
-		dH = h - h0;
+    dH = h - h0;
 
-		converged = fabs(dH) < eTol;
-	}
+    converged = fabs(dH) < eTol;
+  }
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems
-  if(numLastEvaluationsWithProblem != 0)
-    return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
-  if(!converged)
+  if (numLastEvaluationsWithProblem != 0)
+    return OptimisationOutcome::failure(
+        OptimisationError::ERROR_EVALUATING_POTENTIAL,
+        "Potential evaluation errors during optimisation");
+  if (!converged)
   {
     ::std::stringstream ss;
     ss << "Failed to converge after " << *settings.maxSteps << "steps";
-    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
+    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE,
+        ss.str());
   }
 
   populateOptimistaionData(optimisationData, structure, data);
   return OptimisationOutcome::success();
 }
 
-OptimisationOutcome TpsdGeomOptimiser::optimise(
-  common::Structure & structure,
-  common::UnitCell & unitCell,
-  OptimisationData & optimisationData,
-  IPotentialEvaluator & evaluator,
-	const double eTol,
-  const OptimisationSettings & settings) const
+OptimisationOutcome
+TpsdGeomOptimiser::optimise(common::Structure & structure,
+    common::UnitCell & unitCell, OptimisationData & optimisationData,
+    IPotentialEvaluator & evaluator, const double eTol,
+    const OptimisationSettings & settings) const
 {
   SSLIB_ASSERT(settings.maxSteps.is_initialized());
   SSLIB_ASSERT(settings.pressure.is_initialized());
@@ -268,47 +262,47 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
 
-	double h, h0, dH;
+  double h, h0, dH;
 
-	// Stress matrices
-  ::arma::mat33	s, s0, deltaS, deltaLatticeCar;
-	// Position matrices, current are in data.myPos
+  // Stress matrices
+  ::arma::mat33 s, s0, deltaS, deltaLatticeCar;
+  // Position matrices, current are in data.myPos
   ::arma::mat deltaPos(3, data.numParticles);
-	// Forces, current are in data.myForces
+  // Forces, current are in data.myForces
   ::arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
 
   ::arma::mat33 latticeCar;
-	double gamma, volume, volumeSq/*, gammaNumIonsOVolume*/;
-	double xg, gg;
+  double gamma, volume, volumeSq/*, gammaNumIonsOVolume*/;
+  double xg, gg;
   ::arma::vec3 f;
 
-	data.forces.ones();
-	deltaPos.zeros();
-	deltaLatticeCar.zeros();
-	latticeCar = unitCell.getOrthoMtx();
+  data.forces.ones();
+  deltaPos.zeros();
+  deltaLatticeCar.zeros();
+  latticeCar = unitCell.getOrthoMtx();
 
-	// Initialisation of variables
-	dH	= std::numeric_limits<double>::max(); // Change in enthalpy between steps
-	h	= 1.0;  // Enthalpy = U + pV
-	s.ones();
+  // Initialisation of variables
+  dH = std::numeric_limits< double>::max(); // Change in enthalpy between steps
+  h = 1.0; // Enthalpy = U + pV
+  s.ones();
 
-	const size_t numIonsSq	= data.numParticles * data.numParticles;
+  const size_t numIonsSq = data.numParticles * data.numParticles;
 
-	bool converged = false;
+  bool converged = false;
   size_t numLastEvaluationsWithProblem = 0;
-	// Set the initial step size so get mooving
-	double step = INITIAL_STEPSIZE;
-	for(unsigned int i = 0; !converged && i < *settings.maxSteps; ++i)
-	{
-		h0 = h;
-		f0 = data.forces;
-		s0 = s;
+  // Set the initial step size so get mooving
+  double step = INITIAL_STEPSIZE;
+  for (unsigned int i = 0; !converged && i < *settings.maxSteps; ++i)
+  {
+    h0 = h;
+    f0 = data.forces;
+    s0 = s;
 
-		volume		= unitCell.getVolume();
-		volumeSq	= volume * volume;
+    volume = unitCell.getVolume();
+    volumeSq = volume * volume;
 
-		// Evaluate the potential
-		if(!evaluator.evalPotential().second)
+    // Evaluate the potential
+    if (!evaluator.evalPotential().second)
     {
       // Couldn't evaluate potential for some reason.  Probably the unit cell
       // has collapsed and there are too many r12 vectors to evaluate.
@@ -320,60 +314,59 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       numLastEvaluationsWithProblem = 0;
     }
 
-		// TODO: Check this gamma = 0 as it seems a little odd
-		gamma = 0.0;
-		//data.internalEnergy += gamma * numIonsSq / volume;
+    // TODO: Check this gamma = 0 as it seems a little odd
+    gamma = 0.0;
+    //data.internalEnergy += gamma * numIonsSq / volume;
 
-		//gammaNumIonsOVolume = gamma * numIonsSq / volumeSq;
-		//data.stressMtx.diag() += gammaNumIonsOVolume;
+    //gammaNumIonsOVolume = gamma * numIonsSq / volumeSq;
+    //data.stressMtx.diag() += gammaNumIonsOVolume;
 
     // Calculate the strain matrix
-		s = data.stressMtx * latticeCar;
+    s = data.stressMtx * latticeCar;
     // Calculate the enthalpy
-		h = data.internalEnergy + pressureMean * volume;
+    h = data.internalEnergy + pressureMean * volume;
 
-		deltaF	= data.forces - f0;
+    deltaF = data.forces - f0;
 
     xg = gg = 0.0;
-    if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
+    if (*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
     {
-		  // The accu function will do the sum of all elements
-		  // and the % operator does the Shure product i.e.
-		  // element wise multiplication of two matrices
-		  xg		= accu(deltaPos % deltaF);
-		  gg		= accu(deltaF % deltaF);
+      // The accu function will do the sum of all elements
+      // and the % operator does the Shure product i.e.
+      // element wise multiplication of two matrices
+      xg = accu(deltaPos % deltaF);
+      gg = accu(deltaF % deltaF);
     }
 
-		deltaS	= s - s0;
-    if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
+    deltaS = s - s0;
+    if (*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
-		  xg		+= accu(deltaLatticeCar % deltaS);
-		  gg		+= accu(deltaS % deltaS);
+      xg += accu(deltaLatticeCar % deltaS);
+      gg += accu(deltaS % deltaS);
     }
 
-
-		if(fabs(xg) > 0.0)
+    if (fabs(xg) > 0.0)
       step = ::std::fabs(xg / gg);
 
-    if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
+    if (*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
     {
-		  // Move the particles on by a step, saving the old positions
-		  deltaPos		= step * data.forces;
-		  data.pos		+= deltaPos;
+      // Move the particles on by a step, saving the old positions
+      deltaPos = step * data.forces;
+      data.pos += deltaPos;
     }
 
-		// Fractionalise coordinates and wrap coordinates
+    // Fractionalise coordinates and wrap coordinates
     unitCell.cartsToFracInplace(data.pos);
     unitCell.wrapVecsFracInplace(data.pos);
 
-    if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
+    if (*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
-		  // Move on cell vectors to relax strain
-		  deltaLatticeCar = step * (s - pressureMtx * latticeCar);
+      // Move on cell vectors to relax strain
+      deltaLatticeCar = step * (s - pressureMtx * latticeCar);
       settings.applyLatticeConstraints(structure, latticeCar, deltaLatticeCar);
-		  latticeCar += deltaLatticeCar;
+      latticeCar += deltaLatticeCar;
 
-      if(!unitCell.setOrthoMtx(latticeCar))
+      if (!unitCell.setOrthoMtx(latticeCar))
       {
         // The unit cell matrix has become singular
         converged = false;
@@ -381,77 +374,77 @@ OptimisationOutcome TpsdGeomOptimiser::optimise(
       }
     }
 
-		// Finally re-orthogonalise the ion positions
+    // Finally re-orthogonalise the ion positions
     unitCell.fracsToCartInplace(data.pos);
 
     // Tell the structure about the new positions
     structure.setAtomPositions(data.pos);
 
-		dH = h - h0;
+    dH = h - h0;
 
-		converged = fabs(dH) < eTol;
+    converged = fabs(dH) < eTol;
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
     debugger.postOptStepDebugHook(structure, i);
 #endif
 
-		if((i % CHECK_CELL_EVERY_N_STEPS == 0) && !cellReasonable(unitCell))
+    if ((i + 1 % CHECK_CELL_EVERY_N_STEPS == 0) && !cellReasonable(unitCell))
     {
       return OptimisationOutcome::failure(
-        OptimisationError::PROBLEM_WITH_STRUCTURE,
-        "Unit cell has collapsed."
-      );
+          OptimisationError::PROBLEM_WITH_STRUCTURE, "Unit cell has collapsed.");
     }
-	}
+  }
 
-	// Wrap the particle positions so they stay in the central unit cell
-	unitCell.wrapVecsInplace(data.pos);
+  // Wrap the particle positions so they stay in the central unit cell
+  unitCell.wrapVecsInplace(data.pos);
 
   // Only a successful optimisation if it has converged
   // and the last potential evaluation had no problems
-  if(numLastEvaluationsWithProblem != 0)
-    return OptimisationOutcome::failure(OptimisationError::ERROR_EVALUATING_POTENTIAL, "Potential evaluation errors during optimisation");
-  if(!converged)
+  if (numLastEvaluationsWithProblem != 0)
+    return OptimisationOutcome::failure(
+        OptimisationError::ERROR_EVALUATING_POTENTIAL,
+        "Potential evaluation errors during optimisation");
+  if (!converged)
   {
     ::std::stringstream ss;
     ss << "Failed to converge after " << *settings.maxSteps << "steps";
-    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
+    return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE,
+        ss.str());
   }
 
   populateOptimistaionData(optimisationData, structure, data);
   return OptimisationOutcome::success();
 }
 
-bool TpsdGeomOptimiser::cellReasonable(const sstbx::common::UnitCell & unitCell) const
+bool
+TpsdGeomOptimiser::cellReasonable(
+    const sstbx::common::UnitCell & unitCell) const
 {
   // Do a few checks to see if the cell has collapsed
-  if(unitCell.getNormVolume() < CELL_MIN_NORM_VOLUME)
+  if (unitCell.getNormVolume() < CELL_MIN_NORM_VOLUME)
     return false;
 
   const double (&params)[6] = unitCell.getLatticeParams();
 
-  if(params[3] + params[4] + params[5] > CELL_MAX_ANGLE_SUM)
+  if (params[3] + params[4] + params[5] > CELL_MAX_ANGLE_SUM)
     return false;
 
   return true;
 }
 
-void TpsdGeomOptimiser::populateOptimistaionData(
-  OptimisationData & optData,
-  const common::Structure & structure,
-  const PotentialData & potData
-) const
+void
+TpsdGeomOptimiser::populateOptimistaionData(OptimisationData & optData,
+    const common::Structure & structure, const PotentialData & potData) const
 {
   const common::UnitCell * const unitCell = structure.getUnitCell();
 
   optData.internalEnergy.reset(potData.internalEnergy);
   const double pressure = -::arma::trace(potData.stressMtx) / 3.0;
   optData.pressure.reset(pressure);
-  if(unitCell)
+  if (unitCell)
   {
     optData.enthalpy.reset(
-      potData.internalEnergy + *optData.pressure * unitCell->getVolume()
-    );
+        potData.internalEnergy + *optData.pressure * unitCell->getVolume());
   }
   optData.ionicForces.reset(potData.forces);
   optData.stressMtx.reset(potData.stressMtx);
