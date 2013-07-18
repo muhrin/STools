@@ -3,11 +3,17 @@
 
 set(sslib_Header_Files__analysis
   include/analysis/AbsConvexHullGenerator.h
-  include/analysis/ConvexHullGenerator.h
+  include/analysis/CgalCustomKernel.h
+  include/analysis/CgalPointDWithId.h
+  include/analysis/ConvexHull.h
   include/analysis/ConvexHullOutputter.h
   include/analysis/DynamicConvexHullGenerator.h
+  include/analysis/GnuplotConvexHullPlotter.h
   include/analysis/Histogram.h
+  include/analysis/IConvexHullInfoSupplier.h
+  include/analysis/IConvexHullOutputter.h
   include/analysis/SpaceGroup.h
+  include/analysis/StructureConvexHullInfoSupplier.h
   include/analysis/VoronoiMap.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})

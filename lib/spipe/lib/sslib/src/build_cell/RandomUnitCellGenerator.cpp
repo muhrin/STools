@@ -331,6 +331,7 @@ RandomUnitCellGenerator::MinMaxIndex RandomUnitCellGenerator::getMinMaxLengths(c
 
 bool RandomUnitCellGenerator::areParametersValid(const double (&params)[6]) const
 {
+  using ::std::abs;
   using namespace utility::cell_params_enum;
 
   const double anglesSum = params[ALPHA] + params[BETA] + params[GAMMA];

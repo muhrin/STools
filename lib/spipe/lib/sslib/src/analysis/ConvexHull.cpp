@@ -1,11 +1,11 @@
 /*
- * Histogram.cpp
+ * ConvexHull.cpp
  *
  *  Created on: Nov 10, 2011
  *      Author: Martin Uhrin
  */
 
-#include "analysis/ConvexHullGenerator.h"
+#include "analysis/ConvexHull.h"
 
 #ifdef SSLIB_USE_CGAL
 
@@ -18,28 +18,34 @@
 namespace sstbx {
 namespace analysis {
 
-ConvexHullGenerator::ConvexHullGenerator(const Endpoints & endpoints):
-    myEndpoints(endpoints), myConvexProperty(common::structure_properties::general::ENTHALPY),
-    myHullDims(endpoints.size()), mySimplexCoordinates(endpoints.size(), VectorD(endpoints.size() - 1))
+const int ConvexHull::CONVEX_PROPERTY_DIMENSION = 0;
+
+ConvexHull::ConvexHull(const EndpointLabels & labels):
+    myConvexProperty(common::structure_properties::general::ENTHALPY),
+    myHullDims(labels.size())
 {
-  SSLIB_ASSERT_MSG(myEndpoints.size() >= 2, "Need at least two endpoints to make convex hull.");
-  initSimplexCoordinates();
+  SSLIB_ASSERT_MSG(labels.size() >= 2, "Need at least two endpoints to make convex hull.");
+  initEndpoints(labels);
 }
 
-ConvexHullGenerator::ConvexHullGenerator(const Endpoints & endpoints, utility::Key<double> & convexProperty):
-    myEndpoints(endpoints), myConvexProperty(convexProperty), myHullDims(endpoints.size()),
-    mySimplexCoordinates(endpoints.size(), VectorD(endpoints.size() - 1))
+ConvexHull::ConvexHull(const EndpointLabels & labels, utility::Key<double> & convexProperty):
+    myConvexProperty(convexProperty), myHullDims(labels.size())
 {
-  SSLIB_ASSERT_MSG(myEndpoints.size() >= 2, "Need at least two endpoints to make convex hull.");
-  initSimplexCoordinates();
+  SSLIB_ASSERT_MSG(labels.size() >= 2, "Need at least two endpoints to make convex hull.");
+  initEndpoints(labels);
 }
 
-bool ConvexHullGenerator::addStructure(const common::Structure & structure)
+ConvexHull::PointId ConvexHull::addStructure(const common::Structure & structure)
 {
-  return generateEntry(structure) != myEntries.end();
+  return generateEntry(structure);
 }
 
-const ConvexHullGenerator::ConvexHull * ConvexHullGenerator::getHull()
+int ConvexHull::dims() const
+{
+  return myHullDims;
+}
+
+const ConvexHull::Hull * ConvexHull::getHull() const
 {
   if(!myHull.get() && canGenerate())
     generateHull();
@@ -47,7 +53,27 @@ const ConvexHullGenerator::ConvexHull * ConvexHullGenerator::getHull()
   return myHull.get();
 }
 
-ConvexHullGenerator::HullEntry::HullEntry(const common::Structure::Composition & composition, const HullTraits::FT value):
+ConvexHull::VectorD ConvexHull::composition(const VectorD & vec) const
+{
+  return VectorD(myHullDims - 1, vec.cartesian_begin() + 1, vec.cartesian_end());
+}
+
+ConvexHull::PointD ConvexHull::composition(const PointD & point) const
+{
+  return PointD(myHullDims - 1, point.cartesian_begin() + 1, point.cartesian_end());
+}
+
+ConvexHull::EndpointsConstIterator ConvexHull::endpointsBegin() const
+{
+  return myEndpoints.begin();
+}
+
+ConvexHull::EndpointsConstIterator ConvexHull::endpointsEnd() const
+{
+  return myEndpoints.end();
+}
+
+ConvexHull::HullEntry::HullEntry(const common::Structure::Composition & composition, const HullTraits::FT value):
     myComposition(composition), myValue(value)
 {
   myIsEndpoint = true;
@@ -64,32 +90,35 @@ ConvexHullGenerator::HullEntry::HullEntry(const common::Structure::Composition &
   }
 }
 
-const common::Structure::Composition & ConvexHullGenerator::HullEntry::getComposition() const
+const common::Structure::Composition & ConvexHull::HullEntry::getComposition() const
 {
   return myComposition;
 }
 
-const ConvexHullGenerator::HullTraits::FT ConvexHullGenerator::HullEntry::getValue() const
+const ConvexHull::HullTraits::FT ConvexHull::HullEntry::getValue() const
 {
   return myValue;
 }
 
-bool ConvexHullGenerator::HullEntry::isEndpoint() const
+bool ConvexHull::HullEntry::isEndpoint() const
 {
   return myIsEndpoint;
 }
 
-ConvexHullGenerator::HullEntries::iterator
-ConvexHullGenerator::generateEntry(const common::Structure & structure)
+ConvexHull::PointId
+ConvexHull::generateEntry(const common::Structure & structure)
 {
+  PointId id = -1;
+
   if(structure.getNumAtoms() == 0)
-    return myEntries.end();
+    return id;
 
   // Check if the structure has a value for the property that will form the 'depth' of the hull
   const double * const value = structure.getProperty(myConvexProperty);
   if(!value)
-    return myEntries.end();
+    return id;
 
+  id = myEntries.size();
   const HullEntries::iterator it = myEntries.insert(myEntries.end(), HullEntry(structure.getComposition(), *value));
   if(it->isEndpoint())
   {
@@ -105,10 +134,10 @@ ConvexHullGenerator::generateEntry(const common::Structure & structure)
     updateChemicalPotential(nonZeroElement, *value / static_cast<double>(structure.getNumAtoms()));
   }
 
-  return it;
+  return id;
 }
 
-void ConvexHullGenerator::updateChemicalPotential(const ::std::string & endpointSpecies, const HullTraits::FT value)
+void ConvexHull::updateChemicalPotential(const ::std::string & endpointSpecies, const HullTraits::FT value)
 {
   ChemicalPotentials::iterator it = myChemicalPotentials.find(endpointSpecies);
   if(it == myChemicalPotentials.end())
@@ -123,7 +152,7 @@ void ConvexHullGenerator::updateChemicalPotential(const ::std::string & endpoint
   }
 }
 
-ConvexHullGenerator::PointD ConvexHullGenerator::generateHullPoint(const HullEntry & entry)
+ConvexHull::PointD ConvexHull::generateHullPoint(const HullEntry & entry) const
 {
   // Need chemical potentials for all endpoints
   SSLIB_ASSERT(canGenerate());
@@ -131,27 +160,29 @@ ConvexHullGenerator::PointD ConvexHullGenerator::generateHullPoint(const HullEnt
   ::std::vector<HullTraits::FT> hullCoords(myHullDims);
 
   const common::Structure::Composition & composition = entry.getComposition();
+  common::Structure::Composition::const_iterator it;
 
   int totalAtoms = 0;
   HullTraits::FT totalMuNAtoms = 0.0;
-  // TODO: Rewrite this loop in terms of our endpoints instead of composition as the
-  // composition may contain species that we're not interested in
-  BOOST_FOREACH(common::Structure::Composition::const_reference x, composition)
+  BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
-    totalAtoms += x.second;
-    totalMuNAtoms += myChemicalPotentials[x.first] * x.second;
+    it = composition.find(endpoint.first);
+    if(it != composition.end())
+    {
+      totalAtoms += it->second;
+      totalMuNAtoms += myChemicalPotentials.find(it->first)->second * HullTraits::FT(it->second);
+    }
   }
 
   // Create a vector that is the weighted sum of the vectors of composition
   // simplex
   VectorD v(myHullDims - 1);
-  common::Structure::Composition::const_iterator it;
   for(int i = 0; i < myEndpoints.size(); ++i)
   {
-    it = composition.find(myEndpoints[i]);
+    it = composition.find(myEndpoints[i].first);
     if(it != composition.end())
     {
-      VectorD scaled = mySimplexCoordinates[i];
+      VectorD scaled = myEndpoints[i].second;
       scaled *= HullTraits::FT(it->second, totalAtoms);
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
       ::std::cout << "Adding endpoint: " << scaled << " weight: " << HullTraits::FT(it->second, totalAtoms) << ::std::endl;
@@ -175,29 +206,34 @@ ConvexHullGenerator::PointD ConvexHullGenerator::generateHullPoint(const HullEnt
   return point;
 }
 
-void ConvexHullGenerator::generateHull()
+void ConvexHull::generateHull() const
 {
   SSLIB_ASSERT(canGenerate());
 
-  myHull.reset(new ConvexHull(myHullDims));
+  myHull.reset(new Hull(myHullDims));
   BOOST_FOREACH(HullEntries::const_reference entry, myEntries)
   {
     myHull->insert(generateHullPoint(entry));
   }
 }
 
-bool ConvexHullGenerator::canGenerate() const
+bool ConvexHull::canGenerate() const
 {
   return myChemicalPotentials.size() == myEndpoints.size();
 }
 
-void ConvexHullGenerator::initSimplexCoordinates()
+void ConvexHull::initEndpoints(const EndpointLabels & labels)
 {
+  for(int i = 0; i < labels.size(); ++i)
+  {
+    myEndpoints.push_back(::std::make_pair(labels[i], VectorD(myHullDims - 1)));
+  }
+
   ::std::vector<RT> vec(myEndpoints.size() - 1, 0);
 
   // Always start the hull with the first points at (0,0) and (1,0)
   vec[0] = 1.0;
-  mySimplexCoordinates[1] = VectorD(vec.size(), vec.begin(), vec.end());
+  myEndpoints[1].second = VectorD(vec.size(), vec.begin(), vec.end());
 
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << "Convex hull building simplex\n";
@@ -205,7 +241,7 @@ void ConvexHullGenerator::initSimplexCoordinates()
   ::std::cout << "1: " << mySimplexCoordinates[1] << ::std::endl;
 #endif
 
-  VectorD pSum = mySimplexCoordinates[1];
+  VectorD pSum = myEndpoints[1].second;
   vec.assign(vec.size(), 0.0);
   for(int i = 2; i < myHullDims; ++i)
   {
@@ -219,13 +255,13 @@ void ConvexHullGenerator::initSimplexCoordinates()
       vec[i - 1] -= vec[j] * vec[j];
     }
     vec[i - 1] = CGAL::sqrt(vec[i - 1]);
-    mySimplexCoordinates[i] = VectorD(vec.size(), vec.begin(), vec.end());
+    myEndpoints[i].second = VectorD(vec.size(), vec.begin(), vec.end());
 
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << i << ": " << CGAL::to_double(mySimplexCoordinates[i][0]) << " " << CGAL::to_double(mySimplexCoordinates[i][1]) << ::std::endl;
 #endif
 
-    pSum += mySimplexCoordinates[i];
+    pSum += myEndpoints[i].second;
   }
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << "Convex hull finished building simplex\n";

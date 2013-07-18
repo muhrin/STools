@@ -20,7 +20,9 @@
 
 
 // From SSLib //
-#include <analysis/ConvexHullGenerator.h>
+#include <analysis/ConvexHull.h>
+#include <analysis/GnuplotConvexHullPlotter.h>
+#include <analysis/StructureConvexHullInfoSupplier.h>
 #include <common/Structure.h>
 #include <common/Types.h>
 #include <io/ResourceLocator.h>
@@ -48,7 +50,7 @@ struct InputOptions
 
 int main(const int argc, char * argv[])
 {
-  typedef ssa::ConvexHullGenerator::ConvexHull ConvexHull;
+  typedef ssa::ConvexHull::Hull ConvexHull;
 
   const ::std::string exeName(argv[0]);
 
@@ -106,22 +108,28 @@ int main(const int argc, char * argv[])
     rwMan.readStructures(loadedStructures, structureLocator);
   }
 
-  ::sstbx::UniquePtr<ssa::ConvexHullGenerator>::Type hullGenerator =
-      ssa::ConvexHullGenerator::makeHull(loadedStructures.begin(), loadedStructures.end());
+  ssa::ConvexHull hullGenerator(ssa::ConvexHull::generateEndpoints(loadedStructures.begin(), loadedStructures.end()));
+  const ::std::vector<ssa::ConvexHull::PointId> structureIds = hullGenerator.addStructures(loadedStructures.begin(), loadedStructures.end());
 
-  const ConvexHull * const hull = hullGenerator->getHull();
 
-  if(hull)
+  ssa::StructureConvexHullInfoSupplier infoSupplier;
+  for(int i = 0; i < structureIds.size(); ++i)
+    infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
+
+  if(hullGenerator.getHull())
   {
-    ConvexHull::Hull_vertex_const_iterator it = hull->hull_vertices_begin();
-    const ConvexHull::Hull_vertex_const_iterator end = hull->hull_vertices_end();
-    for(; it != end; ++it)
-    {
-      ConvexHull::Point_d p = it->point();
-      for(int i = 0; i < p.dimension(); ++i)
-        ::std::cout << CGAL::to_double(p[i]) << " ";
-      ::std::cout << ::std::endl;
-    }
+    ssa::GnuplotConvexHullPlotter plotter;
+    plotter.outputHull(hullGenerator);//, infoSupplier);
+//    ConvexHull::Hull_vertex_const_iterator it = hull->hull_vertices_begin();
+//    const ConvexHull::Hull_vertex_const_iterator end = hull->hull_vertices_end();
+//    for(; it != end; ++it)
+//    {
+//      ConvexHull::Point_d p = it->point();
+//      ::std::cout << p.getId() << " ";
+//      for(int i = 0; i < p.dimension(); ++i)
+//        ::std::cout << CGAL::to_double(p[i]) << " ";
+//      ::std::cout << ::std::endl;
+//    }
   }
 
 

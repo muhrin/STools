@@ -2,10 +2,12 @@
 
 set(sslib_Source_Files__analysis
   src/analysis/AbsConvexHullGenerator.cpp
-  src/analysis/ConvexHullGenerator.cpp
+  src/analysis/ConvexHull.cpp
   src/analysis/DynamicConvexHullGenerator.cpp
+  src/analysis/GnuplotConvexHullPlotter.cpp
   src/analysis/Histogram.cpp
   src/analysis/SpaceGroup.cpp
+  src/analysis/StructureConvexHullInfoSupplier.cpp
   src/analysis/VoronoiMap.cpp
 )
 source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})

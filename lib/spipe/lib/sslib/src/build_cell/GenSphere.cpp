@@ -17,7 +17,7 @@ namespace sstbx {
 namespace build_cell {
 
 GenSphere::GenSphere(const double radius):
-myRadius(abs(radius)),
+myRadius(::std::abs(radius)),
 myTransform(::arma::eye< ::arma::mat>(4, 4))
 {}
 

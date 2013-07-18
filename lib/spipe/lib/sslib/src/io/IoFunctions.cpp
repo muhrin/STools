@@ -113,6 +113,10 @@ bool buildWildcardRegex(::std::string & pattern)
 
 int getPrecision(const double num, const unsigned int digitsAfterDecimal)
 {
+  using ::std::abs;
+  using ::std::ceil;
+  using ::std::log10;
+
   int digits = digitsAfterDecimal + 1;
   if(num != 0.0)
     digits += (int)ceil(log10(abs(num)));
