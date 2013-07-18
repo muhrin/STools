@@ -227,15 +227,13 @@ void GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os, const ConvexHul
 
 
   for(ConvexHull::Hull::Simplex_const_iterator simplexIt = hull->simplices_begin(),
-      simmplexEnd = hull->simplices_end(); simplexIt != simplexEnd; ++simplexIt)
+      simplexEnd = hull->simplices_end(); simplexIt != simplexEnd; ++simplexIt)
   {
-    ConvexHull::Hull::Point_const_iterator it = simplexIt->points_begin();
-    const ConvexHull::PointD startPoint = *it;
+    const ConvexHull::PointD startPoint = hull->point_of_simplex(simplexIt, 0);
     x0 = startPoint;
-    for(ConvexHull::Hull::Point_const_iterator end = simplexIt->points_end();
-        it != end; ++it)
+    for(int i = 1; i < hull->dimension(); ++i)
     {
-      x1 = *it;
+      x1 = hull->point_of_simplex(simplexIt, i);
       os << "set arrow " << line++ << " from "
           << printPoint(x0) << " to " << printPoint(x1)
           << " nohead linestyle 1" << ::std::endl;
