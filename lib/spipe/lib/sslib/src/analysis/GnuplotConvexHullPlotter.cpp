@@ -12,6 +12,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <boost/optional.hpp>
+
 #include <CGAL/Regular_complex_d.h>
 
 #include "analysis/IConvexHullInfoSupplier.h"
@@ -24,10 +26,17 @@ GnuplotConvexHullPlotter::GnuplotConvexHullPlotter()
   myOutputStem = "hull";
   myDrawBoundary = true;
   myDrawTieLines = false;
+  myDrawLabels = true;
+  myDrawOffHullPoints = true;
   mySupressEnergyDimension = false;
 }
 
 bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
+{
+  return outputHull(convexHull, NULL);
+}
+
+bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull, const IConvexHullInfoSupplier * const infoSupplier) const
 {
   const ConvexHull::Hull * const hull = convexHull.getHull();
   if(!hull)
@@ -38,9 +47,18 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
   str = myOutputStem + ".plt";
   ::std::ofstream pltOut(str.c_str());
 
+  Plot plot;
+
+  // Set up the graph style
+  setStyles(pltOut, convexHull);
+
   // Print the boundary
   if(myDrawBoundary)
-    drawBoundary(pltOut, convexHull);
+    drawBoundary(pltOut, convexHull, plot);
+
+  drawEndpointLabels(pltOut, convexHull, plot);
+  if(myDrawTieLines)
+    drawTieLines(pltOut, convexHull, plot);
 
   // Now plot the points
   ConvexHull::PointD point;
@@ -48,44 +66,55 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
       end = hull->hull_vertices_end(); it != end; ++it)
   {
     point = it->point();
-    // Only print points below the 0 in energy, don't care about the top of the hull
-    if(CGAL::to_double(point[0]) <= 0)
-    {
-      if(mySupressEnergyDimension)
-        point[ConvexHull::CONVEX_PROPERTY_DIMENSION] = 0;
+    const ConvexHull::PointId pointId = point.getId();
 
-      // Make sure the point is the correct number of dimensions
-      switch(convexHull.dims())
-      {
-      case 3:
-      {
-        if(mySupressEnergyDimension)
-          point = convexHull.composition(point);
-        break;
-      }
-      case 4:
-        // Always have to suppress the 4th dimension as there's no way to plot it
-        point = convexHull.composition(point);
-        break;
-      }
-      if(mySupressEnergyDimension)
-        point = convexHull.composition(point);
+    // Only print points below the 0 in energy, don't care about the top of the hull
+    if(point[convexHull.dims() - 1] <= 0)
+    {
+      point = prepPoint(point);
 
       datOut << printPoint(point) << ::std::endl;
+      if(infoSupplier && myDrawLabels)
+      {
+        ::std::vector<ConvexHull::HullTraits::FT> labelPt(point.cartesian_begin(), point.cartesian_end());
+        labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
+        pltOut << plot.drawLabel(infoSupplier->getLabel(convexHull, pointId),
+            ConvexHull::PointD(labelPt.size(), labelPt.begin(), labelPt.end()));
+      }
     }
   }
 
-  if(convexHull.dims() == 3 && !mySupressEnergyDimension)
-    pltOut << "splot \"" << myOutputStem << ".dat\" u 2:3:1" << ::std::endl;
-  else
+  bool haveOffHullPoints = false;
+  if(myDrawOffHullPoints)
   {
-    if(!mySupressEnergyDimension)
-      pltOut << "plot \"" << myOutputStem << ".dat\" u 2:1" << ::std::endl;
-    else
-      pltOut << "plot \"" << myOutputStem << ".dat\"" << ::std::endl;
+    ::boost::optional<bool> stable;
+    // Start a new data set
+    datOut << ::std::endl << ::std::endl;
+    for(ConvexHull::Hull::Point_const_iterator it = hull->points_begin(),
+        end = hull->points_end(); it != end; ++it)
+    {
+      stable = convexHull.isStable(*it);
+      if(stable && !*stable)
+      {
+        datOut << printPoint(prepPoint(*it)) << ::std::endl;
+        haveOffHullPoints = true;
+      }
+    }
   }
 
-  drawTieLines(pltOut, convexHull);
+  if(plotDims(convexHull) == 3 || convexHull.dims() == 3)
+    pltOut << "set size square" << ::std::endl;
+
+  ::std::stringstream plotStream;
+  plotStream << "\"" << myOutputStem << ".dat\" i 0 ls 1 title \"Hull point\"";
+  if(myDrawOffHullPoints && haveOffHullPoints)
+    plotStream << ", \"" << myOutputStem << ".dat\" i 1 ls 2 title \"Off hull point\"";
+
+  if(plotDims(convexHull) == 3)
+    pltOut << "splot " << plotStream.str() << ::std::endl;
+  else
+    pltOut << "plot " << plotStream.str() << ::std::endl;
+
 
   if(datOut.is_open())
     datOut.close();
@@ -93,11 +122,6 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
     pltOut.close();
 
   return true;
-}
-
-bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull, const IConvexHullInfoSupplier & infoSupplier) const
-{
-  return false;
 }
 
 bool GnuplotConvexHullPlotter::getDrawTieLines() const
@@ -120,11 +144,49 @@ void GnuplotConvexHullPlotter::setSupressEnergyDimension(const bool supress)
   mySupressEnergyDimension = supress;
 }
 
-::std::string GnuplotConvexHullPlotter::printVec(const ConvexHull::VectorD & vec) const
+void GnuplotConvexHullPlotter::setDrawHullLabels(const bool label)
+{
+  myDrawLabels = label;
+}
+
+void GnuplotConvexHullPlotter::setDrawOffHullPoints(const bool draw)
+{
+  myDrawOffHullPoints = draw;
+}
+
+const double GnuplotConvexHullPlotter::LABEL_MARGIN = 0.05;
+
+GnuplotConvexHullPlotter::Plot::Plot():
+    myArrowCounter(0),
+    myLabelCounter(0)
+{}
+
+::std::string GnuplotConvexHullPlotter::Plot::drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1)
+{
+  return drawLine(x0, x1, 1);
+}
+
+::std::string GnuplotConvexHullPlotter::Plot::drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1, const int lineStyle)
 {
   ::std::stringstream ss;
-  ConvexHull::VectorD::Cartesian_const_iterator it = vec.cartesian_begin();
-  const ConvexHull::VectorD::Cartesian_const_iterator end = vec.cartesian_end();
+  ss << "set arrow " << ++myArrowCounter << " from "
+      << printPoint(x0) << " to " << printPoint(x1)
+      << " nohead linestyle " << lineStyle << ::std::endl;
+  return ss.str();
+}
+
+::std::string GnuplotConvexHullPlotter::Plot::drawLabel(const ::std::string label, const ConvexHull::PointD & x) const
+{
+  ::std::stringstream ss;
+  ss << "set label \"" << label << "\" at " << printPoint(x) << " centre" << ::std::endl;
+  return ss.str();
+}
+
+::std::string GnuplotConvexHullPlotter::Plot::printPoint(const ConvexHull::PointD & point) const
+{
+  ::std::stringstream ss;
+  ConvexHull::PointD::Cartesian_const_iterator it = point.cartesian_begin();
+  const ConvexHull::PointD::Cartesian_const_iterator end = point.cartesian_end();
 
   // Print the first one as a special case
   if(it != end)
@@ -134,7 +196,7 @@ void GnuplotConvexHullPlotter::setSupressEnergyDimension(const bool supress)
   }
   for(; it != end; ++it)
   {
-    ss << "," << CGAL::to_double(*it);
+    ss << ", " << CGAL::to_double(*it);
   }
 
   return ss.str();
@@ -160,12 +222,35 @@ void GnuplotConvexHullPlotter::setSupressEnergyDimension(const bool supress)
   return ss.str();
 }
 
-
-void GnuplotConvexHullPlotter::drawBoundary(::std::ostream & os, const ConvexHull & convexHull) const
+void GnuplotConvexHullPlotter::setStyles(::std::ostream & os, const ConvexHull & convexHull) const
 {
+  os << "set xtics nomirror" << ::std::endl;
+  os << "set ytics nomirror" << ::std::endl;
+
+  os << "set style line 1 ps 1.5 pt 7 lc rgb '#dd181f'" << ::std::endl;
+  os << "set style line 2 ps 1 pt 7 lc rgb '#0060ad'" << ::std::endl;
+
+  if(convexHull.dims() > 2)
+  {
+    os << "unset border" << ::std::endl;
+    os << "unset ytics" << ::std::endl;
+    os << "set yrange[0:1]" << ::std::endl;
+    if(convexHull.dims() > 3)
+    {
+      os << "unset ztics" << ::std::endl;
+      os << "set zrange[0:1]" << ::std::endl;
+    }
+  }
+}
+
+void GnuplotConvexHullPlotter::drawBoundary(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const
+{
+  // With only two dimensions the x axis will act as the boundary
+  if(convexHull.dims() == 2)
+    return;
+
   // Print the boundary
-  int endpointLine = 1;
-  ConvexHull::VectorD from, to;
+  ConvexHull::PointD from, to;
   for(ConvexHull::EndpointsConstIterator it1 = convexHull.endpointsBegin(), end = convexHull.endpointsEnd();
       it1 != end; ++it1)
   {
@@ -173,77 +258,95 @@ void GnuplotConvexHullPlotter::drawBoundary(::std::ostream & os, const ConvexHul
     {
       from = it1->second;
       to = it2->second;
-      switch(convexHull.dims())
+      if(mySupressEnergyDimension || convexHull.dims() == 4)
       {
-      case 2:
-      {
-        from = ConvexHull::VectorD(2, from.cartesian_begin(), from.cartesian_end());
-        to = ConvexHull::VectorD(2, to.cartesian_begin(), to.cartesian_end());
-        break;
+        from = ConvexHull::PointD(convexHull.dims() - 1, from.cartesian_begin(), from.cartesian_end() - 1);
+        to = ConvexHull::PointD(convexHull.dims() - 1, to.cartesian_begin(), to.cartesian_end() - 1);
       }
-      case 3:
-      {
-        if(!mySupressEnergyDimension)
-        {
-          from = ConvexHull::VectorD(3, from.cartesian_begin(), from.cartesian_end());
-          to = ConvexHull::VectorD(3, to.cartesian_begin(), to.cartesian_end());
-        }
-        break;
-      }
-      }
-      os << "set arrow " << endpointLine << " from "
-          << printVec(from) << " to " << printVec(to)
-          << " nohead linestyle 1" << ::std::endl;
-      ++endpointLine;
+      os << plot.drawLine(from, to);
     }
   }
 }
 
-void GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os, const ConvexHull & convexHull) const
+void GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const
 {
+  // No point in drawing tie lines on a 1D plot
+  if(plotDims(convexHull) == 1)
+    return;
+
   const ConvexHull::Hull * const hull = convexHull.getHull();
   ConvexHull::PointD x0, x1;
-  int line = 100;
-//  for(ConvexHull::Hull::Facet_const_iterator facetIt = hull->facets_begin(),
-//      end = hull->facets_end(); facetIt != end; ++facetIt)
-//  {
-//    ConvexHull::Hull::Point_const_iterator it = facetIt->points_begin();
-//    const ConvexHull::PointD startPoint = *it;
-//    x0 = startPoint;
-//    for(ConvexHull::Hull::Point_const_iterator end = facetIt->points_end();
-//        it != end; ++it)
-//    {
-//      x1 = *it;
-//      os << "set arrow " << line++ << " from "
-//          << printPoint(x0) << " to " << printPoint(x1)
-//          << " nohead linestyle 1" << ::std::endl;
-//      x0 = x1;
-//    }
-//    // Complete the facet
-//    os << "set arrow " << line++ << " from "
-//        << printPoint(x0) << " to " << printPoint(startPoint)
-//        << " nohead linestyle 1" << ::std::endl;
-//  }
-
-
-  for(ConvexHull::Hull::Simplex_const_iterator simplexIt = hull->simplices_begin(),
-      simplexEnd = hull->simplices_end(); simplexIt != simplexEnd; ++simplexIt)
+  for(ConvexHull::Hull::Facet_const_iterator facetIt = hull->facets_begin(),
+      end = hull->facets_end(); facetIt != end; ++facetIt)
   {
-    const ConvexHull::PointD startPoint = hull->point_of_simplex(simplexIt, 0);
+
+    const ConvexHull::PointD startPoint = hull->point_of_facet(facetIt, 0);
     x0 = startPoint;
-    for(int i = 1; i <= hull->dimension(); ++i)
+    // Only consider points on or below zero in the convex property
+    if(x0[convexHull.dims() - 1] > 0)
+      continue;
+    for(int i = 1; i < hull->dimension(); ++i)
     {
-      x1 = hull->point_of_simplex(simplexIt, i);
-      os << "set arrow " << line++ << " from "
-          << printPoint(x0) << " to " << printPoint(x1)
-          << " nohead linestyle 1" << ::std::endl;
+      x1 = hull->point_of_facet(facetIt, i);
+      if(x1[convexHull.dims() - 1] > 0)
+        continue;
+
+      os << plot.drawLine(x0, x1);
       x0 = x1;
     }
     // Complete the facet
-    os << "set arrow " << line++ << " from "
-        << printPoint(x0) << " to " << printPoint(startPoint)
-        << " nohead linestyle 1" << ::std::endl;
+    os << plot.drawLine(x0, startPoint);
   }
+}
+
+void GnuplotConvexHullPlotter::drawEndpointLabels(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const
+{
+  const int plotDims = this->plotDims(convexHull);
+
+  // Print the boundary
+  ConvexHull::PointD from, to;
+  for(ConvexHull::EndpointsConstIterator it1 = convexHull.endpointsBegin(), end = convexHull.endpointsEnd();
+      it1 != end; ++it1)
+  {
+    ConvexHull::VectorD vec(convexHull.dims());
+    for(ConvexHull::EndpointsConstIterator it2 = convexHull.endpointsBegin(); it2 != end; ++it2)
+    {
+      if(it1 != it2)
+        vec += (it1->second - CGAL::ORIGIN) - (it2->second - CGAL::ORIGIN);
+    }
+    vec *= LABEL_MARGIN / CGAL::sqrt(vec.squared_length());
+    vec += it1->second - CGAL::ORIGIN;
+    os << plot.drawLabel(it1->first, ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
+  }
+}
+
+int GnuplotConvexHullPlotter::plotDims(const ConvexHull & convexHull) const
+{
+  return mySupressEnergyDimension ? convexHull.dims() - 1 : convexHull.dims();
+}
+
+ConvexHull::PointD GnuplotConvexHullPlotter::prepPoint(const ConvexHull::PointD & point) const
+{
+  ::std::vector<ConvexHull::HullTraits::FT> coords(point.cartesian_begin(), point.cartesian_end());
+
+  if(mySupressEnergyDimension)
+    coords[coords.size() - 1] = 0;
+
+  // Make sure the point is the correct number of dimensions
+  switch(coords.size())
+  {
+  case 3:
+  {
+    if(mySupressEnergyDimension)
+      coords.erase(coords.end() - 1);
+    break;
+  }
+  case 4:
+    // Always have to suppress the 4th dimension as there's no way to plot it
+    coords.erase(coords.end() - 1);
+    break;
+  }
+  return ConvexHull::PointD(coords.size(), coords.begin(), coords.end());
 }
 
 }

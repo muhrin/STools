@@ -45,8 +45,14 @@ struct InputOptions
 {
   double precision;
   ::std::vector< ::std::string> inputFiles;
-  bool printSgNumber;
+  ::std::string outputter;
+  bool flattenConvexProperty;
+  bool hideTieLines;
+  bool labelHullPoints;
+  bool hideOffHull;
 };
+
+::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
@@ -63,6 +69,11 @@ int main(const int argc, char * argv[])
     desc.add_options()
       ("help", "Show help message")
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
+      ("outputter,o", po::value< ::std::string>(&in.outputter)->default_value("gnuplot"), "the hull outputter to use: gnuplot")
+      ("flatten,f", po::value<bool>(&in.flattenConvexProperty)->default_value(false)->zero_tokens(), "don't output convex property dimensions, only points that lie on the hull.")
+      ("hide-tie-lines,t", po::value<bool>(&in.hideTieLines)->default_value(false)->zero_tokens(), "don't draw tie lines (visual outputters only)")
+      ("label,l", po::value<bool>(&in.labelHullPoints)->default_value(false)->zero_tokens(), "label hull points")
+      ("hide-off-hull,h", po::value<bool>(&in.hideOffHull)->default_value(false)->zero_tokens(), "hide points not on the hull")
     ;
 
     po::positional_options_description p;
@@ -118,20 +129,31 @@ int main(const int argc, char * argv[])
 
   if(hullGenerator.getHull())
   {
-    ssa::GnuplotConvexHullPlotter plotter;
-    plotter.outputHull(hullGenerator);//, infoSupplier);
-//    ConvexHull::Hull_vertex_const_iterator it = hull->hull_vertices_begin();
-//    const ConvexHull::Hull_vertex_const_iterator end = hull->hull_vertices_end();
-//    for(; it != end; ++it)
-//    {
-//      ConvexHull::Point_d p = it->point();
-//      ::std::cout << p.getId() << " ";
-//      for(int i = 0; i < p.dimension(); ++i)
-//        ::std::cout << CGAL::to_double(p[i]) << " ";
-//      ::std::cout << ::std::endl;
-//    }
+    ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type outputter = generateOutputter(in);
+    if(outputter.get())
+      outputter->outputHull(hullGenerator, &infoSupplier);
   }
 
 
   return 0;
+}
+
+
+::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in)
+{
+  ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type outputter;
+
+  if(in.outputter == "gnuplot")
+  {
+    ssa::GnuplotConvexHullPlotter * gnuplot = new ssa::GnuplotConvexHullPlotter();
+    gnuplot->setSupressEnergyDimension(in.flattenConvexProperty);
+    gnuplot->setDrawTieLines(!in.hideTieLines);
+    gnuplot->setDrawHullLabels(in.labelHullPoints);
+    gnuplot->setDrawOffHullPoints(!in.hideOffHull);
+    outputter.reset(gnuplot);
+  }
+  else
+    ::std::cerr << "Error: unrecognised outputter - " << in.outputter << ::std::endl;
+
+  return outputter;
 }

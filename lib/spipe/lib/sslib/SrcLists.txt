@@ -37,6 +37,7 @@ source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 set(sslib_Source_Files__common
   src/common/Atom.cpp
   src/common/AtomGroup.cpp
+  src/common/AtomsFormula.cpp
   src/common/AtomSpeciesDatabase.cpp
   src/common/AtomSpeciesInfo.cpp
   src/common/Constants.cpp

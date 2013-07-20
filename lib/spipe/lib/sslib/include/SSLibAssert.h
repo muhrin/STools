@@ -23,6 +23,8 @@
 #  define SSLIB_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
 #endif
 
+#define SSLIB_DIE_NOT_IMPLEMENTED() SSLIB_ASSERT_MSG(true, "Not implemented yet")
+
 #define SSLIB_PRECONDITION(expr) SSLIB_ASSERT(expr)
 #define SSLIB_PRECONDITION_MSG(expr) SSLIB_ASSERT_MSG(expr)
 

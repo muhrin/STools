@@ -350,7 +350,7 @@ bool AtomsGenerator::generateSpecialPosition(
   while(!indices.empty())
   {
     // Get a random one in the list
-    it = indices.begin() + math::randu<size_t>(indices.size());
+    it = indices.begin() + math::randu<size_t>(indices.size() - 1);
     pos = generateSpeciesPosition(spaces[*it].first, genShape, transformation);
     if(pos)
     {

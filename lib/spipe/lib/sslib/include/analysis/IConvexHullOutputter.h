@@ -34,7 +34,7 @@ public:
   }
 
   virtual bool outputHull(const ConvexHull & convexHull) const = 0;
-  virtual bool outputHull(const ConvexHull & convexHull, const IConvexHullInfoSupplier & infoSupplier) const = 0;
+  virtual bool outputHull(const ConvexHull & convexHull, const IConvexHullInfoSupplier * const infoSupplier) const = 0;
 };
 
 }

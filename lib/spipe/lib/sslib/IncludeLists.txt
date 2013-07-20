@@ -51,6 +51,7 @@ source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 set(sslib_Header_Files__common
   include/common/Atom.h
   include/common/AtomGroup.h
+  include/common/AtomsFormula.h
   include/common/AtomSpeciesDatabase.h
   include/common/AtomSpeciesId.h
   include/common/AtomSpeciesInfo.h

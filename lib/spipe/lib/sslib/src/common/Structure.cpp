@@ -19,6 +19,7 @@ extern "C"
 
 #include "SSLibAssert.h"
 #include "common/Atom.h"
+#include "common/AtomsFormula.h"
 #include "common/Types.h"
 #include "common/UnitCell.h"
 #include "utility/IndexingEnums.h"
@@ -249,18 +250,13 @@ size_t Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
   return ::std::count_if(myAtoms.begin(), myAtoms.end(), MatchSpecies(species));
 }
 
-Structure::Composition Structure::getComposition() const
+AtomsFormula Structure::getComposition() const
 {
-  Composition comp;
+  AtomsFormula comp;
 
-  Composition::iterator it;
   BOOST_FOREACH(const Atom & atom, myAtoms)
   {
-    it = comp.find(atom.getSpecies());
-    if(it == comp.end())
-      comp[atom.getSpecies()] = 1;
-    else
-      ++it->second;
+    comp += AtomsFormula(atom.getSpecies());
   }
   return comp;
 }

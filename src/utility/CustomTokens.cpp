@@ -12,6 +12,7 @@
 
 // From SSTbx
 #include <analysis/SpaceGroup.h>
+#include <common/AtomsFormula.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
 #include <io/BoostFilesystem.h>
@@ -80,24 +81,8 @@ TypedToken< ::std::string>(name, symbol, defaultFormatString)
 ::boost::optional< ::std::string>
 FormulaToken::doGetValue(const ::sstbx::common::Structure & structure) const
 {
-  typedef ::std::map< ::std::string, unsigned int> SpeciesCounts;
-  ::std::vector<ssc::AtomSpeciesId::Value> species;
-  structure.getAtomSpecies(species);
-  SpeciesCounts speciesCounts;
-  
-  BOOST_FOREACH(const ssc::AtomSpeciesId::Value & speciesId, species)
-  {
-    if(speciesCounts.find(speciesId) == speciesCounts.end())
-      speciesCounts[speciesId] = structure.getNumAtomsOfSpecies(speciesId);
-  }
-
   ::std::stringstream ss;
-  BOOST_FOREACH(SpeciesCounts::const_reference entry, speciesCounts)
-  {
-    ss << entry.first;
-    if(entry.second > 1)
-      ss << entry.second;
-  }
+  ss << structure.getComposition();
   return ss.str();
 }
 

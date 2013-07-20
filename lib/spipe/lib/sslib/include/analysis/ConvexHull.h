@@ -32,6 +32,7 @@
 //#endif
 
 #include "analysis/AbsConvexHullGenerator.h"
+#include "common/AtomsFormula.h"
 #include "analysis/CgalCustomKernel.h"
 #include "common/Structure.h"
 #include "utility/HeterogeneousMapKey.h"
@@ -61,7 +62,7 @@ public:
   typedef CGAL::Convex_hull_d<HullTraits> Hull;
   typedef HullTraits::Point_d PointD;
   typedef HullTraits::Vector_d VectorD;
-  typedef ::std::pair< ::std::string, VectorD> Endpoint;
+  typedef ::std::pair< ::std::string, PointD> Endpoint;
   typedef ::std::vector< ::std::string> EndpointLabels;
   typedef ::std::vector<Endpoint> Endpoints;
   typedef PointD::Id PointId;
@@ -71,18 +72,18 @@ public:
   class HullEntry
   {
   public:
-    HullEntry(const common::Structure::Composition & composition, const HullTraits::FT value);
+    HullEntry(const common::AtomsFormula & composition, const HullTraits::FT value, const PointId id);
 
-    const common::Structure::Composition & getComposition() const;
+    const common::AtomsFormula & getComposition() const;
     const HullTraits::FT getValue() const;
     bool isEndpoint() const;
+    const PointId & getId() const;
   private:
-    common::Structure::Composition myComposition;
+    common::AtomsFormula myComposition;
     HullTraits::FT myValue;
     bool myIsEndpoint;
+    PointId myId;
   };
-
-  static const int CONVEX_PROPERTY_DIMENSION;
 
   template <typename InputIterator>
   static EndpointLabels generateEndpoints(InputIterator first, InputIterator last);
@@ -109,6 +110,8 @@ public:
 
   EndpointsConstIterator endpointsBegin() const;
   EndpointsConstIterator endpointsEnd() const;
+
+  ::boost::optional<bool> isStable(const PointD & point) const;
 
 private:
 

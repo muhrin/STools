@@ -39,6 +39,11 @@ public:
     myId(-1)
   {}
 
+  CgalPointDWithId(const Self & toCopy):
+    Base(toCopy),
+    myId(toCopy.myId)
+  {}
+
   explicit CgalPointDWithId(const Base & p):
     Base(p),
     myId(-1)

@@ -45,6 +45,7 @@ class HeterogeneousMap;
 }
 namespace common
 {
+class AtomsFormula;
 class DistanceCalculator;
 class UnitCell;
 
@@ -53,7 +54,6 @@ class Structure : public UnitCell::UnitCellListener
 public:
 
   typedef utility::NamedProperty<utility::HeterogeneousMap> VisibleProperty;
-  typedef ::std::map< ::std::string, int> Composition;
 
   explicit
   Structure(UnitCellPtr cell = UnitCellPtr());
@@ -112,7 +112,7 @@ public:
   getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
   size_t
   getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
-  Composition getComposition() const;
+  AtomsFormula getComposition() const;
 
   const DistanceCalculator &
   getDistanceCalculator() const;

@@ -23,7 +23,7 @@ static const ::std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP
 char randomChar(const int seed = -1)
 {
   if(seed == -1)
-    return charset[math::randu(static_cast<int>(charset.length()))];
+    return charset[math::randu(static_cast<int>(charset.length() - 1))];
   else
     return charset[seed % charset.length()];
 }
@@ -34,7 +34,7 @@ char randomChar(const int seed = -1)
   result.resize(length);
 
   for(size_t i = 0; i < length; i++)
-    result[i] = charset[math::randu(static_cast<int>(charset.length()))];
+    result[i] = charset[math::randu(static_cast<int>(charset.length() - 1))];
 
   return result;
 }

@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     ssc::Structure structure;
 
-    numAtoms = static_cast<size_t>(ssm::randu(1, static_cast<int>(maxAtoms)));
+    numAtoms = static_cast<size_t>(ssm::randu(1, static_cast<int>(maxAtoms) - 1));
 
     // Create a unit cell
     // Make the volume somewhat bigger than the space filled by the atoms
