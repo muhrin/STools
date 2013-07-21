@@ -17,9 +17,9 @@
 #include "common/DistanceCalculator.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
+#include "math/NumberAlgorithms.h"
 #include "math/RunningStats.h"
 #include "utility/GenericBufferedComparator.h"
-#include "utility/Math.h"
 
 #define SORTED_DIST_COMP_DEBUG (SSLIB_DEBUG & 0)
 

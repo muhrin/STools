@@ -14,8 +14,8 @@
 
 #include "common/DistanceCalculator.h"
 #include "common/Structure.h"
+#include "math/NumberAlgorithms.h"
 #include "utility/GenericBufferedComparator.h"
-#include "utility/Math.h"
 #include "utility/PermutationRange.h"
 
 // Turn on or off DistanceMatrixComparator (DMC) debugging
@@ -265,7 +265,7 @@ double DistanceMatrixComparator::compareStructuresFast(
 {
   const size_t numAtoms1 = str1Data.distancesMtx.n_cols;
   const size_t numAtoms2 = str2Data.distancesMtx.n_cols;
-  const unsigned int leastCommonMultiple = utility::math::leastCommonMultiple(numAtoms1, numAtoms2);
+  const unsigned int leastCommonMultiple = math::leastCommonMultiple(numAtoms1, numAtoms2);
 
   size_t i, j, iRem1, iRem2;
   double r_ij1, r_ij2, distDiff;

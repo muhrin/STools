@@ -50,6 +50,7 @@ struct InputOptions
   bool hideTieLines;
   bool labelHullPoints;
   bool hideOffHull;
+  ::std::vector< ::std::string> customEndpoints;
 };
 
 ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in);
@@ -74,6 +75,7 @@ int main(const int argc, char * argv[])
       ("hide-tie-lines,t", po::value<bool>(&in.hideTieLines)->default_value(false)->zero_tokens(), "don't draw tie lines (visual outputters only)")
       ("label,l", po::value<bool>(&in.labelHullPoints)->default_value(false)->zero_tokens(), "label hull points")
       ("hide-off-hull,h", po::value<bool>(&in.hideOffHull)->default_value(false)->zero_tokens(), "hide points not on the hull")
+      ("endpoints,e", po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(), "list of whitespace separated endpoints e.g. SiNi Fe")
     ;
 
     po::positional_options_description p;
@@ -95,6 +97,22 @@ int main(const int argc, char * argv[])
   {
     ::std::cout << e.what() << ::std::endl;
     return 1;
+  }
+
+  ::std::vector<ssc::AtomsFormula> endpoints(in.customEndpoints.size());
+  if(!in.customEndpoints.empty())
+  {
+    bool error = false;
+    for(int i = 0; i < in.customEndpoints.size(); ++i)
+    {
+      if(!endpoints[i].fromString(in.customEndpoints[i]))
+      {
+        ::std::cerr << "Unrecognised endpoint: " << in.customEndpoints[i] << ::std::endl;
+        error = true;
+      }
+    }
+    if(error)
+      return 1;
   }
 
   ssio::StructureReadWriteManager rwMan;
@@ -119,7 +137,10 @@ int main(const int argc, char * argv[])
     rwMan.readStructures(loadedStructures, structureLocator);
   }
 
-  ssa::ConvexHull hullGenerator(ssa::ConvexHull::generateEndpoints(loadedStructures.begin(), loadedStructures.end()));
+  if(endpoints.empty())
+    endpoints = ssa::ConvexHull::generateEndpoints(loadedStructures.begin(), loadedStructures.end());
+
+  ssa::ConvexHull hullGenerator(endpoints);
   const ::std::vector<ssa::ConvexHull::PointId> structureIds = hullGenerator.addStructures(loadedStructures.begin(), loadedStructures.end());
 
 

@@ -125,6 +125,7 @@ source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 ## math
 set(sslib_Header_Files__math
   include/math/Matrix.h
+  include/math/NumberAlgorithms.h
   include/math/Random.h
   include/math/RunningStats.h
 )
@@ -182,7 +183,6 @@ set(sslib_Header_Files__utility
   include/utility/IndexRemappingView.h
   include/utility/IStructureComparator.h
   include/utility/MapEx.h
-  include/utility/Math.h
   include/utility/MetaProgramming.h
   include/utility/MultiArray.h
   include/utility/MultiIdx.h

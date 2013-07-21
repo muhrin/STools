@@ -107,6 +107,11 @@ target_link_libraries(sbuild
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  sbuild
+)
+
 ##############################################
 ## sconvert: Convert structure file formats ##
 ##############################################
@@ -133,6 +138,11 @@ add_dependencies(sconvert stools_common)
 # Libraries we need to link to
 target_link_libraries(sconvert
   stools_common
+)
+
+set(stools_targets
+  ${stools_targets}
+  sconvert
 )
 
 #############################################
@@ -163,6 +173,10 @@ target_link_libraries(sdiff
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  sdiff
+)
 
 #######################################
 ## sgroup: Get structure space group ##
@@ -192,9 +206,16 @@ target_link_libraries(sgroup
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  sgroup
+)
+
 #############################################
 ## shull: Structures convex hull generator ##
 #############################################
+if(SSLIB_USE_CGAL)
+
 set(stools_Header_Files__shull
 )
 source_group("Header Files" FILES ${stools_Header_Files__shull})
@@ -219,6 +240,13 @@ add_dependencies(shull stools_common)
 target_link_libraries(shull
   stools_common
 )
+
+set(stools_targets
+  ${stools_targets}
+  shull
+)
+
+endif(SSLIB_USE_CGAL)
 
 ########################################
 ## sinfo: Print info about structures ##
@@ -251,6 +279,11 @@ target_link_libraries(sinfo
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  sinfo
+)
+
 ############################################
 ## smeasure: Structural measurements tool ##
 ############################################
@@ -279,6 +312,10 @@ target_link_libraries(smeasure
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  smeasure
+)
 
 #######################################
 ## ssearch: General structure search ##
@@ -309,6 +346,11 @@ target_link_libraries(ssearch
   stools_common
 )
 
+set(stools_targets
+  ${stools_targets}
+  ssearch
+)
+
 ##################
 ## StructureMap ##
 ##################
@@ -328,7 +370,7 @@ target_link_libraries(ssearch
   
 ## Installation #####
 
-INSTALL(TARGETS sbuild sconvert sdiff sgroup sinfo shull ssearch smeasure
+INSTALL(TARGETS ${stools_targets}
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

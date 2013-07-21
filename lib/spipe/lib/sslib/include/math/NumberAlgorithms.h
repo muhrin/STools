@@ -6,16 +6,15 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef MATH_H
-#define MATH_H
+#ifndef NUMBER_ALGORITHMS_H
+#define NUMBER_ALGORITHMS_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <vector>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
 namespace sstbx {
-namespace utility {
 namespace math {
 
 /**
@@ -48,6 +47,16 @@ inline unsigned int greatestCommonDivisor(const unsigned int a, const unsigned i
   return larger;
 }
 
+inline unsigned int greatestCommonDivisor(const ::std::vector<unsigned int> numbers)
+{
+  if(numbers.empty())
+    return 0;
+
+  unsigned int result = numbers[0];
+  for(int i = 0; i < numbers.size(); ++i) result = greatestCommonDivisor(result, numbers[i]);
+  return result;
+}
+
 inline unsigned int leastCommonMultiple(const unsigned a, const unsigned b)
 {
   return a / greatestCommonDivisor(a, b) * b;
@@ -55,6 +64,5 @@ inline unsigned int leastCommonMultiple(const unsigned a, const unsigned b)
 
 }
 }
-}
 
-#endif /* MATH_H */
+#endif /* NUMBER_ALGORITHMS_H */

@@ -31,25 +31,32 @@ public:
   typedef const_iterator iterator; // Only const iteration allowed
 
   AtomsFormula() {}
-  AtomsFormula(const ::std::string & species);
+  explicit AtomsFormula(const ::std::string & species);
   AtomsFormula(const ::std::string & species, const int number);
 
   bool fromString(const ::std::string & str);
 
   bool isEmpty() const;
 
-  bool operator ==(const AtomsFormula & rhs) const;
+  unsigned int reduce();
 
+  bool operator ==(const AtomsFormula & rhs) const;
+  bool operator <(const AtomsFormula & rhs) const;
+
+  int & operator [](const ::std::string & species);
   AtomsFormula & operator +=(const AtomsFormula rhs);
 
   const_iterator begin() const;
   const_iterator end() const;
 
   bool contains(const ::std::string & species) const;
+  bool contains(const AtomsFormula & formula) const;
   int numberOf(const std::string & species) const;
+  ::std::pair<int, int> numberOf(const AtomsFormula & formula) const;
 
   void clear();
 
+  ::std::string toString() const;
   void print(::std::ostream & os) const;
 
 private:

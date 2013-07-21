@@ -62,8 +62,8 @@ public:
   typedef CGAL::Convex_hull_d<HullTraits> Hull;
   typedef HullTraits::Point_d PointD;
   typedef HullTraits::Vector_d VectorD;
-  typedef ::std::pair< ::std::string, PointD> Endpoint;
-  typedef ::std::vector< ::std::string> EndpointLabels;
+  typedef ::std::pair<common::AtomsFormula, PointD> Endpoint;
+  typedef ::std::vector<common::AtomsFormula> EndpointLabels;
   typedef ::std::vector<Endpoint> Endpoints;
   typedef PointD::Id PointId;
 
@@ -76,12 +76,10 @@ public:
 
     const common::AtomsFormula & getComposition() const;
     const HullTraits::FT getValue() const;
-    bool isEndpoint() const;
     const PointId & getId() const;
   private:
     common::AtomsFormula myComposition;
     HullTraits::FT myValue;
-    bool myIsEndpoint;
     PointId myId;
   };
 
@@ -115,11 +113,11 @@ public:
 
 private:
 
-  typedef ::std::map< ::std::string, HullTraits::FT> ChemicalPotentials;
+  typedef ::std::map<common::AtomsFormula, HullTraits::FT> ChemicalPotentials;
   typedef ::std::vector<HullEntry> HullEntries;
 
   PointId generateEntry(const common::Structure & structure);
-  void updateChemicalPotential(const ::std::string & endpointSpecies, const HullTraits::FT value);
+  void updateChemicalPotential(const common::AtomsFormula & endpointFormula, const HullTraits::FT value);
   PointD generateHullPoint(const HullEntry & entry) const;
   void generateHull() const;
   bool canGenerate() const;
@@ -139,14 +137,19 @@ template <typename InputIterator>
 ConvexHull::EndpointLabels ConvexHull::generateEndpoints(InputIterator first, InputIterator last)
 {
   ::std::set< ::std::string> speciesSet;
+  ::std::vector< ::std::string> species;
   EndpointLabels endpoints;
   for(InputIterator it = first; it != last; ++it)
   {
-    it->getAtomSpecies(endpoints);
-    speciesSet.insert(endpoints.begin(), endpoints.end());
+    it->getAtomSpecies(species);
+    ::std::set< ::std::string> localSet(species.begin(), species.end());
+    if(localSet.size() == 1)
+      speciesSet.insert(*localSet.begin());
     endpoints.clear();
   }
-  endpoints.insert(endpoints.begin(), speciesSet.begin(), speciesSet.end());
+
+  BOOST_FOREACH(const ::std::string & s, speciesSet)
+    endpoints.push_back(common::AtomsFormula(s));
   return endpoints;
 }
 

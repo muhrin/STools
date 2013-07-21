@@ -258,12 +258,7 @@ void GnuplotConvexHullPlotter::drawBoundary(::std::ostream & os, const ConvexHul
     {
       from = it1->second;
       to = it2->second;
-      if(mySupressEnergyDimension || convexHull.dims() == 4)
-      {
-        from = ConvexHull::PointD(convexHull.dims() - 1, from.cartesian_begin(), from.cartesian_end() - 1);
-        to = ConvexHull::PointD(convexHull.dims() - 1, to.cartesian_begin(), to.cartesian_end() - 1);
-      }
-      os << plot.drawLine(from, to);
+      os << plot.drawLine(prepPoint(from), prepPoint(to));
     }
   }
 }
@@ -281,21 +276,23 @@ void GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os, const ConvexHul
   {
 
     const ConvexHull::PointD startPoint = hull->point_of_facet(facetIt, 0);
-    x0 = startPoint;
-    // Only consider points on or below zero in the convex property
-    if(x0[convexHull.dims() - 1] > 0)
-      continue;
-    for(int i = 1; i < hull->dimension(); ++i)
+    x0 = x1 = startPoint;
+    for(int i = 0; i < hull->current_dimension() - 1; ++i)
     {
-      x1 = hull->point_of_facet(facetIt, i);
-      if(x1[convexHull.dims() - 1] > 0)
+      x0 = hull->point_of_facet(facetIt, i);
+      x1 = hull->point_of_facet(facetIt, i + 1);
+      // Only consider points on or below zero in the convex property
+      if(x0[convexHull.dims() - 1] > 0 || x1[convexHull.dims() - 1] > 0)
+      {
+        ++i;
         continue;
+      }
 
-      os << plot.drawLine(x0, x1);
-      x0 = x1;
+      os << plot.drawLine(prepPoint(x0), prepPoint(x1));
     }
     // Complete the facet
-    os << plot.drawLine(x0, startPoint);
+    if(x1 != startPoint)
+      os << plot.drawLine(prepPoint(x1), prepPoint(startPoint));
   }
 }
 
@@ -316,13 +313,14 @@ void GnuplotConvexHullPlotter::drawEndpointLabels(::std::ostream & os, const Con
     }
     vec *= LABEL_MARGIN / CGAL::sqrt(vec.squared_length());
     vec += it1->second - CGAL::ORIGIN;
-    os << plot.drawLabel(it1->first, ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
+    //os << plot.drawLabel(it1->first.toString(), ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
+    os << plot.drawLabel(it1->first.toString(), ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
   }
 }
 
 int GnuplotConvexHullPlotter::plotDims(const ConvexHull & convexHull) const
 {
-  return mySupressEnergyDimension ? convexHull.dims() - 1 : convexHull.dims();
+  return mySupressEnergyDimension || convexHull.dims() == 4 ? convexHull.dims() - 1 : convexHull.dims();
 }
 
 ConvexHull::PointD GnuplotConvexHullPlotter::prepPoint(const ConvexHull::PointD & point) const

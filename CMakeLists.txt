@@ -29,8 +29,6 @@ configure_file(
   "${PROJECT_BINARY_DIR}/src/SToolsConfig.h"
 )
 
-
-
 ## FIND PACKAGES ########################################
 # First add any user specified paths to the package search array
 set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
