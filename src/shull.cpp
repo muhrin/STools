@@ -7,6 +7,7 @@
 
 // INCLUDES //////////////////////////////////
 
+#include <iostream>
 #include <list>
 #include <set>
 #include <string>
@@ -140,6 +141,15 @@ int main(const int argc, char * argv[])
   if(endpoints.empty())
     endpoints = ssa::ConvexHull::generateEndpoints(loadedStructures.begin(), loadedStructures.end());
 
+  if(endpoints.size() < 2)
+  {
+    ::std::cerr << "Must have 2 or more endpoints to construct hull, currently have: ";
+    BOOST_FOREACH(const ssc::AtomsFormula & formula, endpoints)
+      ::std::cerr << formula << " ";
+    ::std::cerr << ::std::endl;
+    return 1;
+  }
+
   ssa::ConvexHull hullGenerator(endpoints);
   const ::std::vector<ssa::ConvexHull::PointId> structureIds = hullGenerator.addStructures(loadedStructures.begin(), loadedStructures.end());
 
@@ -154,7 +164,6 @@ int main(const int argc, char * argv[])
     if(outputter.get())
       outputter->outputHull(hullGenerator, &infoSupplier);
   }
-
 
   return 0;
 }

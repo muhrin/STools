@@ -47,7 +47,6 @@ private:
 
 Structure::Structure(UnitCellPtr cell):
 myAtomPositionsCurrent(false),
-myNumAtoms(0),
 myDistanceCalculator(*this)
 {
   setUnitCell(cell);
@@ -107,22 +106,22 @@ void Structure::updateWith(const Structure & structure)
 
 const std::string & Structure::getName() const
 {
-	return myName;
+  return myName;
 }
 
 void Structure::setName(const std::string & name)
 {
-	myName = name;
+  myName = name;
 }
 
 UnitCell * Structure::getUnitCell()
 {
-	return myCell.get();
+  return myCell.get();
 }
 
 const UnitCell * Structure::getUnitCell() const
 {
-	return myCell.get();
+  return myCell.get();
 }
 
 void Structure::setUnitCell(UnitCellPtr cell)
@@ -160,7 +159,7 @@ const Atom & Structure::getAtom(const size_t idx) const
 Atom & Structure::newAtom(const AtomSpeciesId::Value species)
 {
   myAtomPositionsCurrent = false;
-  Atom * const atom = new Atom(species, *this, myNumAtoms++);
+  Atom * const atom = new Atom(species, *this, myAtoms.size());
   myAtoms.push_back(atom);
   return *atom;
 }
@@ -168,7 +167,7 @@ Atom & Structure::newAtom(const AtomSpeciesId::Value species)
 Atom & Structure::newAtom(const Atom & toCopy)
 {
   myAtomPositionsCurrent = false;
-  return *myAtoms.insert(myAtoms.end(), new Atom(toCopy, *this, ++myNumAtoms));
+  return *myAtoms.insert(myAtoms.end(), new Atom(toCopy, *this, myAtoms.size()));
 }
 
 bool Structure::removeAtom(const Atom & atom)
@@ -179,9 +178,8 @@ bool Structure::removeAtom(const Atom & atom)
   const size_t index = atom.getIndex();
 
   myAtoms.erase(myAtoms.begin() + index);
-  --myNumAtoms;
 
-  for(size_t i = index; i < myNumAtoms; ++i)
+  for(size_t i = index; i < myAtoms.size(); ++i)
   {
     myAtoms[i].setIndex(i);
   }
@@ -192,11 +190,10 @@ bool Structure::removeAtom(const Atom & atom)
 
 size_t Structure::clearAtoms()
 {
-  const size_t previousNumAtoms = myNumAtoms;
+  const size_t previousNumAtoms = myAtoms.size();
 
   myAtoms.clear();
 
-  myNumAtoms = 0;
   myAtomPositionsCurrent = false;
   return previousNumAtoms;
 }
@@ -279,7 +276,8 @@ void Structure::setVisibleProperty(VisibleProperty & property, const ::std::stri
 
 bool Structure::makePrimitive()
 {
-  if(myNumAtoms > 0 && myCell.get())
+  const int numAtoms = myAtoms.size();
+  if(numAtoms > 0 && myCell.get())
   {
     double lattice[3][3];
     const::arma::mat33 & orthoMtx = myCell->getOrthoMtx();
@@ -292,11 +290,11 @@ bool Structure::makePrimitive()
       }
     }
 
-    double (*positions)[3] = new double[myNumAtoms][3];
+    double (*positions)[3] = new double[numAtoms][3];
     ::arma::mat posMtx;
     getAtomPositions(posMtx);
     myCell->cartsToFracInplace(posMtx);
-    for(size_t i = 0; i < myNumAtoms; ++i)
+    for(size_t i = 0; i < numAtoms; ++i)
     {
       for(size_t j = 0; j < 3; ++j)
       {
@@ -326,9 +324,9 @@ bool Structure::makePrimitive()
     }
 
     // Try to find the primitive unit cell
-    const size_t newNumAtoms = (size_t)spg_find_primitive(lattice, positions, species.get(), myNumAtoms, 0.05);
+    const size_t newNumAtoms = (size_t)spg_find_primitive(lattice, positions, species.get(), numAtoms, 0.05);
 
-    if(newNumAtoms != 0 && newNumAtoms < myNumAtoms)
+    if(newNumAtoms != 0 && newNumAtoms < numAtoms)
     {
       // First deal with lattice
       ::arma::mat33 newLattice;

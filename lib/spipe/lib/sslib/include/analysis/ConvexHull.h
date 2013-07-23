@@ -77,11 +77,20 @@ public:
     const common::AtomsFormula & getComposition() const;
     const HullTraits::FT getValue() const;
     const PointId & getId() const;
+    const ::boost::optional<PointD> & getPoint() const;
   private:
+    void setPoint(const PointD & point);
+
     common::AtomsFormula myComposition;
     HullTraits::FT myValue;
     PointId myId;
+    ::boost::optional<PointD> myPoint;
+
+    //friend void ConvexHull::generateHull() const;
+    friend class ConvexHull;
   };
+
+  typedef ::std::vector<HullEntry>::const_iterator EntriesConstIterator;
 
   template <typename InputIterator>
   static EndpointLabels generateEndpoints(InputIterator first, InputIterator last);
@@ -109,6 +118,9 @@ public:
   EndpointsConstIterator endpointsBegin() const;
   EndpointsConstIterator endpointsEnd() const;
 
+  EntriesConstIterator entriesBegin() const;
+  EntriesConstIterator entriesEnd() const;
+
   ::boost::optional<bool> isStable(const PointD & point) const;
 
 private:
@@ -129,7 +141,7 @@ private:
   const utility::Key<double> myConvexProperty;
   ChemicalPotentials myChemicalPotentials;
   const int myHullDims;
-  HullEntries myEntries;
+  mutable HullEntries myEntries;
   mutable ::boost::scoped_ptr<Hull> myHull;
 };
 

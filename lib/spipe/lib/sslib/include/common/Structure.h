@@ -176,8 +176,6 @@ private:
   /** The unit cell for this crystal structure. */
   UnitCellPtr myCell;
 
-  size_t myNumAtoms;
-
   /** The atoms contained in this group */
   AtomsContainer myAtoms;
 

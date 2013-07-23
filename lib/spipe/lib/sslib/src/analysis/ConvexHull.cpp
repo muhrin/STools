@@ -9,7 +9,11 @@
 
 #ifdef SSLIB_USE_CGAL
 
+#include <list>
+
 #include <boost/foreach.hpp>
+
+#include <CGAL/Delaunay_d.h>
 
 #include "common/StructureProperties.h"
 
@@ -46,7 +50,12 @@ int ConvexHull::dims() const
 const ConvexHull::Hull * ConvexHull::getHull() const
 {
   if(!myHull.get() && canGenerate())
+  {
     generateHull();
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+    myHull->print_statistics();
+#endif
+  }
 
   return myHull.get();
 }
@@ -69,6 +78,16 @@ ConvexHull::EndpointsConstIterator ConvexHull::endpointsBegin() const
 ConvexHull::EndpointsConstIterator ConvexHull::endpointsEnd() const
 {
   return myEndpoints.end();
+}
+
+ConvexHull::EntriesConstIterator ConvexHull::entriesBegin() const
+{
+  return myEntries.begin();
+}
+
+ConvexHull::EntriesConstIterator ConvexHull::entriesEnd() const
+{
+  return myEntries.end();
 }
 
 ::boost::optional<bool> ConvexHull::isStable(const PointD & point) const
@@ -99,6 +118,16 @@ const ConvexHull::PointId & ConvexHull::HullEntry::getId() const
   return myId;
 }
 
+const ::boost::optional<ConvexHull::PointD> & ConvexHull::HullEntry::getPoint() const
+{
+  return myPoint;
+}
+
+void ConvexHull::HullEntry::setPoint(const PointD & p)
+{
+  myPoint = p;
+}
+
 ConvexHull::PointId
 ConvexHull::generateEntry(const common::Structure & structure)
 {
@@ -107,8 +136,8 @@ ConvexHull::generateEntry(const common::Structure & structure)
   if(!value)
     return -1;
 
-  // Check that the structure contains at least hull endpoint
-  const common::AtomsFormula & composition = structure.getComposition();
+  // Check that the structure contains at least one endpoint
+  common::AtomsFormula composition = structure.getComposition();
   bool containsEndpoint = false, isEndpoint = true;
   int endpointFormulaUnits;
   common::AtomsFormula endpoint;
@@ -130,15 +159,18 @@ ConvexHull::generateEntry(const common::Structure & structure)
         endpointFormulaUnits = endpointUnits.first;
         endpoint = e.first;
       }
+      composition.remove(e.first, endpointUnits.first);
     }
   }
   if(!containsEndpoint)
     return -1; // Doesn't contain any endpoints so it's nowhere in relation to hull
+  if(!composition.isEmpty())
+    return -1; // This structure has atoms that aren't on the hull so we can't calculate the chemical potential
 
   const PointId id = myEntries.size();
-  const HullEntries::iterator it = myEntries.insert(myEntries.end(), HullEntry(composition, *value, id));
+  const HullEntries::iterator it = myEntries.insert(myEntries.end(), HullEntry(structure.getComposition(), *value, id));
   if(isEndpoint)
-    updateChemicalPotential(endpoint, HullTraits::FT(*value, static_cast<double>(endpointFormulaUnits)));
+    updateChemicalPotential(endpoint, HullTraits::FT(*value, endpointFormulaUnits));
 
   return id;
 }
@@ -152,6 +184,9 @@ void ConvexHull::updateChemicalPotential(const common::AtomsFormula & endpointFo
   {
     if(it->second > value)
     {
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+      ::std::cout << "Updating endpoint " << endpointFormula << " to " << value << ::std::endl;
+#endif
       it->second = value;
       myHull.reset();   // Hull needs to be re-generated
     }
@@ -170,9 +205,13 @@ ConvexHull::PointD ConvexHull::generateHullPoint(const HullEntry & entry) const
   int numAtoms;
   BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
-    numAtoms = composition.numberOf(endpoint.first).first;
+    const ::std::pair<int, int> & frac = composition.numberOf(endpoint.first);
+    numAtoms = frac.first;
     if(numAtoms != 0)
     {
+      // Do a quick sanity check
+      SSLIB_ASSERT(frac.second == 1);
+
       totalAtoms += numAtoms;
       totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second * HullTraits::FT(numAtoms);
     }
@@ -188,10 +227,10 @@ ConvexHull::PointD ConvexHull::generateHullPoint(const HullEntry & entry) const
     if(numAtoms != 0)
     {
       VectorD scaled = myEndpoints[i].second - CGAL::ORIGIN;
-      scaled *= HullTraits::FT(numAtoms, totalAtoms);
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
       ::std::cout << "Adding weighted hull endpoint: " << scaled << " weight: " << HullTraits::FT(numAtoms, totalAtoms) << ::std::endl;
 #endif
+      scaled *= HullTraits::FT(numAtoms, totalAtoms);
       v += scaled;
     }
   }
@@ -214,15 +253,52 @@ void ConvexHull::generateHull() const
 {
   SSLIB_ASSERT(canGenerate());
 
-  myHull.reset(new Hull(myHullDims));
-  BOOST_FOREACH(HullEntries::const_reference entry, myEntries)
+  typedef ::std::map<common::AtomsFormula, HullEntry *> LowestEnergy;
+  typedef ::std::map<HullTraits::FT, HullEntry *> SortedEntries;
+
+  // To make calculating the hull faster and remove redundant points
+  // first get the set of points with the lowest energy at composition coordinate
+  LowestEnergy lowest;
+  LowestEnergy::iterator it;
+  BOOST_FOREACH(HullEntries::reference entry, myEntries)
   {
     const PointD & p = generateHullPoint(entry);
+    entry.setPoint(p);
+
     if(p[dims() - 1] <= 0)
-      myHull->insert(p);
+    {
+      common::AtomsFormula composition = entry.getComposition();
+      composition.reduce();
+      it = lowest.find(composition);
+      if(it == lowest.end())
+        lowest[composition] = &entry;
+      else
+      {
+        // If this point is lower in energy then replace the old one
+        if(p[dims() - 1] < (*it->second->getPoint())[dims() - 1])
+          it->second = &entry;
+      }
+    }
   }
-  if(!myHull->is_valid(false))
-    myHull.reset();
+
+  // Now sort the remaining entries by energy
+  SortedEntries sortedEntries;
+  BOOST_FOREACH(LowestEnergy::reference entry, lowest)
+  {
+    sortedEntries[(*entry.second->getPoint())[dims() - 1]] = entry.second;
+  }
+
+  myHull.reset(new Hull(myHullDims));
+  // Put in the endpoints first
+  BOOST_FOREACH(Endpoints::const_reference ep, myEndpoints)
+  {
+    myHull->insert(ep.second);
+  }
+  // Now put the points in into the hull from lowest up
+  BOOST_FOREACH(SortedEntries::const_reference entry, sortedEntries)
+  {
+    myHull->insert(*entry.second->getPoint());
+  }
 }
 
 bool ConvexHull::canGenerate() const

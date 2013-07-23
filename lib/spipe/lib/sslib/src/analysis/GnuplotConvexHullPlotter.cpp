@@ -90,13 +90,14 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull, const I
     ::boost::optional<bool> stable;
     // Start a new data set
     datOut << ::std::endl << ::std::endl;
-    for(ConvexHull::Hull::Point_const_iterator it = hull->points_begin(),
-        end = hull->points_end(); it != end; ++it)
+    for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(),
+        end = convexHull.entriesEnd(); it != end; ++it)
     {
-      stable = convexHull.isStable(*it);
+      const ConvexHull::PointD & point = *(it->getPoint());
+      stable = convexHull.isStable(point);
       if(stable && !*stable)
       {
-        datOut << printPoint(prepPoint(*it)) << ::std::endl;
+        datOut << printPoint(prepPoint(point)) << ::std::endl;
         haveOffHullPoints = true;
       }
     }
@@ -106,9 +107,9 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull, const I
     pltOut << "set size square" << ::std::endl;
 
   ::std::stringstream plotStream;
-  plotStream << "\"" << myOutputStem << ".dat\" i 0 ls 1 title \"Hull point\"";
+  plotStream << "\"" << myOutputStem << ".dat\" i 0 ls " << HULL_POINT_LINE_STYLE << " title \"Hull point\"";
   if(myDrawOffHullPoints && haveOffHullPoints)
-    plotStream << ", \"" << myOutputStem << ".dat\" i 1 ls 2 title \"Off hull point\"";
+    plotStream << ", \"" << myOutputStem << ".dat\" i 1 ls " << OFF_HULL_LINE_STYLE << " title \"Off hull point\"";
 
   if(plotDims(convexHull) == 3)
     pltOut << "splot " << plotStream.str() << ::std::endl;
@@ -155,6 +156,9 @@ void GnuplotConvexHullPlotter::setDrawOffHullPoints(const bool draw)
 }
 
 const double GnuplotConvexHullPlotter::LABEL_MARGIN = 0.05;
+const int GnuplotConvexHullPlotter::BOUNDARY_LINE_STYLE = 1;
+const int GnuplotConvexHullPlotter::HULL_POINT_LINE_STYLE = 2;
+const int GnuplotConvexHullPlotter::OFF_HULL_LINE_STYLE = 3;
 
 GnuplotConvexHullPlotter::Plot::Plot():
     myArrowCounter(0),
@@ -227,8 +231,9 @@ void GnuplotConvexHullPlotter::setStyles(::std::ostream & os, const ConvexHull &
   os << "set xtics nomirror" << ::std::endl;
   os << "set ytics nomirror" << ::std::endl;
 
-  os << "set style line 1 ps 1.5 pt 7 lc rgb '#dd181f'" << ::std::endl;
-  os << "set style line 2 ps 1 pt 7 lc rgb '#0060ad'" << ::std::endl;
+  os << "set style line " << BOUNDARY_LINE_STYLE << " ps 1.5 pt 7 lc rgb '#000000'" << ::std::endl;
+  os << "set style line " << HULL_POINT_LINE_STYLE << " ps 1.5 pt 7 lc rgb '#dd181f'" << ::std::endl;
+  os << "set style line " << OFF_HULL_LINE_STYLE << " ps 1 pt 7 lc rgb '#0060ad'" << ::std::endl;
 
   if(convexHull.dims() > 2)
   {
@@ -240,6 +245,15 @@ void GnuplotConvexHullPlotter::setStyles(::std::ostream & os, const ConvexHull &
       os << "unset ztics" << ::std::endl;
       os << "set zrange[0:1]" << ::std::endl;
     }
+  }
+
+  // Axis label
+  if(!mySupressEnergyDimension && convexHull.dims() != 4)
+  {
+    if(plotDims(convexHull) == 2)
+      os << "set ylabel \"Formation energy\"" << ::std::endl;
+    else
+      os << "set zlabel \"Formation energy\" rotate by 90" << ::std::endl;
   }
 }
 
@@ -258,7 +272,7 @@ void GnuplotConvexHullPlotter::drawBoundary(::std::ostream & os, const ConvexHul
     {
       from = it1->second;
       to = it2->second;
-      os << plot.drawLine(prepPoint(from), prepPoint(to));
+      os << plot.drawLine(prepPoint(from), prepPoint(to), BOUNDARY_LINE_STYLE);
     }
   }
 }

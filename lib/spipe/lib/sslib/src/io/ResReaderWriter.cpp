@@ -383,6 +383,9 @@ bool ResReaderWriter::parseAtoms(
     atomTokens.clear();
     ::boost::split(atomTokens, line, ::boost::is_any_of(" "), ::boost::token_compress_on);
 
+    if(atomTokens[0] == "END")
+      break;
+
     if(atomTokens.empty())
     {
       encounteredProblem = true;

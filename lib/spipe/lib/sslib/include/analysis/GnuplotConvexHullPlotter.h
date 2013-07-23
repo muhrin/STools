@@ -48,6 +48,9 @@ public:
 private:
 
   static const double LABEL_MARGIN;
+  static const int BOUNDARY_LINE_STYLE;
+  static const int HULL_POINT_LINE_STYLE;
+  static const int OFF_HULL_LINE_STYLE;
 
   class Plot
   {

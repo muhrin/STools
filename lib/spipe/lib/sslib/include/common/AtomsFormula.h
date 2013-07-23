@@ -46,6 +46,9 @@ public:
   int & operator [](const ::std::string & species);
   AtomsFormula & operator +=(const AtomsFormula rhs);
 
+  bool remove(const AtomsFormula & toRemove);
+  bool remove(const AtomsFormula & toRemove, const int num);
+
   const_iterator begin() const;
   const_iterator end() const;
 
@@ -58,6 +61,8 @@ public:
 
   ::std::string toString() const;
   void print(::std::ostream & os) const;
+
+  bool simplify(::std::pair<int, int> & fraction) const;
 
 private:
 
