@@ -32,12 +32,12 @@
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
 
-
-namespace sstbx {
-namespace io {
+namespace sstbx
+{
+namespace io
+{
 
 namespace fs = ::boost::filesystem;
 namespace ssc = ::sstbx::common;
@@ -46,10 +46,12 @@ namespace properties = ssc::structure_properties;
 const unsigned int ResReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
 // Set up our tokenizer to split around space and tab
-typedef boost::tokenizer<boost::char_separator<char> > Tok;
-const boost::char_separator<char> sep(" \t");
+typedef boost::tokenizer< boost::char_separator< char> > Tok;
+const boost::char_separator< char> sep(" \t");
 
-void ResReaderWriter::writeStructure(::sstbx::common::Structure & str, const ResourceLocator & locator) const
+void
+ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
+    const ResourceLocator & locator) const
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
@@ -75,83 +77,83 @@ void ResReaderWriter::writeStructure(::sstbx::common::Structure & str, const Res
 
   const common::UnitCell * const cell = str.getUnitCell();
 
-	//////////////////////////
-	// Start title
-	strFile << "TITL ";
-	
-	if(!str.getName().empty())
-		strFile << str.getName();
-	else
-		strFile << filepath.stem();
-	
-	// Presssure
+  //////////////////////////
+  // Start title
+  strFile << "TITL ";
+
+  if(!str.getName().empty())
+    strFile << str.getName();
+  else
+    strFile << filepath.stem();
+
+  // Presssure
   strFile << " ";
   dValue = str.getProperty(properties::general::PRESSURE_INTERNAL);
-	if(dValue)
+  if(dValue)
     io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
-	else
-		strFile << "n/a";
+  else
+    strFile << "n/a";
 
-	// Volume
-	strFile << " ";
+  // Volume
+  strFile << " ";
   if(cell)
     io::writeToStream(strFile, cell->getVolume(), DIGITS_AFTER_DECIMAL);
   else
     strFile << "n/a";
 
-	// Enthalpy
-	strFile << " ";
+  // Enthalpy
+  strFile << " ";
   dValue = str.getProperty(properties::general::ENTHALPY);
   if(!dValue)
     dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
-	if(dValue)
-		io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
-	else
-		strFile << "n/a";
+  if(dValue)
+    io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
+  else
+    strFile << "n/a";
 
-	// Space group
-	strFile << " 0 0 " << str.getNumAtoms() << " (";
+  // Space group
+  strFile << " 0 0 " << str.getNumAtoms() << " (";
   sValue = str.getProperty(properties::general::SPACEGROUP_SYMBOL);
-	if(sValue)
-		strFile << *sValue;
-	else
-		strFile << "n/a";
+  if(sValue)
+    strFile << *sValue;
+  else
+    strFile << "n/a";
 
-	// Times found
-	strFile << ") n - ";
+  // Times found
+  strFile << ") n - ";
   uiValue = str.getProperty(properties::searching::TIMES_FOUND);
-	if(uiValue)
-		strFile << *uiValue;
-	else
-		strFile << "n/a";
+  if(uiValue)
+    strFile << *uiValue;
+  else
+    strFile << "n/a";
 
-	strFile << endl;
-	// End title //////////////////
-	
-	///////////////////////////////////
-	// Start lattice
+  strFile << endl;
+  // End title //////////////////
+
+  ///////////////////////////////////
+  // Start lattice
   if(cell)
   {
-	  const double (&latticeParams)[6] = cell->getLatticeParams();
+    const double (&latticeParams)[6] = cell->getLatticeParams();
 
-	  // Do cell parameters
-	  strFile << "CELL 1.0";
-	  for(size_t i = A; i <= GAMMA; ++i)
-	  {
-		  strFile << " " << latticeParams[i];
-	  }
-	  strFile << endl;
+    // Do cell parameters
+    strFile << "CELL 1.0";
+    for(size_t i = A; i <= GAMMA; ++i)
+    {
+      strFile << " " << latticeParams[i];
+    }
+    strFile << endl;
   }
-	strFile << "LATT -1" << endl;
+  strFile << "LATT -1" << endl;
 
-	// End lattice
+  // End lattice
 
-	////////////////////////////
-	// Start atoms
+  ////////////////////////////
+  // Start atoms
 
-	// Get the species and positions of all atoms
-	using std::vector;
-	using std::set;
+  // Get the species and positions of all atoms
+  using std::vector;
+  using std::set;
 
   ::arma::mat positions;
   str.getAtomPositions(positions);
@@ -161,20 +163,20 @@ void ResReaderWriter::writeStructure(::sstbx::common::Structure & str, const Res
     cell->wrapVecsFracInplace(positions);
   }
 
-  vector<AtomSpeciesId::Value> species;
+  vector< AtomSpeciesId::Value> species;
   str.getAtomSpecies(species);
 
-  set<AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
+  set< AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
 
-	// Output atom species
-  std::map<AtomSpeciesId::Value, std::string> speciesSymbols;
-  std::map<AtomSpeciesId::Value, unsigned int> speciesOrder;
-	strFile << "SFAC";
+  // Output atom species
+  std::map< AtomSpeciesId::Value, std::string> speciesSymbols;
+  std::map< AtomSpeciesId::Value, unsigned int> speciesOrder;
+  strFile << "SFAC";
   size_t idx = 1;
   BOOST_FOREACH(const AtomSpeciesId::Value id, uniqueSpecies)
   {
     speciesSymbols[id] = id.empty() ? "?" : id;
-    speciesOrder[id]   = idx;
+    speciesOrder[id] = idx;
     ++idx;
     strFile << " " << speciesSymbols[id];
   }
@@ -184,21 +186,24 @@ void ResReaderWriter::writeStructure(::sstbx::common::Structure & str, const Res
   {
     const AtomSpeciesId::Value id = species[i];
 
-    strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " " <<
-	::std::setprecision(12) << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << " 1.0";
+    strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " "
+        << ::std::setprecision(12) << positions(X, i) << " " << positions(Y, i)
+        << " " << positions(Z, i) << " 1.0";
   }
 
   // End atoms ///////////
 
   strFile << endl << "END" << endl;
 
-  str.setProperty(properties::io::LAST_ABS_FILE_PATH, io::ResourceLocator(io::absolute(filepath)));
+  str.setProperty(properties::io::LAST_ABS_FILE_PATH,
+      io::ResourceLocator(io::absolute(filepath)));
 
- if(strFile.is_open())
+  if(strFile.is_open())
     strFile.close();
 }
 
-ssc::types::StructurePtr ResReaderWriter::readStructure(const ResourceLocator & resourceLocator) const
+ssc::types::StructurePtr
+ResReaderWriter::readStructure(const ResourceLocator & resourceLocator) const
 {
   namespace utility = ::sstbx::utility;
   using sstbx::common::Atom;
@@ -225,9 +230,8 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(const ResourceLocator & 
   {
     str.reset(new common::Structure());
 
-    str->setProperty(
-      properties::io::LAST_ABS_FILE_PATH,
-      io::ResourceLocator(io::absolute(filepath)));
+    str->setProperty(properties::io::LAST_ABS_FILE_PATH,
+        io::ResourceLocator(io::absolute(filepath)));
 
     std::string line;
     for(getline(strFile, line); strFile.good(); getline(strFile, line))
@@ -239,15 +243,16 @@ ssc::types::StructurePtr ResReaderWriter::readStructure(const ResourceLocator & 
       else if(line.find("SFAC") != ::std::string::npos)
         parseAtoms(*str, strFile, line);
     } // end for
-  
+
     strFile.close();
   }
 
   return str;
 }
 
-
-size_t ResReaderWriter::readStructures(StructuresContainer & outStructures, const ResourceLocator & resourceLocator) const
+size_t
+ResReaderWriter::readStructures(StructuresContainer & outStructures,
+    const ResourceLocator & resourceLocator) const
 {
   ssc::types::StructurePtr structure = readStructure(resourceLocator);
 
@@ -260,19 +265,23 @@ size_t ResReaderWriter::readStructures(StructuresContainer & outStructures, cons
   return 0;
 }
 
-std::vector<std::string> ResReaderWriter::getSupportedFileExtensions() const
+std::vector< std::string>
+ResReaderWriter::getSupportedFileExtensions() const
 {
-  std::vector<std::string> ext;
+  std::vector< std::string> ext;
   ext.push_back("res");
   return ext;
 }
 
-bool ResReaderWriter::multiStructureSupport() const
+bool
+ResReaderWriter::multiStructureSupport() const
 {
   return false;
 }
 
-bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::string & titleLine) const
+bool
+ResReaderWriter::parseTitle(common::Structure & structure,
+    const ::std::string & titleLine) const
 {
   Tok tok(titleLine, sep);
   // Put the tokens into a vector
@@ -288,17 +297,21 @@ bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::str
     structure.setName(titleTokens[1]);
     try
     {
-      structure.setPropertyFromString(properties::general::PRESSURE_INTERNAL, titleTokens[2]);
+      structure.setPropertyFromString(properties::general::PRESSURE_INTERNAL,
+          titleTokens[2]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
-    {}
+    {
+    }
     // 3 = volume
     try
     {
-      structure.setPropertyFromString(properties::general::ENTHALPY, titleTokens[4]);
+      structure.setPropertyFromString(properties::general::ENTHALPY,
+          titleTokens[4]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
-    {}
+    {
+    }
     // 5 = spin density
     // 6 = integrated spin density
     // 7 = space group or num atoms(in new format ONLY)
@@ -310,7 +323,7 @@ bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::str
     if(!iucSymbol.empty() && iucSymbol[0] == '(')
       iucSymbol.erase(0, 1);
     if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
-     iucSymbol.erase(iucSymbol.size() - 1, 1);
+      iucSymbol.erase(iucSymbol.size() - 1, 1);
     if(!iucSymbol.empty())
       structure.setProperty(properties::general::SPACEGROUP_SYMBOL, iucSymbol);
 
@@ -321,10 +334,12 @@ bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::str
     {
       try
       {
-        structure.setPropertyFromString(properties::searching::TIMES_FOUND, titleTokens[10 + newFormat]);
+        structure.setPropertyFromString(properties::searching::TIMES_FOUND,
+            titleTokens[10 + newFormat]);
       }
       catch(const ::boost::bad_lexical_cast & /*e*/)
-      {}
+      {
+      }
     }
     return true;
   }
@@ -332,7 +347,9 @@ bool ResReaderWriter::parseTitle(common::Structure & structure, const ::std::str
   return false;
 }
 
-bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::string & cellLine) const
+bool
+ResReaderWriter::parseCell(common::Structure & structure,
+    const ::std::string & cellLine) const
 {
   const Tok tok(cellLine, sep);
   const ::std::vector< ::std::string> cellTokens(tok.begin(), tok.end());
@@ -341,12 +358,13 @@ bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::stri
     return false;
 
   bool paramsFound = true;
-  double params[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  double params[6] =
+    { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
   for(size_t i = 0; i < 6; ++i)
   {
     try
     {
-      params[i] = ::boost::lexical_cast<double>(cellTokens[i + 2]);
+      params[i] = ::boost::lexical_cast< double>(cellTokens[i + 2]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {
@@ -362,11 +380,9 @@ bool ResReaderWriter::parseCell(common::Structure & structure, const ::std::stri
   return false;
 }
 
-bool ResReaderWriter::parseAtoms(
-  common::Structure & structure,
-  ::std::istream & inStream,
-  const ::std::string & sfacLine
-) const
+bool
+ResReaderWriter::parseAtoms(common::Structure & structure,
+    ::std::istream & inStream, const ::std::string & sfacLine) const
 {
   using namespace utility::cart_coords_enum;
 
@@ -381,7 +397,8 @@ bool ResReaderWriter::parseAtoms(
   while(::std::getline(inStream, line))
   {
     atomTokens.clear();
-    ::boost::split(atomTokens, line, ::boost::is_any_of(" "), ::boost::token_compress_on);
+    ::boost::split(atomTokens, line, ::boost::is_any_of(" "),
+        ::boost::token_compress_on);
 
     if(atomTokens[0] == "END")
       break;
@@ -403,9 +420,9 @@ bool ResReaderWriter::parseAtoms(
     }
     try
     {
-      pos(X) = ::boost::lexical_cast<double>(atomTokens[X + 2]);
-      pos(Y) = ::boost::lexical_cast<double>(atomTokens[Y + 2]);
-      pos(Z) = ::boost::lexical_cast<double>(atomTokens[Z + 2]);
+      pos(X) = ::boost::lexical_cast< double>(atomTokens[X + 2]);
+      pos(Y) = ::boost::lexical_cast< double>(atomTokens[Y + 2]);
+      pos(Z) = ::boost::lexical_cast< double>(atomTokens[Z + 2]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {
@@ -420,7 +437,9 @@ bool ResReaderWriter::parseAtoms(
   return !encounteredProblem;
 }
 
-void ResReaderWriter::writeTitle(::std::ostream & os, const common::Structure & structure) const
+void
+ResReaderWriter::writeTitle(::std::ostream & os,
+    const common::Structure & structure) const
 {
 
 }

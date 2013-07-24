@@ -109,7 +109,7 @@ bool AtomExtruder::extrudeAtoms(
 
   double maxOverlapFractionSq;
 
-  double prefactor; // Used tp adjust the displacement vector if either atom is fixed
+  double prefactor; // Used to adjust the displacement vector if either atom is fixed
   double sepSq;
   ::arma::vec3 dr, sepVec;
   int row, col;
@@ -132,17 +132,18 @@ bool AtomExtruder::extrudeAtoms(
       const ::arma::vec & posI = atoms[row]->getPosition();
       for(col = row + 1; col < numAtoms; ++col)
       {
+        if(fixedList[row] && fixedList[col])
+          continue;  // Both fixed, don't move
+
         const ::arma::vec & posJ = atoms[col]->getPosition();
         sepVec = distanceCalc.getVecMinImg(posI, posJ);
         sepSq = ::arma::dot(sepVec, sepVec);
         if(sepSq < sepSqMtx(row, col))
         {
-          if(fixedList[row] && fixedList[col])
-            continue;  // Both fixed, move one
-          else if(fixedList[row] || fixedList[col])
+          if(fixedList[row] || fixedList[col])
             prefactor = 1.0; // Only one fixed, displace it by the full amount
           else
-            prefactor = 0.5; // None fixed, shared displacement equally
+            prefactor = 0.5; // None fixed, share displacement equally
 
           sep = sqrt(sepSq);
           sepDiff = sqrt(sepSqMtx(row, col)) - sep;

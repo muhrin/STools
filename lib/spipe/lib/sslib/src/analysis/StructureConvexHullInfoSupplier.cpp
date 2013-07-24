@@ -22,11 +22,14 @@ void StructureConvexHullInfoSupplier::addStructure(const common::Structure & str
 ::std::string StructureConvexHullInfoSupplier::getLabel(const ConvexHull & convexHull, const ConvexHull::PointId pointId) const
 {
   ::std::string label;
+  if(pointId == -1)
+    return label;
+
   Structures::const_iterator it = myStructures.find(pointId);
   if(it == myStructures.end())
     return label;
 
-  return it->second->getName();
+  return it->second->getComposition().toString();
 }
 
 }

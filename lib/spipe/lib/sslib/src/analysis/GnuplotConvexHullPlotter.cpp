@@ -78,8 +78,9 @@ bool GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull, const I
       {
         ::std::vector<ConvexHull::HullTraits::FT> labelPt(point.cartesian_begin(), point.cartesian_end());
         labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
-        pltOut << plot.drawLabel(infoSupplier->getLabel(convexHull, pointId),
-            ConvexHull::PointD(labelPt.size(), labelPt.begin(), labelPt.end()));
+        const ::std::string & label = infoSupplier->getLabel(convexHull, pointId);
+        if(!label.empty())
+          pltOut << plot.drawLabel(label, ConvexHull::PointD(labelPt.size(), labelPt.begin(), labelPt.end()));
       }
     }
   }
@@ -295,18 +296,11 @@ void GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os, const ConvexHul
     {
       x0 = hull->point_of_facet(facetIt, i);
       x1 = hull->point_of_facet(facetIt, i + 1);
-      // Only consider points on or below zero in the convex property
-      if(x0[convexHull.dims() - 1] > 0 || x1[convexHull.dims() - 1] > 0)
-      {
-        ++i;
-        continue;
-      }
 
       os << plot.drawLine(prepPoint(x0), prepPoint(x1));
     }
     // Complete the facet
-    if(x1 != startPoint)
-      os << plot.drawLine(prepPoint(x1), prepPoint(startPoint));
+    os << plot.drawLine(prepPoint(x1), prepPoint(startPoint));
   }
 }
 
@@ -327,7 +321,6 @@ void GnuplotConvexHullPlotter::drawEndpointLabels(::std::ostream & os, const Con
     }
     vec *= LABEL_MARGIN / CGAL::sqrt(vec.squared_length());
     vec += it1->second - CGAL::ORIGIN;
-    //os << plot.drawLabel(it1->first.toString(), ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
     os << plot.drawLabel(it1->first.toString(), ConvexHull::PointD(plotDims, vec.cartesian_begin(), vec.cartesian_begin() + plotDims));
   }
 }

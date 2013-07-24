@@ -144,6 +144,7 @@ template <typename Data>
 class Streamable
 {
 public:
+  virtual ~Streamable() {}
   virtual void stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const = 0;
 };
 
@@ -151,6 +152,7 @@ template <typename T, typename Data>
 class StreamableKeyEx : public KeyEx<T, Data>, public Streamable<Data>
 {
 public:
+  virtual ~StreamableKeyEx() {}
   virtual void stream(const HeterogeneousMapEx<Data> & map, ::std::ostream & stream) const;
 };
 
