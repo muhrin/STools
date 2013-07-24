@@ -388,45 +388,56 @@ ResReaderWriter::parseAtoms(common::Structure & structure,
 
   ::std::string line;
 
-  Tok atomToker(line, sep);
-
-  ::std::vector< ::std::string> atomTokens;
   common::AtomSpeciesId::Value atomId;
   bool encounteredProblem = false;
   ::arma::vec3 pos;
+  Tok::iterator it, end;
   while(::std::getline(inStream, line))
   {
-    atomTokens.clear();
-    ::boost::split(atomTokens, line, ::boost::is_any_of(" "),
-        ::boost::token_compress_on);
+    // Assume there is a problem unless we get to the bottom of the loop body
+    Tok atomToker(line, sep);
+    it = atomToker.begin();
+    end = atomToker.end();
 
-    if(atomTokens[0] == "END")
+    if(it == end) // Blank line
+      continue;
+
+    if(*it == "END")
       break;
 
-    if(atomTokens.empty())
-    {
-      encounteredProblem = true;
-      continue;
-    }
-
     // Try finding the species id
-    atomId = atomTokens[0];
-
-    // Try to get the coordinates at positions 2, 3 and 4
-    if(atomTokens.size() < 5)
+    atomId = *it;
+    if(++it == end)
     {
       encounteredProblem = true;
       continue;
     }
+    // Skip over the species index
+    if(++it == end)
+    {
+      encounteredProblem = true;
+      continue;
+    }
+
+    // Next should be the three coordinates
     try
     {
-      pos(X) = ::boost::lexical_cast< double>(atomTokens[X + 2]);
-      pos(Y) = ::boost::lexical_cast< double>(atomTokens[Y + 2]);
-      pos(Z) = ::boost::lexical_cast< double>(atomTokens[Z + 2]);
+      pos(X) = ::boost::lexical_cast< double>(*it);
+      if(++it == end)
+      {
+        encounteredProblem = true;
+        continue;
+      }
+      pos(Y) = ::boost::lexical_cast< double>(*it);
+      if(++it == end)
+      {
+        encounteredProblem = true;
+        continue;
+      }
+      pos(Z) = ::boost::lexical_cast< double>(*it);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {
-      encounteredProblem = true;
       continue;
     }
 
