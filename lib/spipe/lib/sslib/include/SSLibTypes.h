@@ -21,7 +21,7 @@
 namespace sstbx {
 
 // If C++11 is available then use std::unique_ptr, otherwise
-// std::auto_ptr is used.  This means that the user should taylor
+// std::auto_ptr is used.  This means that the user should tailor
 // their code using the define if they want to use any specific
 // behaviour
 template <typename T>

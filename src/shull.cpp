@@ -44,7 +44,6 @@ namespace ssa = ::sstbx::analysis;
 
 struct InputOptions
 {
-  double precision;
   ::std::vector< ::std::string> inputFiles;
   ::std::string outputter;
   bool flattenConvexProperty;

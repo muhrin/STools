@@ -34,18 +34,26 @@ public:
   typedef ::std::set<size_t> FixedAtoms;
 
   static const double DEFAULT_TOLERANCE;
-  static const size_t DEFAULT_MAX_ITERATIONS;
+  static const int DEFAULT_MAX_ITERATIONS;
+
+  AtomExtruder();
+
+  bool extrudeAtoms(
+    common::Structure & structure) const;
 
   bool extrudeAtoms(
     common::Structure & structure,
-    const size_t maxIterations = DEFAULT_MAX_ITERATIONS,
-    const double tolerance = DEFAULT_TOLERANCE) const;
+    const FixedAtoms & fixed) const;
 
   bool extrudeAtoms(
     common::Structure & structure,
-    const FixedAtoms & fixed,
-    const size_t maxIterations = DEFAULT_MAX_ITERATIONS,
-    const double tolerance = DEFAULT_TOLERANCE) const;
+    const ::arma::mat & sepSqMtx) const;
+
+  double getTolerance() const;
+  void setTolerance(const double tolerance);
+
+  int getMaxIterations() const;
+  void setMaxIterations(const int maxIterations);
 
 private:
   typedef ::std::vector<common::Atom *> Atoms;
@@ -55,9 +63,7 @@ private:
     const common::DistanceCalculator & distanceCalc,
     Atoms & atoms,
     const FixedList & fixedList,
-    const ::arma::mat & sepSqMtx,
-    const double tolerance,
-    const size_t maxIterations) const;
+    const ::arma::mat & sepSqMtx) const;
 
   double calcMaxOverlapFractionSq(
     const common::DistanceCalculator & distanceCalc,
@@ -65,6 +71,8 @@ private:
     const FixedList & fixedList,
     const ::arma::mat & sepSqMtx) const;
     
+  double myTolerance;
+  double myMaxIterations;
 };
 
 }

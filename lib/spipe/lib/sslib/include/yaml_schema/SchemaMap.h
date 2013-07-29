@@ -33,20 +33,32 @@ SchemaHeteroMapEntryBase * new_clone(const SchemaHeteroMapEntryBase & entry);
 }
 
 template <typename T>
-class SchemaHomoMap : public detail::SchemaElementBase< ::std::map< ::std::string, T> >
+class SchemaHomoMap : public detail::SchemaElementBase< ::std::map< ::std::string, typename T::BindingType> >
 {
+  // TODO: Test this class and make sure it's doing the right thing
+  typedef typename T::BindingType MapSecondType;
 public:
-  typedef ::std::map< ::std::string, T> BindingType;
+  typedef ::std::map< ::std::string, MapSecondType> BindingType;
+
+  SchemaHomoMap();
+  virtual ~SchemaHomoMap() {}
 
   virtual bool valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const;
   virtual bool nodeToValue(SchemaParse & parse, BindingType & value, const YAML::Node & node, const bool useDefaultOnFail) const;
 
-  void addEntry(const ::std::string & name, const detail::SchemaElementBase<T> * const element);
+  void addEntry(const ::std::string & name, const T & element);
+
+  virtual SchemaHomoMap * clone() const;
+
+  bool areUnknownEntriesAllowed() const;
+  void setAllowUnknownEntries(const bool allowUnknownEntries);
 
 private:
-  typedef ::boost::ptr_map< ::std::string, const detail::SchemaElementBase<T> > EntriesMap;
+  typedef ::boost::ptr_map< ::std::string, T> EntriesMap;
 
+  T myDefaultEntry;
   EntriesMap myEntries;
+  bool myAllowUnknownEntries;
 };
 
 class SchemaHeteroMap : public detail::SchemaElementBase<utility::HeterogeneousMap>

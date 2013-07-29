@@ -192,7 +192,6 @@ private:
   mutable DistanceCalculatorDelegator myDistanceCalculator;
 
   friend class Atom;
-  friend class UnitCell;
 };
 
 template<typename T>

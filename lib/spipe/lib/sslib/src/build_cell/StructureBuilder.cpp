@@ -77,9 +77,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
     if(cell.get())
       structureOut->setUnitCell(cell);
     else
-    {
       return GenerationOutcome::failure("Unit cell generator failed to generate unit cell");
-    }
   }
 
   // By now we should have a unit cell and symmetry if needed

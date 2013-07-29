@@ -33,6 +33,7 @@ public:
   SchemaList(); 
   SchemaList(const EntrySchema & entrySchema);
   SchemaList(const SchemaList & toCopy);
+  virtual ~SchemaList() {}
 
   virtual bool valueToNode(YAML::Node & node, const BindingType & list, const bool useDefaultOnFail) const;
   virtual bool nodeToValue(SchemaParse & parse, BindingType & list, const YAML::Node & node, const bool useDefaultOnFail) const;

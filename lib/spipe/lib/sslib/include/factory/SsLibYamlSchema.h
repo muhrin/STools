@@ -22,25 +22,27 @@
 
 // DEFINES //////////////////////////////////////////////
 
-namespace sstbx {
-namespace factory {
+namespace sstbx
+{
+namespace factory
+{
 
 // TYPEDEFS //////////////////////////////////////
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
-typedef yaml_schema::SchemaList<yaml_schema::SchemaScalar<double> > SchemaDoubleList;
+typedef yaml_schema::SchemaList< yaml_schema::SchemaScalar< double> > SchemaDoubleList;
 
 // OPTIMISERS ////////////////////////////////////////////////
 struct Tpsd : public yaml_schema::SchemaHeteroMap
 {
   Tpsd()
   {
-    addScalarEntry("tol", TOLERANCE)->element()
-      ->defaultValue(potential::TpsdGeomOptimiser::DEFAULT_TOLERANCE);
-    addScalarEntry("maxSteps", MAX_STEPS)->element()
-      ->defaultValue(potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
+    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_TOLERANCE);
+    addScalarEntry("maxSteps", MAX_STEPS)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
   }
 };
 
@@ -49,13 +51,13 @@ struct Castep : public yaml_schema::SchemaHeteroMap
   Castep()
   {
     addScalarEntry("exe", CASTEP_EXE);
-    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()
-      ->defaultValue(false);
+    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()->defaultValue(
+        false);
     addScalarEntry("seed", CASTEP_SEED)->required();
-    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()
-      ->defaultValue(0);
-    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()
-      ->defaultValue(2);
+    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()->defaultValue(
+        0);
+    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()->defaultValue(
+        2);
 
   }
 };
@@ -80,39 +82,26 @@ struct LennardJones : public yaml_schema::SchemaHeteroMap
 {
   LennardJones()
   {
-    addEntry(
-      "spec",
-      SPECIES_LIST,
-      new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >
-    )->required();
+    addEntry("spec", SPECIES_LIST,
+        new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >)->required();
 
-    addEntry(
-      "eps",
-      LJ_EPSILON,
-      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
-    )->required();
+    addEntry("eps", LJ_EPSILON,
+        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
 
-    addEntry(
-      "sig",
-      LJ_SIGMA,
-      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
-    )->required();
+    addEntry("sig", LJ_SIGMA,
+        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
 
-    addEntry(
-      "beta",
-      LJ_BETA,
-      new yaml_schema::SchemaWrapper<yaml::ArmaTriangularMat>()
-    )->required();
+    addEntry("beta", LJ_BETA,
+        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
 
     ::arma::vec2 powers;
     powers(0) = 12;
     powers(1) = 6;
     addScalarEntry("pow", LJ_POWERS)->element()->defaultValue(powers);
 
-    addEntry(
-      "combining",
-      POT_COMBINING,
-      (new yaml_schema::SchemaScalar<potential::CombiningRule::Value>)->defaultValue(potential::CombiningRule::NONE));
+    addEntry("combining", POT_COMBINING,
+        (new yaml_schema::SchemaScalar< potential::CombiningRule::Value>)->defaultValue(
+            potential::CombiningRule::NONE));
 
     addScalarEntry("cut", CUTOFF)->element()->defaultValue(2.5);
   }
@@ -136,9 +125,9 @@ struct AtomsDataMap : public yaml_schema::SchemaHeteroMap
   }
 };
 
-typedef yaml_schema::SchemaList<yaml_schema::SchemaScalar< ::std::string> > AtomsDataListSchema;
-typedef yaml_schema::SchemaListMap<AtomsDataListSchema, AtomsDataMap> AtomsDataSchema;
-typedef yaml_schema::SchemaList<AtomsDataSchema> AtomsListSchema;
+typedef yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> > AtomsDataListSchema;
+typedef yaml_schema::SchemaListMap< AtomsDataListSchema, AtomsDataMap> AtomsDataSchema;
+typedef yaml_schema::SchemaList< AtomsDataSchema> AtomsListSchema;
 
 struct Structure : public yaml_schema::SchemaHeteroMap
 {
@@ -150,7 +139,8 @@ struct Structure : public yaml_schema::SchemaHeteroMap
 
 // STRUCTURE BUILDER //////////////////////////////
 
-namespace builder {
+namespace builder
+{
 
 struct GenSphere : public yaml_schema::SchemaHeteroMap
 {
@@ -158,12 +148,13 @@ struct GenSphere : public yaml_schema::SchemaHeteroMap
   GenSphere()
   {
     addScalarEntry("radius", RADIUS)->required();
-    addScalarEntry("pos", POSITION)->element()
-      ->defaultValue(::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()
-      ->defaultValue(::arma::zeros< ::arma::vec>(4));
+    addScalarEntry("pos", POSITION)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(4));
     addScalarEntry("shell", SHELL_THICKNESS);
-  };
+  }
+  ;
 };
 
 struct GenBox : public yaml_schema::SchemaHeteroMap
@@ -171,15 +162,16 @@ struct GenBox : public yaml_schema::SchemaHeteroMap
   typedef utility::HeterogeneousMap BindingType;
   GenBox()
   {
-    addScalarEntry("pos", POSITION)->element()
-      ->defaultValue(::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()
-      ->defaultValue(::arma::zeros< ::arma::vec>(4));
+    addScalarEntry("pos", POSITION)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(4));
     addScalarEntry("shell", SHELL_THICKNESS);
     addScalarEntry("width", WIDTH)->required();
     addScalarEntry("height", HEIGHT)->required();
     addScalarEntry("depth", DEPTH)->required();
-  };
+  }
+  ;
 };
 
 struct MinMaxRatio : public yaml_schema::SchemaHeteroMap
@@ -198,12 +190,9 @@ struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
   typedef utility::HeterogeneousMap BindingType;
   UnitCellBuilder()
   {
-    typedef utility::Range<double> DoubleRange;
-    addEntry(
-      "abc",
-      UNIT_CELL_BUILDER_ABC,
-      new yaml_schema::SchemaWrapper<yaml::VectorAsString<DoubleRange> >()
-    );
+    typedef utility::Range< double> DoubleRange;
+    addEntry("abc", UNIT_CELL_BUILDER_ABC,
+        new yaml_schema::SchemaWrapper< yaml::VectorAsString< DoubleRange> >());
     addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
     addScalarEntry("delta", UNIT_CELL_BUILDER_VOLUME_DELTA);
     addScalarEntry("mul", UNIT_CELL_BUILDER_MULTIPLIER);
@@ -225,11 +214,10 @@ struct SimpleAtomsDataMap : public yaml_schema::SchemaHeteroMap
 };
 
 typedef yaml_schema::SchemaListMap<
-  yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
-  SimpleAtomsDataMap
-> SimpleAtomsListEntrySchema;
+    yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
+    SimpleAtomsDataMap> SimpleAtomsListEntrySchema;
 
-typedef yaml_schema::SchemaList<SimpleAtomsListEntrySchema> SimpleAtomsListSchema;
+typedef yaml_schema::SchemaList< SimpleAtomsListEntrySchema> SimpleAtomsListSchema;
 
 struct AtomsGroup : public yaml_schema::SchemaHeteroMap
 {
@@ -242,8 +230,9 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addScalarEntry("atomsRadius", RADIUS);
     addScalarEntry("pos", POSITION);
     addScalarEntry("rot", ROT_AXIS_ANGLE);
-    addScalarEntry("num", NUM)->element()
-      ->defaultValue(1);
+    addScalarEntry("num", NUM)->element()->defaultValue(1);
+    addEntry("speciesDistances", SPECIES_DISTANCES,
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
   }
 };
 
@@ -272,18 +261,14 @@ struct Builder : public yaml_schema::SchemaHeteroMap
   typedef utility::HeterogeneousMap BindingType;
 
   typedef yaml_schema::SchemaListMap<
-    yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
-    ExtendedAtomsDataMap
-  > ExtendedAtomsListEntrySchema;
-  typedef yaml_schema::SchemaList<ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
+      yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
+      ExtendedAtomsDataMap> ExtendedAtomsListEntrySchema;
+  typedef yaml_schema::SchemaList< ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
 
   Builder()
   {
-    addEntry(
-      "atomsFormat",
-      ATOMS_FORMAT,
-      new yaml_schema::SchemaWrapper<yaml::VectorAsString< ::std::string> >()
-    );
+    addEntry("atomsFormat", ATOMS_FORMAT,
+        new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >());
     addScalarEntry("atomsRadius", RADIUS);
     addScalarEntry("cluster", CLUSTER)->element()->defaultValue(true);
     addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
@@ -302,12 +287,12 @@ struct SortedDistance : public yaml_schema::SchemaHeteroMap
 {
   SortedDistance()
   {
-    addScalarEntry("tol", TOLERANCE)->element()
-      ->defaultValue(utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
-    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()
-      ->defaultValue(false);
-    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()
-      ->defaultValue(true);
+    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
+        utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
+    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()->defaultValue(
+        false);
+    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()->defaultValue(
+        true);
   }
 };
 

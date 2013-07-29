@@ -17,24 +17,24 @@
 namespace sstbx {
 namespace build_cell {
 
-const size_t AtomExtruder::DEFAULT_MAX_ITERATIONS = 7000;
+const int AtomExtruder::DEFAULT_MAX_ITERATIONS = 7000;
 const double AtomExtruder::DEFAULT_TOLERANCE = 0.001;
 
+AtomExtruder::AtomExtruder():
+    myMaxIterations(DEFAULT_MAX_ITERATIONS),
+    myTolerance(DEFAULT_TOLERANCE)
+{}
+
 bool AtomExtruder::extrudeAtoms(
-  common::Structure & structure,
-  const size_t maxIterations,
-  const double tolerance) const
+  common::Structure & structure) const
 {
-  return extrudeAtoms(structure, FixedAtoms(), maxIterations, tolerance);
+  return extrudeAtoms(structure, FixedAtoms());
 }
 
 bool AtomExtruder::extrudeAtoms(
   common::Structure & structure,
-  const FixedAtoms & fixed,
-  const size_t maxIterations,
-  const double tolerance) const
+  const FixedAtoms & fixed) const
 {
-
   const size_t numAtoms = structure.getNumAtoms();
 
   Atoms atomsWithRadii;
@@ -80,19 +80,50 @@ bool AtomExtruder::extrudeAtoms(
     structure.getDistanceCalculator(),
     atomsWithRadii,
     allFixed,
-    sepSqMtx,
-    tolerance,
-    maxIterations
+    sepSqMtx
   );
+}
+
+bool AtomExtruder::extrudeAtoms(
+  common::Structure & structure,
+  const ::arma::mat & sepSqMtx) const
+{
+  SSLIB_ASSERT(sepSqMtx.is_square());
+  SSLIB_ASSERT(sepSqMtx.n_rows == structure.getNumAtoms());
+
+  Atoms atoms;
+  for(int i = 0; i < structure.getNumAtoms(); ++i)
+    atoms.push_back(&structure.getAtom(i));
+
+  return extrudeAtoms(structure.getDistanceCalculator(), atoms,
+      FixedList(), sepSqMtx);
+}
+
+double AtomExtruder::getTolerance() const
+{
+  return myTolerance;
+}
+
+void AtomExtruder::setTolerance(const double tolerance)
+{
+  myTolerance = tolerance;
+}
+
+int AtomExtruder::getMaxIterations() const
+{
+  return myMaxIterations;
+}
+
+void AtomExtruder::setMaxIterations(const int maxIterations)
+{
+  myMaxIterations = maxIterations;
 }
 
 bool AtomExtruder::extrudeAtoms(
   const common::DistanceCalculator & distanceCalc,
   ::std::vector<common::Atom *> & atoms,
   const FixedList & fixedList,
-  const ::arma::mat & sepSqMtx,
-  const double tolerance,
-  const size_t maxIterations) const
+  const ::arma::mat & sepSqMtx) const
 {
   typedef ::boost::multi_array< ::arma::vec, 2> array_type;
   typedef array_type::index index;
@@ -101,7 +132,7 @@ bool AtomExtruder::extrudeAtoms(
   if(numAtoms == 0)
     return true;
 
-  const double toleranceSq = tolerance * tolerance;
+  const double toleranceSq = myTolerance * myTolerance;
   double sep, sepDiff;
   
   //array_type sepVectors(::boost::extents[numAtoms][numAtoms]);
@@ -115,7 +146,7 @@ bool AtomExtruder::extrudeAtoms(
   int row, col;
   bool success = false;
 
-  for(size_t iters = 0; iters < maxIterations; ++iters)
+  for(size_t iters = 0; iters < myMaxIterations; ++iters)
   {
     // First loop over calculating separations and checking for overlap
     maxOverlapFractionSq = calcMaxOverlapFractionSq(distanceCalc, atoms, fixedList, sepSqMtx);

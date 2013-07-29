@@ -192,6 +192,12 @@ SchemaHeteroMapEntry<T>::clone() const
 } // namespace detail
 
 template <typename T>
+SchemaHomoMap<T>::SchemaHomoMap()
+{
+  myAllowUnknownEntries = true;
+}
+
+template <typename T>
 bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const
 {
   typename EntriesMap::const_iterator it;
@@ -201,7 +207,13 @@ bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const BindingType & value,
     if(it != myEntries.end())
     {
       YAML::Node entryNode;
-      it.second.valueToNode(entryNode, entry.second, useDefaultOnFail);
+      it->second->valueToNode(entryNode, entry.second, useDefaultOnFail);
+      node[entry.first] = entryNode;
+    }
+    else if(myAllowUnknownEntries)
+    {
+      YAML::Node entryNode;
+      myDefaultEntry.valueToNode(entryNode, entry.second, useDefaultOnFail);
       node[entry.first] = entryNode;
     }
   }
@@ -216,22 +228,48 @@ bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, BindingType & value, con
     return false;
   }
 
-  // TODO: Fix this, this method is wrong.  It needs to be Node that is processed, not value!
-  typename EntriesMap::const_iterator it;
-  BOOST_FOREACH(typename BindingType::const_reference entry, value)
+  typename EntriesMap::const_iterator entriesIt;
+  for(YAML::Node::const_iterator it = node.begin(), end = node.end();
+      it != end; ++it)
   {
-    if(node[entry.first])
+    entriesIt = myEntries.find(it->first.Scalar());
+    if(entriesIt != myEntries.end())
     {
-      T value;
-      entry.second->nodeToValue(parse, value, node[entry.first], useDefaultOnFail);
+      typename BindingType::mapped_type mappedValue;
+      if(entriesIt->second->nodeToValue(parse, mappedValue, it->second, useDefaultOnFail))
+        value[it->first.Scalar()] = mappedValue;
+    }
+    else if(myAllowUnknownEntries)
+    {
+      typename BindingType::mapped_type mappedValue;
+      if(myDefaultEntry.nodeToValue(parse, mappedValue, it->second, useDefaultOnFail))
+        value[it->first.Scalar()] = mappedValue;
     }
   }
 }
 
 template <typename T>
-void SchemaHomoMap<T>::addEntry(const ::std::string & name, const detail::SchemaElementBase<T> * const element)
+void SchemaHomoMap<T>::addEntry(const ::std::string & name, const T & element)
 {
   myEntries.insert(name, element);
+}
+
+template <typename T>
+SchemaHomoMap<T> * SchemaHomoMap<T>::clone() const
+{
+  return new SchemaHomoMap<T>(*this);
+}
+
+template <typename T>
+bool SchemaHomoMap<T>::areUnknownEntriesAllowed() const
+{
+  return myAllowUnknownEntries;
+}
+
+template <typename T>
+void SchemaHomoMap<T>::setAllowUnknownEntries(const bool allowUnknownEntries)
+{
+  myAllowUnknownEntries = allowUnknownEntries;
 }
 
 template <typename T>
