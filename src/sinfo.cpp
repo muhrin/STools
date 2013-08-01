@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 
 // From SSLib //
+#include <common/AtomsFormula.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
 #include <common/Types.h>
@@ -87,9 +88,19 @@ int main(const int argc, char * argv[])
   if(structures.empty())
     return 0;
 
+  ssc::AtomsFormula filterFormula;
+  if(!in.filterString.empty())
+  {
+    if(!filterFormula.fromString(in.filterString))
+      ::std::cerr << "Failed to parse filter string: " << in.filterString << ::std::endl;
+  }
+
   // Populate the information table
   BOOST_FOREACH(const ssc::Structure & structure, structures)
   {
+    if(!filterFormula.isEmpty() && structure.getComposition().numMultiples(filterFormula) == -1)
+      continue;
+
     BOOST_FOREACH(const ::std::string & tokenEntry, tokensInfo.tokenStrings)
     {
       tokensMap.at(tokenEntry).insert(infoTable, structure);

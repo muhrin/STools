@@ -34,6 +34,9 @@ bool AtomsFormula::fromString(const ::std::string & str)
 {
   static const boost::regex FORM_EXPRESSION("([[:upper:]][[:lower:]]*)([[:digit:]]*)");
 
+  if(str.empty())
+    return false;
+
   ::std::string::const_iterator start = str.begin();
   const ::std::string::const_iterator end = str.end();
   boost::match_results< ::std::string::const_iterator> match;
@@ -65,7 +68,7 @@ bool AtomsFormula::fromString(const ::std::string & str)
     flags |= boost::match_not_bob;
   }
 
-  return true;
+  return !isEmpty();
 }
 
 unsigned int AtomsFormula::reduce()
@@ -83,6 +86,11 @@ unsigned int AtomsFormula::reduce()
 bool AtomsFormula::isEmpty() const
 {
   return myFormula.empty();
+}
+
+int AtomsFormula::numSpecies() const
+{
+  return myFormula.size();
 }
 
 bool AtomsFormula::operator ==(const AtomsFormula & rhs) const
@@ -191,6 +199,18 @@ int AtomsFormula::numberOf(const std::string & species) const
   }
 
   return fracNum;
+}
+
+int AtomsFormula::numMultiples(const AtomsFormula & formula) const
+{
+  if(numSpecies() != formula.numSpecies())
+    return -1;
+
+  const ::std::pair<int, int> num = numberOf(formula);
+  if(num.first == 0 || num.second != 1)
+    return -1;
+
+  return num.first;
 }
 
 ::std::string AtomsFormula::toString() const

@@ -69,6 +69,7 @@ struct InputOptions
   int printTop; // Print top n structures (-1 for all)
   bool uniqueMode;
   double uniqueTolerance;
+  ::std::string filterString;
 };
 
 struct CustomisableTokens
@@ -93,6 +94,11 @@ struct TokensInfo
   ::std::vector< ::std::string> formatStrings;
 };
 
+class Filter
+{
+public:
+
+};
 
 // FUNCTIONS /////////////////////////////////////
 

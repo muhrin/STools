@@ -37,6 +37,7 @@ public:
   bool fromString(const ::std::string & str);
 
   bool isEmpty() const;
+  int numSpecies() const;
 
   unsigned int reduce();
 
@@ -56,6 +57,7 @@ public:
   bool contains(const AtomsFormula & formula) const;
   int numberOf(const std::string & species) const;
   ::std::pair<int, int> numberOf(const AtomsFormula & formula) const;
+  int numMultiples(const AtomsFormula & formula) const;
 
   void clear();
 

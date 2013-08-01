@@ -40,7 +40,7 @@ const ::std::string VAR_BRACKET("$");
 const ::std::string VAR_FORMAT("%");
 const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
-const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ha$ $rha$ $sg$ $tf$\\n");
+const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ha$ $rha$ $sg$ $tf$ $fo$\\n");
 
 ::std::string mapEnvToOptionName(const ::std::string & envVariable)
 {
@@ -81,9 +81,10 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("help", "Show help message")
       ("info-string,i", po::value< ::std::string>(&in.infoString)->default_value(DEFAULT_INFO_STRING), "info string")
       ("key,k", po::value< ::std::string>(&in.sortToken)->default_value("rha"), "sort token")
-      ("reverse,R", po::value<bool>(&in.reverseSortComparison)->default_value(false)->zero_tokens(), "reverse sort comparison")
+      ("reverse,R", po::value<bool>(&in.reverseSortComparison)->default_value(false)->zero_tokens(), "reverse sort order")
       ("empty,e", po::value< ::std::string>(&in.emptyString)->default_value(DEFAULT_EMPTY_STRING), "empty string - used when a value is not found")
       ("free-mode,f", po::value<bool>(&in.freeMode)->default_value(false)->zero_tokens(), "use free mode, input string will not be automatically parsed into columns")
+      ("formula,F", po::value< ::std::string>(&in.filterString)->default_value(""), "list only structures that have a this formula or multipler there of")
       ("no-header,n", po::value<bool>(&in.noHeader)->default_value(false)->zero_tokens(), "don't print column header")
       ("recursive,r", po::value<bool>(&in.recursive)->default_value(false)->zero_tokens(), "descend into directories recursively")
       ("summary,s", po::value<bool>(&in.summary)->default_value(false)->zero_tokens(), "summary only")
