@@ -15,6 +15,7 @@ source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
 ## build_cell
 
 set(sslib_Source_Files__build_cell
+  src/build_cell/AbsAtomsGenerator.cpp
   src/build_cell/AtomExtruder.cpp
   src/build_cell/AtomsDescription.cpp
   src/build_cell/AtomsGenerator.cpp

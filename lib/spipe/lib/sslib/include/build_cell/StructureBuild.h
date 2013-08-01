@@ -13,6 +13,8 @@
 
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -40,6 +42,15 @@ public:
   typedef UniquePtr<SymmetryGroup>::Type SymmetryGroupPtr;
   typedef AtomInfoList::iterator AtomInfoIterator;
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
+  typedef ::std::vector< ::arma::mat44> TransformStack;
+
+  struct SpeciesPairDistances
+  {
+    ::std::vector< ::std::string> species;
+    ::arma::mat distances;
+  };
+
+  typedef ::std::vector<SpeciesPairDistances> SpeciesPairDistancesStack;
 
   class RadiusCalculator
   {
@@ -86,6 +97,14 @@ public:
 
   bool extrudeAtoms();
 
+  void pushTransform(const ::arma::mat44 & transform);
+  void popTransform();
+  const ::arma::mat44 & getTransform() const;
+
+  void pushSpeciesPairDistances(const SpeciesPairDistances & distances);
+  void popSpeciesPairDistances();
+  const SpeciesPairDistances & getSpeciesPairDistances() const;
+
 private:
 
   void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
@@ -98,6 +117,14 @@ private:
   AtomExtruder myAtomsExtruder;
   SymmetryGroupPtr mySymmetryGroup;
   GenShapePtr myGenShape;
+
+  TransformStack myTransformStack;
+  mutable ::arma::mat44 myTransform;
+  mutable bool myTransformCurrent;
+
+  SpeciesPairDistancesStack mySpeciesPairDistancesStack;
+  mutable SpeciesPairDistances mySpeciesPairDistances;
+  mutable bool mySpeciesPairDistancesCurrent;
 
   friend class BuildAtomInfo;
 };

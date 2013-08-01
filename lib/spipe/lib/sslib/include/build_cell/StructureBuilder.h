@@ -17,6 +17,7 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include "build_cell/AbsAtomsGenerator.h"
 #include "build_cell/IFragmentGenerator.h"
 #include "build_cell/IStructureGenerator.h"
 #include "build_cell/IUnitCellGenerator.h"
@@ -27,6 +28,8 @@
 
 namespace sstbx {
 namespace build_cell {
+class AtomsDescription;
+
 namespace detail {
 
 class StructureBuilderCore
@@ -50,9 +53,11 @@ void StructureBuilderCore::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
 
 } // namespace detail
 
-class StructureBuilder : public detail::StructureBuilderCore, public IStructureGenerator
+class StructureBuilder : public detail::StructureBuilderCore, public IStructureGenerator, AbsAtomsGenerator
 {
 public:
+  typedef AbsAtomsGenerator::const_iterator AtomsIterator;
+
   StructureBuilder();
   StructureBuilder(const StructureBuilder & toCopy);
   
@@ -69,6 +74,12 @@ public:
 
   void setCluster(const bool isCluster);
   bool isCluster() const;
+
+  // Make public the things we want from AbsAtomsGenerator
+  using AbsAtomsGenerator::insertAtoms;
+  using AbsAtomsGenerator::numAtoms;
+  using AbsAtomsGenerator::beginAtoms;
+  using AbsAtomsGenerator::endAtoms;
 
 private:
   bool chooseSymmetry(StructureBuild & build) const;

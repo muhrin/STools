@@ -51,6 +51,9 @@ myStructure(structure),
 myIntendedContents(intendedContents)
 {
   myGenShape.reset(new GenSphere(radiusCalculator.getRadius(myIntendedContents.getVolume())));
+  myTransform.eye();
+  myTransformCurrent = true;
+  mySpeciesPairDistancesCurrent = true;
 }
 
 StructureBuild::StructureBuild(
@@ -60,7 +63,11 @@ StructureBuild::StructureBuild(
 myStructure(structure),
 myIntendedContents(intendedContents),
 myGenShape(genShape)
-{}
+{
+  myTransform.eye();
+  myTransformCurrent = true;
+  mySpeciesPairDistancesCurrent = true;
+}
 
 common::Structure & StructureBuild::getStructure()
 {
@@ -169,6 +176,95 @@ StructureBuild::FixedSet StructureBuild::getFixedSet() const
 bool StructureBuild::extrudeAtoms()
 {
   return myAtomsExtruder.extrudeAtoms(myStructure, getFixedSet());
+}
+
+void StructureBuild::pushTransform(const ::arma::mat44 & transform)
+{
+  myTransformStack.push_back(transform);
+  myTransformCurrent = false;
+}
+
+void StructureBuild::popTransform()
+{
+  SSLIB_ASSERT(!myTransformStack.empty());
+
+  myTransformStack.pop_back();
+  myTransformCurrent = false;
+}
+
+const ::arma::mat44 & StructureBuild::getTransform() const
+{
+  if(!myTransformCurrent)
+  {
+    // Do it this way to stop accumulation of error from lots of push/pops
+    myTransform.eye();
+    for(int i = 0; i < myTransformStack.size(); ++i)
+      myTransform *= myTransformStack[i];
+    myTransformCurrent = true;
+  }
+  return myTransform;
+}
+
+void StructureBuild::pushSpeciesPairDistances(const SpeciesPairDistances & distances)
+{
+  mySpeciesPairDistancesStack.push_back(distances);
+  mySpeciesPairDistancesCurrent = false;
+}
+
+void StructureBuild::popSpeciesPairDistances()
+{
+  mySpeciesPairDistancesStack.pop_back();
+  mySpeciesPairDistancesCurrent = false;
+}
+const StructureBuild::SpeciesPairDistances & StructureBuild::getSpeciesPairDistances() const
+{
+  typedef ::std::set< ::std::string> SpeciesSet;
+  static const double UNINITIALISED = -1.0;
+
+  if(!mySpeciesPairDistancesCurrent)
+  {
+    SpeciesSet allSpecies;
+    BOOST_FOREACH(const SpeciesPairDistances & dist, mySpeciesPairDistancesStack)
+    {
+      BOOST_FOREACH(const ::std::string & species, dist.species)
+      {
+        allSpecies.insert(species);
+      }
+    }
+
+    const size_t num = allSpecies.size();
+    mySpeciesPairDistances.species.assign(allSpecies.begin(), allSpecies.end());
+    mySpeciesPairDistances.distances.set_size(num, num);
+    mySpeciesPairDistances.distances.fill(UNINITIALISED);
+    ::std::map< ::std::string, int> indexMap;
+    for(int i = 0; i < mySpeciesPairDistances.species.size(); ++i)
+      indexMap[mySpeciesPairDistances.species[i]] = i;
+
+    SpeciesSet::iterator it;
+    const int totalPairs = num * (num - 1) / 2;
+    int pairs = 0;
+    int x, y;
+    for(int i = mySpeciesPairDistancesStack.size() - 1; i >= 0 && pairs != totalPairs; --i)
+    {
+      const SpeciesPairDistances & current = mySpeciesPairDistancesStack[i];
+      for(int row = 0; row < current.species.size(); ++row)
+      {
+        for(int col = row + 1; col < current.species.size(); ++col)
+        {
+          x = indexMap[current.species[row]];
+          y = indexMap[current.species[col]];
+          if(mySpeciesPairDistances.distances(x, y) != UNINITIALISED)
+          {
+            mySpeciesPairDistances.distances(x, y) = mySpeciesPairDistances.distances(y, x) = current.distances(row, col);
+            ++pairs;
+          }
+        }
+      }
+    }
+
+    mySpeciesPairDistancesCurrent = true;
+  }
+  return mySpeciesPairDistances;
 }
 
 }

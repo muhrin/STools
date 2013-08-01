@@ -21,6 +21,7 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 ## build_cell
 
 set(sslib_Header_Files__build_cell
+  include/build_cell/AbsAtomsGenerator.h
   include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
   include/build_cell/AtomsGenerator.h

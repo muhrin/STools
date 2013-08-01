@@ -22,6 +22,7 @@ public:
   StructureContents(const size_t numAtoms, const double volume);
 
   StructureContents & operator +=(const StructureContents & rhs);
+  StructureContents & operator *=(const int multiplyBy);
 
   void addAtoms(const size_t numAtoms);
   void addAtoms(const size_t numAtoms, const double radius);
@@ -55,6 +56,13 @@ inline StructureContents & StructureContents::operator +=(const StructureContent
 {
   myNumAtoms += rhs.myNumAtoms;
   myVolume += rhs.myVolume;
+  return *this;
+}
+
+inline StructureContents & StructureContents::operator *=(const int multiplyBy)
+{
+  myNumAtoms *= multiplyBy;
+  myVolume *= static_cast<double>(multiplyBy);
   return *this;
 }
 

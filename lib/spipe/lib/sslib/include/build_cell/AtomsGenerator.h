@@ -14,10 +14,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "OptionalTypes.h"
-#include "build_cell/IFragmentGenerator.h"
-#include "build_cell/IGeneratorShape.h"
-#include "build_cell/SymmetryGroup.h"
+#include "build_cell/AbsAtomsGenerator.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -27,15 +24,9 @@ class AtomsDescription;
 class BuildAtomInfo;
 struct AtomsGeneratorConstructionInfo;
 
-class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
+class AtomsGenerator : public AbsAtomsGenerator, ::boost::noncopyable
 {
-  typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
-  typedef ::std::vector<AtomsDescription> Atoms;
 public:
-  typedef IFragmentGenerator::GenerationTicket GenerationTicket;
-  typedef Atoms::iterator iterator;
-  typedef Atoms::const_iterator const_iterator;
-  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
   struct TransformMode
   {
@@ -50,14 +41,6 @@ public:
 
   AtomsGenerator();
   AtomsGenerator(const AtomsGenerator & toCopy);
-
-  void insertAtoms(const AtomsDescription & atoms);
-  size_t numAtoms() const;
-  const_iterator beginAtoms() const;
-  const_iterator endAtoms() const;
-
-  const IGeneratorShape * getGeneratorShape() const;
-  void setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape);
   
   int getNumReplicas() const;
   void setNumReplicas(const int numReplicas);
@@ -78,62 +61,22 @@ public:
     const common::AtomSpeciesDatabase & speciesDb
   ) const;
 
-  virtual GenerationTicket getTicket();
   virtual StructureContents getGenerationContents(
     const GenerationTicket ticket,
     const common::AtomSpeciesDatabase & speciesDb
   ) const;
 
-  virtual void handleReleased(const GenerationTicketId & id);
-
   virtual IFragmentGeneratorPtr clone() const;
   // End from IFragmentGenerator
 
-private:
-  typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
-  typedef ::std::map<const AtomsDescription *, int> AtomCounts;
+protected:
 
-  struct GenerationInfo
-  {
-    AtomCounts atomCounts;
-    ::arma::mat44 shapeTransform;
-  };
+  virtual ::arma::mat44 generateTransform(const StructureBuild & build) const;
 
-  typedef ::std::map<GenerationTicket::IdType, GenerationInfo> TicketsMap;
-
-  AtomPosition generatePosition(
-    BuildAtomInfo & atomInfo,
-    const AtomsDescription & atom,
-    const StructureBuild & build,
-    const unsigned int multiplicity,
-    const ::arma::mat44 & transformation
-  ) const;
-  bool generateSpecialPosition(
-    ::arma::vec3 & posOut,
-    SymmetryGroup::OpMask & opMaskOut,
-    const SymmetryGroup::EigenspacesAndMasks & spaces,
-    const IGeneratorShape & genShape,
-    const ::arma::mat44 & transformation
-  ) const;
-  OptionalArmaVec3 generateSpeciesPosition(
-    const SymmetryGroup::Eigenspace & eigenspace,
-    const IGeneratorShape & genShape,
-    const ::arma::mat44 & transformation
-  ) const;
-  double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
-
-  const IGeneratorShape & getGenShape(const StructureBuild & build) const;
-
-  ::arma::mat44 generateTransform(const StructureBuild & build) const;
-
-  Atoms myAtoms;
-  UniquePtr<IGeneratorShape>::Type myGenShape;
   unsigned int myNumReplicas;
   int myTransformMode;
   ::arma::vec3 myPos;
   ::arma::vec4 myRot;
-  TicketsMap myTickets;
-  GenerationTicket::IdType myLastTicketId;
 };
 
 

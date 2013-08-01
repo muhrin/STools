@@ -19,18 +19,14 @@
 #include "utility/Range.h"
 
 // FORWARD DECLARES ///////////
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 class AtomConstraintDescription;
 }
 }
 
-namespace sstbx
-{
-namespace build_cell
-{
+namespace sstbx {
+namespace build_cell {
 
 class AtomsDescription
 {
