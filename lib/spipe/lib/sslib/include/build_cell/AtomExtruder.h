@@ -72,7 +72,7 @@ private:
     const ::arma::mat & sepSqMtx) const;
     
   double myTolerance;
-  double myMaxIterations;
+  int myMaxIterations;
 };
 
 }
