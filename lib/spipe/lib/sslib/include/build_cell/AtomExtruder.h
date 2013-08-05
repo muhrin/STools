@@ -47,7 +47,9 @@ public:
 
   bool extrudeAtoms(
     common::Structure & structure,
-    const ::arma::mat & sepSqMtx) const;
+    const ::arma::mat & sepSqMtx,
+    const FixedAtoms & fixed
+  ) const;
 
   double getTolerance() const;
   void setTolerance(const double tolerance);
@@ -59,7 +61,7 @@ private:
   typedef ::std::vector<common::Atom *> Atoms;
   typedef ::std::vector<bool> FixedList;
 
-  bool extrudeAtoms(
+  bool extrude(
     const common::DistanceCalculator & distanceCalc,
     Atoms & atoms,
     const FixedList & fixedList,

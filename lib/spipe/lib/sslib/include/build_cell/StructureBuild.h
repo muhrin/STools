@@ -16,15 +16,18 @@
 #include <string>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "build_cell/AtomExtruder.h"
 #include "build_cell/BuildAtomInfo.h"
 #include "build_cell/IGeneratorShape.h"
+#include "build_cell/SpeciesPair.h"
 
 namespace sstbx {
 namespace common {
 class Atom;
+class AtomSpeciesDatabase;
 class Structure;
 }
 namespace build_cell {
@@ -35,7 +38,7 @@ class SymmetryGroup;
 
 class StructureBuild
 {
-  typedef ::std::map<common::Atom *, BuildAtomInfo *> AtomInfoMap;
+  typedef ::std::map<const common::Atom *, BuildAtomInfo *> AtomInfoMap;
   typedef ::boost::ptr_vector<BuildAtomInfo> AtomInfoList;
 public:
   typedef ::std::set<size_t> FixedSet;
@@ -44,12 +47,7 @@ public:
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
   typedef ::std::vector< ::arma::mat44> TransformStack;
 
-  struct SpeciesPairDistances
-  {
-    ::std::vector< ::std::string> species;
-    ::arma::mat distances;
-  };
-
+  typedef ::std::map<SpeciesPair, double> SpeciesPairDistances;
   typedef ::std::vector<SpeciesPairDistances> SpeciesPairDistancesStack;
 
   class RadiusCalculator
@@ -64,14 +62,36 @@ public:
     bool isMultiplier;
   };
 
+  class TransformPusher : ::boost::noncopyable
+  {
+  public:
+    TransformPusher(StructureBuild & build, const ::arma::mat44 & trans): myBuild(build)
+    { myBuild.pushTransform(trans); }
+    ~TransformPusher() { myBuild.popTransform(); }
+  private:
+    StructureBuild & myBuild;
+  };
+
+  class SpeciesDistancesPusher : ::boost::noncopyable
+  {
+  public:
+    SpeciesDistancesPusher(StructureBuild & build, const SpeciesPairDistances & dists): myBuild(build)
+    { myBuild.pushSpeciesPairDistances(dists); }
+    ~SpeciesDistancesPusher() { myBuild.popSpeciesPairDistances(); }
+  private:
+    StructureBuild & myBuild;
+  };
+
   StructureBuild(
     common::Structure & structure,
     const StructureContents & intendedContents,
+    const common::AtomSpeciesDatabase & speciesDb,
     const RadiusCalculator & radiusCalculator = RadiusCalculator()
   );
   StructureBuild(
     common::Structure & structure,
     const StructureContents & intendedContents,
+    const common::AtomSpeciesDatabase & speciesDb,
     GenShapePtr genShape
   );
 
@@ -79,7 +99,7 @@ public:
   const common::Structure & getStructure() const;
 
   BuildAtomInfo * getAtomInfo(common::Atom & atom);
-  const BuildAtomInfo * getAtomInfo(common::Atom & atom) const;
+  const BuildAtomInfo * getAtomInfo(const common::Atom & atom) const;
   BuildAtomInfo & createAtomInfo(common::Atom & atom);
 
   size_t getNumAtomInfos() const;
@@ -109,9 +129,11 @@ private:
 
   void atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
   void atomRemoved(common::Atom & atom);
+  ::arma::mat generateSepSqMatrix() const;
 
   common::Structure & myStructure;
   const StructureContents & myIntendedContents;
+  const common::AtomSpeciesDatabase & mySpeciesDb;
   AtomInfoMap myAtomsInfo;
   AtomInfoList myAtomInfoList;
   AtomExtruder myAtomsExtruder;

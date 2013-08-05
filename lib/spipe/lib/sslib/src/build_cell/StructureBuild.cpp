@@ -8,11 +8,13 @@
 // INCLUEDES /////////////
 #include "build_cell/StructureBuild.h"
 
+#include "OptionalTypes.h"
 #include "build_cell/BuildAtomInfo.h"
 #include "build_cell/GenSphere.h"
 #include "build_cell/Sphere.h"
 #include "build_cell/StructureContents.h"
 #include "build_cell/SymmetryGroup.h"
+#include "common/AtomSpeciesDatabase.h"
 #include "common/Constants.h"
 #include "common/Structure.h"
 #include "common/UnitCell.h"
@@ -46,9 +48,12 @@ double StructureBuild::RadiusCalculator::getRadius(const double vol) const
 StructureBuild::StructureBuild(
   common::Structure & structure,
   const StructureContents & intendedContents,
-  const RadiusCalculator & radiusCalculator):
+  const common::AtomSpeciesDatabase & speciesDb,
+  const RadiusCalculator & radiusCalculator
+):
 myStructure(structure),
-myIntendedContents(intendedContents)
+myIntendedContents(intendedContents),
+mySpeciesDb(speciesDb)
 {
   myGenShape.reset(new GenSphere(radiusCalculator.getRadius(myIntendedContents.getVolume())));
   myTransform.eye();
@@ -59,9 +64,11 @@ myIntendedContents(intendedContents)
 StructureBuild::StructureBuild(
   common::Structure & structure,
   const StructureContents & intendedContents,
+  const common::AtomSpeciesDatabase & speciesDb,
   GenShapePtr genShape):
 myStructure(structure),
 myIntendedContents(intendedContents),
+mySpeciesDb(speciesDb),
 myGenShape(genShape)
 {
   myTransform.eye();
@@ -104,7 +111,7 @@ BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom)
   return it->second;
 }
 
-const BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom) const
+const BuildAtomInfo * StructureBuild::getAtomInfo(const common::Atom & atom) const
 {
   const AtomInfoMap::const_iterator it = myAtomsInfo.find(&atom);
 
@@ -175,7 +182,7 @@ StructureBuild::FixedSet StructureBuild::getFixedSet() const
 
 bool StructureBuild::extrudeAtoms()
 {
-  return myAtomsExtruder.extrudeAtoms(myStructure, getFixedSet());
+  return myAtomsExtruder.extrudeAtoms(myStructure, generateSepSqMatrix(), getFixedSet());
 }
 
 void StructureBuild::pushTransform(const ::arma::mat44 & transform)
@@ -208,13 +215,16 @@ const ::arma::mat44 & StructureBuild::getTransform() const
 void StructureBuild::pushSpeciesPairDistances(const SpeciesPairDistances & distances)
 {
   mySpeciesPairDistancesStack.push_back(distances);
-  mySpeciesPairDistancesCurrent = false;
+  if(!distances.empty())
+    mySpeciesPairDistancesCurrent = false;
 }
 
 void StructureBuild::popSpeciesPairDistances()
 {
+  const bool wasEmpty = mySpeciesPairDistances.empty();
   mySpeciesPairDistancesStack.pop_back();
-  mySpeciesPairDistancesCurrent = false;
+  if(!wasEmpty)
+    mySpeciesPairDistancesCurrent = false;
 }
 const StructureBuild::SpeciesPairDistances & StructureBuild::getSpeciesPairDistances() const
 {
@@ -223,48 +233,72 @@ const StructureBuild::SpeciesPairDistances & StructureBuild::getSpeciesPairDista
 
   if(!mySpeciesPairDistancesCurrent)
   {
-    SpeciesSet allSpecies;
-    BOOST_FOREACH(const SpeciesPairDistances & dist, mySpeciesPairDistancesStack)
+    SpeciesPairDistances::const_iterator it;
+    for(int i = mySpeciesPairDistancesStack.size() - 1; i >= 0; --i)
     {
-      BOOST_FOREACH(const ::std::string & species, dist.species)
+      BOOST_FOREACH(SpeciesPairDistances::const_reference pairDist, mySpeciesPairDistancesStack[i])
       {
-        allSpecies.insert(species);
+        it = mySpeciesPairDistances.find(pairDist.first);
+        if(it == mySpeciesPairDistances.end())
+          mySpeciesPairDistances.insert(pairDist);
       }
     }
-
-    const size_t num = allSpecies.size();
-    mySpeciesPairDistances.species.assign(allSpecies.begin(), allSpecies.end());
-    mySpeciesPairDistances.distances.set_size(num, num);
-    mySpeciesPairDistances.distances.fill(UNINITIALISED);
-    ::std::map< ::std::string, int> indexMap;
-    for(int i = 0; i < mySpeciesPairDistances.species.size(); ++i)
-      indexMap[mySpeciesPairDistances.species[i]] = i;
-
-    SpeciesSet::iterator it;
-    const int totalPairs = num * (num - 1) / 2;
-    int pairs = 0;
-    int x, y;
-    for(int i = mySpeciesPairDistancesStack.size() - 1; i >= 0 && pairs != totalPairs; --i)
-    {
-      const SpeciesPairDistances & current = mySpeciesPairDistancesStack[i];
-      for(int row = 0; row < current.species.size(); ++row)
-      {
-        for(int col = row + 1; col < current.species.size(); ++col)
-        {
-          x = indexMap[current.species[row]];
-          y = indexMap[current.species[col]];
-          if(mySpeciesPairDistances.distances(x, y) != UNINITIALISED)
-          {
-            mySpeciesPairDistances.distances(x, y) = mySpeciesPairDistances.distances(y, x) = current.distances(row, col);
-            ++pairs;
-          }
-        }
-      }
-    }
-
     mySpeciesPairDistancesCurrent = true;
   }
   return mySpeciesPairDistances;
+}
+
+::arma::mat StructureBuild::generateSepSqMatrix() const
+{
+  const size_t numAtoms = myStructure.getNumAtoms();
+  ::arma::mat sepSq(numAtoms, numAtoms);
+
+  for(int i = 0; i < numAtoms; ++i)
+  {
+    const common::Atom & atomI = myStructure.getAtom(i);
+    const BuildAtomInfo * infoI = getAtomInfo(atomI);
+    for(int j = i; j < numAtoms; ++j)
+    {
+      const common::Atom & atomJ = myStructure.getAtom(j);
+      const BuildAtomInfo * infoJ = getAtomInfo(atomJ);
+
+      OptionalDouble rI, rJ;
+
+      // Try to set the radii from build info (the most specific knowledge we have)
+      if(infoI)
+        rI = infoI->radius;
+      if(infoJ)
+        rJ = infoJ->radius;
+
+      // If we couldn't find radii then try pair separation distances
+      if(!rI && !rJ)
+      {
+        // Try doing it by pair distances
+        SpeciesPairDistances::const_iterator it =
+            getSpeciesPairDistances().find(SpeciesPair(atomI.getSpecies(), atomJ.getSpecies()));
+        if(it != mySpeciesPairDistances.end())
+        {
+          // Give them each a half of the separation distance
+          rI.reset(0.5 * it->second);
+          rJ.reset(0.5 * it->second);
+        }
+      }
+
+      // Finally if we still don't have radii try getting it from the species database
+      // Try setting it from the species database
+      if(!rI)
+        rI = mySpeciesDb.getRadius(atomI.getSpecies());
+      if(!rJ)
+        rJ = mySpeciesDb.getRadius(atomJ.getSpecies());
+
+      double separation = 0.0;
+      if(rI) separation += *rI;
+      if(rJ) separation += *rJ;
+      sepSq(i, j) = separation * separation;
+    }
+  }
+
+  return ::arma::symmatl(sepSq);
 }
 
 }

@@ -59,7 +59,7 @@ public:
   ) const;
   build_cell::IStructureGeneratorPtr createStructureGenerator(const OptionsMap & map) const;
   build_cell::StructureBuilderPtr createStructureBuilder(const OptionsMap & map) const;
-  build_cell::AtomsGeneratorPtr createAtomsGenerator(
+  build_cell::AtomsGroupPtr createAtomsGroup(
     const OptionsMap & map,
     io::AtomFormatParser & parser
   ) const;

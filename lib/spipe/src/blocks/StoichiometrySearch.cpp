@@ -14,7 +14,7 @@
 
 // From SSTbx
 #include <build_cell/AtomsDescription.h>
-#include <build_cell/AtomsGenerator.h>
+#include <build_cell/AtomsGroup.h>
 #include <build_cell/BuildCellFwd.h>
 #include <build_cell/IFragmentGenerator.h>
 #include <build_cell/IStructureGenerator.h>
@@ -124,7 +124,7 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        ::sstbx::UniquePtr<ssbc::AtomsGenerator>::Type atomsGenerator(new ssbc::AtomsGenerator());
+        ::sstbx::UniquePtr<ssbc::AtomsGroup>::Type atomsGenerator(new ssbc::AtomsGroup());
         atomsGenerator->insertAtoms(ssbc::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies));
         builder->addGenerator(atomsGenerator);
       }

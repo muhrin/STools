@@ -24,7 +24,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/AbsAtomsGenerator.h
   include/build_cell/AtomExtruder.h
   include/build_cell/AtomsDescription.h
-  include/build_cell/AtomsGenerator.h
+  include/build_cell/AtomsGroup.h
   include/build_cell/BuildAtomInfo.h
   include/build_cell/BuildCellFwd.h
   include/build_cell/GenerationOutcome.h
@@ -36,6 +36,7 @@ set(sslib_Header_Files__build_cell
   include/build_cell/IUnitCellGenerator.h
   include/build_cell/PointGroups.h
   include/build_cell/RandomUnitCellGenerator.h
+  include/build_cell/SpeciesPair.h
   include/build_cell/Sphere.h
   include/build_cell/StructureBuild.h
   include/build_cell/StructureBuilder.h

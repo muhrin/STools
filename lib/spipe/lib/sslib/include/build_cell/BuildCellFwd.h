@@ -16,7 +16,7 @@ namespace build_cell {
 
 // FORWARD DECLARES ////////////
 class AtomsDescription;
-class AtomsGenerator;
+class AtomsGroup;
 class IFragmentGenerator;
 class IStructureGenerator;
 class IUnitCellGenerator;
@@ -25,7 +25,7 @@ class StructureBuilder;
 
 // TYPEDEFS /////////////////////
 typedef UniquePtr<AtomsDescription>::Type AtomsDescriptionPtr;
-typedef UniquePtr<AtomsGenerator>::Type AtomsGeneratorPtr;
+typedef UniquePtr<AtomsGroup>::Type AtomsGroupPtr;
 typedef UniquePtr<IFragmentGenerator>::Type IFragmentGeneratorPtr;
 typedef UniquePtr<IUnitCellGenerator>::Type IUnitCellGeneratorPtr;
 typedef UniquePtr<IStructureGenerator>::Type IStructureGeneratorPtr;

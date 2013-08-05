@@ -13,6 +13,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "OptionalTypes.h"
+
 // DEFINITION ///////////////////////
 
 namespace sstbx {
@@ -46,6 +48,8 @@ public:
 
   const OpMask & getOpMask() const;
   void setOperatorsMask(const OpMask & opMask);
+
+  OptionalDouble radius;
 
 private:
   typedef ::std::vector<common::Atom *> AtomsList;
