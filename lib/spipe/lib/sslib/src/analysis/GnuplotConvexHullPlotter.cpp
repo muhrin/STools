@@ -234,7 +234,7 @@ void GnuplotConvexHullPlotter::setStyles(::std::ostream & os, const ConvexHull &
 
   os << "set style line " << BOUNDARY_LINE_STYLE << " ps 1.5 pt 7 lc rgb '#000000'" << ::std::endl;
   os << "set style line " << HULL_POINT_LINE_STYLE << " ps 1.5 pt 7 lc rgb '#dd181f'" << ::std::endl;
-  os << "set style line " << OFF_HULL_LINE_STYLE << " ps 1 pt 7 lc rgb '#0060ad'" << ::std::endl;
+  os << "set style line " << OFF_HULL_LINE_STYLE << " ps 0.6 pt 7 lc rgb '#0060ad'" << ::std::endl;
 
   if(convexHull.dims() > 2)
   {

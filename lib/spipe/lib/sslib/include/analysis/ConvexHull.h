@@ -22,7 +22,7 @@
 #include <boost/optional.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include <CGAL/Cartesian_d.h>
+#include <CGAL/Origin.h>
 #include <CGAL/Convex_hull_d.h>
 #include <CGAL/Fraction_traits.h>
 //#if CGAL_USE_GMP && CGAL_USE_MPFR
@@ -31,6 +31,7 @@
 #  include <CGAL/CORE_Expr.h>
 //#endif
 
+#include "OptionalTypes.h"
 #include "analysis/AbsConvexHullGenerator.h"
 #include "common/AtomsFormula.h"
 #include "analysis/CgalCustomKernel.h"
@@ -123,7 +124,7 @@ public:
     addStructures(InputIterator first, InputIterator last);
 
   /**
-   * Get the number of dimensions, includeing the convex property dimension.
+   * Get the number of dimensions, including the convex property dimension.
    */
   int
   dims() const;
@@ -131,8 +132,6 @@ public:
   const Hull *
   getHull() const;
 
-  VectorD
-  composition(const VectorD & vec) const;
   PointD
   composition(const PointD & point) const;
 
@@ -149,10 +148,19 @@ public:
   ::boost::optional< bool>
   isStable(const PointD & point) const;
 
+  ::boost::optional<bool>
+  isStable(const PointId id) const;
+
+  OptionalDouble distanceToHull(const common::Structure & structure) const;
+  OptionalDouble distanceToHull(const PointId id) const;
+
 private:
 
   typedef ::std::map< common::AtomsFormula, HullTraits::FT> ChemicalPotentials;
   typedef ::std::vector< HullEntry> HullEntries;
+
+  static const HullTraits::FT FT_ZERO;
+  static const HullTraits::RT RT_ZERO;
 
   PointId
   generateEntry(const common::Structure & structure);
@@ -161,12 +169,25 @@ private:
       const HullTraits::FT value);
   PointD
   generateHullPoint(const HullEntry & entry) const;
+  PointD
+
+  /**
+   * Precondition: composition is composed of multiples of one or more hull endpoints.
+   */
+  generateHullPoint(const common::AtomsFormula & composition, const HullTraits::FT & convexValue) const;
   void
   generateHull() const;
   bool
   canGenerate() const;
   void
   initEndpoints(const EndpointLabels & labels);
+  ::boost::optional<HullTraits::RT>
+  distanceToHull(const PointD & p) const;
+  bool isEndpoint(const PointD & p) const;
+
+  bool isTopFacet(Hull::Facet_const_iterator facet) const;
+
+  void printPoint(const PointD & p) const;
 
   // IMPORTANT: Make sure myEndpoints the first member because this is relied on by one of
   // the constructors

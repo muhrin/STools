@@ -19,10 +19,8 @@
 
 //#define DEBUG_CONVEX_HULL_GENERATOR
 
-namespace sstbx
-{
-namespace analysis
-{
+namespace sstbx {
+namespace analysis {
 
 ConvexHull::ConvexHull(const EndpointLabels & labels) :
     myConvexProperty(common::structure_properties::general::ENTHALPY), myHullDims(
@@ -41,6 +39,9 @@ ConvexHull::ConvexHull(const EndpointLabels & labels,
       "Need at least two endpoints to make convex hull.");
   initEndpoints(labels);
 }
+
+const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0.0);
+const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0.0);
 
 ConvexHull::PointId
 ConvexHull::addStructure(const common::Structure & structure)
@@ -66,12 +67,6 @@ ConvexHull::getHull() const
   }
 
   return myHull.get();
-}
-
-ConvexHull::VectorD
-ConvexHull::composition(const VectorD & vec) const
-{
-  return VectorD(myHullDims - 1, vec.cartesian_begin(), vec.cartesian_end() - 1);
 }
 
 ConvexHull::PointD
@@ -113,6 +108,40 @@ ConvexHull::isStable(const PointD & point) const
 
   return point[dims() - 1] <= 0
       && myHull->bounded_side(point) == CGAL::ON_BOUNDARY;
+}
+
+::boost::optional<bool>
+ConvexHull::isStable(const PointId id) const
+{
+  if(!myEntries[id].getPoint())
+    return ::boost::optional< bool>();
+
+  return isStable(*myEntries[id].getPoint());
+}
+
+OptionalDouble ConvexHull::distanceToHull(const common::Structure & structure) const
+{
+  // Check if the structure has a value for the property that will form the 'depth' of the hull
+  const double * const value = structure.getProperty(myConvexProperty);
+  if(!value)
+    return OptionalDouble();
+
+  const PointD p = generateHullPoint(structure.getComposition(), HullTraits::RT(*value));
+
+  OptionalDouble dist;
+  const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(p);
+  if(ftDist)
+    dist.reset(CGAL::to_double(*ftDist));
+  return dist;
+}
+
+OptionalDouble ConvexHull::distanceToHull(const PointId id) const
+{
+  OptionalDouble dist;
+  const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(*myEntries[id].getPoint());
+  if(ftDist)
+    dist.reset(CGAL::to_double(*ftDist));
+  return dist;
 }
 
 ConvexHull::HullEntry::HullEntry(const common::AtomsFormula & composition,
@@ -199,8 +228,7 @@ ConvexHull::generateEntry(const common::Structure & structure)
     return -1; // This structure has atoms that aren't on the hull so we can't calculate the chemical potential
 
   const PointId id = myEntries.size();
-  const HullEntries::iterator it = myEntries.insert(myEntries.end(),
-      HullEntry(structure.getComposition(), *value, id, isEndpoint));
+  myEntries.insert(myEntries.end(), HullEntry(structure.getComposition(), *value, id, isEndpoint));
   if(isEndpoint)
     updateChemicalPotential(endpoint,
         HullTraits::FT(*value, endpointFormulaUnits));
@@ -231,13 +259,19 @@ ConvexHull::updateChemicalPotential(
 ConvexHull::PointD
 ConvexHull::generateHullPoint(const HullEntry & entry) const
 {
+  PointD point = generateHullPoint(entry.getComposition(), entry.getValue());
+  point.setId(entry.getId());
+  return point;
+}
+
+ConvexHull::PointD
+ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const HullTraits::FT & convexValue) const
+{
   // Need chemical potentials for all endpoints
   SSLIB_ASSERT(canGenerate());
 
-  const common::AtomsFormula & composition = entry.getComposition();
-
   int totalAtoms = 0;
-  HullTraits::FT totalMuNAtoms = 0.0;
+  HullTraits::FT totalMuNAtoms = FT_ZERO;
   int numAtoms;
   BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
@@ -258,6 +292,7 @@ ConvexHull::generateHullPoint(const HullEntry & entry) const
   // simplex
   ::std::vector< HullTraits::FT> tempVec(myHullDims);
   VectorD v(myHullDims);
+  int numEndpoints = 0;
   for(int i = 0; i < myEndpoints.size(); ++i)
   {
     numAtoms = composition.numberOf(myEndpoints[i].first).first;
@@ -269,19 +304,19 @@ ConvexHull::generateHullPoint(const HullEntry & entry) const
 #endif
       scaled *= HullTraits::FT(numAtoms, totalAtoms);
       v += scaled;
+      ++numEndpoints;
     }
   }
   tempVec.assign(v.cartesian_begin(), v.cartesian_end());
   // The last hull coordinate is always the 'convex property', usually the energy
-  if(!entry.isEndpoint())
-    tempVec[dims() - 1] = (entry.getValue() - totalMuNAtoms) / totalAtoms;
+  if(numEndpoints > 1)
+    tempVec[dims() - 1] = (convexValue - totalMuNAtoms) / totalAtoms;
 
   PointD point(myHullDims, tempVec.begin(), tempVec.end());
-  point.setId(entry.getId());
 
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
-  ::std::cout << "Convex value: " << entry.getValue() << " mu_alpha N_alpha: " << totalMuNAtoms << " total atoms: " << totalAtoms << ::std::endl;
-  ::std::cout << "Hull entry: " << point << ::std::endl;
+  ::std::cout << "Convex value: " << convexValue << " mu_alpha N_alpha: " << totalMuNAtoms << " total atoms: " << totalAtoms << ::std::endl;
+  ::std::cout << "Point entry: " << point << ::std::endl;
 #endif
 
   return point;
@@ -371,7 +406,7 @@ ConvexHull::initEndpoints(const EndpointLabels & labels)
 #endif
 
   PointD pSum = myEndpoints[1].second;
-  vec.assign(vec.size(), 0.0);
+  vec.assign(vec.size(), RT_ZERO);
   for(int i = 2; i < myHullDims; ++i)
   {
     // Put the new point at the centre of the previous points
@@ -395,6 +430,76 @@ ConvexHull::initEndpoints(const EndpointLabels & labels)
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << "Convex hull finished building simplex\n";
 #endif
+}
+
+::boost::optional<ConvexHull::HullTraits::RT>
+ConvexHull::distanceToHull(const PointD & p) const
+{
+  if(!getHull())
+    return ::boost::optional<ConvexHull::HullTraits::RT>();
+
+  SSLIB_ASSERT_MSG(p.dimension() == myHullDims, "Point must have same dimension as hull to calculate distance.");
+
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+  ::std::cout << "Calculating distance to point: ";
+  printPoint(p);
+#endif
+
+  if(isEndpoint(p)) // By definition all endpoints are at 0 on the hull
+    return FT_ZERO;
+
+  ::std::vector<HullTraits::FT> direction(myHullDims, FT_ZERO);
+  direction[myHullDims - 1] = 1.0;
+  HullTraits::Line_d line(p, HullTraits::Direction_d(myHullDims, direction.begin(), direction.end()));
+
+  Hull::Hyperplane_d hyperplane;
+  for(Hull::Facet_const_iterator it = const_cast<const Hull *>(myHull.get())->facets_begin(),
+      end = const_cast<const Hull *>(myHull.get())->facets_end(); it != end; ++it)
+  {
+    if(isTopFacet(it))
+      continue;
+
+    hyperplane = myHull->hyperplane_supporting(it);
+    ::CGAL::Object result = ::CGAL::intersection(hyperplane, line);
+
+    // TODO: Change kernel to use our point type
+    const CGAL::Cartesian_d<RT>::Point_d * const intersectionPoint
+      = CGAL::object_cast< CGAL::Cartesian_d<RT>::Point_d >(&result);
+    if(intersectionPoint &&
+        myHull->bounded_side(PointD(myHullDims, intersectionPoint->cartesian_begin(), intersectionPoint->cartesian_end())) == ::CGAL::ON_BOUNDARY)
+    {
+      return p[myHullDims - 1] - (*intersectionPoint)[myHullDims - 1];
+    }
+  }
+
+  return ::boost::optional<ConvexHull::HullTraits::RT>(); // Point was not in the space of the hull
+}
+
+bool ConvexHull::isTopFacet(Hull::Facet_const_iterator facet) const
+{
+  for(int i = 0; i < myHull->current_dimension(); ++i)
+  {
+    if(!isEndpoint(myHull->point_of_facet(facet, i)))
+      return false;
+  }
+  return true;
+}
+
+bool ConvexHull::isEndpoint(const PointD & p) const
+{
+  BOOST_FOREACH(const Endpoint & ep, myEndpoints)
+  {
+    if(p == ep.second)
+      return true;
+  }
+  return false;
+}
+
+void ConvexHull::printPoint(const PointD & p) const
+{
+  for(int i = 0; i < p.dimension(); ++i)
+    ::std::cout << CGAL::to_double(p[i]) << " ";
+  ::std::cout << ::std::endl;
 }
 
 }

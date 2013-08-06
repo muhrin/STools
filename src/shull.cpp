@@ -21,6 +21,7 @@
 
 
 // From SSLib //
+#include <OptionalTypes.h>
 #include <analysis/ConvexHull.h>
 #include <analysis/GnuplotConvexHullPlotter.h>
 #include <analysis/StructureConvexHullInfoSupplier.h>
@@ -51,6 +52,7 @@ struct InputOptions
   bool labelHullPoints;
   bool hideOffHull;
   ::std::vector< ::std::string> customEndpoints;
+  ::std::string distanceStructure;
 };
 
 ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in);
@@ -76,6 +78,7 @@ int main(const int argc, char * argv[])
       ("label,l", po::value<bool>(&in.labelHullPoints)->default_value(false)->zero_tokens(), "label hull points")
       ("hide-off-hull,h", po::value<bool>(&in.hideOffHull)->default_value(false)->zero_tokens(), "hide points not on the hull")
       ("endpoints,e", po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(), "list of whitespace separated endpoints e.g. SiNi Fe")
+      ("distance,d", po::value< ::std::string>(&in.distanceStructure), "calculate distance from hull to given structure")
     ;
 
     po::positional_options_description p;
@@ -152,16 +155,49 @@ int main(const int argc, char * argv[])
   ssa::ConvexHull hullGenerator(endpoints);
   const ::std::vector<ssa::ConvexHull::PointId> structureIds = hullGenerator.addStructures(loadedStructures.begin(), loadedStructures.end());
 
-
-  ssa::StructureConvexHullInfoSupplier infoSupplier;
-  for(int i = 0; i < structureIds.size(); ++i)
-    infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
+  // Try to get the distance structure (if any)
+  ssc::StructurePtr distanceStructure;
+  if(!in.distanceStructure.empty())
+  {
+    if(!structureLocator.set(in.distanceStructure))
+    {
+      ::std::cerr << "Invalid distance structure path " << in.distanceStructure << ::std::endl;
+      return 1;
+    }
+    if(!fs::exists(structureLocator.path()))
+    {
+      ::std::cerr << "File " << in.distanceStructure << " does not exist" << ::std::endl;
+      return 1;
+    }
+    distanceStructure = rwMan.readStructure(structureLocator);
+    if(!distanceStructure.get())
+    {
+      ::std::cerr << "Error reading distance structure." << ::std::endl;
+      return 1;
+    }
+  }
 
   if(hullGenerator.getHull())
   {
-    ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type outputter = generateOutputter(in);
-    if(outputter.get())
-      outputter->outputHull(hullGenerator, &infoSupplier);
+    if(distanceStructure.get())
+    {
+      ::sstbx::OptionalDouble dist = hullGenerator.distanceToHull(*distanceStructure);
+      if(dist)
+        ::std::cout << *dist << ::std::endl;
+      else
+        ::std::cerr << "Failed to calculate distance to hull" << ::std::endl;
+    }
+    else
+    {
+      // Create the info supplier
+      ssa::StructureConvexHullInfoSupplier infoSupplier;
+      for(int i = 0; i < structureIds.size(); ++i)
+        infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
+
+      ::sstbx::UniquePtr<ssa::IConvexHullOutputter>::Type outputter = generateOutputter(in);
+      if(outputter.get())
+        outputter->outputHull(hullGenerator, &infoSupplier);
+    }
   }
 
   return 0;

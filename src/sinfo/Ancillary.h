@@ -70,6 +70,7 @@ struct InputOptions
   bool uniqueMode;
   double uniqueTolerance;
   ::std::string filterString;
+  int compositionTop;
 };
 
 struct CustomisableTokens

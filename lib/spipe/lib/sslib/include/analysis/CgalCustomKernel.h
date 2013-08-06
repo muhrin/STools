@@ -16,6 +16,8 @@
 #include <CGAL/Cartesian.h>
 #include <CGAL/Cartesian_d.h>
 #include <CGAL/Kernel/Type_equality_wrapper.h>
+#include <CGAL/Kernel_d/function_objects.h>
+
 
 #include "analysis/CgalPointDWithId.h"
 
@@ -31,13 +33,14 @@ namespace detail {
 template <typename Kernel, typename KernelBase>
 class CgalCustomKernelBase : public KernelBase
 {
+  typedef CgalCustomKernelBase<Kernel, KernelBase> Self;
 public:
   typedef typename KernelBase::RT RT;
   typedef typename KernelBase::FT FT;
   typedef typename KernelBase::LA LA;
 
-  typedef CgalPointDWithId<Kernel> Point_d;
-  typedef CGAL::Vector_d<Kernel> Vector_d;
+  typedef CgalPointDWithId<Self> Point_d;
+  typedef CGAL::Vector_d<Self>             Vector_d;
 
   template <typename Kernel2>
   struct Base { typedef CgalCustomKernelBase<Kernel2, KernelBase> Type; };
@@ -49,6 +52,7 @@ public:
 
   Vector_to_point_d vector_to_point_d_object() const
   { return Vector_to_point_d(); }
+
 
 };
 

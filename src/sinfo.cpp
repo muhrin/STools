@@ -7,6 +7,8 @@
 
 // INCLUDES //////////////////////////////////
 
+#include <algorithm>
+
 // From SSLib //
 #include <common/AtomsFormula.h>
 #include <common/Structure.h>
@@ -34,6 +36,19 @@ namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
+class FormulaFilter : public ::std::unary_function<const ssc::Structure &, bool>
+{
+public:
+  FormulaFilter(const ssc::AtomsFormula & formula): myFormula(formula) {}
+
+  bool operator ()(const ssc::Structure & structure)
+  {
+    return !myFormula.isEmpty() && structure.getComposition().numMultiples(myFormula) == -1;
+  }
+private:
+  const ssc::AtomsFormula myFormula;
+};
+
 int main(const int argc, char * argv[])
 {
   typedef ssio::StructuresContainer StructuresContainer;
@@ -59,40 +74,85 @@ int main(const int argc, char * argv[])
     return result;
 
   StructureInfoTable infoTable;
-  StructuresContainer structures;
+  StructuresContainer structures, loaded;
 
   SortedKeys sortedKeys;
-
-  ::std::string inputFile;
-  ssio::ResourceLocator structureLocator;
-  size_t numKept, numLoaded = 0;
-  BOOST_FOREACH(inputFile, in.inputFiles)
-  {
-    if(structureLocator.set(inputFile))
-    {
-      const size_t numLoadedFromFile = rwMan.readStructures(
-        structures,
-        structureLocator
-      );
-      
-      numKept = numLoadedFromFile;
-
-      // Preprocess the structure
-      for(size_t i = numLoaded; i < numLoaded + numKept; ++i)
-        sortedKeys.push_back(&structures[i]);
-
-      numLoaded += numKept; // Up the counter
-    }
-  }
-
-  if(structures.empty())
-    return 0;
 
   ssc::AtomsFormula filterFormula;
   if(!in.filterString.empty())
   {
     if(!filterFormula.fromString(in.filterString))
       ::std::cerr << "Failed to parse filter string: " << in.filterString << ::std::endl;
+  }
+  FormulaFilter formulaFilter(filterFormula);
+
+  ::std::string inputFile;
+  ssio::ResourceLocator structureLocator;
+  BOOST_FOREACH(inputFile, in.inputFiles)
+  {
+    if(structureLocator.set(inputFile))
+    {
+      rwMan.readStructures(loaded, structureLocator);
+      
+      // Filter out any that we don't want
+      loaded.erase(::std::remove_if(loaded.begin(), loaded.end(), formulaFilter), loaded.end());
+
+      structures.transfer(structures.end(), loaded);
+    }
+  }
+
+  if(in.compositionTop != 0)
+  {
+    typedef ssio::StructuresContainer::iterator StructuresIterator;
+    typedef ::std::map<double, StructuresIterator> TopN;
+    typedef ::std::map<ssc::AtomsFormula, TopN> FormulasMap;
+
+
+    FormulasMap formulasMap;
+    ::std::set<StructuresIterator> toRemove;
+    ssc::AtomsFormula formula;
+
+    for(StructuresIterator it = structures.begin(), end = structures.end(); it != end; ++it)
+    {
+      const double * const enthalpy = it->getProperty(ssc::structure_properties::general::ENTHALPY);
+      if(!enthalpy)
+      {
+        toRemove.insert(it);
+        continue;
+      }
+
+      formula = it->getComposition();
+      formula.reduce();
+
+      if(!formulasMap[formula].insert(::std::make_pair(*enthalpy, it)).second)
+        toRemove.insert(it);
+    }
+
+    BOOST_FOREACH(FormulasMap::reference form, formulasMap)
+    {
+      if(form.second.size() > in.compositionTop)
+      {
+        TopN::reverse_iterator it = form.second.rbegin();
+        for(int i = 0; i < form.second.size() - in.compositionTop; ++i, ++it)
+          toRemove.insert(it->second);
+      }
+    }
+
+    for(::std::set<StructuresIterator>::reverse_iterator it = toRemove.rbegin(),
+        end = toRemove.rend(); it != end; ++it)
+    {
+      structures.erase(*it);
+    }
+  }
+
+
+  if(structures.empty())
+    return 0;
+
+  // Preprocess structures
+  BOOST_FOREACH(ssc::Structure & structure, structures)
+  {
+    sortedKeys.push_back(&structure);
   }
 
   // Populate the information table

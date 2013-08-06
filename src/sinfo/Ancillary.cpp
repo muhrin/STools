@@ -92,6 +92,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
       ("unique,u", po::value<bool>(&in.uniqueMode)->default_value(false)->zero_tokens(), "use only unique structures")
       ("unique-tol,T", po::value<double>(&in.uniqueTolerance)->default_value(0.001), "tolernace to use when comparing unique structures")
+      ("composition-top", po::value<int>(&in.compositionTop)->default_value(0), "keep only the top n of each composition")
     ;
 
     po::positional_options_description p;

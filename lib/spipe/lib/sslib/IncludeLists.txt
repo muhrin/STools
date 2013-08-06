@@ -7,6 +7,7 @@ set(sslib_Header_Files__analysis
   include/analysis/CgalPointDWithId.h
   include/analysis/ConvexHull.h
   include/analysis/ConvexHullOutputter.h
+  include/analysis/ConvexHullStructures.h
   include/analysis/DynamicConvexHullGenerator.h
   include/analysis/GnuplotConvexHullPlotter.h
   include/analysis/Histogram.h
@@ -17,6 +18,13 @@ set(sslib_Header_Files__analysis
   include/analysis/VoronoiMap.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
+
+## analysis/detail
+
+set(sslib_Header_Files__analysis__detail
+  include/analysis/detail/ConvexHullStructures.h
+)
+source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analysis__detail})
 
 ## build_cell
 
@@ -281,6 +289,7 @@ source_group("Header Files" FILES ${sslib_Header_Files__})
 
 set(sslib_Header_Files
   ${sslib_Header_Files__analysis}
+  ${sslib_Header_Files__analysis__detail}
   ${sslib_Header_Files__build_cell}
   ${sslib_Header_Files__common}
   ${sslib_Header_Files__common__event}
