@@ -169,7 +169,7 @@ Result calcLengths(const StructuresContainer & structures, const InputOptions & 
   BOOST_FOREACH(const ssc::Structure & structure, structures)
   {
     for(unsigned int i = 0; i < structure.getNumAtoms() - 1; ++i)
-      for(unsigned int j = i + 1; j < structure.getNumAtoms(); ++j)
+      for(unsigned int j = i; j < structure.getNumAtoms(); ++j)
         pairs.push_back(AtomPair(i, j));
 
     const ssio::ResourceLocator * const locator = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
@@ -190,21 +190,24 @@ void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const 
   const double cutoff = calcCutoff(structure, in);
   const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
 
-  size_t numEntries;
+  size_t startOffset, numDists;
   BOOST_FOREACH(const AtomPair & pair, pairs)
   {
     ::std::vector<double> dists;
     distCalc.getDistsBetween(structure.getAtom(pair.first), structure.getAtom(pair.second), cutoff, dists);
     ::std::sort(dists.begin(), dists.end());
 
+    // Skip the first entry for same atoms as the shortest distance will always be 0
+    startOffset = !dists.empty() && pair.first == pair.second ? 1 : 0;
+
     if(in.maxDistancesPerPair == 0)
-      numEntries = dists.size();
+      numDists = dists.size() - startOffset;
     else
-      numEntries = ::std::min(in.maxDistancesPerPair, dists.size());
+      numDists = ::std::min(in.maxDistancesPerPair, dists.size() - startOffset);
 
     ::std::stringstream ss;
     ss << pair.first << "-" << pair.second << ": ";
-    for(int i = 0; i < numEntries; ++i)
+    for(int i = startOffset; i < startOffset + numDists; ++i)
       ss << dists[i] << " ";
     ::std::cout << ss.str() << ::std::endl;
   }
@@ -215,19 +218,22 @@ void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, cons
   const double cutoff = calcCutoff(structure, in);
   const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
   ::std::vector<double> allDists;
-  size_t numEntries;
+  size_t startOffset, numDists;
   BOOST_FOREACH(const AtomPair & pair, pairs)
   {
     ::std::vector<double> dists;
     distCalc.getDistsBetween(structure.getAtom(pair.first), structure.getAtom(pair.second), cutoff, dists);
     ::std::sort(dists.begin(), dists.end());
 
-    if(in.maxDistancesPerPair == 0)
-      numEntries = dists.size();
-    else
-      numEntries = ::std::min(in.maxDistancesPerPair, dists.size());
+    // Skip the first entry for same atoms as the shortest distance will always be 0
+    startOffset = !dists.empty() && pair.first == pair.second ? 1 : 0;
 
-    allDists.insert(allDists.end(), dists.begin(), dists.begin() + numEntries);
+    if(in.maxDistancesPerPair == 0)
+      numDists = dists.size() - startOffset;
+    else
+      numDists = ::std::min(in.maxDistancesPerPair, dists.size() - startOffset);
+
+    allDists.insert(allDists.end(), dists.begin() + startOffset, dists.begin() + startOffset + numDists);
   }
 
   ssa::Histogram hist(ssa::Histogram::estimateBinWidth(allDists.begin(), allDists.end(), 2.0, 80));
