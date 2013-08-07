@@ -112,6 +112,7 @@ int main(const int argc, char * argv[])
     ::std::set<StructuresIterator> toRemove;
     ssc::AtomsFormula formula;
 
+    double enthalpyPerAtom;
     for(StructuresIterator it = structures.begin(), end = structures.end(); it != end; ++it)
     {
       const double * const enthalpy = it->getProperty(ssc::structure_properties::general::ENTHALPY);
@@ -120,11 +121,12 @@ int main(const int argc, char * argv[])
         toRemove.insert(it);
         continue;
       }
+      enthalpyPerAtom = *enthalpy / static_cast<double>(it->getNumAtoms());
 
       formula = it->getComposition();
       formula.reduce();
 
-      if(!formulasMap[formula].insert(::std::make_pair(*enthalpy, it)).second)
+      if(!formulasMap[formula].insert(::std::make_pair(enthalpyPerAtom, it)).second)
         toRemove.insert(it);
     }
 
