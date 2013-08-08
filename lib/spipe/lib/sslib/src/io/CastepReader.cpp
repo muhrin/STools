@@ -40,6 +40,7 @@ const ::std::string CastepReader::CELL_TITLE("Unit Cell");
 const ::std::string CastepReader::CONTENTS_TITLE("Cell Contents");
 const ::std::string CastepReader::CONTENTS_BOX_BEGIN("x----------------------------------------------------------x");
 const ::std::string CastepReader::LATTICE_PARAMS_TITLE("Lattice parameters");
+const ::std::string CastepReader::FINAL_ENTHALPY("Final Enthalpy");
 
 ::std::vector<std::string> CastepReader::getSupportedFileExtensions() const
 {
@@ -124,10 +125,9 @@ size_t CastepReader::readStructures(StructuresContainer & outStructures, const R
   }
   else
   { // The id should be an integer
-    size_t structureIndex;
     try
     {
-      structureIndex = ::boost::lexical_cast<size_t>(id);
+      const size_t structureIndex = ::boost::lexical_cast<size_t>(id);
       readStructures(container, inputStream);
       if(structureIndex < container.size())
       {
@@ -288,6 +288,8 @@ bool CastepReader::parseAuxInfo(AuxInfo & auxInfo, ::std::istream & inputStream,
     return parseStressTensorBox(auxInfo, inputStream);
   else if(line.find("Step    |   lambda    |   F.delta   |    enthalpy") != ::std::string::npos)
     return parseOptimisationTable(auxInfo, inputStream);
+  else if(line.find(FINAL_ENTHALPY) != ::std::string::npos)
+    return parseFinalOptiomisationValues(auxInfo, inputStream, line);
 
   return false;
 }
@@ -369,6 +371,24 @@ bool CastepReader::parseOptimisationTable(AuxInfo & auxInfo, ::std::istream & in
       catch(const ::boost::bad_lexical_cast & /*e*/)
       {}
     }
+  }
+  return auxInfo.enthalpy.is_initialized();
+}
+
+bool CastepReader::parseFinalOptiomisationValues(AuxInfo & auxInfo, ::std::istream & inputStream,
+    const ::std::string & currentLine) const
+{
+  static const ::boost::regex RE_FINAL_ENTHALPY(FINAL_ENTHALPY + "[[:blank:]]+=[[:blank:]]+(" + PATTERN_FLOAT + ")");
+
+  ::boost::smatch match;
+  if(::boost::regex_search(currentLine, match, RE_FINAL_ENTHALPY))
+  {
+    try
+    {
+      auxInfo.enthalpy.reset(::boost::lexical_cast<double>(::std::string(match[1].first, match[1].second)));
+    }
+    catch(const ::boost::bad_lexical_cast & /*e*/)
+    {}
   }
   return auxInfo.enthalpy.is_initialized();
 }

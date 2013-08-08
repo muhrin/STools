@@ -66,6 +66,7 @@ private:
   static const ::std::string LATTICE_PARAMS_TITLE;
   static const ::std::string CONTENTS_TITLE;
   static const ::std::string CONTENTS_BOX_BEGIN;
+  static const ::std::string FINAL_ENTHALPY;
 
   bool parseCell(common::UnitCell & unitCell, ::std::istream & inputStream) const;
   bool parseContents(
@@ -80,6 +81,8 @@ private:
   void updateStructure(common::Structure & structure, const AuxInfo & auxInfo) const;
   bool parseStressTensorBox(AuxInfo & auxInfo, ::std::istream & inputStream) const;
   bool parseOptimisationTable(AuxInfo & auxInfo, ::std::istream & inputStream) const;
+  bool parseFinalOptiomisationValues(AuxInfo & auxInfo, ::std::istream & inputStream,
+      const ::std::string & currentLine) const;
   bool inBox(const ::std::string & line) const;
 };
 
