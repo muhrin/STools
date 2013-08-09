@@ -98,7 +98,7 @@ template <class InputIterator>
 void Histogram::insert(InputIterator first, const InputIterator last)
 {
   for(;first != last; ++first)
-    insert(first);
+    insert(*first);
 }
 
 }

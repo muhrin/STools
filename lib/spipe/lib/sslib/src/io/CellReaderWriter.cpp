@@ -230,6 +230,15 @@ void CellReaderWriter::writeStructure(::std::ostream & os, common::Structure & s
   writeLatticeBlock(os, *unitCell);
   os << ::std::endl;
   writePositionsBlock(os, structure, *unitCell);
+  os << ::std::endl;
+
+  const double * const pressure = structure.getProperty(common::structure_properties::general::PRESSURE_INTERNAL);
+  if(pressure)
+  {
+    ::arma::mat33 pressureMtx = ::arma::zeros(3, 3);
+    pressureMtx.diag().fill(*pressure);
+    writePressureBlock(os, pressureMtx);
+  }
 }
 
 void CellReaderWriter::writeLatticeBlock(::std::ostream & os, const common::UnitCell & unitCell) const
@@ -265,6 +274,19 @@ void CellReaderWriter::writePositionsBlock(
   os << "%ENDBLOCK POSITIONS_FRAC" << ::std::endl;
 }
 
+void
+CellReaderWriter::writePressureBlock(::std::ostream & os,
+    const ::arma::mat33 & pressureMtx) const
+{
+  os << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
+  for(int row = 0; row < 3; ++row)
+  {
+    for(int col = row; col < 3; ++col)
+      os << pressureMtx(row, col) << " ";
+    os << ::std::endl;
+  }
+  os << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
+}
 
 
 }

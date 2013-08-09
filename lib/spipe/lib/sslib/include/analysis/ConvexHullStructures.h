@@ -39,11 +39,11 @@ class StableStructuresIterator;
 class ConvexHullStructures
 {
   typedef ::std::map<const common::Structure *, ConvexHull::PointId> Structures;
-  typedef utility::TakeFirst<const typename Structures::value_type> TakeFirst;
+  typedef utility::TakeFirst<const Structures::value_type> TakeFirst;
 public:
 
   typedef ConvexHull::EndpointLabels EndpointLabels;
-  typedef ::boost::transform_iterator<TakeFirst, typename Structures::const_iterator> StructuresIterator;
+  typedef ::boost::transform_iterator<TakeFirst, Structures::const_iterator> StructuresIterator;
   typedef detail::StableStructuresIterator StableStructuresIterator;
 
   struct Stability

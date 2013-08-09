@@ -19,6 +19,7 @@
 #include <analysis/Histogram.h>
 #include <common/AtomSpeciesDatabase.h>
 #include <common/Structure.h>
+#include <common/UnitCell.h>
 #include <io/StructureReadWriteManager.h>
 
 // From StructurePipe
@@ -53,6 +54,8 @@ struct InputOptions
   bool histogramMode;
   bool histogramShowGraph;
   double histogramBinWidth;
+  size_t maxDistancesPerPair;
+  double distanceCutoff;
 };
 
 // CONSTANTS /////////////////////////////////
@@ -62,10 +65,10 @@ static const int RESULT_GENERAL_FAILURE = 1;
 // FUNCTION DECLARATIONS ///////////////////
 Result processInputOptions(InputOptions & in, const int argc, char * argv[]);
 Result calcLengths(const StructuresContainer & structures, const InputOptions & in);
-void doLengths(const ssc::Structure & structure, const AtomPairs & pairs);
-double calculateBinWidth(const ssc::Structure & structure, const AtomPairs & pairs);
+void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const InputOptions & in);
 void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, const InputOptions & in);
 Result calcAngles(const StructuresContainer & structures, const InputOptions & in);
+double calcCutoff(const ssc::Structure & structure, const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
@@ -111,11 +114,13 @@ Result processInputOptions(InputOptions & in, const int argc, char * argv[])
       ("help", "Show help message")
       ("input,i", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input structure file(s)")
       ("lengths,l", po::value<bool>(&in.calcLengths)->default_value(true)->zero_tokens(), "calculate lengths")
-      ("angles,a", po::value<bool>(&in.calcAngles)->default_value(false)->zero_tokens(), "calculate angles")
-      ("atoms-numbers,n", po::value< ::std::vector<unsigned int> >(&in.atomNumbers), "atom numbers")
+      //("angles,a", po::value<bool>(&in.calcAngles)->default_value(false)->zero_tokens(), "calculate angles")
+      //("atoms-numbers,n", po::value< ::std::vector<unsigned int> >(&in.atomNumbers), "atom numbers")
       ("histogram,h", po::value<bool>(&in.histogramMode)->default_value(false)->zero_tokens(), "histogram mode")
       ("bin-width,w", po::value<double>(&in.histogramBinWidth)->default_value(0.0), "bin width (0.0 = automatically calculate)")
       ("graph,g", po::value<bool>(&in.histogramShowGraph)->default_value(false)->zero_tokens(), "show histogram ASCII graph")
+      ("max-distances,m", po::value<size_t>(&in.maxDistancesPerPair)->default_value(0), "maximum number of distances per atom pair")
+      ("cutoff,c", po::value<double>(&in.distanceCutoff)->default_value(0.0), "distances cutoff")
     ;
 
     po::positional_options_description p;
@@ -164,13 +169,15 @@ Result calcLengths(const StructuresContainer & structures, const InputOptions & 
   BOOST_FOREACH(const ssc::Structure & structure, structures)
   {
     for(unsigned int i = 0; i < structure.getNumAtoms() - 1; ++i)
-      for(unsigned int j = i + 1; j < structure.getNumAtoms(); ++j)
+      for(unsigned int j = i; j < structure.getNumAtoms(); ++j)
         pairs.push_back(AtomPair(i, j));
 
+    const ssio::ResourceLocator * const locator = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
+    ::std::cout << locator->path() << ::std::endl;
     if(in.histogramMode)
       doHistogram(structure, pairs, in);
     else
-      doLengths(structure, pairs);
+      doLengths(structure, pairs, in);
 
     pairs.clear();
   }
@@ -178,51 +185,59 @@ Result calcLengths(const StructuresContainer & structures, const InputOptions & 
   return RESULT_SUCCESS;
 }
 
-void doLengths(const ssc::Structure & structure, const AtomPairs & pairs)
+void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const InputOptions & in)
 {
+  const double cutoff = calcCutoff(structure, in);
   const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
-  double dist;
-  ::std::stringstream ss;
+
+  size_t startOffset, numDists;
   BOOST_FOREACH(const AtomPair & pair, pairs)
   {
-    dist = distCalc.getDistMinImg(structure.getAtom(pair.first), structure.getAtom(pair.second));
-    ss.str(""); // Reset the stringstream
-    ss << pair.first << "-" << pair.second << ": " << dist;
+    ::std::vector<double> dists;
+    distCalc.getDistsBetween(structure.getAtom(pair.first), structure.getAtom(pair.second), cutoff, dists);
+    ::std::sort(dists.begin(), dists.end());
+
+    // Skip the first entry for same atoms as the shortest distance will always be 0
+    startOffset = !dists.empty() && pair.first == pair.second ? 1 : 0;
+
+    if(in.maxDistancesPerPair == 0)
+      numDists = dists.size() - startOffset;
+    else
+      numDists = ::std::min(in.maxDistancesPerPair, dists.size() - startOffset);
+
+    ::std::stringstream ss;
+    ss << pair.first << "-" << pair.second << ": ";
+    for(int i = startOffset; i < startOffset + numDists; ++i)
+      ss << dists[i] << " ";
     ::std::cout << ss.str() << ::std::endl;
   }
 }
 
-double calculateBinWidth(const ssc::Structure & structure, const AtomPairs & pairs)
-{
-  const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
-
-  ::std::vector<double> distances;
-
-  // First calculate the maximum distance
-  double maxDist = 0.0;
-  BOOST_FOREACH(const AtomPair & pair, pairs)
-  {
-    distances.push_back(distCalc.getDistMinImg(structure.getAtom(pair.first), structure.getAtom(pair.second)));
-  }
-
-  // Calculate the bin width
-  return ssa::Histogram::estimateBinWidth(distances.begin(), distances.end(), 2.0, 80);
-}
-
 void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, const InputOptions & in)
 {
-  double binWidth = in.histogramBinWidth;
-  if(binWidth == 0.0)
-    binWidth = calculateBinWidth(structure, pairs);
-
-  ssa::Histogram hist(binWidth);
+  const double cutoff = calcCutoff(structure, in);
   const ssc::DistanceCalculator & distCalc = structure.getDistanceCalculator();
-  double dist;
+  ::std::vector<double> allDists;
+  size_t startOffset, numDists;
   BOOST_FOREACH(const AtomPair & pair, pairs)
   {
-    dist = distCalc.getDistMinImg(structure.getAtom(pair.first), structure.getAtom(pair.second));
-    hist.insert(dist);
+    ::std::vector<double> dists;
+    distCalc.getDistsBetween(structure.getAtom(pair.first), structure.getAtom(pair.second), cutoff, dists);
+    ::std::sort(dists.begin(), dists.end());
+
+    // Skip the first entry for same atoms as the shortest distance will always be 0
+    startOffset = !dists.empty() && pair.first == pair.second ? 1 : 0;
+
+    if(in.maxDistancesPerPair == 0)
+      numDists = dists.size() - startOffset;
+    else
+      numDists = ::std::min(in.maxDistancesPerPair, dists.size() - startOffset);
+
+    allDists.insert(allDists.end(), dists.begin() + startOffset, dists.begin() + startOffset + numDists);
   }
+
+  ssa::Histogram hist(ssa::Histogram::estimateBinWidth(allDists.begin(), allDists.end(), 2.0, 80));
+  hist.insert(allDists.begin(), allDists.end());
 
   // Print the histogram values
   for(size_t i = 0; i < hist.numBins(); ++i)
@@ -236,4 +251,14 @@ Result calcAngles(const StructuresContainer & structures, const InputOptions & i
 {
 
   return RESULT_SUCCESS;
+}
+
+double calcCutoff(const ssc::Structure & structure, const InputOptions & in)
+{
+  if(in.distanceCutoff != 0.0)
+    return in.distanceCutoff;
+  else if(structure.getUnitCell())
+    return 10.0 * ::std::pow(structure.getUnitCell()->getVolume(), 1.0 / 3.0) / static_cast<double>(structure.getNumAtoms());
+  else // Assume cluster so give maximum distances cutoff
+    return ::std::numeric_limits<double>::max();
 }
