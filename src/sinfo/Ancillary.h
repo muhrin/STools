@@ -71,6 +71,7 @@ struct InputOptions
   double uniqueTolerance;
   ::std::string filterString;
   int compositionTop;
+  double maxFormationEnthalpy;
 };
 
 struct CustomisableTokens

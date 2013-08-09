@@ -93,6 +93,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("unique,u", po::value<bool>(&in.uniqueMode)->default_value(false)->zero_tokens(), "use only unique structures")
       ("unique-tol,T", po::value<double>(&in.uniqueTolerance)->default_value(0.001), "tolernace to use when comparing unique structures")
       ("composition-top", po::value<int>(&in.compositionTop)->default_value(0), "keep only the top n of each composition")
+      ("max-form", po::value<double>(&in.maxFormationEnthalpy)->default_value(-1.0), "maximum formation enthalpy (uses convex hull)")
     ;
 
     po::positional_options_description p;
