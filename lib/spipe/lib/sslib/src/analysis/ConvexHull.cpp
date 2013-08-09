@@ -121,12 +121,17 @@ ConvexHull::isStable(const PointId id) const
 
 OptionalDouble ConvexHull::distanceToHull(const common::Structure & structure) const
 {
+  getHull(); // Make sure the hull is generated
+
+  if(structure.getNumAtoms() == 0)
+    return OptionalDouble();
+
   // Check if the structure has a value for the property that will form the 'depth' of the hull
   const double * const value = structure.getProperty(myConvexProperty);
   if(!value)
     return OptionalDouble();
 
-  const PointD p = generateHullPoint(structure.getComposition(), HullTraits::RT(*value));
+  const PointD p = generateHullPoint(structure.getComposition(), *value);
 
   OptionalDouble dist;
   const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(p);
@@ -137,6 +142,8 @@ OptionalDouble ConvexHull::distanceToHull(const common::Structure & structure) c
 
 OptionalDouble ConvexHull::distanceToHull(const PointId id) const
 {
+  getHull(); // Make sure the hull is generated
+
   OptionalDouble dist;
   const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(*myEntries[id].getPoint());
   if(ftDist)
@@ -308,15 +315,14 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
     }
   }
   tempVec.assign(v.cartesian_begin(), v.cartesian_end());
-  // The last hull coordinate is always the 'convex property', usually the energy
-  if(numEndpoints > 1)
-    tempVec[dims() - 1] = (convexValue - totalMuNAtoms) / totalAtoms;
+  // The last hull coordinate is always the 'convex property', usually the enthalpy
+  tempVec[dims() - 1] = (convexValue - totalMuNAtoms) / totalAtoms;
 
   PointD point(myHullDims, tempVec.begin(), tempVec.end());
 
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
-  ::std::cout << "Convex value: " << convexValue << " mu_alpha N_alpha: " << totalMuNAtoms << " total atoms: " << totalAtoms << ::std::endl;
-  ::std::cout << "Point entry: " << point << ::std::endl;
+  ::std::cout << "Convex value = " << convexValue << " mu_alpha N_alpha = " << totalMuNAtoms << " total atoms = " << totalAtoms << ::std::endl;
+  ::std::cout << "Point entry = " << point << ::std::endl;
 #endif
 
   return point;
@@ -339,7 +345,7 @@ ConvexHull::generateHull() const
     const PointD & p = generateHullPoint(entry);
     entry.setPoint(p);
 
-    if(p[dims() - 1] <= 0)
+    if(p[dims() - 1] <= FT_ZERO)
     {
       common::AtomsFormula composition = entry.getComposition();
       composition.reduce();
@@ -445,8 +451,9 @@ ConvexHull::distanceToHull(const PointD & p) const
   printPoint(p);
 #endif
 
-  if(isEndpoint(p)) // By definition all endpoints are at 0 on the hull
-    return FT_ZERO;
+  // Endpoints are anchored to 0 so the distances is just the convex value of this point
+  if(isEndpoint(p))
+    return p[myHullDims - 1];
 
   ::std::vector<HullTraits::FT> direction(myHullDims, FT_ZERO);
   direction[myHullDims - 1] = 1.0;

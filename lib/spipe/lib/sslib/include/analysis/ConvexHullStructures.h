@@ -51,13 +51,17 @@ public:
     enum Value { UNSTABLE, STABLE, NOT_HULL_STRUCTURE };
   };
 
+  template< typename InputIterator>
+    static EndpointLabels
+    generateEndpoints(InputIterator first, InputIterator last);
+
   ConvexHullStructures(const EndpointLabels & endpoints);
   ConvexHullStructures(const EndpointLabels & endpoints,
       utility::Key< double> & convexProperty);
   template< typename InputIterator>
   ConvexHullStructures(InputIterator first, InputIterator last);
 
-  void
+  StructuresIterator
   insertStructure(const common::Structure & structure);
   template< typename InputIterator>
     void
@@ -92,6 +96,13 @@ template< typename InputIterator>
 {
   for(InputIterator it = first; it != last; ++it)
     insertStructure(*it);
+}
+
+template< typename InputIterator>
+  ConvexHullStructures::EndpointLabels
+  ConvexHullStructures::generateEndpoints(InputIterator first, InputIterator last)
+{
+  return ConvexHull::generateEndpoints(first, last);
 }
 
 }

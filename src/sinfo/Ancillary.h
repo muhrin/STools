@@ -47,6 +47,7 @@ typedef StructureInfoTable::SortedKeys SortedKeys;
 extern const ::std::string VAR_BRACKET;
 extern const ::std::string VAR_FORMAT;
 const int PRINT_ALL = -1;
+extern const double MAX_HULL_DIST_IGNORE;
 
 // ENUMS /////////////////////////////////////////
 struct Result
@@ -71,7 +72,7 @@ struct InputOptions
   double uniqueTolerance;
   ::std::string filterString;
   int compositionTop;
-  double maxFormationEnthalpy;
+  double maxHullDist;
 };
 
 struct CustomisableTokens

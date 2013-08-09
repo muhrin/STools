@@ -6,10 +6,10 @@
  */
 
 // INCLUDES //////////////////////////////////
-
 #include <algorithm>
 
 // From SSLib //
+#include <analysis/ConvexHullStructures.h>
 #include <common/AtomsFormula.h>
 #include <common/Structure.h>
 #include <common/StructureProperties.h>
@@ -31,25 +31,32 @@
 
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;
-namespace sp  = ::spipe;
+namespace sp = ::spipe;
+namespace ssa = ::sstbx::analysis;
 namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
-class FormulaFilter : public ::std::unary_function<const ssc::Structure &, bool>
+class FormulaFilter : public ::std::unary_function< const ssc::Structure &, bool>
 {
 public:
-  FormulaFilter(const ssc::AtomsFormula & formula): myFormula(formula) {}
-
-  bool operator ()(const ssc::Structure & structure)
+  FormulaFilter(const ssc::AtomsFormula & formula) :
+      myFormula(formula)
   {
-    return !myFormula.isEmpty() && structure.getComposition().numMultiples(myFormula) == -1;
+  }
+
+  bool
+  operator ()(const ssc::Structure & structure)
+  {
+    return !myFormula.isEmpty()
+        && structure.getComposition().numMultiples(myFormula) == -1;
   }
 private:
   const ssc::AtomsFormula myFormula;
 };
 
-int main(const int argc, char * argv[])
+int
+main(const int argc, char * argv[])
 {
   typedef ssio::StructuresContainer StructuresContainer;
 
@@ -74,7 +81,7 @@ int main(const int argc, char * argv[])
     return result;
 
   StructureInfoTable infoTable;
-  StructuresContainer structures, loaded;
+  StructuresContainer structures;
 
   SortedKeys sortedKeys;
 
@@ -82,7 +89,8 @@ int main(const int argc, char * argv[])
   if(!in.filterString.empty())
   {
     if(!filterFormula.fromString(in.filterString))
-      ::std::cerr << "Failed to parse filter string: " << in.filterString << ::std::endl;
+      ::std::cerr << "Failed to parse filter string: " << in.filterString
+          << ::std::endl;
   }
   FormulaFilter formulaFilter(filterFormula);
 
@@ -92,36 +100,65 @@ int main(const int argc, char * argv[])
   {
     if(structureLocator.set(inputFile))
     {
+      StructuresContainer loaded;
       rwMan.readStructures(loaded, structureLocator);
-      
+
       // Filter out any that we don't want
-      loaded.erase(::std::remove_if(loaded.begin(), loaded.end(), formulaFilter), loaded.end());
+      loaded.erase(
+          ::std::remove_if(loaded.begin(), loaded.end(), formulaFilter),
+          loaded.end());
 
       structures.transfer(structures.end(), loaded);
+    }
+  }
+
+  if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
+  {
+    ssa::ConvexHullStructures hullStructures(
+        ssa::ConvexHullStructures::generateEndpoints(structures.begin(),
+            structures.end()));
+    for(StructuresContainer::iterator it = structures.begin();
+        it != structures.end(); /* increment in loop body */)
+    {
+      if(hullStructures.insertStructure(*it) == hullStructures.structuresEnd())
+        it = structures.erase(it); // Erase structures that aren't in the space of the hull
+      else
+        ++it;
+    }
+    // Now go through getting those that are within the maximum formation enthalpy
+    for(StructuresContainer::iterator it = structures.begin();
+        it != structures.end(); /* increment in loop body */)
+    {
+      ::sstbx::OptionalDouble dist = hullStructures.distanceToHull(*it);
+      if(!dist || *dist > in.maxHullDist)
+        it = structures.erase(it);
+      else
+        ++it;
     }
   }
 
   if(in.compositionTop != 0)
   {
     typedef ssio::StructuresContainer::iterator StructuresIterator;
-    typedef ::std::map<double, StructuresIterator> TopN;
-    typedef ::std::map<ssc::AtomsFormula, TopN> FormulasMap;
-
+    typedef ::std::map< double, StructuresIterator> TopN;
+    typedef ::std::map< ssc::AtomsFormula, TopN> FormulasMap;
 
     FormulasMap formulasMap;
-    ::std::set<StructuresIterator> toRemove;
+    ::std::set< StructuresIterator> toRemove;
     ssc::AtomsFormula formula;
 
     double enthalpyPerAtom;
-    for(StructuresIterator it = structures.begin(), end = structures.end(); it != end; ++it)
+    for(StructuresIterator it = structures.begin(), end = structures.end();
+        it != end; ++it)
     {
-      const double * const enthalpy = it->getProperty(ssc::structure_properties::general::ENTHALPY);
+      const double * const enthalpy = it->getProperty(
+          ssc::structure_properties::general::ENTHALPY);
       if(!enthalpy)
       {
         toRemove.insert(it);
         continue;
       }
-      enthalpyPerAtom = *enthalpy / static_cast<double>(it->getNumAtoms());
+      enthalpyPerAtom = *enthalpy / static_cast< double>(it->getNumAtoms());
 
       formula = it->getComposition();
       formula.reduce();
@@ -140,13 +177,12 @@ int main(const int argc, char * argv[])
       }
     }
 
-    for(::std::set<StructuresIterator>::reverse_iterator it = toRemove.rbegin(),
-        end = toRemove.rend(); it != end; ++it)
+    for(::std::set< StructuresIterator>::reverse_iterator it =
+        toRemove.rbegin(), end = toRemove.rend(); it != end; ++it)
     {
       structures.erase(*it);
     }
   }
-
 
   if(structures.empty())
     return 0;
@@ -160,7 +196,8 @@ int main(const int argc, char * argv[])
   // Populate the information table
   BOOST_FOREACH(const ssc::Structure & structure, structures)
   {
-    if(!filterFormula.isEmpty() && structure.getComposition().numMultiples(filterFormula) == -1)
+    if(!filterFormula.isEmpty()
+        && structure.getComposition().numMultiples(filterFormula) == -1)
       continue;
 
     BOOST_FOREACH(const ::std::string & tokenEntry, tokensInfo.tokenStrings)
@@ -196,16 +233,17 @@ int main(const int argc, char * argv[])
 
   if(in.uniqueMode)
   {
-    ssu::UniqueStructureSet<ssc::Structure *> uniqueStructures(
-      ssu::IStructureComparatorPtr(new ssu::SortedDistanceComparator(in.uniqueTolerance))
-    );
+    ssu::UniqueStructureSet< ssc::Structure *> uniqueStructures(
+        ssu::IStructureComparatorPtr(
+            new ssu::SortedDistanceComparator(in.uniqueTolerance)));
     int idx = 0;
     SortedKeys::iterator it = sortedKeys.begin();
     while(it != sortedKeys.end())
     {
       // Have we seen this structure before?
       // TODO: Have to remove this const cast by fixing unique structures to accept const Structure as well
-      if(uniqueStructures.insert(const_cast<ssc::Structure * >(*it)).second == false)
+      if(uniqueStructures.insert(const_cast< ssc::Structure *>(*it)).second
+          == false)
       {
         infoTable.eraseRow(*it);
         it = sortedKeys.erase(it);
@@ -215,10 +253,12 @@ int main(const int argc, char * argv[])
     }
   }
 
-  const size_t numToPrint = in.printTop == PRINT_ALL ? sortedKeys.size() : ::std::min(sortedKeys.size(), (size_t)in.printTop);
+  const size_t numToPrint =
+      in.printTop == PRINT_ALL ?
+          sortedKeys.size() :
+          ::std::min(sortedKeys.size(), (size_t) in.printTop);
   printInfo(infoTable, sortedKeys, tokensInfo, tokensMap, in, numToPrint);
 
   return 0;
 }
-
 

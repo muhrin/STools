@@ -41,6 +41,7 @@ const ::std::string VAR_FORMAT("%");
 const ::std::string VAR_TITLE("@");
 const ::std::string DEFAULT_EMPTY_STRING("n/a");
 const ::std::string DEFAULT_INFO_STRING("$n$ $p$ $va$ $ha$ $rha$ $sg$ $tf$ $fo$\\n");
+const double MAX_HULL_DIST_IGNORE = -1.0;
 
 ::std::string mapEnvToOptionName(const ::std::string & envVariable)
 {
@@ -93,7 +94,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("unique,u", po::value<bool>(&in.uniqueMode)->default_value(false)->zero_tokens(), "use only unique structures")
       ("unique-tol,T", po::value<double>(&in.uniqueTolerance)->default_value(0.001), "tolernace to use when comparing unique structures")
       ("composition-top", po::value<int>(&in.compositionTop)->default_value(0), "keep only the top n of each composition")
-      ("max-form", po::value<double>(&in.maxFormationEnthalpy)->default_value(-1.0), "maximum formation enthalpy (uses convex hull)")
+      ("max-hull-dist", po::value<double>(&in.maxHullDist)->default_value(MAX_HULL_DIST_IGNORE), "only print structures that lie below this distance above the hull")
     ;
 
     po::positional_options_description p;

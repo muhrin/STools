@@ -80,10 +80,14 @@ ConvexHullStructures::ConvexHullStructures(const EndpointLabels & endpoints,
     myConvexHull(endpoints, convexProperty)
 {}
 
-void
+ConvexHullStructures::StructuresIterator
 ConvexHullStructures::insertStructure(const common::Structure & structure)
 {
-  myStructures[&structure] = myConvexHull.addStructure(structure);
+  const ConvexHull::PointId id = myConvexHull.addStructure(structure);
+  if(id == -1)
+    return structuresEnd();
+
+  return StructuresIterator(myStructures.insert(::std::make_pair(&structure, id)).first);
 }
 
 ConvexHullStructures::StructuresIterator ConvexHullStructures::structuresBegin() const

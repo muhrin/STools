@@ -105,7 +105,21 @@ bool AtomsFormula::operator ==(const AtomsFormula & rhs) const
 
 bool AtomsFormula::operator <(const AtomsFormula & rhs) const
 {
-  return toString() < rhs.toString();
+  for(Formula::const_iterator it = myFormula.begin(), end = myFormula.end(),
+      rhsIt = rhs.myFormula.begin(), rhsEnd = rhs.myFormula.end();
+      it != end && rhsIt != rhsEnd; ++it, ++rhsIt)
+  {
+    if(*it == *rhsIt)
+      continue; // Identical: keep checking
+
+    if(it->first < rhsIt->first)
+      return true;
+    else if(it->second < rhsIt->second)
+      return true;
+    else
+      return false;
+  }
+  return false; // The same
 }
 
 AtomsFormula & AtomsFormula::operator +=(const AtomsFormula rhs)
