@@ -109,14 +109,13 @@ bool AtomsFormula::operator <(const AtomsFormula & rhs) const
       rhsIt = rhs.myFormula.begin(), rhsEnd = rhs.myFormula.end();
       it != end && rhsIt != rhsEnd; ++it, ++rhsIt)
   {
-    if(*it == *rhsIt)
-      continue; // Identical: keep checking
-
     if(it->first < rhsIt->first)
       return true;
+    else if(it->first > rhsIt->first)
+      return false;
     else if(it->second < rhsIt->second)
       return true;
-    else
+    else if(it->second > rhsIt->second)
       return false;
   }
   return false; // The same
