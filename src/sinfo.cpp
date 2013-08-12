@@ -103,11 +103,6 @@ main(const int argc, char * argv[])
       StructuresContainer loaded;
       rwMan.readStructures(loaded, structureLocator);
 
-      // Filter out any that we don't want
-      loaded.erase(
-          ::std::remove_if(loaded.begin(), loaded.end(), formulaFilter),
-          loaded.end());
-
       structures.transfer(structures.end(), loaded);
     }
   }
@@ -129,17 +124,14 @@ main(const int argc, char * argv[])
 
     if(in.stableCompositions)
     {
-      StructuresContainer stable;
-      StructuresContainer::iterator it = structures.begin();
-      while(it != structures.end())
+      for(StructuresContainer::iterator it = structures.begin(); it != structures.end();
+          /* increment in loop body */)
       {
-        if(hullStructures.getStability(*it) == ssa::ConvexHullStructures::Stability::STABLE)
-          stable.transfer(stable.end(), it, structures);
+        if(hullStructures.getStability(*it) != ssa::ConvexHullStructures::Stability::STABLE)
+          it = structures.erase(it);
         else
           ++it;
       }
-      structures.clear();
-      structures.transfer(structures.end(), stable);
     }
     else if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
     {
@@ -155,6 +147,12 @@ main(const int argc, char * argv[])
       }
     }
   }
+
+
+  // Filter out any that we don't want
+  structures.erase(
+      ::std::remove_if(structures.begin(), structures.end(), formulaFilter),
+       structures.end());
 
   if(in.compositionTop != 0)
   {

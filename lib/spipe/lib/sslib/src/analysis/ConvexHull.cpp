@@ -63,6 +63,7 @@ ConvexHull::getHull() const
     generateHull();
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
     myHull->print_statistics();
+    SSLIB_ASSERT(myHull->is_valid());
 #endif
   }
 
@@ -106,8 +107,28 @@ ConvexHull::isStable(const PointD & point) const
   if(!myHull.get())
     return ::boost::optional< bool>();
 
-  return point[dims() - 1] <= 0
-      && myHull->bounded_side(point) == CGAL::ON_BOUNDARY;
+  if(point[dims() - 1] > 0)
+    return false;
+
+  // TODO: Introduce hull facets that only includes facets other than
+  // the top and any vertical facets
+  const ::std::list<Hull::Facet_handle> visibleFacets = myHull->all_facets();
+
+  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
+  HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
+
+  HullTraits::Hyperplane_d hyperplane;
+  BOOST_FOREACH(Hull::Facet_const_handle facet, visibleFacets)
+  {
+    hyperplane = myHull->hyperplane_supporting(facet);
+    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
+      continue;
+
+    if(sideOf(hyperplane, point) == CGAL::ON_ORIENTED_BOUNDARY &&
+        containedInSimplex(facet->points_begin() + 1, facet->points_begin() + myHull->current_dimension() + 1, point))
+      return true;
+  }
+  return false;
 }
 
 ::boost::optional<bool>
@@ -201,6 +222,9 @@ ConvexHull::HullEntry::setPoint(const PointD & p)
 ConvexHull::PointId
 ConvexHull::generateEntry(const common::Structure & structure)
 {
+  if(structure.getNumAtoms() == 0)
+    return -1;
+
   // Check if the structure has a value for the property that will form the 'depth' of the hull
   const double * const value = structure.getProperty(myConvexProperty);
   if(!value)
@@ -458,9 +482,15 @@ ConvexHull::distanceToHull(const PointD & p) const
   if(isEndpoint(p))
     return p[myHullDims - 1];
 
+  // Create the line to test against
   ::std::vector<HullTraits::FT> direction(myHullDims, FT_ZERO);
   direction[myHullDims - 1] = 1.0;
   HullTraits::Line_d line(p, HullTraits::Direction_d(myHullDims, direction.begin(), direction.end()));
+
+  // Test objects
+  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
+  HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
+  HullTraits::Intersect_d intersect = HullTraits().intersect_d_object();
 
   Hull::Hyperplane_d hyperplane;
   for(Hull::Facet_const_iterator it = const_cast<const Hull *>(myHull.get())->facets_begin(),
@@ -470,15 +500,31 @@ ConvexHull::distanceToHull(const PointD & p) const
       continue;
 
     hyperplane = myHull->hyperplane_supporting(it);
-    ::CGAL::Object result = ::CGAL::intersection(hyperplane, line);
+
+    // Ignore planes that are vertical w.r.t. the energy dimension
+    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
+      continue;
+
+    ::CGAL::Object result = intersect(line, hyperplane);
 
     // TODO: Change kernel to use our point type
     const CGAL::Cartesian_d<RT>::Point_d * const intersectionPoint
       = CGAL::object_cast< CGAL::Cartesian_d<RT>::Point_d >(&result);
-    if(intersectionPoint &&
-        myHull->bounded_side(PointD(myHullDims, intersectionPoint->cartesian_begin(), intersectionPoint->cartesian_end())) == ::CGAL::ON_BOUNDARY)
+    if(intersectionPoint)
     {
-      return p[myHullDims - 1] - (*intersectionPoint)[myHullDims - 1];
+      const PointD interPoint = PointD(myHullDims, intersectionPoint->cartesian_begin(),
+          intersectionPoint->cartesian_end());
+      // TODO: Ask on mailing list why it has to be points_begin() + 1
+      //if(sideOf(hyperplane, interPoint) == CGAL::ON_ORIENTED_BOUNDARY &&
+      //    containedInSimplex(it->points_begin() + 1, it->points_begin() + myHull->current_dimension() + 1, interPoint))
+      if(isStable(interPoint))
+      {
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+      ::std::cout << "Found distance to point, from = " << p << ", to = " << interPoint << ::std::endl;
+      ::std::cout << "Hyperplane: " << *it << ::std::endl;
+#endif
+        return p[myHullDims - 1] - interPoint[myHullDims - 1];
+      }
     }
   }
 

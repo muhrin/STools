@@ -118,7 +118,8 @@ bool AtomsFormula::operator <(const AtomsFormula & rhs) const
     else if(it->second > rhsIt->second)
       return false;
   }
-  return false; // The same
+  // So far they have been the same, maybe they are different lengths?
+  return myFormula.size() < rhs.myFormula.size();
 }
 
 AtomsFormula & AtomsFormula::operator +=(const AtomsFormula rhs)

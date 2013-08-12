@@ -9,6 +9,8 @@
 
 #ifdef SSLIB_USE_CGAL
 
+#define DEBUG_CONVEX_HULL_STRUCTURES
+
 # include <boost/iterator/iterator_facade.hpp>
 
 namespace sstbx {
