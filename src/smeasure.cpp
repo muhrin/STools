@@ -258,7 +258,7 @@ double calcCutoff(const ssc::Structure & structure, const InputOptions & in)
   if(in.distanceCutoff != 0.0)
     return in.distanceCutoff;
   else if(structure.getUnitCell())
-    return 10.0 * ::std::pow(structure.getUnitCell()->getVolume(), 1.0 / 3.0) / static_cast<double>(structure.getNumAtoms());
+    return 2.0 * ::std::pow(structure.getUnitCell()->getVolume(), 1.0 / 3.0);
   else // Assume cluster so give maximum distances cutoff
     return ::std::numeric_limits<double>::max();
 }
