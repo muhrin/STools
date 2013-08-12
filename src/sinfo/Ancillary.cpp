@@ -95,6 +95,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
       ("unique-tol,T", po::value<double>(&in.uniqueTolerance)->default_value(0.001), "tolernace to use when comparing unique structures")
       ("composition-top", po::value<int>(&in.compositionTop)->default_value(0), "keep only the top n of each composition")
       ("max-hull-dist", po::value<double>(&in.maxHullDist)->default_value(MAX_HULL_DIST_IGNORE), "only print structures that lie below this distance above the hull")
+      ("stable-compositions,h", po::value<bool>(&in.stableCompositions)->default_value(false)->zero_tokens(), "use convex hull to get only the stable compositions")
     ;
 
     po::positional_options_description p;

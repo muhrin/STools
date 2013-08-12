@@ -113,6 +113,9 @@ ConvexHull::isStable(const PointD & point) const
 ::boost::optional<bool>
 ConvexHull::isStable(const PointId id) const
 {
+  // Make sure the hull is generated
+  getHull();
+
   if(!myEntries[id].getPoint())
     return ::boost::optional< bool>();
 

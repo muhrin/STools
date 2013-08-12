@@ -73,6 +73,7 @@ struct InputOptions
   ::std::string filterString;
   int compositionTop;
   double maxHullDist;
+  bool stableCompositions;
 };
 
 struct CustomisableTokens

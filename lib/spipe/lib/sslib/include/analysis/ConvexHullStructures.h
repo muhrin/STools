@@ -76,7 +76,6 @@ public:
   Stability::Value getStability(const common::Structure & structure) const;
 
   OptionalDouble distanceToHull(const common::Structure & structure) const;
-
 private:
 
   ConvexHull myConvexHull;

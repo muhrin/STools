@@ -112,8 +112,9 @@ main(const int argc, char * argv[])
     }
   }
 
-  if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
+  if(in.stableCompositions || in.maxHullDist != MAX_HULL_DIST_IGNORE)
   {
+    // Generate the convex hull
     ssa::ConvexHullStructures hullStructures(
         ssa::ConvexHullStructures::generateEndpoints(structures.begin(),
             structures.end()));
@@ -125,15 +126,33 @@ main(const int argc, char * argv[])
       else
         ++it;
     }
-    // Now go through getting those that are within the maximum formation enthalpy
-    for(StructuresContainer::iterator it = structures.begin();
-        it != structures.end(); /* increment in loop body */)
+
+    if(in.stableCompositions)
     {
-      ::sstbx::OptionalDouble dist = hullStructures.distanceToHull(*it);
-      if(!dist || *dist > in.maxHullDist)
-        it = structures.erase(it);
-      else
-        ++it;
+      StructuresContainer stable;
+      StructuresContainer::iterator it = structures.begin();
+      while(it != structures.end())
+      {
+        if(hullStructures.getStability(*it) == ssa::ConvexHullStructures::Stability::STABLE)
+          stable.transfer(stable.end(), it, structures);
+        else
+          ++it;
+      }
+      structures.clear();
+      structures.transfer(structures.end(), stable);
+    }
+    else if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
+    {
+      // Now go through getting those that are within the maximum formation enthalpy
+      for(StructuresContainer::iterator it = structures.begin();
+          it != structures.end(); /* increment in loop body */)
+      {
+        ::sstbx::OptionalDouble dist = hullStructures.distanceToHull(*it);
+        if(!dist || *dist > in.maxHullDist)
+          it = structures.erase(it);
+        else
+          ++it;
+      }
     }
   }
 
