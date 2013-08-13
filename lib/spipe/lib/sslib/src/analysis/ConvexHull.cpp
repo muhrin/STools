@@ -17,7 +17,7 @@
 
 #include "common/StructureProperties.h"
 
-#define DEBUG_CONVEX_HULL_GENERATOR
+//#define DEBUG_CONVEX_HULL_GENERATOR
 
 namespace sstbx {
 namespace analysis {
