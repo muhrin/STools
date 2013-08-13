@@ -361,7 +361,9 @@ ConvexHull::generateHull() const
   SSLIB_ASSERT(canGenerate());
 
   typedef ::std::map< common::AtomsFormula, HullEntry *> LowestEnergy;
-  typedef ::std::map< HullTraits::FT, HullEntry *> SortedEntries;
+  // Need to allow multiple structures with the same formation enthalpy so long
+  // as they have different compositions
+  typedef ::std::multimap< HullTraits::FT, HullEntry *> SortedEntries;
 
   // To make calculating the hull faster and remove redundant points
   // first get the set of points with the lowest energy at composition coordinate
@@ -392,7 +394,7 @@ ConvexHull::generateHull() const
   SortedEntries sortedEntries;
   BOOST_FOREACH(LowestEnergy::reference entry, lowest)
   {
-    sortedEntries[(*entry.second->getPoint())[dims() - 1]] = entry.second;
+    sortedEntries.insert(::std::make_pair((*entry.second->getPoint())[dims() - 1], entry.second));
   }
 
   myHull.reset(new Hull(myHullDims));
@@ -401,7 +403,7 @@ ConvexHull::generateHull() const
   {
     myHull->insert(ep.second);
   }
-  // Now put the points in into the hull from lowest up
+  // Now put the points into the hull from lowest up
   BOOST_FOREACH(SortedEntries::const_reference entry, sortedEntries)
   {
     if(!entry.second->isEndpoint())
