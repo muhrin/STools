@@ -22,6 +22,9 @@
 namespace sstbx {
 namespace analysis {
 
+const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0.0);
+const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0.0);
+
 ConvexHull::ConvexHull(const EndpointLabels & labels) :
     myConvexProperty(common::structure_properties::general::ENTHALPY), myHullDims(
         labels.size())
@@ -39,9 +42,6 @@ ConvexHull::ConvexHull(const EndpointLabels & labels,
       "Need at least two endpoints to make convex hull.");
   initEndpoints(labels);
 }
-
-const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0.0);
-const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0.0);
 
 ConvexHull::PointId
 ConvexHull::addStructure(const common::Structure & structure)
@@ -107,7 +107,7 @@ ConvexHull::isStable(const PointD & point) const
   if(!myHull.get())
     return ::boost::optional< bool>();
 
-  if(point[dims() - 1] > 0)
+  if(point[dims() - 1] > FT_ZERO)
     return false;
 
   // TODO: Introduce hull facets that only includes facets other than

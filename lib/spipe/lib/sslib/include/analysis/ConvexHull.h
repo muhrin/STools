@@ -72,6 +72,9 @@ public:
 
   typedef Endpoints::const_iterator EndpointsConstIterator;
 
+  static const HullTraits::FT FT_ZERO;
+  static const HullTraits::RT RT_ZERO;
+
   class HullEntry
   {
   public:
@@ -158,9 +161,6 @@ private:
 
   typedef ::std::map< common::AtomsFormula, HullTraits::FT> ChemicalPotentials;
   typedef ::std::vector< HullEntry> HullEntries;
-
-  static const HullTraits::FT FT_ZERO;
-  static const HullTraits::RT RT_ZERO;
 
   PointId
   generateEntry(const common::Structure & structure);
