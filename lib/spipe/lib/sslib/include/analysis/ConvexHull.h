@@ -56,7 +56,8 @@ public:
 //#ifdef CGAL_USE_GMP
 //  typedef CGAL::Quotient<CGAL::Gmpfr> RT;
 //#else
-  typedef CGAL::Quotient< CORE::Expr> RT;
+  typedef CORE::Expr NT; // Number type
+  typedef CGAL::Quotient< NT> RT; // Ring type
 //#endif
   //typedef CGAL::Cartesian_d<RT> HullTraits;
   typedef CgalCustomKernel< RT> HullTraits;
@@ -72,6 +73,7 @@ public:
 
   typedef Endpoints::const_iterator EndpointsConstIterator;
 
+  static const NT NT_ZERO;
   static const HullTraits::FT FT_ZERO;
   static const HullTraits::RT RT_ZERO;
 

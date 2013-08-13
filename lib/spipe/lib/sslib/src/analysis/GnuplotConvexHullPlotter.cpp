@@ -72,25 +72,21 @@ GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
     point = it->point();
     const ConvexHull::PointId pointId = point.getId();
 
-    // Only print points below the 0 in energy, don't care about the top of the hull
-    if(point[convexHull.dims() - 1] <= 0)
-    {
-      point = prepPoint(point);
+    point = prepPoint(point);
 
-      datOut << printPoint(point) << ::std::endl;
-      if(infoSupplier && myDrawLabels)
-      {
-        ::std::vector< ConvexHull::HullTraits::FT> labelPt(
-            point.cartesian_begin(), point.cartesian_end());
-        labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
-        const ::std::string & label = infoSupplier->getLabel(convexHull,
-            pointId);
-        if(!label.empty())
-          pltOut
-              << plot.drawLabel(label,
-                  ConvexHull::PointD(labelPt.size(), labelPt.begin(),
-                      labelPt.end()));
-      }
+    datOut << printPoint(point) << ::std::endl;
+    if(infoSupplier && myDrawLabels)
+    {
+      ::std::vector< ConvexHull::HullTraits::FT> labelPt(
+          point.cartesian_begin(), point.cartesian_end());
+      labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
+      const ::std::string & label = infoSupplier->getLabel(convexHull,
+          pointId);
+      if(!label.empty())
+        pltOut
+            << plot.drawLabel(label,
+                ConvexHull::PointD(labelPt.size(), labelPt.begin(),
+                    labelPt.end()));
     }
   }
 

@@ -22,8 +22,9 @@
 namespace sstbx {
 namespace analysis {
 
-const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0.0);
-const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0.0);
+const ConvexHull::NT ConvexHull::NT_ZERO(0);
+const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0);
+const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0);
 
 ConvexHull::ConvexHull(const EndpointLabels & labels) :
     myConvexProperty(common::structure_properties::general::ENTHALPY), myHullDims(
@@ -304,9 +305,8 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
   // Need chemical potentials for all endpoints
   SSLIB_ASSERT(canGenerate());
 
-  int totalAtoms = 0;
-  HullTraits::FT totalMuNAtoms = FT_ZERO;
-  int numAtoms;
+  HullTraits::FT totalMuNAtoms = NT_ZERO;
+  HullTraits::FT totalAtoms, numAtoms;
   BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
     const ::std::pair< int, int> & frac = composition.numberOf(endpoint.first);
@@ -317,8 +317,7 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
       SSLIB_ASSERT(frac.second == 1);
 
       totalAtoms += numAtoms;
-      totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second
-          * HullTraits::FT(numAtoms);
+      totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second * HullTraits::FT(numAtoms);
     }
   }
 
@@ -334,9 +333,9 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
     {
       VectorD scaled = myEndpoints[i].second - CGAL::ORIGIN;
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
-      ::std::cout << "Adding weighted hull endpoint: " << scaled << " weight: " << HullTraits::FT(numAtoms, totalAtoms) << ::std::endl;
+      ::std::cout << "Adding weighted hull endpoint: " << scaled << " weight: " << numAtoms / totalAtoms << ::std::endl;
 #endif
-      scaled *= HullTraits::FT(numAtoms, totalAtoms);
+      scaled *= numAtoms / totalAtoms;
       v += scaled;
       ++numEndpoints;
     }
@@ -403,12 +402,48 @@ ConvexHull::generateHull() const
   {
     myHull->insert(ep.second);
   }
-  // Now put the points into the hull from lowest up
+  // Put the points into the hull from lowest up
   BOOST_FOREACH(SortedEntries::const_reference entry, sortedEntries)
   {
     if(!entry.second->isEndpoint())
       myHull->insert(*entry.second->getPoint());
   }
+
+  // Get rid of any points that lie on facets that are vertical wrt convex dimension
+  ::std::vector<PointD> toCheck, toKeep;
+  toCheck.reserve(myHull->number_of_vertices());
+  toKeep.reserve(myHull->number_of_vertices());
+
+  for(Hull::Hull_point_const_iterator it = myHull->hull_points_begin(), end = myHull->hull_points_end();
+      it != end; ++it)
+    toCheck.push_back(*it);
+
+  Hull::Hyperplane_d hyperplane;
+  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
+  for(Hull::Facet_const_iterator facet = const_cast<const Hull *>(myHull.get())->facets_begin(),
+      facetEnd = const_cast<const Hull *>(myHull.get())->facets_end();
+      facet != facetEnd; ++facet)
+  {
+    hyperplane = myHull->hyperplane_supporting(facet);
+    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
+      continue;
+
+    for(::std::vector<PointD>::iterator it = toCheck.begin(); it != toCheck.end();
+        /* increment in loop */)
+    {
+      if(sideOf(hyperplane, *it) == CGAL::ON_ORIENTED_BOUNDARY)
+      {
+        toKeep.push_back(*it);
+        it = toCheck.erase(it);
+      }
+      else
+        ++it;
+    }
+  }
+
+  // Regenerate the hull
+  myHull.reset(new Hull(myHullDims));
+  myHull->insert(toKeep.begin(), toKeep.end());
 }
 
 bool
