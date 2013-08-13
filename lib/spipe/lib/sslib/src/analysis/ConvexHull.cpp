@@ -17,7 +17,7 @@
 
 #include "common/StructureProperties.h"
 
-//#define DEBUG_CONVEX_HULL_GENERATOR
+#define DEBUG_CONVEX_HULL_GENERATOR
 
 namespace sstbx {
 namespace analysis {
@@ -525,7 +525,6 @@ ConvexHull::distanceToHull(const PointD & p) const
   HullTraits::Line_d line(p, HullTraits::Direction_d(myHullDims, direction.begin(), direction.end()));
 
   // Test objects
-  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
   HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
   HullTraits::Intersect_d intersect = HullTraits().intersect_d_object();
 
@@ -552,9 +551,7 @@ ConvexHull::distanceToHull(const PointD & p) const
       const PointD interPoint = PointD(myHullDims, intersectionPoint->cartesian_begin(),
           intersectionPoint->cartesian_end());
       // TODO: Ask on mailing list why it has to be points_begin() + 1
-      //if(sideOf(hyperplane, interPoint) == CGAL::ON_ORIENTED_BOUNDARY &&
-      //    containedInSimplex(it->points_begin() + 1, it->points_begin() + myHull->current_dimension() + 1, interPoint))
-      if(isStable(interPoint))
+      if(containedInSimplex(it->points_begin() + 1, it->points_begin() + myHull->current_dimension() + 1, interPoint))
       {
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
       ::std::cout << "Found distance to point, from = " << p << ", to = " << interPoint << ::std::endl;
