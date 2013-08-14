@@ -217,14 +217,12 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
 {
   fs::ofstream * newCellFileStream;
   if(myCastepRun.openNewCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
-  {  
-    myCellReaderWriter.writeStructure(*newCellFileStream, structure);
-
+  {
     if(myOptimisationSettings.pressure)
-    {
-      *newCellFileStream << ::std::endl;
-      myCastepRun.writePressure(*myOptimisationSettings.pressure);
-    }
+      structure.setProperty(common::structure_properties::general::PRESSURE_INTERNAL,
+          ::arma::trace(*myOptimisationSettings.pressure) / 3.0);
+
+    myCellReaderWriter.writeStructure(*newCellFileStream, structure);
 
     // Now copy over the original contents
     if(fs::exists(myOrigCellFile))

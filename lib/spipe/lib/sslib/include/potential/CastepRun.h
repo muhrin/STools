@@ -69,7 +69,6 @@ public:
   CastepRunResult::Value openCellOutFile(::boost::filesystem::ifstream * * ifstream = NULL);
 
   CastepRunResult::Value insertParams(ParamsMap params) const;
-  CastepRunResult::Value writePressure(const ::arma::mat33 & pressureTensor);
 
   void closeAllStreams();
 

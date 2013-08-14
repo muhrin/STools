@@ -145,30 +145,6 @@ CastepRunResult::Value CastepRun::insertParams(ParamsMap params) const
   return CastepRunResult::SUCCESS;
 }
 
-CastepRunResult::Value CastepRun::writePressure(const ::arma::mat33 & pressureTensor)
-{
-  if(!fs::exists(myCellFile))
-    return CastepRunResult::INPUT_NOT_FOUND;
-
-  if(!myCellFileStream.is_open())
-    myCellFileStream.open(myCellFile, std::ios::out | std::ios::app);
-
-  myCellFileStream << ::std::endl << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
-
-  for(unsigned int row = 0; row < 3; ++row)
-  {
-    myCellFileStream << ::std::string(row, ' ');
-    for(unsigned int col = row; col < 3; ++col)
-    {
-      myCellFileStream << pressureTensor(row, col) << " ";
-    }
-    myCellFileStream << ::std::endl;
-  }
-  myCellFileStream << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
-
-  return CastepRunResult::SUCCESS;
-}
-
 void CastepRun::closeAllStreams()
 {
   if(myCastepFileStream.is_open())

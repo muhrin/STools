@@ -276,13 +276,17 @@ void CellReaderWriter::writePositionsBlock(
 
 void
 CellReaderWriter::writePressureBlock(::std::ostream & os,
-    const ::arma::mat33 & pressureMtx) const
+    const ::arma::mat33 & pressureTensor) const
 {
   os << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
-  for(int row = 0; row < 3; ++row)
+
+  for(unsigned int row = 0; row < 3; ++row)
   {
-    for(int col = row; col < 3; ++col)
-      os << pressureMtx(row, col) << " ";
+    os << ::std::string(row, ' ');
+    for(unsigned int col = row; col < 3; ++col)
+    {
+      os << pressureTensor(row, col) << " ";
+    }
     os << ::std::endl;
   }
   os << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
