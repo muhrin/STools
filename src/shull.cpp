@@ -49,7 +49,7 @@ struct InputOptions
   ::std::string outputter;
   bool flattenConvexProperty;
   bool hideTieLines;
-  bool labelHullPoints;
+  bool hideLabels;
   bool hideOffHull;
   ::std::vector< ::std::string> customEndpoints;
   ::std::string distanceStructure;
@@ -75,7 +75,7 @@ int main(const int argc, char * argv[])
       ("outputter,o", po::value< ::std::string>(&in.outputter)->default_value("gnuplot"), "the hull outputter to use: gnuplot")
       ("flatten,f", po::value<bool>(&in.flattenConvexProperty)->default_value(false)->zero_tokens(), "don't output convex property dimensions, only points that lie on the hull.")
       ("hide-tie-lines,t", po::value<bool>(&in.hideTieLines)->default_value(false)->zero_tokens(), "don't draw tie lines (visual outputters only)")
-      ("label,l", po::value<bool>(&in.labelHullPoints)->default_value(false)->zero_tokens(), "label hull points")
+      ("hide-labels,l", po::value<bool>(&in.hideLabels)->default_value(false)->zero_tokens(), "don't output labels for hull points")
       ("hide-off-hull,h", po::value<bool>(&in.hideOffHull)->default_value(false)->zero_tokens(), "hide points not on the hull")
       ("endpoints,e", po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(), "list of whitespace separated endpoints e.g. SiNi Fe")
       ("distance,d", po::value< ::std::string>(&in.distanceStructure), "calculate distance from hull to given structure")
@@ -213,7 +213,7 @@ int main(const int argc, char * argv[])
     ssa::GnuplotConvexHullPlotter * gnuplot = new ssa::GnuplotConvexHullPlotter();
     gnuplot->setSupressEnergyDimension(in.flattenConvexProperty);
     gnuplot->setDrawTieLines(!in.hideTieLines);
-    gnuplot->setDrawHullLabels(in.labelHullPoints);
+    gnuplot->setDrawHullLabels(!in.hideLabels);
     gnuplot->setDrawOffHullPoints(!in.hideOffHull);
     outputter.reset(gnuplot);
   }
