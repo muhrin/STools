@@ -121,10 +121,10 @@ ConvexHull::isStable(const PointD & point) const
   HullTraits::Hyperplane_d hyperplane;
   BOOST_FOREACH(Hull::Facet_const_handle facet, visibleFacets)
   {
-    hyperplane = myHull->hyperplane_supporting(facet);
-    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
+    if(isVerticalFacet(facet))
       continue;
 
+    hyperplane = myHull->hyperplane_supporting(facet);
     if(sideOf(hyperplane, point) == CGAL::ON_ORIENTED_BOUNDARY &&
         containedInSimplex(facet->points_begin() + 1, facet->points_begin() + myHull->current_dimension() + 1, point))
       return true;
@@ -174,6 +174,16 @@ OptionalDouble ConvexHull::distanceToHull(const PointId id) const
   if(ftDist)
     dist.reset(CGAL::to_double(*ftDist));
   return dist;
+}
+
+bool ConvexHull::isVerticalFacet(Hull::Facet_const_handle facet) const
+{
+  const int currentDim = myHull->current_dimension();
+  if(currentDim < myHullDims)
+    return false; // No facet extends into the convex dimension
+
+  const HullTraits::Direction_d direction = myHull->hyperplane_supporting(facet).orthogonal_direction();
+  return direction[myHullDims - 1] == FT_ZERO;
 }
 
 ConvexHull::HullEntry::HullEntry(const common::AtomsFormula & composition,
@@ -409,6 +419,11 @@ ConvexHull::generateHull() const
       myHull->insert(*entry.second->getPoint());
   }
 
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+  ::std::cout << "Original hull statistics:\n";
+  myHull->print_statistics();
+#endif
+
   // Get rid of any points that lie on facets that are vertical wrt convex dimension
   ::std::vector<PointD> toCheck, toKeep;
   toCheck.reserve(myHull->number_of_vertices());
@@ -424,10 +439,10 @@ ConvexHull::generateHull() const
       facetEnd = const_cast<const Hull *>(myHull.get())->facets_end();
       facet != facetEnd; ++facet)
   {
-    hyperplane = myHull->hyperplane_supporting(facet);
-    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
+    if(isVerticalFacet(facet))
       continue;
 
+    hyperplane = myHull->hyperplane_supporting(facet);
     for(::std::vector<PointD>::iterator it = toCheck.begin(); it != toCheck.end();
         /* increment in loop */)
     {
@@ -532,14 +547,10 @@ ConvexHull::distanceToHull(const PointD & p) const
   for(Hull::Facet_const_iterator it = const_cast<const Hull *>(myHull.get())->facets_begin(),
       end = const_cast<const Hull *>(myHull.get())->facets_end(); it != end; ++it)
   {
-    if(isTopFacet(it))
+    if(isTopFacet(it) || isVerticalFacet(it))
       continue;
 
     hyperplane = myHull->hyperplane_supporting(it);
-
-    // Ignore planes that are vertical w.r.t. the energy dimension
-    if(hyperplane.orthogonal_direction()[myHullDims - 1] == FT_ZERO)
-      continue;
 
     ::CGAL::Object result = intersect(line, hyperplane);
 
