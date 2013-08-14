@@ -64,16 +64,14 @@ int main(const int argc, char * argv[])
   ssio::StructuresContainer structures;
   if(rwMan.readStructures(structures, fileIn) == 0)
   {
-    ::std::cerr << "Failed to ready any structures." << ::std::endl;
+    ::std::cerr << "Error: Failed to read any structures." << ::std::endl;
     return 1;
   }
 
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
     if(!rwMan.writeStructure(structure, fileOut))
-    {
-      ::std::cerr << "Failed to write structure to " << fileOut << ::std::endl;
-    }
+      ::std::cerr << "Error: Failed to write structure to " << fileOut << ::std::endl;
   }
 
   return 0;
