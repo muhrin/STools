@@ -111,15 +111,20 @@ ConvexHull::isStable(const PointD & point) const
   if(point[dims() - 1] > FT_ZERO)
     return false;
 
+  // Have to do this special check for 1D as there is only one facet in this case
+  // which is at the origin so anything along the line joining the two endpoints
+  // would not be classed as 'stable' if we used the method below
+  if(myHull->current_dimension() == 1)
+    return myHull->bounded_side(point) == ::CGAL::ON_BOUNDARY;
+
   // TODO: Introduce hull facets that only includes facets other than
   // the top and any vertical facets
-  const ::std::list<Hull::Facet_handle> visibleFacets = myHull->all_facets();
 
   const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
   HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
 
   HullTraits::Hyperplane_d hyperplane;
-  BOOST_FOREACH(Hull::Facet_const_handle facet, visibleFacets)
+  BOOST_FOREACH(Hull::Facet_const_handle facet, myHull->all_facets())
   {
     if(isVerticalFacet(facet))
       continue;
@@ -459,6 +464,12 @@ ConvexHull::generateHull() const
   // Regenerate the hull
   myHull.reset(new Hull(myHullDims));
   myHull->insert(toKeep.begin(), toKeep.end());
+
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+  ::std::cout << "Keeping:\n";
+  BOOST_FOREACH(const PointD & p, toKeep)
+    ::std::cout << p << ::std::endl;
+#endif
 }
 
 bool
