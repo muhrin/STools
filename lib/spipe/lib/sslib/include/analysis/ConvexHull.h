@@ -159,6 +159,8 @@ public:
   OptionalDouble distanceToHull(const common::Structure & structure) const;
   OptionalDouble distanceToHull(const PointId id) const;
 
+  bool isVerticalFacet(Hull::Facet_const_handle facet) const;
+
 private:
 
   typedef ::std::map< common::AtomsFormula, HullTraits::FT> ChemicalPotentials;

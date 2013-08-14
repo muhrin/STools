@@ -9,6 +9,8 @@
 
 #ifdef SSLIB_USE_CGAL
 
+//#define DEBUG_GNUPLOT_CONVEX_HULL_PLOTTER
+
 #include <fstream>
 #include <sstream>
 
@@ -312,31 +314,34 @@ void
 GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os,
     const ConvexHull & convexHull, Plot & plot) const
 {
-  // No point in drawing tie lines on a 1D plot
-  if(plotDims(convexHull) == 1)
-    return;
-
   const ConvexHull::Hull * const hull = convexHull.getHull();
   ConvexHull::PointD x0, x1;
   for(ConvexHull::Hull::Facet_const_iterator facetIt = hull->facets_begin(),
       end = hull->facets_end(); facetIt != end; ++facetIt)
   {
     // Don't want facets that are vertical w.r.t. the convex dimension
-    if(hull->hyperplane_supporting(facetIt).orthogonal_direction()[convexHull.dims()
-        - 1] == ConvexHull::FT_ZERO)
+    if(convexHull.isVerticalFacet(facetIt))
       continue;
 
-    const ConvexHull::PointD startPoint = hull->point_of_facet(facetIt, 0);
+#ifdef DEBUG_GNUPLOT_CONVEX_HULL_PLOTTER
+    os << "# Start of facet\n";
+#endif
+
+    const ConvexHull::PointD startPoint = prepPoint(hull->point_of_facet(facetIt, 0));
     x0 = x1 = startPoint;
     for(int i = 0; i < hull->current_dimension() - 1; ++i)
     {
-      x0 = hull->point_of_facet(facetIt, i);
-      x1 = hull->point_of_facet(facetIt, i + 1);
+      x0 = prepPoint(hull->point_of_facet(facetIt, i));
+      x1 = prepPoint(hull->point_of_facet(facetIt, i + 1));
 
-      os << plot.drawLine(prepPoint(x0), prepPoint(x1));
+      os << plot.drawLine(x0, x1);
     }
     // Complete the facet
-    os << plot.drawLine(prepPoint(x1), prepPoint(startPoint));
+    os << plot.drawLine(x1, startPoint);
+
+#ifdef DEBUG_GNUPLOT_CONVEX_HULL_PLOTTER
+    os << "# End of facet\n";
+#endif
   }
 }
 
