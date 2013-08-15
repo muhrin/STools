@@ -215,7 +215,7 @@ int AtomsFormula::wholeNumberOf(const AtomsFormula & formula) const
 int AtomsFormula::numMultiples(const AtomsFormula & formula) const
 {
   if(numSpecies() != formula.numSpecies())
-    return -1;
+    return 0;
 
   return wholeNumberOf(formula);
 }

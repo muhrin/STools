@@ -49,7 +49,7 @@ public:
   operator ()(const ssc::Structure & structure)
   {
     return !myFormula.isEmpty()
-        && structure.getComposition().numMultiples(myFormula) == -1;
+        && structure.getComposition().numMultiples(myFormula) == 0;
   }
 private:
   const ssc::AtomsFormula myFormula;
