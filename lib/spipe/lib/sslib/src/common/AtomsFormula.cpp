@@ -217,7 +217,20 @@ int AtomsFormula::numMultiples(const AtomsFormula & formula) const
   if(numSpecies() != formula.numSpecies())
     return 0;
 
-  return wholeNumberOf(formula);
+  int multiple = 0;
+  Fraction currentFrac;
+  BOOST_FOREACH(Formula::const_reference e, formula)
+  {
+    currentFrac = numberOf(e);
+    if(currentFrac.first == 0 || currentFrac.second != 1)
+      return 0;
+    else if(multiple == 0)
+      multiple = currentFrac.first;
+    else if(currentFrac.first != multiple)
+      return 0;
+  }
+
+  return multiple;
 }
 
 ::std::string AtomsFormula::toString() const
