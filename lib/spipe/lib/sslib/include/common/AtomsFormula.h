@@ -23,12 +23,13 @@ namespace common {
 class AtomsFormula
 {
   typedef ::std::map< ::std::string, int> Formula;
-  typedef Formula::value_type Entry;
 public:
+  typedef Formula::value_type Entry;
   typedef Formula::value_type value_type;
   typedef Formula::const_reference const_reference;
   typedef Formula::const_iterator const_iterator;
   typedef const_iterator iterator; // Only const iteration allowed
+  typedef ::std::pair<int, int> Fraction;
 
   AtomsFormula() {}
   explicit AtomsFormula(const ::std::string & species);
@@ -56,7 +57,8 @@ public:
   bool contains(const ::std::string & species) const;
   bool contains(const AtomsFormula & formula) const;
   int numberOf(const std::string & species) const;
-  ::std::pair<int, int> numberOf(const AtomsFormula & formula) const;
+  Fraction numberOf(const Entry & entry) const;
+  int wholeNumberOf(const AtomsFormula & formula) const;
   int numMultiples(const AtomsFormula & formula) const;
 
   void clear();
@@ -67,6 +69,11 @@ public:
   bool simplify(::std::pair<int, int> & fraction) const;
 
 private:
+
+  static const Fraction ZERO;
+  static const Fraction MAX;
+
+  Fraction min(const Fraction & f1, const Fraction & f2) const;
 
   Formula myFormula;
 };
