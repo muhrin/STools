@@ -15,8 +15,6 @@
 #include "SSLibAssert.h"
 #include "math/NumberAlgorithms.h"
 
-#include <iostream> // TODO: TEMP, DELETE
-
 namespace sstbx {
 namespace common {
 
@@ -139,10 +137,10 @@ bool AtomsFormula::remove(const AtomsFormula & toRemove)
 bool AtomsFormula::remove(const AtomsFormula & toRemove, const int numToRemove)
 {
   // Find out how many of those to remove we have
-  const ::std::pair<int, int> num = numberOf(toRemove);
+  const int num = wholeNumberOf(toRemove);
 
   // Check we have that formula to remove and that we don't have a fractional number of them
-  if(num.first == 0 || num.second != 1 || numToRemove > num.first)
+  if(num == 0 || numToRemove > num)
     return false;
 
   Formula::iterator it;
@@ -178,7 +176,7 @@ bool AtomsFormula::contains(const ::std::string & species) const
 
 bool AtomsFormula::contains(const AtomsFormula & formula) const
 {
-  return numberOf(formula).first != 0;
+  return wholeNumberOf(formula) != 0;
 }
 
 int AtomsFormula::numberOf(const std::string & species) const
@@ -190,29 +188,28 @@ int AtomsFormula::numberOf(const std::string & species) const
   return it->second;
 }
 
-::std::pair<int, int> AtomsFormula::numberOf(const AtomsFormula & formula) const
+AtomsFormula::Fraction AtomsFormula::numberOf(const Entry & entry) const
 {
-  static const ::std::pair<int, int> NOT_FOUND(0, 0);
+  return Fraction(numberOf(entry.first), entry.second);
+}
 
-  ::std::pair<int, int> fracNum(0, 0);
-  ::std::pair<int, int> currentFrac;
+int AtomsFormula::wholeNumberOf(const AtomsFormula & formula) const
+{
+  if(formula.isEmpty() || formula.numSpecies() > numSpecies())
+    return 0;
+
+  Fraction currentFrac, min = MAX;
   BOOST_FOREACH(Formula::const_reference e, formula)
   {
-    currentFrac.first = numberOf(e.first);
-    currentFrac.second = e.second;
-    if(currentFrac.first == 0) // Don't contain any of those, return 0
-      return NOT_FOUND;
-
-    simplify(currentFrac);
-    if(fracNum.first == 0)
-    { // Set the fractional number that this formula contains
-      fracNum = currentFrac;
-    }
-    else if(fracNum != currentFrac)
-      return NOT_FOUND;
+    currentFrac = numberOf(e);
+    if(currentFrac.first < currentFrac.second)
+      return 0;
+    else
+      min = this->min(min, currentFrac);
   }
 
-  return fracNum;
+  // Integer division will round down for us
+  return min.first / min.second;
 }
 
 int AtomsFormula::numMultiples(const AtomsFormula & formula) const
@@ -220,11 +217,7 @@ int AtomsFormula::numMultiples(const AtomsFormula & formula) const
   if(numSpecies() != formula.numSpecies())
     return -1;
 
-  const ::std::pair<int, int> num = numberOf(formula);
-  if(num.first == 0 || num.second != 1)
-    return -1;
-
-  return num.first;
+  return wholeNumberOf(formula);
 }
 
 ::std::string AtomsFormula::toString() const
@@ -256,6 +249,14 @@ bool AtomsFormula::simplify(::std::pair<int, int> & fraction) const
   fraction.first = fraction.first / gcd;
   fraction.second = fraction.second / gcd;
   return true;
+}
+
+const AtomsFormula::Fraction AtomsFormula::ZERO = AtomsFormula::Fraction(0, 1);
+const AtomsFormula::Fraction AtomsFormula::MAX = AtomsFormula::Fraction(::std::numeric_limits<int>::max(), 1);
+
+AtomsFormula::Fraction AtomsFormula::min(const Fraction & f1, const Fraction & f2) const
+{
+  return f1.first * f2.second < f1.second * f2.first ? f1 : f2;
 }
 
 ::std::ostream & operator <<(::std::ostream & os, const AtomsFormula & formula)

@@ -250,7 +250,6 @@ size_t Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 AtomsFormula Structure::getComposition() const
 {
   AtomsFormula comp;
-
   BOOST_FOREACH(const Atom & atom, myAtoms)
   {
     comp += AtomsFormula(atom.getSpecies());

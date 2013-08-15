@@ -249,27 +249,23 @@ ConvexHull::generateEntry(const common::Structure & structure)
   // Check that the structure contains at least one endpoint
   common::AtomsFormula composition = structure.getComposition();
   bool containsEndpoint = false, isEndpoint = true;
-  int endpointFormulaUnits;
+  int formulaUnits, endpointFormulaUnits;
   common::AtomsFormula endpoint;
-  ::std::pair< int, int> endpointUnits;
   BOOST_FOREACH(Endpoints::const_reference e, myEndpoints)
   {
-    endpointUnits = composition.numberOf(e.first);
+    formulaUnits = composition.wholeNumberOf(e.first);
 
-    if(endpointUnits.first != 0)
+    if(formulaUnits != 0)
     {
-      // Do a quick sanity check
-      SSLIB_ASSERT(endpointUnits.second == 1);
-
       if(containsEndpoint)
         isEndpoint = false; // Contains more than one endpoint
       else
       {
         containsEndpoint = true; // The first endpoint we've come across so far
-        endpointFormulaUnits = endpointUnits.first;
+        endpointFormulaUnits = formulaUnits;
         endpoint = e.first;
       }
-      composition.remove(e.first, endpointUnits.first);
+      composition.remove(e.first, formulaUnits);
     }
   }
   if(!containsEndpoint)
@@ -324,13 +320,9 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
   HullTraits::FT totalAtoms, numAtoms;
   BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
-    const ::std::pair< int, int> & frac = composition.numberOf(endpoint.first);
-    numAtoms = frac.first;
+    numAtoms = composition.wholeNumberOf(endpoint.first);
     if(numAtoms != 0)
     {
-      // Do a quick sanity check
-      SSLIB_ASSERT(frac.second == 1);
-
       totalAtoms += numAtoms;
       totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second * HullTraits::FT(numAtoms);
     }
@@ -343,7 +335,7 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
   int numEndpoints = 0;
   for(int i = 0; i < myEndpoints.size(); ++i)
   {
-    numAtoms = composition.numberOf(myEndpoints[i].first).first;
+    numAtoms = composition.wholeNumberOf(myEndpoints[i].first);
     if(numAtoms != 0)
     {
       VectorD scaled = myEndpoints[i].second - CGAL::ORIGIN;
