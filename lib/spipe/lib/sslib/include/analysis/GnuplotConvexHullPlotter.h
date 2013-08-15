@@ -77,7 +77,8 @@ private:
 
   ConvexHull::PointD prepPoint(const ConvexHull::PointD & point) const;
 
-  ::std::string myOutputStem;
+  ::std::string generateHullFileStem(const ConvexHull & convexHull) const;
+
   bool myDrawBoundary;
   bool myDrawTieLines;
   bool myDrawLabels;

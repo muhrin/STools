@@ -222,6 +222,7 @@ int AtomsFormula::numMultiples(const AtomsFormula & formula) const
   BOOST_FOREACH(Formula::const_reference e, formula)
   {
     currentFrac = numberOf(e);
+    simplify(currentFrac);
     if(currentFrac.first == 0 || currentFrac.second != 1)
       return 0;
     else if(multiple == 0)
