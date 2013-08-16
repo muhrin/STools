@@ -207,7 +207,7 @@ void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const 
 
     ::std::stringstream ss;
     ss << pair.first << "(" << structure.getAtom(pair.first).getSpecies() << ")" <<
-        "-" << pair.second << "(" << structure.getAtom(pair.first).getSpecies() << ")" << ": ";
+        "-" << pair.second << "(" << structure.getAtom(pair.second).getSpecies() << ")" << ": ";
     for(int i = startOffset; i < startOffset + numDists; ++i)
       ss << dists[i] << " ";
     ::std::cout << ss.str() << ::std::endl;
