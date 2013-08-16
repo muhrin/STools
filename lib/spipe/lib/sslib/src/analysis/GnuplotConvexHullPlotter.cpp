@@ -98,15 +98,14 @@ GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
   bool haveOffHullPoints = false;
   if(myDrawOffHullPoints)
   {
-    ::boost::optional< bool> stable;
     // Start a new data set
     datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;;
     for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
         convexHull.entriesEnd(); it != end; ++it)
     {
-      const ConvexHull::PointD & point = *(it->getPoint());
-      stable = convexHull.isStable(point);
-      if(stable && !*stable)
+      // Check that this isn't a hull point
+      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), it->getPoint()) ==
+          hull->hull_points_end())
       {
         datOut << printPoint(prepPoint(point)) << ::std::endl;
         haveOffHullPoints = true;
