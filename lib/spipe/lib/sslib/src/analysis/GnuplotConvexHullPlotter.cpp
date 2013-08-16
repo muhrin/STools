@@ -103,8 +103,9 @@ GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
     for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
         convexHull.entriesEnd(); it != end; ++it)
     {
+      point = *it->getPoint();
       // Check that this isn't a hull point
-      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), it->getPoint()) ==
+      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point) ==
           hull->hull_points_end())
       {
         datOut << printPoint(prepPoint(point)) << ::std::endl;
