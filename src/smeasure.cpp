@@ -168,8 +168,8 @@ Result calcLengths(const StructuresContainer & structures, const InputOptions & 
   AtomPairs pairs;
   BOOST_FOREACH(const ssc::Structure & structure, structures)
   {
-    for(unsigned int i = 0; i < structure.getNumAtoms() - 1; ++i)
-      for(unsigned int j = i; j < structure.getNumAtoms(); ++j)
+    for(int i = 0; i < static_cast<int>(structure.getNumAtoms()) - 1; ++i)
+      for(int j = i; j < static_cast<int>(structure.getNumAtoms()); ++j)
         pairs.push_back(AtomPair(i, j));
 
     const ssio::ResourceLocator * const locator = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
