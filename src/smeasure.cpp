@@ -206,7 +206,8 @@ void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const 
       numDists = ::std::min(in.maxDistancesPerPair, dists.size() - startOffset);
 
     ::std::stringstream ss;
-    ss << pair.first << "-" << pair.second << ": ";
+    ss << pair.first << "(" << structure.getAtom(pair.first).getSpecies() << ")" <<
+        "-" << pair.second << "(" << structure.getAtom(pair.first).getSpecies() << ")" << ": ";
     for(int i = startOffset; i < startOffset + numDists; ++i)
       ss << dists[i] << " ";
     ::std::cout << ss.str() << ::std::endl;
@@ -249,8 +250,8 @@ void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, cons
 
 Result calcAngles(const StructuresContainer & structures, const InputOptions & in)
 {
-
-  return RESULT_SUCCESS;
+  SSLIB_DIE_NOT_IMPLEMENTED();
+  return RESULT_GENERAL_FAILURE;
 }
 
 double calcCutoff(const ssc::Structure & structure, const InputOptions & in)
