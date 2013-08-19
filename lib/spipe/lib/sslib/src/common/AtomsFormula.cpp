@@ -270,7 +270,8 @@ const AtomsFormula::Fraction AtomsFormula::MAX = AtomsFormula::Fraction(::std::n
 
 AtomsFormula::Fraction AtomsFormula::min(const Fraction & f1, const Fraction & f2) const
 {
-  return f1.first * f2.second < f1.second * f2.first ? f1 : f2;
+  return static_cast<long>(f1.first) * static_cast<long>(f2.second)
+      < static_cast<long>(f1.second) * static_cast<long>(f2.first) ? f1 : f2;
 }
 
 ::std::ostream & operator <<(::std::ostream & os, const AtomsFormula & formula)
