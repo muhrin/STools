@@ -285,9 +285,9 @@ GnuplotConvexHullPlotter::setStyles(::std::ostream & os,
   if(!mySupressEnergyDimension && convexHull.dims() != 4)
   {
     if(plotDims(convexHull) == 2)
-      os << "set ylabel \"Formation energy\"" << ::std::endl;
+      os << "set ylabel \"Formation enthalpy\"" << ::std::endl;
     else
-      os << "set zlabel \"Formation energy\" rotate by 90" << ::std::endl;
+      os << "set zlabel \"Formation enthalpy\" rotate by 90" << ::std::endl;
   }
 }
 
