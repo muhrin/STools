@@ -98,15 +98,15 @@ GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
   bool haveOffHullPoints = false;
   if(myDrawOffHullPoints)
   {
-    ::boost::optional< bool> stable;
     // Start a new data set
     datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;;
     for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
         convexHull.entriesEnd(); it != end; ++it)
     {
-      const ConvexHull::PointD & point = *(it->getPoint());
-      stable = convexHull.isStable(point);
-      if(stable && !*stable)
+      point = *it->getPoint();
+      // Check that this isn't a hull point
+      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point) ==
+          hull->hull_points_end())
       {
         datOut << printPoint(prepPoint(point)) << ::std::endl;
         haveOffHullPoints = true;
@@ -285,9 +285,9 @@ GnuplotConvexHullPlotter::setStyles(::std::ostream & os,
   if(!mySupressEnergyDimension && convexHull.dims() != 4)
   {
     if(plotDims(convexHull) == 2)
-      os << "set ylabel \"Formation energy\"" << ::std::endl;
+      os << "set ylabel \"Formation enthalpy\"" << ::std::endl;
     else
-      os << "set zlabel \"Formation energy\" rotate by 90" << ::std::endl;
+      os << "set zlabel \"Formation enthalpy\" rotate by 90" << ::std::endl;
   }
 }
 
