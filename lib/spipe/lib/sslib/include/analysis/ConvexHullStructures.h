@@ -38,7 +38,7 @@ class StableStructuresIterator;
 
 class ConvexHullStructures
 {
-  typedef ::std::map<const common::Structure *, ConvexHull::PointId> Structures;
+  typedef ::std::map<common::Structure *, ConvexHull::PointId> Structures;
   typedef utility::TakeFirst<const Structures::value_type> TakeFirst;
 public:
 
@@ -62,7 +62,7 @@ public:
   ConvexHullStructures(InputIterator first, InputIterator last);
 
   StructuresIterator
-  insertStructure(const common::Structure & structure);
+  insertStructure(common::Structure & structure);
   template< typename InputIterator>
     void
     insertStructures(InputIterator first, InputIterator last);
@@ -75,8 +75,13 @@ public:
 
   Stability::Value getStability(const common::Structure & structure) const;
 
+  double getFormationEnthalpy(const StructuresIterator structure) const;
+  void populateFormationEnthalpies();
+
   OptionalDouble distanceToHull(const common::Structure & structure) const;
 private:
+
+  double getFormationEnthalpy(const ConvexHull::PointId id) const;
 
   ConvexHull myConvexHull;
   Structures myStructures;

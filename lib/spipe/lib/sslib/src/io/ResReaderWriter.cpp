@@ -92,14 +92,14 @@ ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
   if(dValue)
     io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
   else
-    strFile << "n/a";
+    strFile << "0.0";
 
   // Volume
   strFile << " ";
   if(cell)
     io::writeToStream(strFile, cell->getVolume(), DIGITS_AFTER_DECIMAL);
   else
-    strFile << "n/a";
+    strFile << "0.0";
 
   // Enthalpy
   strFile << " ";
@@ -109,7 +109,7 @@ ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
   if(dValue)
     io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
   else
-    strFile << "n/a";
+    strFile << "0.0";
 
   // Space group
   strFile << " 0 0 " << str.getNumAtoms() << " (";
@@ -117,7 +117,7 @@ ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
   if(sValue)
     strFile << *sValue;
   else
-    strFile << "n/a";
+    strFile << "P1";
 
   // Times found
   strFile << ") n - ";
@@ -125,7 +125,7 @@ ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
   if(uiValue)
     strFile << *uiValue;
   else
-    strFile << "n/a";
+    strFile << "1";
 
   strFile << endl;
   // End title //////////////////
@@ -139,9 +139,7 @@ ResReaderWriter::writeStructure(::sstbx::common::Structure & str,
     // Do cell parameters
     strFile << "CELL 1.0";
     for(size_t i = A; i <= GAMMA; ++i)
-    {
       strFile << " " << latticeParams[i];
-    }
     strFile << endl;
   }
   strFile << "LATT -1" << endl;
@@ -285,7 +283,7 @@ ResReaderWriter::parseTitle(common::Structure & structure,
 {
   Tok tok(titleLine, sep);
   // Put the tokens into a vector
-  ::std::vector< ::std::string> titleTokens(tok.begin(), tok.end());
+  const ::std::vector< ::std::string> titleTokens(tok.begin(), tok.end());
 
   if(titleTokens.empty() || titleTokens[0].find("TITL") == ::std::string::npos)
     return false;
@@ -343,7 +341,6 @@ ResReaderWriter::parseTitle(common::Structure & structure,
     }
     return true;
   }
-
   return false;
 }
 
@@ -352,19 +349,25 @@ ResReaderWriter::parseCell(common::Structure & structure,
     const ::std::string & cellLine) const
 {
   const Tok tok(cellLine, sep);
-  const ::std::vector< ::std::string> cellTokens(tok.begin(), tok.end());
-
-  if(cellTokens.size() < 8 || cellTokens[0].find("CELL") == ::std::string::npos)
+  Tok::iterator it = tok.begin(), end = tok.end();
+  if(it == end || it->find("CELL") == ::std::string::npos)
     return false;
+
+  // The cell parameters start at the 3nd entry
+  if(++it == end)
+    return false;
+  ++it;
 
   bool paramsFound = true;
   double params[6] =
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-  for(size_t i = 0; i < 6; ++i)
+
+  int i = 0;
+  for(/* already initialised */; i < 6 && it != end; ++i, ++it)
   {
     try
     {
-      params[i] = ::boost::lexical_cast< double>(cellTokens[i + 2]);
+      params[i] = ::boost::lexical_cast< double>(*it);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {
@@ -372,12 +375,11 @@ ResReaderWriter::parseCell(common::Structure & structure,
       break;
     }
   }
-  if(paramsFound)
-  {
-    structure.setUnitCell(makeUniquePtr(new common::UnitCell(params)));
-    return true;
-  }
-  return false;
+  if(!paramsFound || i < 6)
+    return false;
+
+  structure.setUnitCell(makeUniquePtr(new common::UnitCell(params)));
+  return true;
 }
 
 bool
@@ -452,7 +454,7 @@ void
 ResReaderWriter::writeTitle(::std::ostream & os,
     const common::Structure & structure) const
 {
-
+  SSLIB_DIE_NOT_IMPLEMENTED();
 }
 
 }

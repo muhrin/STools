@@ -10,6 +10,7 @@
 #define SINFO_ANCILLARY_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,8 @@
 #include <boost/range/iterator_range.hpp>
 
 // From SSTbx
+#include <common/AtomsFormula.h>
+#include <common/Structure.h>
 #include <utility/TypedDataTable.h>
 
 // FORWARD DECLARES ////////////////////////////////
@@ -46,6 +49,8 @@ typedef StructureInfoTable::SortedKeys SortedKeys;
 // CONSTATNS ////////////////////////////////////
 extern const ::std::string VAR_BRACKET;
 extern const ::std::string VAR_FORMAT;
+extern const ::std::string DEFAULT_INFO_STRING;
+extern const ::std::string INFO_STRING_AUTO;
 const int PRINT_ALL = -1;
 extern const double MAX_HULL_DIST_IGNORE;
 
@@ -60,6 +65,7 @@ struct InputOptions
 {
   ::std::vector< ::std::string> inputFiles;
   ::std::string infoString;
+  ::std::vector< ::std::string> additionalTokens;
   ::std::string sortToken;
   bool reverseSortComparison;
   ::std::string emptyString;
@@ -93,21 +99,37 @@ struct CustomisableTokens
 
 struct TokensInfo
 {
-  InfoStringTokens tokenStrings;
+  ::std::vector<const utility::InfoToken *> tokens;
+  //InfoStringTokens tokenStrings;
   ::std::string sortToken;
   ::std::vector< ::std::string> formatStrings;
 };
 
-class Filter
+class FormulaFilter : public ::std::unary_function< const ::sstbx::common::Structure &, bool>
 {
 public:
+  FormulaFilter(const ::sstbx::common::AtomsFormula & formula) :
+      myFormula(formula)
+  {
+  }
 
+  bool
+  operator ()(::sstbx::common::Structure & structure)
+  {
+    return !myFormula.isEmpty()
+        && structure.getComposition().numMultiples(myFormula) == 0;
+  }
+private:
+  const ::sstbx::common::AtomsFormula myFormula;
 };
 
 // FUNCTIONS /////////////////////////////////////
 
 Result::Value
 processInputOptions(InputOptions & in, const int argc, char * argv[], const TokensMap & tokensMap);
+
+void
+parseAdditionalTokens(InputOptions & in);
 
 CustomisableTokens generateTokens(TokensMap & map);
 
@@ -121,7 +143,6 @@ void printInfo(
   const StructureInfoTable & infoTable,
   const SortedKeys & orderedKeys,
   const TokensInfo & tokensInfo,
-  const TokensMap & tokensMap,
   const InputOptions & in,
   const size_t numToPrint);
 

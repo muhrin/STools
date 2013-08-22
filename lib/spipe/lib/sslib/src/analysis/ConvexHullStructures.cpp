@@ -83,7 +83,7 @@ ConvexHullStructures::ConvexHullStructures(const EndpointLabels & endpoints,
 {}
 
 ConvexHullStructures::StructuresIterator
-ConvexHullStructures::insertStructure(const common::Structure & structure)
+ConvexHullStructures::insertStructure(common::Structure & structure)
 {
   const ConvexHull::PointId id = myConvexHull.addStructure(structure);
   if(id == -1)
@@ -114,7 +114,7 @@ ConvexHullStructures::StableStructuresIterator ConvexHullStructures::stableStruc
 
 ConvexHullStructures::Stability::Value ConvexHullStructures::getStability(const common::Structure & structure) const
 {
-  const Structures::const_iterator it = myStructures.find(&structure);
+  const Structures::const_iterator it = myStructures.find(const_cast<common::Structure *>(&structure));
   SSLIB_ASSERT(it != myStructures.end());
 
   if(it->second == -1)
@@ -125,13 +125,32 @@ ConvexHullStructures::Stability::Value ConvexHullStructures::getStability(const 
     return Stability::UNSTABLE;
 }
 
+double ConvexHullStructures::getFormationEnthalpy(const StructuresIterator structure) const
+{
+  return getFormationEnthalpy(structure.base()->second);
+}
+
+void ConvexHullStructures::populateFormationEnthalpies()
+{
+  BOOST_FOREACH(Structures::reference s, myStructures)
+  {
+    s.first->setProperty(common::structure_properties::general::FORMATION_ENTHALPY,
+        getFormationEnthalpy(s.second));
+  }
+}
+
 OptionalDouble ConvexHullStructures::distanceToHull(const common::Structure & structure) const
 {
-  const Structures::const_iterator it = myStructures.find(&structure);
+  const Structures::const_iterator it = myStructures.find(const_cast<common::Structure *>(&structure));
   if(it == myStructures.end())
     return myConvexHull.distanceToHull(structure);
   else
     return myConvexHull.distanceToHull(it->second); // It's faster to calculate if we know the id
+}
+
+double ConvexHullStructures::getFormationEnthalpy(const ConvexHull::PointId id) const
+{
+  return CGAL::to_double((*myConvexHull.getEntry(id).getPoint())[myConvexHull.dims() - 1]);
 }
 
 }

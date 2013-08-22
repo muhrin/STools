@@ -6,12 +6,9 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include <algorithm>
 
 // From SSLib //
 #include <analysis/ConvexHullStructures.h>
-#include <common/AtomsFormula.h>
-#include <common/Structure.h>
 #include <common/StructureProperties.h>
 #include <common/Types.h>
 #include <common/UnitCell.h>
@@ -37,23 +34,7 @@ namespace ssu = ::sstbx::utility;
 namespace ssc = ::sstbx::common;
 namespace ssio = ::sstbx::io;
 
-class FormulaFilter : public ::std::unary_function< const ssc::Structure &, bool>
-{
-public:
-  FormulaFilter(const ssc::AtomsFormula & formula) :
-      myFormula(formula)
-  {
-  }
-
-  bool
-  operator ()(const ssc::Structure & structure)
-  {
-    return !myFormula.isEmpty()
-        && structure.getComposition().numMultiples(myFormula) == 0;
-  }
-private:
-  const ssc::AtomsFormula myFormula;
-};
+void addToken(const ::std::string & token, InputOptions & in);
 
 int
 main(const int argc, char * argv[])
@@ -63,7 +44,7 @@ main(const int argc, char * argv[])
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
 
-  // Set up the tokens that we know about
+  // Set up all the tokens that we know about
   TokensMap tokensMap;
   CustomisableTokens customisable = generateTokens(tokensMap);
 
@@ -74,7 +55,9 @@ main(const int argc, char * argv[])
     return result;
 
   // Now get the tokens requested by the user
-  ::std::string formatString;
+  const bool autoTokens = in.infoString == INFO_STRING_AUTO;
+  if(autoTokens)
+    in.infoString = DEFAULT_INFO_STRING;
   TokensInfo tokensInfo;
   result = getRequiredTokens(tokensInfo, tokensMap, in);
   if(result != Result::SUCCESS)
@@ -82,7 +65,6 @@ main(const int argc, char * argv[])
 
   StructureInfoTable infoTable;
   StructuresContainer structures;
-
   SortedKeys sortedKeys;
 
   ssc::AtomsFormula filterFormula;
@@ -121,6 +103,10 @@ main(const int argc, char * argv[])
       else
         ++it;
     }
+    // Add the formation enthalpies to the structures properties
+    hullStructures.populateFormationEnthalpies();
+    if(autoTokens)
+      addToken("hf", in);
 
     if(in.stableCompositions)
     {
@@ -204,6 +190,17 @@ main(const int argc, char * argv[])
   if(structures.empty())
     return 0;
 
+  // Reprocess the tokens just in case any have been added
+  BOOST_FOREACH(const ::std::string & additionalToken, in.additionalTokens)
+  {
+    addToken(additionalToken, in);
+  }
+  tokensInfo.formatStrings.clear();
+  tokensInfo.tokens.clear();
+  result = getRequiredTokens(tokensInfo, tokensMap, in);
+  if(result != Result::SUCCESS)
+    return result;
+
   // Preprocess structures
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
@@ -216,11 +213,11 @@ main(const int argc, char * argv[])
     if(!filterFormula.isEmpty()
         && structure.getComposition().numMultiples(filterFormula) == -1)
       continue;
-
-    BOOST_FOREACH(const ::std::string & tokenEntry, tokensInfo.tokenStrings)
+    BOOST_FOREACH(const stools::utility::InfoToken * token, tokensInfo.tokens)
     {
-      tokensMap.at(tokenEntry).insert(infoTable, structure);
+      token->insert(infoTable, structure);
     }
+
     if(!in.sortToken.empty())
       tokensMap.at(in.sortToken).insert(infoTable, structure);
   }
@@ -274,8 +271,15 @@ main(const int argc, char * argv[])
       in.printTop == PRINT_ALL ?
           sortedKeys.size() :
           ::std::min(sortedKeys.size(), (size_t) in.printTop);
-  printInfo(infoTable, sortedKeys, tokensInfo, tokensMap, in, numToPrint);
+  printInfo(infoTable, sortedKeys, tokensInfo, in, numToPrint);
 
   return 0;
+}
+
+void addToken(const ::std::string & token, InputOptions & in)
+{
+  if(!in.infoString.empty())
+    in.infoString += "";
+  in.infoString += "$" + token + "$";
 }
 

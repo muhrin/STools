@@ -59,6 +59,7 @@ class TypedColumn : public Column<TableKey>
 public:
 
   TypedColumn(const ::std::string & name);
+  virtual ~TypedColumn() {}
 
   virtual ::boost::optional< ::std::string> getValue(
     const TypedDataTable<TableKey> & table,

@@ -38,7 +38,7 @@ public:
   virtual ~InfoToken() {}
 
   virtual ::std::string getName() const = 0;
-  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure) = 0;
+  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure) const = 0;
   virtual bool remove(StructureInfoTable & table) = 0;
   virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComparison = false) const = 0;
   virtual const Column & getColumn() const = 0;
@@ -66,7 +66,7 @@ public:
     const ::std::string & defaultFormatString = ""
   );
   virtual ::std::string getName() const;
-  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure);
+  virtual bool insert(StructureInfoTable & table, const ::sstbx::common::Structure & structure) const;
   virtual bool remove(StructureInfoTable & table);
   virtual void sort(SortedKeys & keys, const StructureInfoTable & table, const bool reverseComaprison) const;
   virtual const Column & getColumn() const;
@@ -79,7 +79,7 @@ protected:
 private:
   typedef ::sstbx::utility::TypedColumn<T, TableKey> TypedColumn;
 
-  TypedColumn myColumn;
+  mutable TypedColumn myColumn;
 };
 
 template <typename T>
@@ -94,6 +94,7 @@ public:
     PropertyKey & propertyKey,
     const ::std::string & defaultFormatString
   );
+  virtual ~StructurePropertyToken() {}
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;
 
@@ -124,6 +125,8 @@ public:
     const ::std::string & defaultFormatString = "",
     const bool usePerAtom = false
   );
+  virtual ~RelativeValueToken() {}
+
   void setRelativeTo(const T relativeValue);
   void setRelativeTo(const ::sstbx::common::Structure & structure);
 
@@ -146,6 +149,7 @@ public:
     const ::std::string & symbol,
     Getter getter,
     const ::std::string & formatString = "");
+  virtual ~FunctionToken() {}
 
 protected:
   typedef typename TypedToken<T>::StructureValue StructureValue;

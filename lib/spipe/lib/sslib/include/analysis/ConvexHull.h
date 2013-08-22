@@ -149,6 +149,7 @@ public:
   entriesBegin() const;
   EntriesConstIterator
   entriesEnd() const;
+  const HullEntry & getEntry(const PointId & id) const;
 
   ::boost::optional< bool>
   isStable(const PointD & point) const;

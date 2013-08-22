@@ -60,8 +60,10 @@ EnergyToken::StructureValue
 EnergyToken::doGetValue(const ::sstbx::common::Structure & structure ) const
 {
   StructureValue relativeEnergy;
-  const double * const energy = structure.getProperty(structure_properties::general::ENERGY_INTERNAL);
+  if(myUsePerAtom && structure.getNumAtoms() == 0)
+    return relativeEnergy;
 
+  const double * const energy = structure.getProperty(structure_properties::general::ENERGY_INTERNAL);
   if(energy)
     relativeEnergy.reset(
     (myUsePerAtom ? *energy / structure.getNumAtoms() : *energy)
@@ -123,6 +125,8 @@ OptionalDouble getVolumePerAtom(const ssc::Structure & structure)
 OptionalDouble getEnergyPerAtom(const ssc::Structure & structure)
 {
   OptionalDouble energyPerAtom;
+  if(structure.getNumAtoms() == 0)
+    return energyPerAtom;
   
   const double * const value = structure.getProperty(structure_properties::general::ENERGY_INTERNAL);
   if(value)
