@@ -38,51 +38,49 @@ class TpsdGeomOptimiser : public IGeomOptimiser
 {
 public:
 
-  typedef ::sstbx::UniquePtr<IPotential>::Type PotentialPtr;
+  typedef ::sstbx::UniquePtr< IPotential>::Type PotentialPtr;
 
-	static const unsigned int DEFAULT_MAX_STEPS;
-	static const double	DEFAULT_TOLERANCE;
+  static const unsigned int DEFAULT_MAX_STEPS;
+  static const double DEFAULT_ENERGY_TOLERANCE;
+  static const double DEFAULT_FORCE_TOLERANCE;
 
-	TpsdGeomOptimiser(PotentialPtr potential);
+  TpsdGeomOptimiser(PotentialPtr potential);
 
-  double getTolerance() const;
-  void setTolerance(const double tolerance);
+  double
+  getEnergyTolerance() const;
+  void
+  setEnergyTolerance(const double tolerance);
 
-  unsigned int getMaxSteps() const;
-  void setMaxSteps(const unsigned int maxSteps);
+  double getForceTolerance() const;
+  void setForceTolerance(const double tolerance);
 
-	// IGeomOptimiser interface //////////////////////////////
-  virtual IPotential * getPotential();
-  virtual const IPotential * getPotential() const;
+  unsigned int
+  getMaxSteps() const;
+  void
+  setMaxSteps(const unsigned int maxSteps);
 
-	virtual OptimisationOutcome optimise(
-    ::sstbx::common::Structure & structure,
-    const OptimisationSettings & options
-  ) const;
-	virtual OptimisationOutcome optimise(
-		::sstbx::common::Structure &  structure,
-    OptimisationData & data,
-    const OptimisationSettings & options
-  ) const;
+  // IGeomOptimiser interface //////////////////////////////
+  virtual IPotential *
+  getPotential();
+  virtual const IPotential *
+  getPotential() const;
 
-	// End IGeomOptimiser interface
+  virtual OptimisationOutcome
+  optimise(::sstbx::common::Structure & structure, const OptimisationSettings & options) const;
+  virtual OptimisationOutcome
+  optimise(::sstbx::common::Structure & structure, OptimisationData & data,
+      const OptimisationSettings & options) const;
 
-	OptimisationOutcome optimise(
-    common::Structure & structure,
-    OptimisationData & optimistaionData,
-    IPotentialEvaluator & evaluator,
-		const double eTol,
-    const OptimisationSettings & options
-  ) const;
+  // End IGeomOptimiser interface
 
-	OptimisationOutcome optimise(
-    common::Structure & structure,
-    common::UnitCell & unitCell,
-    OptimisationData & optimistaionData,
-    IPotentialEvaluator & evaluator,
-		const double eTol,
-    const OptimisationSettings & options
-  ) const;
+  OptimisationOutcome
+  optimise(common::Structure & structure, OptimisationData & optimistaionData,
+      IPotentialEvaluator & evaluator, const OptimisationSettings & options) const;
+
+  OptimisationOutcome
+  optimise(common::Structure & structure, common::UnitCell & unitCell,
+      OptimisationData & optimistaionData, IPotentialEvaluator & evaluator,
+      const OptimisationSettings & options) const;
 
 private:
 
@@ -91,16 +89,18 @@ private:
   static const double CELL_MAX_ANGLE_SUM;
   static const double MAX_STEPSIZE;
 
-  bool cellReasonable(const common::UnitCell & unitCell) const;
-  void populateOptimistaionData(
-    OptimisationData & optData,
-    const common::Structure & structure,
-    const PotentialData & potData
-  ) const;
+  bool
+  cellReasonable(const common::UnitCell & unitCell) const;
+  void
+  populateOptimistaionData(OptimisationData & optData, const common::Structure & structure,
+      const PotentialData & potData) const;
 
-	PotentialPtr myPotential;
+  bool hasConverged(const double deltaEnergyPerIon, const double maxForceSq, const OptimisationSettings & options) const;
 
-	double myTolerance;
+  PotentialPtr myPotential;
+
+  double myEnergyTolerance;
+  double myForceTolerance;
   unsigned int myMaxSteps;
 };
 

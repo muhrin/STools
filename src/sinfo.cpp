@@ -218,17 +218,13 @@ main(const int argc, char * argv[])
       token->insert(infoTable, structure);
     }
 
-    if(!in.sortToken.empty())
-      tokensMap.at(in.sortToken).insert(infoTable, structure);
+    if(tokensInfo.sortToken)
+      tokensInfo.sortToken->insert(infoTable, structure);
   }
 
   // Sort the structures if requested
-  if(!in.sortToken.empty())
-  {
-    const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
-    if(it != tokensMap.end())
-      it->second->sort(sortedKeys, infoTable, in.reverseSortComparison);
-  }
+  if(tokensInfo.sortToken)
+    tokensInfo.sortToken->sort(sortedKeys, infoTable, in.reverseSortComparison);
 
   // Set relative values
   // TODO: Check which of these are used from the tokens map and only apply those

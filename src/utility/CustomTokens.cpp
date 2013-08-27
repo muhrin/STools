@@ -147,7 +147,7 @@ getSpaceGroupSymbol(const ::sstbx::common::Structure & structure)
 
   const ::std::string * const spgroupSymbol = structure.getProperty(structure_properties::general::SPACEGROUP_SYMBOL);
 
-  if(spgroupSymbol)
+  if(spgroupSymbol && !spgroupSymbol->empty() && (*spgroupSymbol) != "P1")
     spgroup.reset(*spgroupSymbol);
   else if(structure.getUnitCell())
   {
@@ -167,7 +167,7 @@ getSpaceGroupNumber(const ::sstbx::common::Structure & structure)
 
   const unsigned int * const spgroupNumber = structure.getProperty(structure_properties::general::SPACEGROUP_NUMBER);
 
-  if(spgroupNumber)
+  if(spgroupNumber && (*spgroupNumber) != 1)
     spgroup.reset(*spgroupNumber);
   else if(structure.getUnitCell())
   {

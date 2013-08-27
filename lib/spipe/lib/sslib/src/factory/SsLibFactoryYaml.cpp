@@ -228,9 +228,9 @@ SsLibFactoryYaml::createGeometryOptimiser(
     
     UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
     if(tolerance)
-      tpsd->setTolerance(*tolerance);
+      tpsd->setEnergyTolerance(*tolerance);
 
-    opt = tpsd;      
+    opt = tpsd;
   }
   else if(castepOptions)
   {

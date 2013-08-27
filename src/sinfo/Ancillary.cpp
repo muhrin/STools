@@ -385,8 +385,9 @@ getRequiredTokens(TokensInfo & tokensInfo, const TokensMap & tokensMap, const In
   // Check if the sort token is valid
   if(!in.sortToken.empty())
   {
-    if(tokensMap.find(in.sortToken) != tokensMap.end())
-      tokensInfo.sortToken = in.sortToken;
+    const TokensMap::const_iterator it = tokensMap.find(in.sortToken);
+    if(it != tokensMap.end())
+      tokensInfo.sortToken = it->second;
     else
       ::std::cerr << "Unrecognised sort token: " << in.sortToken << ::std::endl;
   }

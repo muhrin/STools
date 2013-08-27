@@ -40,7 +40,7 @@ struct Tpsd : public yaml_schema::SchemaHeteroMap
   Tpsd()
   {
     addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_TOLERANCE);
+        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
     addScalarEntry("maxSteps", MAX_STEPS)->element()->defaultValue(
         potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
   }

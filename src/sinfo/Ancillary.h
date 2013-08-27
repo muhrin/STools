@@ -100,8 +100,7 @@ struct CustomisableTokens
 struct TokensInfo
 {
   ::std::vector<const utility::InfoToken *> tokens;
-  //InfoStringTokens tokenStrings;
-  ::std::string sortToken;
+  const utility::InfoToken * sortToken;
   ::std::vector< ::std::string> formatStrings;
 };
 
