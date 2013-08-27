@@ -14,22 +14,22 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <build_cell/BuildCellFwd.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <factory/FactoryError.h>
-#include <factory/SsLibFactoryYaml.h>
-#include <factory/SsLibYamlKeywords.h>
-#include <factory/SsLibYamlSchema.h>
-#include <utility/HeterogeneousMap.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/factory/FactoryError.h>
+#include <spl/factory/SsLibFactoryYaml.h>
+#include <spl/factory/SsLibYamlKeywords.h>
+#include <spl/factory/SsLibYamlSchema.h>
+#include <spl/utility/HeterogeneousMap.h>
 #include <yaml_schema/SchemaMap.h>
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc  = ::sstbx::common;
-namespace ssf = ::sstbx::factory;
-namespace ssu = ::sstbx::utility;
-namespace ssys = ::sstbx::yaml_schema;
+namespace ssbc = ::spl::build_cell;
+namespace ssc  = ::spl::common;
+namespace ssf = ::spl::factory;
+namespace ssu = ::spl::utility;
+namespace ssys = ::spl::yaml_schema;
 
-namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+namespace kw = ::spl::factory::sslib_yaml_keywords;
 
 BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 {

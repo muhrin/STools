@@ -11,7 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-#include <common/Structure.h>
+#include <spl/common/Structure.h>
 
 // FORWARD DECLARES ////////////////////////////////
 namespace stools {
@@ -34,7 +34,7 @@ template< typename T>
 template< typename T>
   bool
   TypedToken< T>::insert(StructureInfoTable & table,
-      const ::sstbx::common::Structure & structure) const
+      const ::spl::common::Structure & structure) const
   {
     StructureValue value = doGetValue(structure);
 
@@ -83,7 +83,7 @@ template< typename T>
 
 template< typename T>
   typename StructurePropertyToken< T>::StructureValue
-  StructurePropertyToken< T>::doGetValue(const ::sstbx::common::Structure & structure) const
+  StructurePropertyToken< T>::doGetValue(const ::spl::common::Structure & structure) const
   {
     StructureValue value;
     const T * const valuePtr = structure.getProperty(myKey);
@@ -123,7 +123,7 @@ template< typename T>
 
 template< typename T>
   void
-  RelativeValueToken< T>::setRelativeTo(const ::sstbx::common::Structure & structure)
+  RelativeValueToken< T>::setRelativeTo(const ::spl::common::Structure & structure)
   {
     StructureValue relativeTo = StructurePropertyToken< T>::doGetValue(structure);
     if(relativeTo)
@@ -132,7 +132,7 @@ template< typename T>
 
 template< typename T>
   typename RelativeValueToken< T>::StructureValue
-  RelativeValueToken< T>::doGetValue(const ::sstbx::common::Structure & structure) const
+  RelativeValueToken< T>::doGetValue(const ::spl::common::Structure & structure) const
   {
     if(myUsePerAtom && structure.getNumAtoms() == 0)
       return StructureValue();
@@ -158,7 +158,7 @@ template< typename T, typename Getter>
 
 template< typename T, typename Getter>
   typename FunctionToken< T, Getter>::StructureValue
-  FunctionToken< T, Getter>::doGetValue(const ::sstbx::common::Structure & structure) const
+  FunctionToken< T, Getter>::doGetValue(const ::spl::common::Structure & structure) const
   {
     return myGetter(structure);
   }
@@ -166,7 +166,7 @@ template< typename T, typename Getter>
 template< typename T>
   ::std::auto_ptr< InfoToken>
   makeStructurePropertyToken(const ::std::string & name, const ::std::string & symbol,
-      ::sstbx::utility::Key< T> & propertyKey, const ::std::string & defaultFormatString)
+      ::spl::utility::Key< T> & propertyKey, const ::std::string & defaultFormatString)
   {
     return ::std::auto_ptr< InfoToken>(
         new StructurePropertyToken< T>(name, symbol, propertyKey, defaultFormatString));

@@ -6,13 +6,13 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/BuildAtomInfo.h"
+#include "spl/build_cell/BuildAtomInfo.h"
 
-#include "SSLibAssert.h"
-#include "build_cell/StructureBuild.h"
-#include "common/Atom.h"
+#include "spl/SSLibAssert.h"
+#include "spl/build_cell/StructureBuild.h"
+#include "spl/common/Atom.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 size_t BuildAtomInfo::getNumAtoms() const

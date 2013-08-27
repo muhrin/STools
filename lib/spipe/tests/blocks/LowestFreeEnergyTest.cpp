@@ -15,18 +15,18 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSLib
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
 
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <common/SharedData.h>
-#include <common/StructureData.h>
+#include <spl/common/SharedData.h>
+#include <spl/common/StructureData.h>
 #include <blocks/LowestFreeEnergy.h>
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 namespace structure_properties = ssc::structure_properties;
 
@@ -60,9 +60,9 @@ public:
 
   virtual void start()
   {
-    typedef ::sstbx::UniquePtr<ssc::Structure>::Type StructurePtr;
+    typedef ::spl::UniquePtr<ssc::Structure>::Type StructurePtr;
     typedef ::spipe::StructureDataType StructureDataType;
-    typedef ::sstbx::UniquePtr<StructureDataType>::Type StructureDataPtr;
+    typedef ::spl::UniquePtr<StructureDataType>::Type StructureDataPtr;
 
     for(size_t i = 0; i < myNumToGenerate; ++i)
     {

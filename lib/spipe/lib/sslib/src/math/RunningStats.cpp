@@ -5,12 +5,12 @@
  *      Author: Martin Uhrin
  */
 
-#include "math/RunningStats.h"
+#include "spl/math/RunningStats.h"
 
 #include <limits>
 #include <cmath>
 
-namespace sstbx {
+namespace spl {
 namespace math {
 
 RunningStats::RunningStats():

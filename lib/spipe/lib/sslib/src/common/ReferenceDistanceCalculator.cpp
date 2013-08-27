@@ -6,13 +6,13 @@
  */
 
 // INCLUDES ///////////////
-#include "common/ReferenceDistanceCalculator.h"
+#include "spl/common/ReferenceDistanceCalculator.h"
 
-#include "common/Structure.h"
-#include "common/UnitCell.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 ReferenceDistanceCalculator::ReferenceDistanceCalculator(const Structure & structure):

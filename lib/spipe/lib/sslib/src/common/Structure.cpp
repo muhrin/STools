@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "common/Structure.h"
+#include "spl/common/Structure.h"
 
 #include <vector>
 
@@ -17,12 +17,12 @@ extern "C"
 #  include <spglib/spglib.h>
 }
 
-#include "SSLibAssert.h"
-#include "common/Atom.h"
-#include "common/AtomsFormula.h"
-#include "common/Types.h"
-#include "common/UnitCell.h"
-#include "utility/IndexingEnums.h"
+#include "spl/SSLibAssert.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomsFormula.h"
+#include "spl/common/Types.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/IndexingEnums.h"
 
 #ifdef _MSC_VER
 // Disable warning about passing this pointer to DistanceCalculator in initialisation list
@@ -30,7 +30,7 @@ extern "C"
 #  pragma warning( disable : 4355 )
 #endif
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 class MatchSpecies : public std::unary_function<const Atom &, bool>
@@ -448,12 +448,12 @@ void Structure::updatePosBuffer() const
 }
 
 } // namespace common
-} // namespace sstbx
+} // namespace spl
 
 // Global namespace
 std::ostream & operator<<(
   std::ostream & os,
-  const sstbx::common::Structure & structure)
+  const spl::common::Structure & structure)
 {
   structure.print(os);
   return os;

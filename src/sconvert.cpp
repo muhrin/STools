@@ -10,10 +10,10 @@
 
 #include <boost/program_options.hpp>
 
-// From SSTbx
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
-#include <io/StructureReadWriteManager.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
+#include <spl/io/StructureReadWriteManager.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -27,9 +27,9 @@
 namespace fs    = ::boost::filesystem;
 namespace po    = ::boost::program_options;
 namespace sp    = ::spipe;
-namespace ssc   = ::sstbx::common;
-namespace ssio  = ::sstbx::io;
-namespace ssu   = ::sstbx::utility;
+namespace ssc   = ::spl::common;
+namespace ssio  = ::spl::io;
+namespace ssu   = ::spl::utility;
 
 typedef ::std::vector< ::std::string> StringsVector;
 

@@ -15,12 +15,9 @@
 
 #include <yaml-cpp/yaml.h>
 
-// From SSTbx
-#include <common/AtomSpeciesDatabase.h>
+#include <spl/common/AtomSpeciesDatabase.h>
 
 #include <pipelib/pipelib.h>
-
-// From StructurePipe
 
 // Local
 #include "factory/StFactory.h"
@@ -34,9 +31,9 @@
 // NAMESPACES ////////////////////////////////
 namespace sp = ::spipe;
 namespace spu = sp::utility;
-namespace ssc   = ::sstbx::common;
-namespace ssu   = ::sstbx::utility;
-namespace ssys  = ::sstbx::yaml_schema;
+namespace ssc   = ::spl::common;
+namespace ssu   = ::spl::utility;
+namespace ssys  = ::spl::yaml_schema;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -80,7 +77,7 @@ int main(const int argc, char * argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
   ::stools::factory::Factory factory(speciesDb);
 
   PipePtr pipe;

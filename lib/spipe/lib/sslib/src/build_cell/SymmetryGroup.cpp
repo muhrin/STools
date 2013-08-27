@@ -6,7 +6,7 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/SymmetryGroup.h"
+#include "spl/build_cell/SymmetryGroup.h"
 
 #include <iostream>
 #include <complex>
@@ -14,12 +14,12 @@
 
 #include <boost/foreach.hpp>
 
-#include "SSLibAssert.h"
-#include "math/Matrix.h"
-#include "utility/IndexingEnums.h"
-#include "utility/StableComparison.h"
+#include "spl/SSLibAssert.h"
+#include "spl/math/Matrix.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/StableComparison.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 namespace comp = utility::stable;

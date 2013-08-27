@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "utility/HeterogeneousMap.h"
+#include "spl/utility/HeterogeneousMap.h"
 
 #include <utility>
 
@@ -14,7 +14,7 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)

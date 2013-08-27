@@ -14,26 +14,26 @@ namespace spipe {
 namespace factory {
 
 // GENERAL
-::sstbx::utility::Key<int> NUM;
-::sstbx::utility::Key< ::std::string> RNG_SEED;
+::spl::utility::Key<int> NUM;
+::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> LOWEST_ENERGY;
-::sstbx::utility::Key<size_t> KEEP_TOP;
-::sstbx::utility::Key<double> KEEP_WITHIN;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> LOWEST_ENERGY;
+::spl::utility::Key<size_t> KEEP_TOP;
+::spl::utility::Key<double> KEEP_WITHIN;
 
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> GEOM_OPTIMISE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> PARAM_SWEEP;
-::sstbx::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> PARAM_SWEEP;
+::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> RANDOM_STRUCTURE;
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> RANDOM_STRUCTURE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
 
-::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> WRITE_STRUCTURES;
-::sstbx::utility::Key<bool> MULTI_WRITE;
-::sstbx::utility::Key< ::std::string> FILE_TYPE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
+::spl::utility::Key<bool> MULTI_WRITE;
+::spl::utility::Key< ::std::string> FILE_TYPE;
 
 }
 }

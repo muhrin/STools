@@ -6,12 +6,12 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "common/OrthoCellDistanceCalculator.h"
+#include "spl/common/OrthoCellDistanceCalculator.h"
 
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "utility/IndexingEnums.h"
-#include "utility/StableComparison.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/StableComparison.h"
 
 #define SSLIB_ORTHO_DIST_CALC_DEBUG (SSLIB_DEBUG && 0)
 
@@ -19,12 +19,12 @@
 #  include <iostream>
 #endif
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-10;
 
-OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(const sstbx::common::Structure &structure):
+OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(const spl::common::Structure &structure):
 DistanceCalculator(structure)
 {
   updateBufferedValues();

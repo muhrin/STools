@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/CellReaderWriter.h"
+#include "spl/io/CellReaderWriter.h"
 
 #include <iomanip>
 #include <limits>
@@ -18,12 +18,12 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "io/BoostFilesystem.h"
-#include "io/Parsing.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/io/Parsing.h"
+#include "spl/utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
 
@@ -31,7 +31,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;

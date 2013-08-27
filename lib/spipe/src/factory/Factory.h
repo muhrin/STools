@@ -14,17 +14,17 @@
 
 #include <boost/optional.hpp>
 
-// From SSTbx
-#include <potential/OptimisationSettings.h>
-#include <utility/HeterogeneousMap.h>
+
+#include <spl/potential/OptimisationSettings.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 // Local includes
 #include "StructurePipe.h"
 #include "SpTypes.h"
-#include "factory/SsLibFactoryYaml.h"
+#include "spl/factory/SsLibFactoryYaml.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace common {
 class AtomSpeciesDatabase;
 }
@@ -37,11 +37,11 @@ namespace factory {
 class Factory
 {
 public:
-  typedef ::sstbx::UniquePtr<SpBlock>::Type BlockPtr;
-  typedef ::sstbx::UniquePtr<SpPipe>::Type PipePtr;
-  typedef ::sstbx::utility::HeterogeneousMap OptionsMap;
+  typedef ::spl::UniquePtr<SpBlock>::Type BlockPtr;
+  typedef ::spl::UniquePtr<SpPipe>::Type PipePtr;
+  typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
-  Factory(::sstbx::common::AtomSpeciesDatabase & speciesDb):
+  Factory(::spl::common::AtomSpeciesDatabase & speciesDb):
     mySsLibFactory(speciesDb)
   {}
 
@@ -54,7 +54,7 @@ public:
     BlockPtr & blockOut,
     const OptionsMap & optimiserOptions,
     const OptionsMap * const potentialOptions = NULL,
-    const ::sstbx::potential::OptimisationSettings * optimisationSettings = NULL,
+    const ::spl::potential::OptimisationSettings * optimisationSettings = NULL,
     const OptionsMap * const globalOptions = NULL
   ) const;
   bool createRandomStructureBlock(BlockPtr & blockOut, const OptionsMap & options) const;
@@ -63,7 +63,7 @@ public:
 
 private:
 
-  ::sstbx::factory::SsLibFactoryYaml mySsLibFactory;
+  ::spl::factory::SsLibFactoryYaml mySsLibFactory;
 
 };
 

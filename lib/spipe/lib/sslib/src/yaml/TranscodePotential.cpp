@@ -6,13 +6,13 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/TranscodePotential.h"
+#include "spl/yaml/TranscodePotential.h"
 
-#include "factory/SsLibYamlKeywords.h"
+#include "spl/factory/SsLibYamlKeywords.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace ssp = ::sstbx::potential;
+namespace ssp = ::spl::potential;
 
 namespace YAML {
 
@@ -23,7 +23,7 @@ namespace YAML {
 Node convert<ssp::OptimisationSettings>::encode(
   const ssp::OptimisationSettings & rhs)
 {
-  namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+  namespace kw = ::spl::factory::sslib_yaml_keywords;
   Node node;
   // TODO
 
@@ -34,7 +34,7 @@ Node convert<ssp::OptimisationSettings>::encode(
 bool convert<ssp::OptimisationSettings>::decode(
   const Node& node, ssp::OptimisationSettings & rhs)
 {
-  namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+  namespace kw = ::spl::factory::sslib_yaml_keywords;
   if(!node.IsMap())
     return false;
 
@@ -48,7 +48,7 @@ bool convert<ssp::OptimisationSettings>::decode(
       pressure.diag().fill(node[kw::OPTIMISATION_SETTINGS__PRESSURE].as<double>());
       rhs.pressure.reset(pressure);
     }
-    catch(const YAML::TypedBadConversion< ::sstbx::potential::OptimisationSettings> & /*e*/)
+    catch(const YAML::TypedBadConversion< ::spl::potential::OptimisationSettings> & /*e*/)
     { return false; }
   }
 

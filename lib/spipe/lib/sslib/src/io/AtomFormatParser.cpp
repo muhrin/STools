@@ -6,12 +6,12 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/AtomFormatParser.h"
+#include "spl/io/AtomFormatParser.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 
-#include "factory/SsLibElements.h"
+#include "spl/factory/SsLibElements.h"
 
 // DEFINES /////////////////////////////////
 
@@ -19,7 +19,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 AtomFormatParser::AtomFormatParser()

@@ -7,14 +7,14 @@
 
 // INCLUEDES /////////////
 
-#include "SSLibAssert.h"
-#include "math/Matrix.h"
-#include "utility/StableComparison.h"
-#include "utility/IndexingEnums.h"
+#include "spl/SSLibAssert.h"
+#include "spl/math/Matrix.h"
+#include "spl/utility/StableComparison.h"
+#include "spl/utility/IndexingEnums.h"
 
 #include <limits>
 
-namespace sstbx {
+namespace spl {
 namespace math {
 
 using namespace arma;

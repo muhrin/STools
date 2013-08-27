@@ -12,8 +12,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-// From SSTbx
-#include <io/IoFunctions.h>
+#include <spl/io/IoFunctions.h>
 
 // From local
 #include "common/StructureData.h"
@@ -23,7 +22,7 @@
 namespace spipe {
 namespace common {
 
-namespace ssio = ::sstbx::io;
+namespace ssio = ::spl::io;
 
 void parseParamString(
   const std::string & str,

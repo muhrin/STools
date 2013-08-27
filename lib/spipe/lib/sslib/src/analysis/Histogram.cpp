@@ -5,16 +5,16 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/Histogram.h"
+#include "spl/analysis/Histogram.h"
 
 #include <cmath>
 #include <iostream>
 
 #include <boost/foreach.hpp>
 
-#include "SSLibAssert.h"
+#include "spl/SSLibAssert.h"
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 
 Histogram::Histogram(const double binWidth):
@@ -126,7 +126,7 @@ int Histogram::getFullestBin() const
 }
 }
 
-std::ostream & operator<<(std::ostream & os, const sstbx::analysis::Histogram & hist)
+std::ostream & operator<<(std::ostream & os, const spl::analysis::Histogram & hist)
 {
   hist.print(os);
   return os;

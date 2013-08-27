@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/ConvexHullStructures.h"
+#include "spl/analysis/ConvexHullStructures.h"
 
 #ifdef SSLIB_USE_CGAL
 
@@ -13,7 +13,7 @@
 
 # include <boost/iterator/iterator_facade.hpp>
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 namespace detail {
 

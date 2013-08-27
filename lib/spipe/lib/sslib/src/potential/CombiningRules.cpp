@@ -6,11 +6,11 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/CombiningRules.h"
+#include "spl/potential/CombiningRules.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 bool applyEnergyRule(::arma::mat & energyParams, const CombiningRule::Value rule)

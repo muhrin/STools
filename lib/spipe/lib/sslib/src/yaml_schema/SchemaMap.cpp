@@ -6,15 +6,15 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml_schema/SchemaMap.h"
+#include "spl/yaml_schema/SchemaMap.h"
 
-#include "yaml_schema/SchemaFundamental.h"
+#include "spl/yaml_schema/SchemaFundamental.h"
 
 #include <boost/foreach.hpp>
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace yaml_schema {
 
 bool SchemaHeteroMap::valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const

@@ -11,9 +11,9 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-// From SsLib
-#include <yaml_schema/YamlSchema.h>
-#include <factory/SsLibYamlSchema.h>
+
+#include <spl/yaml_schema/YamlSchema.h>
+#include <spl/factory/SsLibYamlSchema.h>
 
 // From SPipe
 #include <factory/YamlSchema.h>
@@ -32,14 +32,14 @@ namespace factory {
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 
-struct Build : public ::sstbx::yaml_schema::SchemaHeteroMap
+struct Build : public ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   Build()
   {
     namespace spf = ::spipe::factory;
 
-    ::sstbx::utility::HeterogeneousMap randStructureDefault;
+    ::spl::utility::HeterogeneousMap randStructureDefault;
     randStructureDefault[spf::NUM] = 1;
 
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
@@ -57,13 +57,13 @@ struct Build : public ::sstbx::yaml_schema::SchemaHeteroMap
   }
 };
 
-struct Search : public ::sstbx::yaml_schema::SchemaHeteroMap
+struct Search : public ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   Search()
   {
     namespace spf = ::spipe::factory;
-    namespace ssf = ::sstbx::factory;
+    namespace ssf = ::spl::factory;
 
     // Global options
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");

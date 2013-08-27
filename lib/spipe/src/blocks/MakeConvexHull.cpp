@@ -21,9 +21,9 @@
 #include <libqhullcpp/Qhull.h>
 //#include <libqhullcpp/UsingLibQhull.h>
 
-#include <common/Structure.h>
+#include <spl/common/Structure.h>
 
-#include "common/StructureData.h"
+#include "spl/common/StructureData.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -33,7 +33,7 @@ namespace spipe
 namespace blocks
 {
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 
 MakeConvexHull::MakeConvexHull():
 ::pipelib::Block< ::spipe::StructureDataTyp, ::spipe::SharedDataType>("Make convex hull")

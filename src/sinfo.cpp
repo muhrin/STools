@@ -7,15 +7,15 @@
 
 // INCLUDES //////////////////////////////////
 
-// From SSLib //
-#include <analysis/ConvexHullStructures.h>
-#include <common/StructureProperties.h>
-#include <common/Types.h>
-#include <common/UnitCell.h>
-#include <io/ResourceLocator.h>
-#include <io/StructureReadWriteManager.h>
-#include <utility/SortedDistanceComparator.h>
-#include <utility/UniqueStructureSet.h>
+ //
+#include <spl/analysis/ConvexHullStructures.h>
+#include <spl/common/StructureProperties.h>
+#include <spl/common/Types.h>
+#include <spl/common/UnitCell.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/utility/SortedDistanceComparator.h>
+#include <spl/utility/UniqueStructureSet.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -29,10 +29,10 @@
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;
 namespace sp = ::spipe;
-namespace ssa = ::sstbx::analysis;
-namespace ssu = ::sstbx::utility;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
+namespace ssa = ::spl::analysis;
+namespace ssu = ::spl::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
 
 void addToken(const ::std::string & token, InputOptions & in);
 
@@ -125,7 +125,7 @@ main(const int argc, char * argv[])
       for(StructuresContainer::iterator it = structures.begin();
           it != structures.end(); /* increment in loop body */)
       {
-        ::sstbx::OptionalDouble dist = hullStructures.distanceToHull(*it);
+        ::spl::OptionalDouble dist = hullStructures.distanceToHull(*it);
         if(!dist || *dist > in.maxHullDist)
           it = structures.erase(it);
         else

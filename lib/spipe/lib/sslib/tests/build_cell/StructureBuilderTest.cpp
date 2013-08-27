@@ -10,19 +10,19 @@
 
 #include <boost/foreach.hpp>
 
-#include <build_cell/BuildCellFwd.h>
-#include <build_cell/AtomsDescription.h>
-#include <build_cell/AtomsGenerator.h>
-#include <build_cell/IUnitCellGenerator.h>
-#include <build_cell/GenerationOutcome.h>
-#include <build_cell/StructureBuilder.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <common/AtomSpeciesId.h>
-#include <common/Structure.h>
-#include <common/Types.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/build_cell/AtomsDescription.h>
+#include <spl/build_cell/AtomsGenerator.h>
+#include <spl/build_cell/IUnitCellGenerator.h>
+#include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/StructureBuilder.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/common/Structure.h>
+#include <spl/common/Types.h>
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc  = ::sstbx::common;
+namespace ssbc = ::spl::build_cell;
+namespace ssc  = ::spl::common;
 
 
 BOOST_AUTO_TEST_CASE(StructureBuilderClusterTest)
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(StructureBuilderClusterTest)
   
   ssbc::StructureBuilder builder;
   {
-    ::sstbx::UniquePtr<ssbc::AtomsGenerator>::Type atomsGenerator(new ssbc::AtomsGenerator());
+    ::spl::UniquePtr<ssbc::AtomsGenerator>::Type atomsGenerator(new ssbc::AtomsGenerator());
 
     BOOST_FOREACH(const SpeciesCount & speciesCount, toGenerate)
       atomsGenerator->insertAtoms(ssbc::AtomsDescription(speciesCount.first, speciesCount.second));

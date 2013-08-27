@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/CastepGeomOptimiser.h"
+#include "spl/potential/CastepGeomOptimiser.h"
 
 #include <fstream>
 #include <sstream>
@@ -15,13 +15,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-#include "io/Parsing.h"
-#include "io/BoostFilesystem.h"
-#include "os/Process.h"
-#include "potential/OptimisationSettings.h"
+#include "spl/io/Parsing.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/os/Process.h"
+#include "spl/potential/OptimisationSettings.h"
 
 // NAMESPACES ////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 namespace fs = ::boost::filesystem;

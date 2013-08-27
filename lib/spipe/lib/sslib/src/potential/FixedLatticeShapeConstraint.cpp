@@ -6,17 +6,17 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/FixedLatticeShapeConstraint.h"
+#include "spl/potential/FixedLatticeShapeConstraint.h"
 
-#include "SSLibAssert.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "utility/IndexingEnums.h"
+#include "spl/SSLibAssert.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/IndexingEnums.h"
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 void FixedLatticeShapeConstraint::constrainLattice(

@@ -10,9 +10,9 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSTbx
-#include <build_cell/IStructureGenerator.h>
-#include <utility/UtilFunctions.h>
+
+#include <spl/build_cell/IStructureGenerator.h>
+#include <spl/utility/UtilFunctions.h>
 
 #include "common/GlobalData.h"
 #include "common/UtilityFunctions.h"
@@ -22,9 +22,9 @@
 namespace spipe {
 namespace common {
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssu = ::sstbx::utility;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssu = ::spl::utility;
 
 const char SharedData::DIR_SUBSTRING_DELIMITER[] = "_";
 

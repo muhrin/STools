@@ -6,16 +6,16 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/SymmetryGroupBuilder.h"
+#include "spl/build_cell/SymmetryGroupBuilder.h"
 
 
 #include <boost/foreach.hpp>
 
-#include "SSLibAssert.h"
-#include "build_cell/SymmetryGroup.h"
-#include "utility/StableComparison.h"
+#include "spl/SSLibAssert.h"
+#include "spl/build_cell/SymmetryGroup.h"
+#include "spl/utility/StableComparison.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 namespace comp = utility::stable;

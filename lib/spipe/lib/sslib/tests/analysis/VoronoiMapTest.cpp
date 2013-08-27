@@ -8,15 +8,15 @@
 // INCLUDES //////////////////////////////////
 #include "sslibtest.h"
 
-#include "analysis/VoronoiMap.h"
+#include "spl/analysis/VoronoiMap.h"
 
-#include <SSLib.h>
+#include <spl/SSLib.h>
 
 #ifdef SSLIB_USE_CGAL
 
 BOOST_AUTO_TEST_CASE(VoronoiMapTest)
 {
-  //::sstbx::analysis::VoronoiMap map;
+  //::spl::analysis::VoronoiMap map;
 }
 
 #endif /* SSLIB_USE_CGAL */

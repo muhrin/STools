@@ -16,17 +16,17 @@
 
 #include <boost/filesystem.hpp>
 
-// From SSTbx
-#include <SSLib.h>
-#include <common/Types.h>
-#include <io/ResReaderWriter.h>
+
+#include <spl/SSLib.h>
+#include <spl/common/Types.h>
+#include <spl/io/ResReaderWriter.h>
 
 #include <pipelib/pipelib.h>
 
 #include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace common {
 class AtomSpeciesDatabase;
 class Structure;
@@ -64,17 +64,17 @@ public:
 
 private:
 
-  typedef ::sstbx::common::StructurePtr StructurePtr;
-  typedef ::sstbx::io::StructuresContainer StructuresContainer;
+  typedef ::spl::common::StructurePtr StructurePtr;
+  typedef ::spl::io::StructuresContainer StructuresContainer;
 
   enum EntryType { UNKNOWN, FILE_PATH, FOLDER_PATH, WILDCARD_PATH };
 
   int processEntry(const ::std::string & entry);
   int processWildcardEntry(const ::std::string & entry);
-  int processFileOrFolder(const ::sstbx::io::ResourceLocator & loc);
+  int processFileOrFolder(const ::spl::io::ResourceLocator & loc);
   EntryType entryType(const ::std::string & entry) const;
 
-  double getTotalAtomicVolume(const ::sstbx::common::Structure & structure) const;
+  double getTotalAtomicVolume(const ::spl::common::Structure & structure) const;
 
   const ::std::string         mySeedStructuresString;
   StructuresContainer         myStructures;

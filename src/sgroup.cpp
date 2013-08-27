@@ -16,13 +16,12 @@
 
 // From Pipelib //
 
-
-// From SSLib //
-#include <analysis/SpaceGroup.h>
-#include <common/Structure.h>
-#include <common/Types.h>
-#include <io/ResourceLocator.h>
-#include <io/StructureReadWriteManager.h>
+ //
+#include <spl/analysis/SpaceGroup.h>
+#include <spl/common/Structure.h>
+#include <spl/common/Types.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/StructureReadWriteManager.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -33,9 +32,9 @@
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
 namespace sp = ::spipe;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssa = ::sstbx::analysis;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssa = ::spl::analysis;
 
 struct InputOptions
 {

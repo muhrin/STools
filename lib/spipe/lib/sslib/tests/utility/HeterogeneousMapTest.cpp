@@ -11,10 +11,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <utility/HeterogeneousMap.h>
-#include <utility/HeterogeneousMapEx.h>
+#include <spl/utility/HeterogeneousMap.h>
+#include <spl/utility/HeterogeneousMapEx.h>
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 static ssu::Key<int> INT_KEY;
 static ssu::Key< ::std::string> STRING_KEY;

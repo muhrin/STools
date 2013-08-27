@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/SortedDistanceComparator.h"
+#include "spl/utility/SortedDistanceComparator.h"
 
 #include <memory>
 
@@ -14,16 +14,16 @@
 
 #include <armadillo>
 
-#include "common/DistanceCalculator.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "math/NumberAlgorithms.h"
-#include "math/RunningStats.h"
-#include "utility/GenericBufferedComparator.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/math/NumberAlgorithms.h"
+#include "spl/math/RunningStats.h"
+#include "spl/utility/GenericBufferedComparator.h"
 
 #define SORTED_DIST_COMP_DEBUG (SSLIB_DEBUG & 0)
 
-namespace sstbx
+namespace spl
 {
 namespace utility
 {
@@ -154,8 +154,8 @@ SortedDistanceComparator::getCutoffFactor() const
 
 double
 SortedDistanceComparator::compareStructures(
-    const sstbx::common::Structure & str1,
-    const sstbx::common::Structure & str2) const
+    const spl::common::Structure & str1,
+    const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -164,8 +164,8 @@ SortedDistanceComparator::compareStructures(
 }
 
 bool
-SortedDistanceComparator::areSimilar(const sstbx::common::Structure & str1,
-    const sstbx::common::Structure & str2) const
+SortedDistanceComparator::areSimilar(const spl::common::Structure & str1,
+    const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -205,7 +205,7 @@ SortedDistanceComparator::compareStructures(
   IndexAdapter adapt1(leastCommonMultiple / dist1.numAtoms);
   IndexAdapter adapt2(leastCommonMultiple / dist2.numAtoms);
 
-  ::sstbx::math::RunningStats stats;
+  ::spl::math::RunningStats stats;
   common::AtomSpeciesId::Value specI, specJ;
   for (size_t i = 0; i < numSpecies; ++i)
   {
@@ -236,7 +236,7 @@ SortedDistanceComparator::areSimilar(const SortedDistanceComparisonData & dist1,
 
 SortedDistanceComparator::ComparisonDataPtr
 SortedDistanceComparator::generateComparisonData(
-    const sstbx::common::Structure & str) const
+    const spl::common::Structure & str) const
 {
   return ComparisonDataPtr(
       new SortedDistanceComparisonData(str, myScaleVolumes, myUsePrimitive,
@@ -251,7 +251,7 @@ SortedDistanceComparator::generateBuffered() const
 }
 
 void
-SortedDistanceComparator::calcProperties(::sstbx::math::RunningStats & stats,
+SortedDistanceComparator::calcProperties(::spl::math::RunningStats & stats,
     const SortedDistanceComparator::DistancesVec & dist1,
     const StridedIndexAdapter< size_t> & adapt1,
     const SortedDistanceComparator::DistancesVec & dist2,

@@ -5,11 +5,11 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/VoronoiMap.h"
+#include "spl/analysis/VoronoiMap.h"
 
 #ifdef SSLIB_USE_CGAL
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 //
 //void VoronoiMap::addData(const ::arma::vec2 & point, const ::std::string & tag)

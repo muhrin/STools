@@ -16,7 +16,7 @@
 namespace spipe {
 namespace common {
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 ParamRange::ParamRange(const size_t dims):
 from(dims),

@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/CastepRun.h"
+#include "spl/potential/CastepRun.h"
 
 #include <sstream>
 
@@ -14,16 +14,16 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Structure.h"
-#include "io/BoostFilesystem.h"
-#include "io/CastepReader.h"
-#include "io/CellReaderWriter.h"
-#include "io/Parsing.h"
-#include "os/Process.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Structure.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/io/CastepReader.h"
+#include "spl/io/CellReaderWriter.h"
+#include "spl/io/Parsing.h"
+#include "spl/os/Process.h"
 
 // NAMESPACES ////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 namespace fs = ::boost::filesystem;

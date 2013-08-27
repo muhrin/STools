@@ -6,14 +6,14 @@
  */
 
 // INCLUDES ///////////////
-#include "common/DistanceCalculatorDelegator.h"
+#include "spl/common/DistanceCalculatorDelegator.h"
 
-#include "common/ClusterDistanceCalculator.h"
-#include "common/OrthoCellDistanceCalculator.h"
-#include "common/UnitCell.h"
-#include "common/UniversalCrystalDistanceCalculator.h"
+#include "spl/common/ClusterDistanceCalculator.h"
+#include "spl/common/OrthoCellDistanceCalculator.h"
+#include "spl/common/UnitCell.h"
+#include "spl/common/UniversalCrystalDistanceCalculator.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 DistanceCalculatorDelegator::DistanceCalculatorDelegator(const Structure & structure):
@@ -83,5 +83,5 @@ bool DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcTy
   return delegateChanged;
 }
 
-} // namespace sstbx
+} // namespace spl
 } // namespace common

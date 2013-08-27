@@ -6,9 +6,9 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/Outcome.h"
+#include "spl/utility/Outcome.h"
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 Outcome Outcome::success()

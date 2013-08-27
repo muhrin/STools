@@ -6,24 +6,24 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/TranscodeCommon.h"
+#include "spl/yaml/TranscodeCommon.h"
 
-#include "io/IoFunctions.h"
-#include "factory/FactoryFwd.h"
-#include "factory/SsLibYamlKeywords.h"
-#include "utility/IndexingEnums.h"
-#include "yaml/TranscodeGeneral.h"
+#include "spl/io/IoFunctions.h"
+#include "spl/factory/FactoryFwd.h"
+#include "spl/factory/SsLibYamlKeywords.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/yaml/TranscodeGeneral.h"
 
 // NAMESPACES ////////////////////////////////
-namespace ssc = ::sstbx::common;
-namespace ssf = ::sstbx::factory;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
-namespace ssy = ::sstbx::yaml;
+namespace ssc = ::spl::common;
+namespace ssf = ::spl::factory;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
+namespace ssy = ::spl::yaml;
 
 namespace YAML {
 
-Node convert< ::sstbx::common::UnitCell>::encode(const ::sstbx::common::UnitCell & cell)
+Node convert< ::spl::common::UnitCell>::encode(const ::spl::common::UnitCell & cell)
 {
   namespace kw = ssf::sslib_yaml_keywords;
   using namespace ssu::cell_params_enum;
@@ -47,7 +47,7 @@ Node convert< ::sstbx::common::UnitCell>::encode(const ::sstbx::common::UnitCell
   return node;
 }
 
-bool convert< ::sstbx::common::UnitCell>::decode(const Node & node, ::sstbx::common::UnitCell & cell)
+bool convert< ::spl::common::UnitCell>::decode(const Node & node, ::spl::common::UnitCell & cell)
 {
   namespace kw = ssf::sslib_yaml_keywords;
   using namespace ssu::cell_params_enum;

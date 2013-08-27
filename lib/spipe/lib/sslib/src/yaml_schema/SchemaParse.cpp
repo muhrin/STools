@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml_schema/SchemaParse.h"
+#include "spl/yaml_schema/SchemaParse.h"
 
 #include <iostream>
 #include <sstream>
@@ -15,7 +15,7 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace yaml_schema {
 
 SchemaParseError & SchemaParseError::operator =(const SchemaParseError & rhs)

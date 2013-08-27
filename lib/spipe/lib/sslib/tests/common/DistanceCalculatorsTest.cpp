@@ -15,24 +15,24 @@
 
 #include <armadillo>
 
-#include <build_cell/GenerationOutcome.h>
-#include <build_cell/RandomUnitCellGenerator.h>
-#include <common/Atom.h>
-#include <common/OrthoCellDistanceCalculator.h>
-#include <common/ReferenceDistanceCalculator.h>
-#include <common/Structure.h>
-#include <common/Types.h>
-#include <common/UniversalCrystalDistanceCalculator.h>
-#include <common/UnitCell.h>
-#include <math/Random.h>
-#include <utility/StableComparison.h>
+#include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/RandomUnitCellGenerator.h>
+#include <spl/common/Atom.h>
+#include <spl/common/OrthoCellDistanceCalculator.h>
+#include <spl/common/ReferenceDistanceCalculator.h>
+#include <spl/common/Structure.h>
+#include <spl/common/Types.h>
+#include <spl/common/UniversalCrystalDistanceCalculator.h>
+#include <spl/common/UnitCell.h>
+#include <spl/math/Random.h>
+#include <spl/utility/StableComparison.h>
 
 //#define DIST_TEST_MANUAL_DEBUG
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssm = ::sstbx::math;
-namespace ssu = ::sstbx::utility;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssm = ::spl::math;
+namespace ssu = ::spl::utility;
 
 
 BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)

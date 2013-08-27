@@ -19,7 +19,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include <utility/HeterogeneousMap.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 #include "common/DataLocation.h"
 #include "common/GlobalData.h"
@@ -44,7 +44,7 @@ struct ObjectData : public ::std::pair<DataLocation::Value, T *>
 };
 
 template <typename T>
-ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, StructureDataType & strDat, MemoryAccessType & memory)
+ObjectData<T> getObject(const ::spl::utility::Key<T> & key, StructureDataType & strDat, MemoryAccessType & memory)
 {
   ObjectData<T> result;
 
@@ -62,7 +62,7 @@ ObjectData<T> getObject(const ::sstbx::utility::Key<T> & key, StructureDataType 
 }
 
 template <typename T>
-ObjectData<T> getObject(::sstbx::utility::Key<T> & key, MemoryAccessType & memory)
+ObjectData<T> getObject(::spl::utility::Key<T> & key, MemoryAccessType & memory)
 {
   ObjectData<T> result;
 
@@ -82,7 +82,7 @@ ObjectData<T> getObject(::sstbx::utility::Key<T> & key, MemoryAccessType & memor
 }
 
 template <typename T>
-const ObjectData<const T> getObjectConst(::sstbx::utility::Key<T> & key, const MemoryAccessType & memory)
+const ObjectData<const T> getObjectConst(::spl::utility::Key<T> & key, const MemoryAccessType & memory)
 {
   ObjectData<const T> result;
 
@@ -103,7 +103,7 @@ const ObjectData<const T> getObjectConst(::sstbx::utility::Key<T> & key, const M
 
 template <typename T>
 bool setObject(
-  ::sstbx::utility::Key<T> & key,
+  ::spl::utility::Key<T> & key,
   const DataLocation::Value location,
   const T & value,
   MemoryAccessType & memory)

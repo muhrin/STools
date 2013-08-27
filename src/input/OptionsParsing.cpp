@@ -15,14 +15,12 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <math/Random.h>
-#include <utility/HeterogeneousMap.h>
+#include <spl/math/Random.h>
+#include <spl/utility/HeterogeneousMap.h>
+#include <spl/os/Process.h>
+#include <spl/yaml/ProgramOptions.h>
 
 #include <factory/MapEntries.h>
-
-// From SSLib
-#include <os/Process.h>
-#include <yaml/ProgramOptions.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -47,7 +45,7 @@ bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> &
 {
   BOOST_FOREACH(const ::std::string & keyValueString, scalarValues)
   {
-    if(!sstbx::yaml::insertScalar(node, keyValueString))
+    if(!spl::yaml::insertScalar(node, keyValueString))
     {
       std::cerr << "Invalid input: " << keyValueString;
       return false;
@@ -56,10 +54,10 @@ bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> &
   return true;
 }
 
-void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & options)
+void seedRandomNumberGenerator(const ::spl::utility::HeterogeneousMap & options)
 {
   namespace spf = ::spipe::factory;
-  namespace ssm = ::sstbx::math;
+  namespace ssm = ::spl::math;
 
   const ::std::string * const rngSeed = options.find(spf::RNG_SEED);
   bool userSuppliedSeed = false;
@@ -75,7 +73,7 @@ void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & option
     {}
   }
   if(!userSuppliedSeed)
-    ssm::seed(static_cast<unsigned int>(time(NULL)) * static_cast<unsigned int>(::sstbx::os::getProcessId()));
+    ssm::seed(static_cast<unsigned int>(time(NULL)) * static_cast<unsigned int>(::spl::os::getProcessId()));
 }
 
 } // namespace stools

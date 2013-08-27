@@ -6,13 +6,13 @@
  */
 
 // INCLUDES ///////////////
-#include "common/UniversalCrystalDistanceCalculator.h"
+#include "spl/common/UniversalCrystalDistanceCalculator.h"
 
-#include "common/Structure.h"
-#include "common/UnitCell.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(const Structure & structure):

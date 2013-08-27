@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/XyzReaderWriter.h"
+#include "spl/io/XyzReaderWriter.h"
 
 #include <iomanip>
 #include <set>
@@ -18,17 +18,17 @@
 
 #include <armadillo>
 
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/AtomSpeciesId.h"
-#include "common/AtomSpeciesInfo.h"
-#include "common/Structure.h"
-#include "common/StructureProperties.h"
-#include "common/Types.h"
-#include "common/UnitCell.h"
-#include "io/IoFunctions.h"
-#include "io/BoostFilesystem.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/AtomSpeciesId.h"
+#include "spl/common/AtomSpeciesInfo.h"
+#include "spl/common/Structure.h"
+#include "spl/common/StructureProperties.h"
+#include "spl/common/Types.h"
+#include "spl/common/UnitCell.h"
+#include "spl/io/IoFunctions.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
 
@@ -36,20 +36,20 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace properties = ssc::structure_properties;
 
 const unsigned int XyzReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
-void XyzReaderWriter::writeStructure(::sstbx::common::Structure & str, const ResourceLocator & locator) const
+void XyzReaderWriter::writeStructure(::spl::common::Structure & str, const ResourceLocator & locator) const
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
-  using ::sstbx::common::AtomSpeciesId;
+  using ::spl::common::AtomSpeciesId;
   using ::std::endl;
 
   const double * dValue;

@@ -13,8 +13,7 @@
 
 #include <boost/foreach.hpp>
 
-// From SSTbx
-#include <common/Structure.h>
+#include <spl/common/Structure.h>
 
 #include "common/StructureData.h"
 
@@ -24,8 +23,8 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssc = ::sstbx::common;
-namespace ssu = ::sstbx::utility;
+namespace ssc = ::spl::common;
+namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
 RemoveDuplicates::RemoveDuplicates(ssu::IStructureComparatorPtr comparator):
@@ -33,7 +32,7 @@ SpBlock("Remove duplicates"),
 myStructureSet(comparator)
 {}
 
-RemoveDuplicates::RemoveDuplicates(const sstbx::utility::IStructureComparator & comparator):
+RemoveDuplicates::RemoveDuplicates(const spl::utility::IStructureComparator & comparator):
 SpBlock("Remove duplicates"),
 myStructureSet(comparator)
 {}

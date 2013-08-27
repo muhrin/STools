@@ -13,13 +13,12 @@
 
 #include <boost/foreach.hpp>
 
-// From SSTbx
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Constants.h>
-#include <common/Structure.h>
-#include <io/IoFunctions.h>
-#include <io/ResourceLocator.h>
-#include <utility/UtilFunctions.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Constants.h>
+#include <spl/common/Structure.h>
+#include <spl/io/IoFunctions.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/utility/UtilFunctions.h>
 
 // Local includes
 #include "common/PipeFunctions.h"
@@ -34,10 +33,10 @@ namespace spipe {
 namespace blocks {
 
 namespace fs = ::boost::filesystem;
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
 
 const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
 
@@ -123,7 +122,7 @@ int LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
   return numOut;
 }
 
-int LoadSeedStructures::processFileOrFolder(const ::sstbx::io::ResourceLocator & loc)
+int LoadSeedStructures::processFileOrFolder(const ::spl::io::ResourceLocator & loc)
 {
   // Try loading the file
   const size_t numLoaded = getRunner()->memory().global().getStructureIo().readStructures(
@@ -158,7 +157,7 @@ LoadSeedStructures::entryType(const ::std::string & entry) const
 }
 
 double LoadSeedStructures::getTotalAtomicVolume(
-  const ::sstbx::common::Structure & structure) const
+  const ::spl::common::Structure & structure) const
 {
   typedef ::boost::optional<double> OptionalDouble;
 

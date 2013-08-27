@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/StructureYamlGenerator.h"
+#include "spl/io/StructureYamlGenerator.h"
 
 #include <sstream>
 
@@ -14,14 +14,14 @@
 
 #include <armadillo>
 
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "factory/SsLibYamlKeywords.h"
-#include "io/IoFunctions.h"
-#include "utility/IndexingEnums.h"
-#include "yaml/Transcode.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/factory/SsLibYamlKeywords.h"
+#include "spl/io/IoFunctions.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/yaml/Transcode.h"
 
 // DEFINES /////////////////////////////////
 
@@ -29,7 +29,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace kw = factory::sslib_yaml_keywords;
@@ -49,7 +49,7 @@ myAtomInfoParser(format)
 {}
 
 YAML::Node
-StructureYamlGenerator::generateNode(const ::sstbx::common::Structure & structure) const
+StructureYamlGenerator::generateNode(const ::spl::common::Structure & structure) const
 {
   using namespace utility::cell_params_enum;
 
@@ -137,7 +137,7 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 }
 
 YAML::Node StructureYamlGenerator::generateNode(
-  const ::sstbx::common::Atom & atom) const
+  const ::spl::common::Atom & atom) const
 {
   using namespace utility::cart_coords_enum;
 

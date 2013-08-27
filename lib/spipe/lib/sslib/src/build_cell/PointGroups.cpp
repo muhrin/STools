@@ -6,19 +6,19 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/PointGroups.h"
+#include "spl/build_cell/PointGroups.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 
-#include "SSLibAssert.h"
-#include "build_cell/SymmetryFunctions.h"
-#include "build_cell/SymmetryGroup.h"
-#include "build_cell/SymmetryGroupBuilder.h"
-#include "common/Constants.h"
-#include "math/Random.h"
+#include "spl/SSLibAssert.h"
+#include "spl/build_cell/SymmetryFunctions.h"
+#include "spl/build_cell/SymmetryGroup.h"
+#include "spl/build_cell/SymmetryGroupBuilder.h"
+#include "spl/common/Constants.h"
+#include "spl/math/Random.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 void generatePointGroup(

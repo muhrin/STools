@@ -14,10 +14,10 @@
 
 #include <boost/filesystem.hpp>
 
-// From SSTbx
-#include <common/AtomSpeciesDatabase.h>
-#include <io/StructureReadWriteManager.h>
-#include <utility/HeterogeneousMap.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -42,21 +42,21 @@ public:
   const ::std::string & getSeedName() const;
   void setSeedName(const ::std::string & seedName);
 
-  ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase();
-  const ::sstbx::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
+  ::spl::common::AtomSpeciesDatabase & getSpeciesDatabase();
+  const ::spl::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
 
-  ::sstbx::utility::HeterogeneousMap  objectsStore;
+  ::spl::utility::HeterogeneousMap  objectsStore;
 
-  ::sstbx::io::StructureReadWriteManager & getStructureIo();
+  ::spl::io::StructureReadWriteManager & getStructureIo();
 
 private:
 
   void reset();
 
-  ::sstbx::common::AtomSpeciesDatabase  mySpeciesDatabase;
+  ::spl::common::AtomSpeciesDatabase  mySpeciesDatabase;
   ::boost::filesystem::path             myOutputDir;
   ::std::string mySeedName;
-  ::sstbx::io::StructureReadWriteManager myStructureIoManager;
+  ::spl::io::StructureReadWriteManager myStructureIoManager;
 };
 
 

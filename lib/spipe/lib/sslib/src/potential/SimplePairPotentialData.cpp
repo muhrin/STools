@@ -6,22 +6,22 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/SimplePairPotentialData.h"
+#include "spl/potential/SimplePairPotentialData.h"
 
 
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 SimplePairPotentialData::SimplePairPotentialData(
-  const sstbx::common::Structure & structure,
+  const spl::common::Structure & structure,
   const SimplePairPotentialData::SpeciesList & speciesList):
 PotentialData(structure)
 {
-  using sstbx::common::AtomSpeciesId;
+  using spl::common::AtomSpeciesId;
 
 	// Get the atom species
   std::vector<AtomSpeciesId::Value> strSpecies;

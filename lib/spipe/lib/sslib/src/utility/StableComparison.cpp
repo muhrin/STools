@@ -6,11 +6,11 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/StableComparison.h"
+#include "spl/utility/StableComparison.h"
 
 #include <cmath>
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 namespace stable {
 

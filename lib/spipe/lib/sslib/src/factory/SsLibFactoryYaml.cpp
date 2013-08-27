@@ -6,9 +6,9 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "SSLib.h"
+#include "spl/SSLib.h"
 
-#include "factory/SsLibFactoryYaml.h"
+#include "spl/factory/SsLibFactoryYaml.h"
 
 #include <memory>
 
@@ -19,26 +19,26 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-// Local includes
-#include "build_cell/AtomsDescription.h"
-#include "build_cell/AtomsGenerator.h"
-#include "build_cell/PointGroups.h"
-#include "build_cell/RandomUnitCellGenerator.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/AtomSpeciesId.h"
-#include "factory/FactoryError.h"
-#include "factory/SsLibElements.h"
-#include "io/ResReaderWriter.h"
-#include "potential/CastepGeomOptimiser.h"
-#include "potential/TpsdGeomOptimiser.h"
-#include "potential/Types.h"
-#include "utility/IndexingEnums.h"
-#include "utility/SortedDistanceComparator.h"
+
+#include "spl/build_cell/AtomsDescription.h"
+#include "spl/build_cell/AtomsGenerator.h"
+#include "spl/build_cell/PointGroups.h"
+#include "spl/build_cell/RandomUnitCellGenerator.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/AtomSpeciesId.h"
+#include "spl/factory/FactoryError.h"
+#include "spl/factory/SsLibElements.h"
+#include "spl/io/ResReaderWriter.h"
+#include "spl/potential/CastepGeomOptimiser.h"
+#include "spl/potential/TpsdGeomOptimiser.h"
+#include "spl/potential/Types.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/SortedDistanceComparator.h"
 
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace factory {
 
 namespace fs = ::boost::filesystem;

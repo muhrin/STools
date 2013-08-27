@@ -6,16 +6,16 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "utility/UtilFunctions.h"
+#include "spl/utility/UtilFunctions.h"
 
 #include <sstream>
 
-#include "math/Random.h"
-#include "os/Process.h"
+#include "spl/math/Random.h"
+#include "spl/os/Process.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 static const ::std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

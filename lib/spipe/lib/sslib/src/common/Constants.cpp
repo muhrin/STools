@@ -6,7 +6,7 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "common/Constants.h"
+#include "spl/common/Constants.h"
 
 
 // NAMESPACES ///////////////////////////////////
@@ -14,7 +14,7 @@
 
 // STATIC ///////////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace common {
 namespace constants {
 

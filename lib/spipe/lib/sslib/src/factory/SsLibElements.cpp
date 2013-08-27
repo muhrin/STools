@@ -6,11 +6,11 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "factory/SsLibElements.h"
+#include "spl/factory/SsLibElements.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace factory {
 
 // GENERAL /////////////////////////////////////////////////

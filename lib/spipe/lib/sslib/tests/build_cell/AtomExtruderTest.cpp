@@ -13,22 +13,22 @@
 
 #include <armadillo>
 
-#include <build_cell/AtomExtruder.h>
-#include <build_cell/GenerationOutcome.h>
-#include <build_cell/RandomUnitCellGenerator.h>
-#include <common/Atom.h>
-#include <common/AtomSpeciesId.h>
-#include <common/Constants.h>
-#include <common/DistanceCalculator.h>
-#include <common/Structure.h>
-#include <common/UnitCell.h>
-#include <common/Types.h>
-#include <math/Random.h>
-#include <utility/StableComparison.h>
+#include <spl/build_cell/AtomExtruder.h>
+#include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/RandomUnitCellGenerator.h>
+#include <spl/common/Atom.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/common/Constants.h>
+#include <spl/common/DistanceCalculator.h>
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
+#include <spl/common/Types.h>
+#include <spl/math/Random.h>
+#include <spl/utility/StableComparison.h>
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssm = ::sstbx::math;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssm = ::spl::math;
 
 BOOST_AUTO_TEST_CASE(ExtrusionTest)
 {
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
           const ::arma::vec & pos2 = structure.getAtom(l).getPosition();
           dr = distanceCalc.getDistMinImg(pos1, pos2);
 
-          BOOST_REQUIRE(::sstbx::utility::stable::geq(dr * dr, minsepSq));
+          BOOST_REQUIRE(::spl::utility::stable::geq(dr * dr, minsepSq));
         }
       }
     }

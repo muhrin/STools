@@ -14,10 +14,10 @@
 #include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
 
-#include <utility/PermutationRange.h>
+#include <spl/utility/PermutationRange.h>
 
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 BOOST_AUTO_TEST_CASE(HeapArrayIndexRemapping)
 {

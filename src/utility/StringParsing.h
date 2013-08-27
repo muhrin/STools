@@ -14,7 +14,6 @@
 
 // FORWARD DECLARES ////////////////////////////////
 
-
 namespace stools {
 namespace utility {
 

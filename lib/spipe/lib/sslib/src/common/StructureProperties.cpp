@@ -6,9 +6,9 @@
  */
 
 // INCLUDES ///////////////
-#include "common/StructureProperties.h"
+#include "spl/common/StructureProperties.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 namespace structure_properties {
 namespace general {
@@ -28,7 +28,7 @@ utility::NamedKey<unsigned int>       TIMES_FOUND("timesFound");
 }
 
 namespace io {
-  utility::Key< ::sstbx::io::ResourceLocator>  LAST_ABS_FILE_PATH;
+  utility::Key< ::spl::io::ResourceLocator>  LAST_ABS_FILE_PATH;
 }
 
 utility::NamedPropertyStore<utility::HeterogeneousMap> VISIBLE_PROPERTIES;
@@ -60,4 +60,4 @@ void InitialiseVisibleProperties::add(utility::NamedProperty<utility::Heterogene
 
 } // namespace structure_properties
 } // namespace common
-} // namespace sstbx
+} // namespace spl

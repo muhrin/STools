@@ -7,25 +7,25 @@
 
 
 // INCLUDES /////////////////
-#include "build_cell/AtomsGenerator.h"
+#include "spl/build_cell/AtomsGenerator.h"
 
 #include <boost/foreach.hpp>
 
-#include "build_cell/AtomsDescription.h"
-#include "build_cell/GenerationOutcome.h"
-#include "build_cell/StructureBuild.h"
-#include "build_cell/StructureContents.h"
-#include "build_cell/SymmetryFunctions.h"
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Constants.h"
-#include "common/Structure.h"
-#include "math/Matrix.h"
-#include "math/Random.h"
-#include "utility/IndexingEnums.h"
-#include "utility/SharedHandle.h"
+#include "spl/build_cell/AtomsDescription.h"
+#include "spl/build_cell/GenerationOutcome.h"
+#include "spl/build_cell/StructureBuild.h"
+#include "spl/build_cell/StructureContents.h"
+#include "spl/build_cell/SymmetryFunctions.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Constants.h"
+#include "spl/common/Structure.h"
+#include "spl/math/Matrix.h"
+#include "spl/math/Random.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/SharedHandle.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 AtomsGenerator::AtomsGenerator():

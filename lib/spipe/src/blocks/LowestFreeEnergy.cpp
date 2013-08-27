@@ -8,10 +8,11 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/LowestFreeEnergy.h"
 
-#include <common/Structure.h>
-#include <common/StructureData.h>
+#include <spl/common/Structure.h>
 
 #include <pipelib/pipelib.h>
+
+#include "common/StructureData.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -19,7 +20,7 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace structure_properties = ssc::structure_properties;
 
 LowestFreeEnergy::LowestFreeEnergy(const size_t keepTopN):

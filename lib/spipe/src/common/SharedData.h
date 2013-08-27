@@ -18,10 +18,10 @@
 
 #include <armadillo>
 
-// From SSTbx
-#include <build_cell/IStructureGenerator.h>
-#include <build_cell/BuildCellFwd.h>
-#include <io/BoostFilesystem.h>
+
+#include <spl/build_cell/IStructureGenerator.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/io/BoostFilesystem.h>
 
 // Local includes
 #include "PipeLibTypes.h"
@@ -37,58 +37,70 @@ class SharedData
 {
 public:
 
-  typedef ::sstbx::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
+  typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
   static const char DIR_SUBSTRING_DELIMITER[];
 
   SharedData();
 
-  bool appendToOutputDirName(const ::std::string & toAppend);
+  bool
+  appendToOutputDirName(const ::std::string & toAppend);
 
   /**
-  /* Get the output path for the pipeline that owns this shared data relative to
-  /* the working directory where the code was executed.
-  /**/
-  ::boost::filesystem::path getOutputPath(const SpRunner & runner) const;
+   /* Get the output path for the pipeline that owns this shared data relative to
+   /* the working directory where the code was executed.
+   /**/
+  ::boost::filesystem::path
+  getOutputPath(const SpRunner & runner) const;
 
   /**
-  /* Get the output path for the pipeline that owns this shared data relative to
-  /* the working directory where the code was executed.
-  /**/
-  ::boost::filesystem::path getOutputPath(const SpRunnerAccess & runner) const;
+   /* Get the output path for the pipeline that owns this shared data relative to
+   /* the working directory where the code was executed.
+   /**/
+  ::boost::filesystem::path
+  getOutputPath(const SpRunnerAccess & runner) const;
 
   /**
-  /* Get the output path for the pipeline that owns this shared data relative to
-  /* the parent pipeline (or global data output path if there is no parent).
-  /**/
-  const ::boost::filesystem::path & getPipeRelativeOutputPath() const;
+   /* Get the output path for the pipeline that owns this shared data relative to
+   /* the parent pipeline (or global data output path if there is no parent).
+   /**/
+  const ::boost::filesystem::path &
+  getPipeRelativeOutputPath() const;
 
-  const ::std::string & getInstanceName() const;
+  const ::std::string &
+  getInstanceName() const;
 
-  ::sstbx::build_cell::IStructureGenerator * getStructureGenerator();
-  const ::sstbx::build_cell::IStructureGenerator * getStructureGenerator() const;
-  template <class T>
-  void setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator);
+  ::spl::build_cell::IStructureGenerator *
+  getStructureGenerator();
+  const ::spl::build_cell::IStructureGenerator *
+  getStructureGenerator() const;
+  template< class T>
+    void
+    setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
-  ::sstbx::utility::HeterogeneousMap  objectsStore;
+  ::spl::utility::HeterogeneousMap objectsStore;
 
 private:
-  void reset();
+  void
+  reset();
 
-  void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
-  void buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
+  void
+  buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
+  void
+  buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   IStructureGeneratorPtr myStructureGenerator;
   ::boost::filesystem::path myOutputDir;
-  ::std::string  myInstanceName;
+  ::std::string myInstanceName;
 
 };
 
-template <class T>
-void SharedData::setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator)
-{
-  myStructureGenerator = generator;
-}
+template< class T>
+  void
+  SharedData::setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator)
+  {
+    myStructureGenerator = generator;
+  }
 
 }
 }

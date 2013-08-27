@@ -6,13 +6,13 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "common/AtomSpeciesDatabase.h"
+#include "spl/common/AtomSpeciesDatabase.h"
 
-#include "common/AtomSpeciesId.h"
+#include "spl/common/AtomSpeciesId.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 

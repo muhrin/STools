@@ -6,14 +6,14 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/AtomYamlFormatParser.h"
+#include "spl/io/AtomYamlFormatParser.h"
 
 #include <set>
 
 #include <boost/foreach.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
-#include "utility/TransformFunctions.h"
+#include "spl/utility/TransformFunctions.h"
 
 // DEFINES /////////////////////////////////
 
@@ -21,7 +21,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 

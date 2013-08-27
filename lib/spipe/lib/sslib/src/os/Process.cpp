@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "os/Process.h"
+#include "spl/os/Process.h"
 
 #include <boost/foreach.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
@@ -27,7 +27,7 @@ extern "C"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace os {
 
 

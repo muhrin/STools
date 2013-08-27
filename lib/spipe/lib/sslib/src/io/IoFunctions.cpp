@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/IoFunctions.h"
+#include "spl/io/IoFunctions.h"
 
 #include <iomanip>
 #include <sstream>
@@ -14,13 +14,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
-// Local includes
-#include <io/BoostFilesystem.h>
-#include <io/BoostFilesystem.h>
+
+#include "spl/io/BoostFilesystem.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;
@@ -119,7 +118,7 @@ int getPrecision(const double num, const unsigned int digitsAfterDecimal)
 
   int digits = digitsAfterDecimal + 1;
   if(num != 0.0)
-    digits += (int)ceil(log10(abs(num)));
+    digits += static_cast<int>(ceil(log10(abs(num))));
   return digits;
 }
 

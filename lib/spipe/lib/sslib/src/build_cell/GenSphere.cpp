@@ -6,14 +6,14 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/GenSphere.h"
+#include "spl/build_cell/GenSphere.h"
 
-#include "common/Constants.h"
-#include "math/Matrix.h"
-#include "math/Random.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/Constants.h"
+#include "spl/math/Matrix.h"
+#include "spl/math/Random.h"
+#include "spl/utility/IndexingEnums.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 GenSphere::GenSphere(const double radius):

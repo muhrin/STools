@@ -8,10 +8,10 @@
 // INCLUDES //////////////////////////////////
 #include "factory/Factory.h"
 
-// SSLib includes
-#include <potential/Types.h>
-#include <utility/UtilityFwd.h>
-#include <factory/SsLibElements.h>
+
+#include <spl/potential/Types.h>
+#include <spl/utility/UtilityFwd.h>
+#include <spl/factory/SsLibElements.h>
 
 // Local includes
 #include "blocks/DetermineSpaceGroup.h"
@@ -34,12 +34,12 @@ namespace spipe {
 namespace factory {
 
 // Alias for accessing keywords namespace
-namespace ssf     = ::sstbx::factory;
+namespace ssf     = ::spl::factory;
 namespace spb     = ::spipe::blocks;
-namespace ssbc    = ::sstbx::build_cell;
-namespace ssio    = ::sstbx::io;
-namespace ssp     = ::sstbx::potential;
-namespace ssu     = ::sstbx::utility;
+namespace ssbc    = ::spl::build_cell;
+namespace ssio    = ::spl::io;
+namespace ssp     = ::spl::potential;
+namespace ssu     = ::spl::utility;
 
 bool Factory::createDetermineSpaceGroupBlock(BlockPtr & blockOut) const
 {
@@ -173,7 +173,7 @@ Factory::createWriteStructuresBlock(
   const OptionsMap & options
 ) const
 {
-  ::sstbx::UniquePtr<blocks::WriteStructure>::Type
+  ::spl::UniquePtr<blocks::WriteStructure>::Type
     writeStructure(new blocks::WriteStructure());
 
   const bool * const multiWrite = options.find(MULTI_WRITE);

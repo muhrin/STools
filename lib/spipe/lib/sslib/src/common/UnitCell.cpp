@@ -6,16 +6,16 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "common/UnitCell.h"
+#include "spl/common/UnitCell.h"
 
 #include <boost/assert.hpp>
 
-#include "SSLibAssert.h"
-#include "common/Constants.h"
-#include "common/Structure.h"
-#include "utility/IndexingEnums.h"
+#include "spl/SSLibAssert.h"
+#include "spl/common/Constants.h"
+#include "spl/common/Structure.h"
+#include "spl/utility/IndexingEnums.h"
 
-namespace sstbx
+namespace spl
 {
 namespace common
 {
@@ -323,7 +323,7 @@ UnitCell::niggliReduce()
 // Crystallography. 2003;60(1):1-6.
 
   using namespace utility::cell_params_enum;
-  using namespace sstbx::utility;
+  using namespace spl::utility;
   using std::fabs;
 
   // Set maximum number of iterations

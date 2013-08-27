@@ -6,16 +6,16 @@
  */
 
 // INCLUDES ///////////////
-#include "common/AtomsFormula.h"
+#include "spl/common/AtomsFormula.h"
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 
-#include "SSLibAssert.h"
-#include "math/NumberAlgorithms.h"
+#include "spl/SSLibAssert.h"
+#include "spl/math/NumberAlgorithms.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 AtomsFormula::AtomsFormula(const ::std::string & species)

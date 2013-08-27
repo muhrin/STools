@@ -12,14 +12,14 @@
 
 #include <armadillo>
 
-#include <build_cell/GenerationOutcome.h>
-#include <build_cell/RandomUnitCellGenerator.h>
-#include <common/UnitCell.h>
-#include <utility/StableComparison.h>
+#include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/RandomUnitCellGenerator.h>
+#include <spl/common/UnitCell.h>
+#include <spl/utility/StableComparison.h>
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssu = ::sstbx::utility;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssu = ::spl::utility;
 
 BOOST_AUTO_TEST_CASE(LongestDiagonal)
 {

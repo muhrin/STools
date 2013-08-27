@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/TranscodeGeneral.h"
+#include "spl/yaml/TranscodeGeneral.h"
 
 #include <iomanip>
 #include <sstream>
@@ -15,11 +15,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 
-#include "utility/IndexingEnums.h"
+#include "spl/utility/IndexingEnums.h"
 
 // NAMESPACES ////////////////////////////////
-namespace ssu = ::sstbx::utility;
-namespace ssy = ::sstbx::yaml;
+namespace ssu = ::spl::utility;
+namespace ssy = ::spl::yaml;
 
 namespace YAML {
 

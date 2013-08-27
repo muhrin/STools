@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/ProgramOptions.h"
+#include "spl/yaml/ProgramOptions.h"
 
 #ifdef SSLIB_USE_YAML
 
@@ -17,7 +17,7 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace yaml {
 
 bool insertScalar(YAML::Node & node, const ::std::string & pathValueString)

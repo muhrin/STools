@@ -6,18 +6,18 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/StructureReadWriteManager.h"
+#include "spl/io/StructureReadWriteManager.h"
 
-#include "common/Structure.h"
-#include "io/BoostFilesystem.h"
-#include "io/ResourceLocator.h"
+#include "spl/common/Structure.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/io/ResourceLocator.h"
 
 #include <boost/foreach.hpp>
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;
@@ -118,7 +118,7 @@ void StructureReadWriteManager::insertReader(UniquePtr<IStructureReader>::Type r
   registerReader(myReadersStore.back());
 }
 
-void StructureReadWriteManager::registerWriter(sstbx::io::IStructureWriter &writer)
+void StructureReadWriteManager::registerWriter(spl::io::IStructureWriter &writer)
 {
   BOOST_FOREACH(const ::std::string & ext, writer.getSupportedFileExtensions())
 	{
@@ -126,7 +126,7 @@ void StructureReadWriteManager::registerWriter(sstbx::io::IStructureWriter &writ
 	}
 }
 
-void StructureReadWriteManager::deregisterWriter(sstbx::io::IStructureWriter &writer)
+void StructureReadWriteManager::deregisterWriter(spl::io::IStructureWriter &writer)
 {
 	using ::std::string;
 
@@ -160,7 +160,7 @@ void StructureReadWriteManager::deregisterReader(IStructureReader & reader)
 	}
 }
 
-bool StructureReadWriteManager::writeStructure(::sstbx::common::Structure & str, ResourceLocator locator) const
+bool StructureReadWriteManager::writeStructure(::spl::common::Structure & str, ResourceLocator locator) const
 {
   // TODO: Add status return value to this method
   ::std::string ext;

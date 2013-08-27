@@ -25,16 +25,14 @@
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
-
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 class IParameterisable;
 class IGeomOptimiser;
 }
 }
-
 
 namespace spipe {
 namespace blocks {
@@ -43,32 +41,33 @@ class ParamPotentialGo : public PotentialGo
 {
 public:
 
-	ParamPotentialGo(
-		::sstbx::potential::IGeomOptimiserPtr optimiser,
-    const bool writeOutput = true);
+  ParamPotentialGo(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
 
-	ParamPotentialGo(
-		::sstbx::potential::IGeomOptimiserPtr optimiser,
-    const ::sstbx::potential::OptimisationSettings & optimisationParams,
-    const bool writeOutput = true);
+  ParamPotentialGo(::spl::potential::IGeomOptimiserPtr optimiser,
+      const ::spl::potential::OptimisationSettings & optimisationParams, const bool writeOutput =
+          true);
 
   // From Block /////////////////////////
-	virtual void pipelineStarting();
+  virtual void
+  pipelineStarting();
   // End from Block ////////////////////
 
   // From PipeBlock ///////////////////////////
-	virtual void in(spipe::common::StructureData & data);
+  virtual void
+  in(spipe::common::StructureData & data);
   // End from PipeBlock ///////////////////////
 
 private:
 
-  typedef ::std::vector<double> PotentialParams;
+  typedef ::std::vector< double> PotentialParams;
 
-  void init();
+  void
+  init();
 
-  void setPotentialParams(const PotentialParams & params);
+  void
+  setPotentialParams(const PotentialParams & params);
 
-	::sstbx::potential::IParameterisable * myParamPotential;
+  ::spl::potential::IParameterisable * myParamPotential;
   PotentialParams myCurrentParams;
 };
 

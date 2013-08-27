@@ -7,21 +7,21 @@
 
 
 // INCLUDES /////////////////
-#include "build_cell/StructureBuilder.h"
+#include "spl/build_cell/StructureBuilder.h"
 
 #include <boost/optional.hpp>
 
-#include "build_cell/GenerationOutcome.h"
-#include "build_cell/IFragmentGenerator.h"
-#include "build_cell/IUnitCellGenerator.h"
-#include "build_cell/PointGroups.h"
-#include "build_cell/StructureBuild.h"
-#include "build_cell/StructureContents.h"
-#include "build_cell/SymmetryGroup.h"
-#include "common/Structure.h"
-#include "utility/IndexingEnums.h"
+#include "spl/build_cell/GenerationOutcome.h"
+#include "spl/build_cell/IFragmentGenerator.h"
+#include "spl/build_cell/IUnitCellGenerator.h"
+#include "spl/build_cell/PointGroups.h"
+#include "spl/build_cell/StructureBuild.h"
+#include "spl/build_cell/StructureContents.h"
+#include "spl/build_cell/SymmetryGroup.h"
+#include "spl/common/Structure.h"
+#include "spl/utility/IndexingEnums.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 StructureBuilder::StructureBuilder():

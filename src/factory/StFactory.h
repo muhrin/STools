@@ -14,16 +14,15 @@
 
 #include <boost/optional.hpp>
 
-// From SSTbx
-#include <factory/SsLibFactoryYaml.h>
-#include <utility/HeterogeneousMap.h>
+#include <spl/factory/SsLibFactoryYaml.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 // From SPipe
 #include <SpTypes.h>
 #include <factory/Factory.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace common {
 class AtomSpeciesDatabase;
 }
@@ -35,11 +34,11 @@ namespace factory {
 class Factory
 {
 public:
-  typedef ::sstbx::UniquePtr< ::spipe::SpBlock>::Type BlockPtr;
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
-  typedef ::sstbx::utility::HeterogeneousMap OptionsMap;
+  typedef ::spl::UniquePtr< ::spipe::SpBlock>::Type BlockPtr;
+  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
-  Factory(::sstbx::common::AtomSpeciesDatabase & speciesDb):
+  Factory(::spl::common::AtomSpeciesDatabase & speciesDb):
     mySsLibFactory(speciesDb),
     mySpFactory(speciesDb)
   {}
@@ -70,7 +69,7 @@ private:
   ) const;
 
   ::spipe::factory::Factory mySpFactory;
-  ::sstbx::factory::SsLibFactoryYaml mySsLibFactory;
+  ::spl::factory::SsLibFactoryYaml mySsLibFactory;
 
 };
 

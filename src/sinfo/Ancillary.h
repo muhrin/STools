@@ -17,13 +17,13 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/range/iterator_range.hpp>
 
-// From SSTbx
-#include <common/AtomsFormula.h>
-#include <common/Structure.h>
-#include <utility/TypedDataTable.h>
+
+#include <spl/common/AtomsFormula.h>
+#include <spl/common/Structure.h>
+#include <spl/utility/TypedDataTable.h>
 
 // FORWARD DECLARES ////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace common {
 class Structure;
 }
@@ -43,7 +43,7 @@ namespace sinfo {
 typedef ::std::vector< ::std::string> InfoStringTokens;
 typedef ::boost::ptr_map< ::std::string, utility::InfoToken> TokensMap;
 typedef ::std::auto_ptr<utility::InfoToken> TokenPtr;
-typedef ::sstbx::utility::TypedDataTable<const ::sstbx::common::Structure *> StructureInfoTable;
+typedef ::spl::utility::TypedDataTable<const ::spl::common::Structure *> StructureInfoTable;
 typedef StructureInfoTable::SortedKeys SortedKeys;
 
 // CONSTATNS ////////////////////////////////////
@@ -104,22 +104,22 @@ struct TokensInfo
   ::std::vector< ::std::string> formatStrings;
 };
 
-class FormulaFilter : public ::std::unary_function< const ::sstbx::common::Structure &, bool>
+class FormulaFilter : public ::std::unary_function< const ::spl::common::Structure &, bool>
 {
 public:
-  FormulaFilter(const ::sstbx::common::AtomsFormula & formula) :
+  FormulaFilter(const ::spl::common::AtomsFormula & formula) :
       myFormula(formula)
   {
   }
 
   bool
-  operator ()(::sstbx::common::Structure & structure)
+  operator ()(::spl::common::Structure & structure)
   {
     return !myFormula.isEmpty()
         && structure.getComposition().numMultiples(myFormula) == 0;
   }
 private:
-  const ::sstbx::common::AtomsFormula myFormula;
+  const ::spl::common::AtomsFormula myFormula;
 };
 
 // FUNCTIONS /////////////////////////////////////

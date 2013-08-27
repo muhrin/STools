@@ -5,16 +5,16 @@
  *      Author: Martin Uhrin
  */
 
-#include "build_cell/AtomExtruder.h"
+#include "spl/build_cell/AtomExtruder.h"
 
 #include <boost/multi_array.hpp>
 
-#include "common/Atom.h"
-#include "common/Structure.h"
-#include "common/DistanceCalculator.h"
-#include "common/Types.h"
+#include "spl/common/Atom.h"
+#include "spl/common/Structure.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Types.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 const int AtomExtruder::DEFAULT_MAX_ITERATIONS = 7000;

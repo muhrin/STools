@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/SslibReaderWriter.h"
+#include "spl/io/SslibReaderWriter.h"
 
 #include <iostream>
 #include <iomanip>
@@ -22,20 +22,20 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "common/Atom.h"
-#include "common/AtomSpeciesDatabase.h"
-#include "common/AtomSpeciesId.h"
-#include "common/AtomSpeciesInfo.h"
-#include "common/Structure.h"
-#include "common/StructureProperties.h"
-#include "common/Types.h"
-#include "common/UnitCell.h"
-#include "factory/SsLibYamlKeywords.h"
-#include "io/IoFunctions.h"
-#include "io/BoostFilesystem.h"
-#include "io/StructureYamlGenerator.h"
-#include "utility/IndexingEnums.h"
-#include "utility/UtilFunctions.h"
+#include "spl/common/Atom.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/AtomSpeciesId.h"
+#include "spl/common/AtomSpeciesInfo.h"
+#include "spl/common/Structure.h"
+#include "spl/common/StructureProperties.h"
+#include "spl/common/Types.h"
+#include "spl/common/UnitCell.h"
+#include "spl/factory/SsLibYamlKeywords.h"
+#include "spl/io/IoFunctions.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/io/StructureYamlGenerator.h"
+#include "spl/utility/IndexingEnums.h"
+#include "spl/utility/UtilFunctions.h"
 
 // DEFINES /////////////////////////////////
 
@@ -43,7 +43,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;

@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/CastepReader.h"
+#include "spl/io/CastepReader.h"
 
 #include <sstream>
 
@@ -16,13 +16,13 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "common/AtomSpeciesDatabase.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "io/BoostFilesystem.h"
-#include "io/Parsing.h"
-#include "potential/StructureProperties.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/AtomSpeciesDatabase.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/io/BoostFilesystem.h"
+#include "spl/io/Parsing.h"
+#include "spl/potential/StructureProperties.h"
+#include "spl/utility/IndexingEnums.h"
 
 // DEFINES /////////////////////////////////
 
@@ -30,7 +30,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;
@@ -50,7 +50,7 @@ const ::std::string CastepReader::FINAL_ENTHALPY("Final Enthalpy");
   return extensions;
 }
 
-::sstbx::common::types::StructurePtr CastepReader::readStructure(const ResourceLocator & locator) const
+::spl::common::types::StructurePtr CastepReader::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const fs::path filepath(locator.path());
@@ -110,7 +110,7 @@ size_t CastepReader::readStructures(StructuresContainer & outStructures, const R
   return numRead;
 }
 
-::sstbx::common::types::StructurePtr
+::spl::common::types::StructurePtr
  CastepReader::readStructure(::std::istream & inputStream,  const ::std::string & id) const
 {
   common::types::StructurePtr structure;

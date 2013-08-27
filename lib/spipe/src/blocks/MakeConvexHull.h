@@ -23,7 +23,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include <common/AtomSpeciesId.h>
+#include <spl/common/AtomSpeciesId.h>
 
 #include "SpTypes.h"
 
@@ -106,7 +106,7 @@ private:
       SpeciesMatrix       speciesMtx;
     };
 
-    typedef ::std::vector< ::sstbx::common::AtomSpeciesId::Value> SpeciesContainer;
+    typedef ::std::vector< ::spl::common::AtomSpeciesId::Value> SpeciesContainer;
     typedef ::std::vector<HullPoint>    HullPoints;
 
     /** All the species being used for the convex hull */

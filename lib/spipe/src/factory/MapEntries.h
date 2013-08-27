@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "utility/HeterogeneousMapKey.h"
+#include "spl/utility/HeterogeneousMapKey.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -25,26 +25,26 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 
 // GENERAL
-extern ::sstbx::utility::Key<int> NUM;
-extern ::sstbx::utility::Key< ::std::string> RNG_SEED;
+extern ::spl::utility::Key<int> NUM;
+extern ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> LOWEST_ENERGY;
-extern ::sstbx::utility::Key<size_t> KEEP_TOP;
-extern ::sstbx::utility::Key<double> KEEP_WITHIN;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> LOWEST_ENERGY;
+extern ::spl::utility::Key<size_t> KEEP_TOP;
+extern ::spl::utility::Key<double> KEEP_WITHIN;
 
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> GEOM_OPTIMISE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> PARAM_SWEEP;
-extern ::sstbx::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PARAM_SWEEP;
+extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> RANDOM_STRUCTURE;
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> RANDOM_STRUCTURE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
 
-extern ::sstbx::utility::Key< ::sstbx::utility::HeterogeneousMap> WRITE_STRUCTURES;
-extern ::sstbx::utility::Key<bool> MULTI_WRITE;
-extern ::sstbx::utility::Key< ::std::string> FILE_TYPE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
+extern ::spl::utility::Key<bool> MULTI_WRITE;
+extern ::spl::utility::Key< ::std::string> FILE_TYPE;
 
 
 

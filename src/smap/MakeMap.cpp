@@ -15,15 +15,15 @@
 // From Pipelib //
 #include <SingleThreadedPipeline.h>
 
-// From SSLib //
-#include <potential/SimplePairPotential.h>
-#include <utility/SortedDistanceComparator.h>
+ //
+#include <spl/potential/SimplePairPotential.h>
+#include <spl/utility/SortedDistanceComparator.h>
 
 // My includes //
 #include "blocks/EdgeDetect.h"
 #include "blocks/LoadPotStructures.h"
-#include "common/SharedData.h"
-#include "common/StructureData.h"
+#include "spl/common/SharedData.h"
+#include "spl/common/StructureData.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -87,12 +87,12 @@ int main()
   sharedDat.potSweepStep.reset(step);
   sharedDat.potSweepNSteps.reset(steps);
 
-  sstbx::potential::SimplePairPotential<> pot(2, epsilon, sigma, 2.5, beta, 12, 6);
+  spl::potential::SimplePairPotential<> pot(2, epsilon, sigma, 2.5, beta, 12, 6);
   LoadPotStructures loadStructures(pot, potFilePath, true);
 
 
   // Edge detect
-  sstbx::utility::SortedDistanceComparator comparator;
+  spl::utility::SortedDistanceComparator comparator;
   EdgeDetect edgeDetect(comparator);
 
 

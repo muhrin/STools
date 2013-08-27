@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/GnuplotConvexHullPlotter.h"
+#include "spl/analysis/GnuplotConvexHullPlotter.h"
 
 #ifdef SSLIB_USE_CGAL
 
@@ -18,10 +18,10 @@
 
 #include <CGAL/Regular_complex_d.h>
 
-#include "analysis/IConvexHullInfoSupplier.h"
-#include "utility/TransformFunctions.h"
+#include "spl/analysis/IConvexHullInfoSupplier.h"
+#include "spl/utility/TransformFunctions.h"
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 
 GnuplotConvexHullPlotter::GnuplotConvexHullPlotter()

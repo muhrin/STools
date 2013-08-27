@@ -7,21 +7,21 @@
 
 // INCLUDES /////////////////////////////////////
 
-#include "utility/DistanceMatrixComparator.h"
+#include "spl/utility/DistanceMatrixComparator.h"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "common/DistanceCalculator.h"
-#include "common/Structure.h"
-#include "math/NumberAlgorithms.h"
-#include "utility/GenericBufferedComparator.h"
-#include "utility/PermutationRange.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Structure.h"
+#include "spl/math/NumberAlgorithms.h"
+#include "spl/utility/GenericBufferedComparator.h"
+#include "spl/utility/PermutationRange.h"
 
 // Turn on or off DistanceMatrixComparator (DMC) debugging
 //#define SSLIB_DMC_DEBUG
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 typedef ::std::pair<size_t, double> IndexDoublePair;

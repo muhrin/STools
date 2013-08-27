@@ -15,12 +15,11 @@
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
-// From SSLib //
-#include <analysis/Histogram.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
-#include <common/UnitCell.h>
-#include <io/StructureReadWriteManager.h>
+#include <spl/analysis/Histogram.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
+#include <spl/io/StructureReadWriteManager.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -28,14 +27,12 @@
 // stools_common includes
 #include <utility/TerminalFunctions.h>
 
-// My includes //
-
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
-namespace ssa = ::sstbx::analysis;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
+namespace ssa = ::spl::analysis;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
 namespace sp = ::spipe;
 
 // TYPEDEFS //////////////////////////////////

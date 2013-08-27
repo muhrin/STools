@@ -6,13 +6,13 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/TpsdGeomOptimiser.h"
+#include "spl/potential/TpsdGeomOptimiser.h"
 
 #include <sstream>
 
-#include "SSLib.h"
-#include "common/UnitCell.h"
-#include "potential/OptimisationSettings.h"
+#include "spl/SSLib.h"
+#include "spl/common/UnitCell.h"
+#include "spl/potential/OptimisationSettings.h"
 
 #define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
 
@@ -23,7 +23,7 @@
 #endif
 
 // NAMESPACES ////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
@@ -116,7 +116,7 @@ TpsdGeomOptimiser::getPotential() const
 }
 
 OptimisationOutcome
-TpsdGeomOptimiser::optimise(::sstbx::common::Structure & structure,
+TpsdGeomOptimiser::optimise(::spl::common::Structure & structure,
     const OptimisationSettings & options) const
 {
   OptimisationData optData;
@@ -124,7 +124,7 @@ TpsdGeomOptimiser::optimise(::sstbx::common::Structure & structure,
 }
 
 OptimisationOutcome
-TpsdGeomOptimiser::optimise(::sstbx::common::Structure & structure, OptimisationData & data,
+TpsdGeomOptimiser::optimise(::spl::common::Structure & structure, OptimisationData & data,
     const OptimisationSettings & options) const
 {
   ::boost::shared_ptr< IPotentialEvaluator> evaluator = myPotential->createEvaluator(structure);
@@ -410,7 +410,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 }
 
 bool
-TpsdGeomOptimiser::cellReasonable(const sstbx::common::UnitCell & unitCell) const
+TpsdGeomOptimiser::cellReasonable(const spl::common::UnitCell & unitCell) const
 {
   // Do a few checks to see if the cell has collapsed
   if(unitCell.getNormVolume() < CELL_MIN_NORM_VOLUME)

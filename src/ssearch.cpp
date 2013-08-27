@@ -15,9 +15,9 @@
 
 #include <yaml-cpp/yaml.h>
 
-// From SSTbx
-#include <common/AtomSpeciesDatabase.h>
-#include <io/BoostFilesystem.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/io/BoostFilesystem.h>
 
 #include <pipelib/pipelib.h>
 
@@ -35,10 +35,10 @@
 namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
-namespace ssc   = ::sstbx::common;
-namespace ssm   = ::sstbx::math;
-namespace ssu   = ::sstbx::utility;
-namespace ssys  = ::sstbx::yaml_schema;
+namespace ssc   = ::spl::common;
+namespace ssm   = ::spl::math;
+namespace ssu   = ::spl::utility;
+namespace ssys  = ::spl::yaml_schema;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -54,7 +54,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int main(const int argc, char * argv[])
 {
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
   typedef sp::SpSingleThreadedEngine Engine;
   typedef Engine::RunnerPtr RunnerPtr;
 
@@ -96,7 +96,7 @@ int main(const int argc, char * argv[])
   // Create the pipe the run the search
   Engine pipeEngine;
   RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-  runner->memory().global().setSeedName(::sstbx::io::stemString(in.inputOptionsFile));
+  runner->memory().global().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
   ::stools::factory::Factory factory(runner->memory().global().getSpeciesDatabase());
 

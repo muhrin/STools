@@ -8,15 +8,15 @@
 // INCLUDES //////////////////////////////////
 #include "common/GlobalData.h"
 
-// From SSTbx
-#include <utility/UtilFunctions.h>
+
+#include <spl/utility/UtilFunctions.h>
 
 #include "common/UtilityFunctions.h"
 
 // NAMESPACES ////////////////////////////////
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
 
 namespace spipe {
 namespace common {

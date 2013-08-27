@@ -6,16 +6,16 @@
  */
 
 // INCLUDES //////////////////////////////////////
-#include "build_cell/RandomUnitCellGenerator.h"
+#include "spl/build_cell/RandomUnitCellGenerator.h"
 
-#include "SSLibAssert.h"
-#include "build_cell/GenerationOutcome.h"
-#include "build_cell/StructureContents.h"
-#include "common/UnitCell.h"
-#include "math/Random.h"
-#include "utility/StableComparison.h"
+#include "spl/SSLibAssert.h"
+#include "spl/build_cell/GenerationOutcome.h"
+#include "spl/build_cell/StructureContents.h"
+#include "spl/common/UnitCell.h"
+#include "spl/math/Random.h"
+#include "spl/utility/StableComparison.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 namespace comp = utility::stable;

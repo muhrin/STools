@@ -27,8 +27,8 @@ set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as
 set(SSLIB_USE_LAPACK TRUE CACHE BOOL "Enable functionality that uses LAPACK")
 
 configure_file(
-  "${PROJECT_SOURCE_DIR}/include/SSLibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/include/SSLibConfig.h"
+  "${PROJECT_SOURCE_DIR}/include/spl/SSLibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
 )
 
 ## END CONFIGURATION SETTINGS ##########################

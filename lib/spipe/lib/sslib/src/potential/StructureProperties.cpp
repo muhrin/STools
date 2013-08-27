@@ -6,12 +6,12 @@
  */
 
 // INCLUDES ///////////////
-#include "potential/StructureProperties.h"
+#include "spl/potential/StructureProperties.h"
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 utility::NamedKey<int> INDEX("index");
 
 } // namespace potential
-} // namespace sstbx
+} // namespace spl

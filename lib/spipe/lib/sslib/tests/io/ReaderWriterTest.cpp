@@ -11,21 +11,21 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include <common/AtomSpeciesId.h>
-#include <common/Structure.h>
-#include <common/Types.h>
-#include <common/UnitCell.h>
-#include <io/CellReaderWriter.h>
-#include <io/ResourceLocator.h>
-#include <io/ResReaderWriter.h>
-#include <io/SslibReaderWriter.h>
-#include <io/StructureReadWriteManager.h>
-#include <utility/StableComparison.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/common/Structure.h>
+#include <spl/common/Types.h>
+#include <spl/common/UnitCell.h>
+#include <spl/io/CellReaderWriter.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/ResReaderWriter.h>
+#include <spl/io/SslibReaderWriter.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/utility/StableComparison.h>
 
 namespace fs = ::boost::filesystem;
-namespace ssio = ::sstbx::io;
-namespace ssc = ::sstbx::common;
-namespace compare = ::sstbx::utility::stable;
+namespace ssio = ::spl::io;
+namespace ssc = ::spl::common;
+namespace compare = ::spl::utility::stable;
 
 void checkSimilar(const ssc::Structure & str1, const ssc::Structure & str2);
 
@@ -38,9 +38,9 @@ BOOST_AUTO_TEST_CASE(ReaderWriterTest)
 
   // Set up all the readers/writers we want to test
   ssio::StructureReadWriteManager rwMan;
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::ResReaderWriter()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::SslibReaderWriter()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::CellReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::ResReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::SslibReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::CellReaderWriter()));
   BOOST_REQUIRE(rwMan.numReaders() == NUM_READER_WRITERS);
   BOOST_REQUIRE(rwMan.numWriters() == NUM_READER_WRITERS);
 

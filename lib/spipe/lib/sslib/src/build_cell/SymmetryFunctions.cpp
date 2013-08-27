@@ -7,17 +7,17 @@
 
 
 // INCLUDES /////////////////
-#include "build_cell/SymmetryFunctions.h"
+#include "spl/build_cell/SymmetryFunctions.h"
 
-#include "SSLibAssert.h"
+#include "spl/SSLibAssert.h"
 
-#include "build_cell/SymmetryGroup.h"
-#include "common/Constants.h"
-#include "math/Random.h"
-#include "math/Matrix.h"
-#include "utility/IndexingEnums.h"
+#include "spl/build_cell/SymmetryGroup.h"
+#include "spl/common/Constants.h"
+#include "spl/math/Random.h"
+#include "spl/math/Matrix.h"
+#include "spl/utility/IndexingEnums.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 namespace symmetry {
 

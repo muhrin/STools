@@ -6,14 +6,14 @@
  */
 
 // INCLUDES ///////////////
-#include "common/AtomGroup.h"
+#include "spl/common/AtomGroup.h"
 
 #include <boost/foreach.hpp>
 
-#include "common/Atom.h"
-#include "common/Constants.h"
+#include "spl/common/Atom.h"
+#include "spl/common/Constants.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 AtomGroup::iterator AtomGroup::begin()

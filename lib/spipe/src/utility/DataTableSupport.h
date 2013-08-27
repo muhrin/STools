@@ -14,7 +14,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <io/BoostFilesystem.h>
+#include <spl/io/BoostFilesystem.h>
 
 #include <pipelib/pipelib.h>
 
@@ -38,7 +38,7 @@ public:
   DataTableSupport(
     const ::boost::filesystem::path & filename,
     const bool clearTableOnPipeFinish = true);
-  ~DataTableSupport();
+  virtual ~DataTableSupport();
 
   void registerRunner(SpRunnerAccess & runner);
   bool deregisterRunner();

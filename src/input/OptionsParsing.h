@@ -19,7 +19,7 @@ namespace YAML {
 class Node;
 }
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 class HeterogeneousMap;
 }
@@ -31,7 +31,7 @@ namespace input {
 int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile);
 bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> & scalarValues);
 
-void seedRandomNumberGenerator(const ::sstbx::utility::HeterogeneousMap & schemaOptions);
+void seedRandomNumberGenerator(const ::spl::utility::HeterogeneousMap & schemaOptions);
 
 }
 }

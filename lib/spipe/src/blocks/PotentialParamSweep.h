@@ -20,8 +20,8 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSTbx
-#include <utility/MultiIdx.h>
+
+#include <spl/utility/MultiIdx.h>
 
 // Local includes
 #include "SpTypes.h"
@@ -41,7 +41,7 @@ namespace blocks {
 class PotentialParamSweep : public SpStartBlock, public SpFinishedSink, ::boost::noncopyable
 {
 public:
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
+  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
 
   static const ::std::string POTPARAMS_FILE_EXTENSION;
 
@@ -53,7 +53,7 @@ public:
 
 private:
 
-  typedef ::sstbx::utility::MultiIdx<int> ParamSpaceIdx;
+  typedef ::spl::utility::MultiIdx<int> ParamSpaceIdx;
   typedef ::std::vector<double> PotentialParams;
 
   // From Block ///////////////////////////////

@@ -11,10 +11,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
-// From SSTbx
-#include <common/Structure.h>
-#include <utility/MultiIdxRange.h>
-#include <utility/UtilFunctions.h>
+
+#include <spl/common/Structure.h>
+#include <spl/utility/MultiIdxRange.h>
+#include <spl/utility/UtilFunctions.h>
 
 #include "common/PipeFunctions.h"
 #include "common/SharedData.h"
@@ -27,9 +27,9 @@ namespace spipe {
 namespace blocks {
 
 namespace fs = ::boost::filesystem;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 typedef common::GlobalKeys Keys;
 

@@ -6,17 +6,17 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/ResourceLocator.h"
+#include "spl/io/ResourceLocator.h"
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-// Local includes
-#include <io/BoostFilesystem.h>
+
+#include "spl/io/BoostFilesystem.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace fs = ::boost::filesystem;

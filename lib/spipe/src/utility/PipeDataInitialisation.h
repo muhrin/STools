@@ -10,7 +10,7 @@
 #define PIPE_DATA_INITIALISATION_H
 
 // INCLUDES /////////////////////////////////////////////
-#include <SSLibTypes.h>
+#include <spl/SSLibTypes.h>
 
 #include <SpTypes.h>
 
@@ -33,7 +33,7 @@ class StructureReadWriteManager;
 namespace spipe {
 namespace utility {
 
-void initStructureRwManDefault(::sstbx::io::StructureReadWriteManager & rwMan);
+void initStructureRwManDefault(::spl::io::StructureReadWriteManager & rwMan);
 
 ::spipe::SpEngine::RunnerPtr generateRunnerInitDefault(::spipe::SpEngine & engine);
 

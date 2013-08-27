@@ -6,21 +6,21 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/TranscodeBuildCell.h"
+#include "spl/yaml/TranscodeBuildCell.h"
 
 #include <boost/lexical_cast.hpp>
 
-#include "factory/SsLibYamlKeywords.h"
-#include "yaml/TranscodeGeneral.h"
+#include "spl/factory/SsLibYamlKeywords.h"
+#include "spl/yaml/TranscodeGeneral.h"
 
 // NAMESPACES ////////////////////////////////
-namespace ssbc = ::sstbx::build_cell;
+namespace ssbc = ::spl::build_cell;
 
 namespace YAML {
 
 Node convert<ssbc::Sphere>::encode(const ssbc::Sphere & sphere)
 {
-  namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+  namespace kw = ::spl::factory::sslib_yaml_keywords;
 
   Node node;
 
@@ -32,7 +32,7 @@ Node convert<ssbc::Sphere>::encode(const ssbc::Sphere & sphere)
 
 bool convert<ssbc::Sphere>::decode(const Node & node, ssbc::Sphere & sphere)
 {
-  namespace kw = ::sstbx::factory::sslib_yaml_keywords;
+  namespace kw = ::spl::factory::sslib_yaml_keywords;
 
   try
   {

@@ -19,13 +19,12 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSTbx
-#include <build_cell/StructureBuilder.h>
-#include <build_cell/RandomUnitCellGenerator.h>
-#include <build_cell/BuildCellFwd.h>
-#include <common/AtomSpeciesId.h>
-#include <io/BoostFilesystem.h>
-#include <utility/MultiIdxRange.h>
+#include <spl/build_cell/StructureBuilder.h>
+#include <spl/build_cell/RandomUnitCellGenerator.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/io/BoostFilesystem.h>
+#include <spl/utility/MultiIdxRange.h>
 
 // Local includes
 #include "SpTypes.h"
@@ -33,7 +32,7 @@
 #include "utility/DataTableSupport.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 class AddOnStructureBuilder;
 }
@@ -52,13 +51,13 @@ namespace blocks {
 struct SpeciesParameter
 {
   SpeciesParameter(
-    const ::sstbx::common::AtomSpeciesId::Value _id,
+    const ::spl::common::AtomSpeciesId::Value _id,
     const size_t _maxNum):
     id(_id),
     maxNum(_maxNum)
   {}
 
-  ::sstbx::common::AtomSpeciesId::Value id;
+  ::spl::common::AtomSpeciesId::Value id;
   size_t                                maxNum;
 };
 
@@ -66,13 +65,13 @@ class StoichiometrySearch : public SpStartBlock, public SpFinishedSink,
   ::boost::noncopyable
 {
 public:
-  typedef ::sstbx::build_cell::StructureBuilderPtr StructureBuilderPtr;
+  typedef ::spl::build_cell::StructureBuilderPtr StructureBuilderPtr;
   typedef ::std::vector<SpeciesParameter> SpeciesParameters;
-  typedef ::sstbx::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
+  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type SubpipePtr;
 
   StoichiometrySearch(
-    const ::sstbx::common::AtomSpeciesId::Value  species1,
-    const ::sstbx::common::AtomSpeciesId::Value  species2,
+    const ::spl::common::AtomSpeciesId::Value  species1,
+    const ::spl::common::AtomSpeciesId::Value  species2,
     const size_t          maxAtoms,
     SubpipePtr            subpipe,
     StructureBuilderPtr   structureBuilder = StructureBuilderPtr()
@@ -108,7 +107,7 @@ private:
   virtual void runnerAttached(RunnerSetupType & setup);
   // End from Block ////
 
-  ::sstbx::utility::MultiIdxRange<unsigned int> getStoichRange();
+  ::spl::utility::MultiIdxRange<unsigned int> getStoichRange();
 
   void releaseBufferedStructures(
     const utility::DataTable::Key &             key
@@ -116,8 +115,8 @@ private:
 
   void updateTable(
     const utility::DataTable::Key &             key,
-    const ::sstbx::utility::MultiIdx<unsigned int> & currentIdx,
-    const ::sstbx::common::AtomSpeciesDatabase & atomsDb
+    const ::spl::utility::MultiIdx<unsigned int> & currentIdx,
+    const ::spl::common::AtomSpeciesDatabase & atomsDb
   );
 
   StructureBuilderPtr newStructureGenerator() const;

@@ -7,11 +7,11 @@
 
 
 // INCLUDES /////////////////
-#include "build_cell/Sphere.h"
+#include "spl/build_cell/Sphere.h"
 
-#include "common/Constants.h"
+#include "spl/common/Constants.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 double Sphere::radius(const double volume)

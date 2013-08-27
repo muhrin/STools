@@ -6,11 +6,11 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "math/Random.h"
+#include "spl/math/Random.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace math {
 namespace detail {
 ::boost::mt19937 mt19937;

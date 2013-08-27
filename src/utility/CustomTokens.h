@@ -10,14 +10,14 @@
 #define CUSTOM_TOKENS_H
 
 // INCLUDES /////////////////////////////////////////////
-#include "utility/InfoToken.h"
-
-#include <io/ResourceLocator.h>
+#include <spl/io/ResourceLocator.h>
 
 #include <boost/filesystem.hpp>
 
+#include "utility/InfoToken.h"
+
 // FORWARD DECLARES ////////////////////////////////
-namespace sstbx {
+namespace spl {
 namespace common {
 class Structure;
 }
@@ -50,7 +50,7 @@ public:
 protected:
   typedef TypedToken<double>::StructureValue StructureValue;
 
-  virtual StructureValue doGetValue(const ::sstbx::common::Structure & structure) const;
+  virtual StructureValue doGetValue(const ::spl::common::Structure & structure) const;
 
 private:
   double myRelativeTo; // The energy that all energies will be relative to
@@ -66,19 +66,19 @@ public:
     const ::std::string & defaultFormatString = ""
   );
 protected:
-  virtual ::boost::optional< ::std::string> doGetValue(const ::sstbx::common::Structure & structure) const;
+  virtual ::boost::optional< ::std::string> doGetValue(const ::spl::common::Structure & structure) const;
 };
 
 
 namespace functions {
-::boost::optional< ::std::string> getName(const ::sstbx::common::Structure & structure);
-::boost::optional<double> getVolume(const ::sstbx::common::Structure & structure);
-::boost::optional<double> getVolumePerAtom(const ::sstbx::common::Structure & structure);
-::boost::optional<double> getEnergyPerAtom(const ::sstbx::common::Structure & structure);
-::boost::optional<unsigned int> getNumAtoms(const ::sstbx::common::Structure & structure);
-::boost::optional< ::std::string> getSpaceGroupSymbol(const ::sstbx::common::Structure & structure);
-::boost::optional<unsigned int> getSpaceGroupNumber(const ::sstbx::common::Structure & structure);
-::boost::optional< ::sstbx::io::ResourceLocator> getRelativeLoadPath(const ::sstbx::common::Structure & structure);
+::boost::optional< ::std::string> getName(const ::spl::common::Structure & structure);
+::boost::optional<double> getVolume(const ::spl::common::Structure & structure);
+::boost::optional<double> getVolumePerAtom(const ::spl::common::Structure & structure);
+::boost::optional<double> getEnergyPerAtom(const ::spl::common::Structure & structure);
+::boost::optional<unsigned int> getNumAtoms(const ::spl::common::Structure & structure);
+::boost::optional< ::std::string> getSpaceGroupSymbol(const ::spl::common::Structure & structure);
+::boost::optional<unsigned int> getSpaceGroupNumber(const ::spl::common::Structure & structure);
+::boost::optional< ::spl::io::ResourceLocator> getRelativeLoadPath(const ::spl::common::Structure & structure);
 
 }
 

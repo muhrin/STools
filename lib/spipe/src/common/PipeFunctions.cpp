@@ -8,14 +8,14 @@
 // INCLUDES //////////////////////////////////
 #include "PipeFunctions.h"
 
-#include <utility/UtilFunctions.h>
+#include <spl/utility/UtilFunctions.h>
 
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
 namespace common {
 
-namespace ssu = ::sstbx::utility;
+namespace ssu = ::spl::utility;
 
 ::std::string getOutputFileStem(const MemoryAccessType & memory)
 {

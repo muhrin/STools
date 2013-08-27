@@ -6,10 +6,10 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/UniqueStructureSet.h"
+#include "spl/utility/UniqueStructureSet.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 UniqueStructureSet<common::Structure *>::UniqueStructureSet(IStructureComparatorPtr comparator):

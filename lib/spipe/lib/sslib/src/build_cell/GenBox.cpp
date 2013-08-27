@@ -6,13 +6,13 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/GenBox.h"
+#include "spl/build_cell/GenBox.h"
 
-#include "math/Matrix.h"
-#include "math/Random.h"
-#include "utility/IndexingEnums.h"
+#include "spl/math/Matrix.h"
+#include "spl/math/Random.h"
+#include "spl/utility/IndexingEnums.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 GenBox::GenBox(const double width, const double height, const double depth):

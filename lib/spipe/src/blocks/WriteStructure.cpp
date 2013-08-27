@@ -8,11 +8,11 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/WriteStructure.h"
 
-// From SSTbx
-#include <common/Structure.h>
-#include <io/StructureReadWriteManager.h>
-#include <io/BoostFilesystem.h>
-#include <utility/UtilFunctions.h>
+
+#include <spl/common/Structure.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/io/BoostFilesystem.h>
+#include <spl/utility/UtilFunctions.h>
 
 // From local
 #include "common/PipeFunctions.h"
@@ -26,9 +26,9 @@ namespace spipe {
 namespace blocks {
 
 namespace fs = ::boost::filesystem;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
 
 const bool WriteStructure::WRITE_MULTI_DEFAULT = true;
 

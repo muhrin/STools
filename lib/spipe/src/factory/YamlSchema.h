@@ -11,10 +11,10 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-// From SSLib
-#include <factory/SsLibYamlSchema.h>
-#include <utility/HeterogeneousMap.h>
-#include <yaml_schema/YamlSchema.h>
+
+#include <spl/factory/SsLibYamlSchema.h>
+#include <spl/utility/HeterogeneousMap.h>
+#include <spl/yaml_schema/YamlSchema.h>
 
 #include "blocks/WriteStructure.h"
 #include "factory/MapEntries.h"
@@ -34,28 +34,28 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct GeomOptimise : ::sstbx::yaml_schema::SchemaHeteroMap
+struct GeomOptimise : ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   GeomOptimise()
   {
     addEntry(
       "optimiser",
-      ::sstbx::factory::OPTIMISER,
-      new ::sstbx::factory::Optimiser()
+      ::spl::factory::OPTIMISER,
+      new ::spl::factory::Optimiser()
     );
     addEntry(
       "potential",
-      ::sstbx::factory::POTENTIAL,
-      new ::sstbx::factory::Potential()
+      ::spl::factory::POTENTIAL,
+      new ::spl::factory::Potential()
     );
-    addScalarEntry("pressure", ::sstbx::factory::PRESSURE);
+    addScalarEntry("pressure", ::spl::factory::PRESSURE);
   }
 };
 
-struct LowestEnergy : public ::sstbx::yaml_schema::SchemaHeteroMap
+struct LowestEnergy : public ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   LowestEnergy()
   {
     addScalarEntry("keepWithin", KEEP_WITHIN)->element()->defaultValue(0.1);
@@ -63,48 +63,48 @@ struct LowestEnergy : public ::sstbx::yaml_schema::SchemaHeteroMap
   }
 };
 
-struct ParamSweep : public ::sstbx::yaml_schema::SchemaHeteroMap
+struct ParamSweep : public ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   ParamSweep()
   {
     addEntry(
       "range",
       PARAM_RANGE,
-      new ::sstbx::yaml_schema::SchemaWrapper< ::sstbx::yaml::VectorAsString< ::std::string> >
+      new ::spl::yaml_schema::SchemaWrapper< ::spl::yaml::VectorAsString< ::std::string> >
     )->required();
   }
 };
 
-struct RandomStructure : public ::sstbx::factory::builder::Builder
+struct RandomStructure : public ::spl::factory::builder::Builder
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   RandomStructure()
   {
     addScalarEntry("num", NUM)->element()->defaultValue(100);
   }
 };
 
-struct RemoveDuplicates : public ::sstbx::yaml_schema::SchemaHeteroMap
+struct RemoveDuplicates : public ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   RemoveDuplicates()
   {
     addEntry(
       "comparator",
-      ::sstbx::factory::COMPARATOR,
-      new ::sstbx::factory::Comparator()
+      ::spl::factory::COMPARATOR,
+      new ::spl::factory::Comparator()
     );
 
-    //::sstbx::utility::HeterogeneousMap defaultOptions;
-    //defaultOptions[::sstbx::factory::COMPARATOR];
+    //::spl::utility::HeterogeneousMap defaultOptions;
+    //defaultOptions[::spl::factory::COMPARATOR];
     //defaultValue(defaultOptions);
   }
 };
 
-struct WriteStructure : ::sstbx::yaml_schema::SchemaHeteroMap
+struct WriteStructure : ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   WriteStructure()
   {
     addScalarEntry("multiWrite", MULTI_WRITE)->
@@ -117,17 +117,17 @@ struct WriteStructure : ::sstbx::yaml_schema::SchemaHeteroMap
 
 namespace pipes {
 
-struct Search : ::sstbx::yaml_schema::SchemaHeteroMap
+struct Search : ::spl::yaml_schema::SchemaHeteroMap
 {
-  typedef ::sstbx::utility::HeterogeneousMap BindingType;
+  typedef ::spl::utility::HeterogeneousMap BindingType;
   Search()
   {
     // Simple options
-    addScalarEntry("pressure", ::sstbx::factory::PRESSURE);
+    addScalarEntry("pressure", ::spl::factory::PRESSURE);
     addEntry(
       "potential",
-      ::sstbx::factory::POTENTIAL,
-      new ::sstbx::factory::Potential()
+      ::spl::factory::POTENTIAL,
+      new ::spl::factory::Potential()
     );
 
     // Fine-tune options

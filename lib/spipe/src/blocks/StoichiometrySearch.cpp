@@ -12,18 +12,17 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-// From SSTbx
-#include <build_cell/AtomsDescription.h>
-#include <build_cell/AtomsGenerator.h>
-#include <build_cell/BuildCellFwd.h>
-#include <build_cell/IFragmentGenerator.h>
-#include <build_cell/IStructureGenerator.h>
-#include <build_cell/StructureBuilder.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
-#include <io/BoostFilesystem.h>
-#include <io/ResourceLocator.h>
-#include <utility/MultiIdx.h>
+#include <spl/build_cell/AtomsDescription.h>
+#include <spl/build_cell/AtomsGenerator.h>
+#include <spl/build_cell/BuildCellFwd.h>
+#include <spl/build_cell/IFragmentGenerator.h>
+#include <spl/build_cell/IStructureGenerator.h>
+#include <spl/build_cell/StructureBuilder.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
+#include <spl/io/BoostFilesystem.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/utility/MultiIdx.h>
 
 // Local includes
 #include "common/PipeFunctions.h"
@@ -32,23 +31,22 @@
 #include "common/UtilityFunctions.h"
 #include "utility/DataTable.h"
 
-
 namespace spipe {
 namespace blocks {
 
 // NAMESPACE ALIASES /////////////////////////
 namespace fs = ::boost::filesystem;
 namespace common = ::spipe::common;
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssu = ::sstbx::utility;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
 
 StoichiometrySearch::StoichiometrySearch(
-  const ::sstbx::common::AtomSpeciesId::Value species1,
-  const ::sstbx::common::AtomSpeciesId::Value species2,
+  const ::spl::common::AtomSpeciesId::Value species1,
+  const ::spl::common::AtomSpeciesId::Value species2,
   const size_t maxAtoms,
   SubpipePtr subpipe,
   StructureBuilderPtr structureBuilder):
@@ -124,7 +122,7 @@ void StoichiometrySearch::start()
   
       if(numAtomsOfSpecies > 0)
       {
-        ::sstbx::UniquePtr<ssbc::AtomsGenerator>::Type atomsGenerator(new ssbc::AtomsGenerator());
+        ::spl::UniquePtr<ssbc::AtomsGenerator>::Type atomsGenerator(new ssbc::AtomsGenerator());
         atomsGenerator->insertAtoms(ssbc::AtomsDescription(mySpeciesParameters[i].id, numAtomsOfSpecies));
         builder->addGenerator(atomsGenerator);
       }

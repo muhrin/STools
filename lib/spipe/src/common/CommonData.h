@@ -17,7 +17,7 @@
 
 #include <armadillo>
 
-#include <utility/HeterogeneousMap.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -44,8 +44,8 @@ private:
 struct GlobalKeys
 {
   // The current parameterised potential parameters
-  static ::sstbx::utility::Key< ::std::vector<double> >  POTENTIAL_PARAMS;
-  static ::sstbx::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
+  static ::spl::utility::Key< ::std::vector<double> >  POTENTIAL_PARAMS;
+  static ::spl::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
 
 };
 

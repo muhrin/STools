@@ -8,14 +8,13 @@
 // INCLUDES //////////////////////////////////
 #include "utility/PipeDataInitialisation.h"
 
-// From SSTbx
-#include <SSLibTypes.h>
-#include <io/CastepReader.h>
-#include <io/CellReaderWriter.h>
-#include <io/StructureReadWriteManager.h>
-#include <io/ResReaderWriter.h>
-#include <io/SslibReaderWriter.h>
-#include <io/XyzReaderWriter.h>
+#include <spl/SSLibTypes.h>
+#include <spl/io/CastepReader.h>
+#include <spl/io/CellReaderWriter.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/io/ResReaderWriter.h>
+#include <spl/io/SslibReaderWriter.h>
+#include <spl/io/XyzReaderWriter.h>
 
 // From local
 #include "common/GlobalData.h"
@@ -28,15 +27,15 @@ namespace utility {
 
 namespace sp = ::spipe;
 namespace spc = ::spipe::common;
-namespace ssio = ::sstbx::io;
+namespace ssio = ::spl::io;
 
 void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
 {
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::CastepReader()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::CellReaderWriter()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::ResReaderWriter()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::SslibReaderWriter()));
-  rwMan.insert(::sstbx::makeUniquePtr(new ssio::XyzReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::CastepReader()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::CellReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::ResReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::SslibReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::XyzReaderWriter()));
   rwMan.setDefaultWriter(ssio::SslibReaderWriter::DEFAULT_EXTENSION);
 }
 

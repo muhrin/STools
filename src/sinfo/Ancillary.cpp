@@ -33,7 +33,7 @@ namespace sinfo {
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace structure_properties = ssc::structure_properties;
 
 const ::std::string VAR_BRACKET("$");
@@ -266,7 +266,7 @@ generateTokens(TokensMap & map)
           structure_properties::searching::TIMES_FOUND));
 
   addToken(map,
-      utility::makeFunctionToken< ::sstbx::io::ResourceLocator>("File", "f",
+      utility::makeFunctionToken< ::spl::io::ResourceLocator>("File", "f",
           utility::functions::getRelativeLoadPath, "%|-|"));
 
   return customisable;

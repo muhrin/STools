@@ -8,12 +8,10 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/NiggliReduction.h"
 
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
+
 #include "common/StructureData.h"
-
-// From SSTbx
-
-#include <common/Structure.h>
-#include <common/UnitCell.h>
 
 // NAMESPACES ////////////////////////////////
 
@@ -21,7 +19,7 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 
 NiggliReduction::NiggliReduction():
 SpBlock("Niggli reduction")

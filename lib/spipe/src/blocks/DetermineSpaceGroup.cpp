@@ -20,10 +20,10 @@ extern "C"
 #  include <spglib/spglib.h>
 }
 
-#include <analysis/SpaceGroup.h>
-#include <common/AtomSpeciesId.h>
-#include <common/Structure.h>
-#include <common/UnitCell.h>
+#include <spl/analysis/SpaceGroup.h>
+#include <spl/common/AtomSpeciesId.h>
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
 
 // Local includes
 #include "common/StructureData.h"
@@ -34,8 +34,8 @@ extern "C"
 namespace spipe {
 namespace blocks {
 namespace common = ::spipe::common;
-namespace ssc = ::sstbx::common;
-namespace ssa = ::sstbx::analysis;
+namespace ssc = ::spl::common;
+namespace ssa = ::spl::analysis;
 namespace structure_properties = ssc::structure_properties;
 
 DetermineSpaceGroup::DetermineSpaceGroup():

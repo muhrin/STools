@@ -13,13 +13,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-// From SSTbx
-#include <SSLibAssert.h> // TEMP !
-#include <common/Structure.h>
-#include <potential/PotentialData.h>
-#include <potential/IGeomOptimiser.h>
-#include <potential/IParameterisable.h>
-#include <potential/IPotential.h>
+#include <spl/SSLibAssert.h> // TEMP !
+#include <spl/common/Structure.h>
+#include <spl/potential/PotentialData.h>
+#include <spl/potential/IGeomOptimiser.h>
+#include <spl/potential/IParameterisable.h>
+#include <spl/potential/IPotential.h>
 
 #include "common/PipeFunctions.h"
 #include "common/StructureData.h"
@@ -37,7 +36,7 @@ namespace common = ::spipe::common;
 namespace utility = ::spipe::utility;
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IGeomOptimiserPtr optimiser,
+	::spl::potential::IGeomOptimiserPtr optimiser,
   const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
 PotentialGo(optimiser, writeOutput)
@@ -46,8 +45,8 @@ PotentialGo(optimiser, writeOutput)
 }
 
 ParamPotentialGo::ParamPotentialGo(
-	::sstbx::potential::IGeomOptimiserPtr optimiser,
-  const ::sstbx::potential::OptimisationSettings & optimisationParams,
+	::spl::potential::IGeomOptimiserPtr optimiser,
+  const ::spl::potential::OptimisationSettings & optimisationParams,
   const bool writeOutput):
 SpBlock("Parameterised potential geometry optimisation"),
 PotentialGo(optimiser, optimisationParams, writeOutput)

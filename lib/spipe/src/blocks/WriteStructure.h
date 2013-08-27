@@ -16,14 +16,14 @@
 
 #include <pipelib/pipelib.h>
 
-#include <io/ResourceLocator.h>
+#include <spl/io/ResourceLocator.h>
 
 #include "SpTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 struct AdditionalData;
 class StructureReadWriteManager;
@@ -59,10 +59,10 @@ private:
     enum Value { DISABLED, USE_CUSTOM_WRITER, USE_DEFAULT_WRITER };
   };
 
-  ::sstbx::io::ResourceLocator generateLocator(
-    ::sstbx::common::Structure & structure,
-    const ::sstbx::io::IStructureWriter & writer) const;
-  bool useMultiStructure(const ::sstbx::io::IStructureWriter & writer) const;
+  ::spl::io::ResourceLocator generateLocator(
+    ::spl::common::Structure & structure,
+    const ::spl::io::IStructureWriter & writer) const;
+  bool useMultiStructure(const ::spl::io::IStructureWriter & writer) const;
 
   State::Value myState;
   bool myWriteMultiStructure;

@@ -6,19 +6,19 @@
  */
 
 // INCLUEDES /////////////
-#include "build_cell/StructureBuild.h"
+#include "spl/build_cell/StructureBuild.h"
 
-#include "build_cell/BuildAtomInfo.h"
-#include "build_cell/GenSphere.h"
-#include "build_cell/Sphere.h"
-#include "build_cell/StructureContents.h"
-#include "build_cell/SymmetryGroup.h"
-#include "common/Constants.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "math/Random.h"
+#include "spl/build_cell/BuildAtomInfo.h"
+#include "spl/build_cell/GenSphere.h"
+#include "spl/build_cell/Sphere.h"
+#include "spl/build_cell/StructureContents.h"
+#include "spl/build_cell/SymmetryGroup.h"
+#include "spl/common/Constants.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/math/Random.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 const double StructureBuild::RadiusCalculator::FALLBACK_RADIUS = 10.0;

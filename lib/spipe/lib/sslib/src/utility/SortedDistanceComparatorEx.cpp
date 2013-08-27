@@ -7,19 +7,19 @@
 
 // INCLUDES /////////////////////////////////////
 
-#include "utility/SortedDistanceComparatorEx.h"
+#include "spl/utility/SortedDistanceComparatorEx.h"
 
 #include <boost/scoped_ptr.hpp>
 
 #include <armadillo>
 
-#include "common/DistanceCalculator.h"
-#include "common/Structure.h"
-#include "common/UnitCell.h"
-#include "utility/GenericBufferedComparator.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/Structure.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/GenericBufferedComparator.h"
 
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 const size_t SortedDistanceComparatorEx::MAX_CELL_MULTIPLES   = 10;
@@ -108,8 +108,8 @@ myTolerance(tolerance)
 {}
 
 double SortedDistanceComparatorEx::compareStructures(
-	const sstbx::common::Structure & str1,
-	const sstbx::common::Structure & str2) const
+	const spl::common::Structure & str1,
+	const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -118,8 +118,8 @@ double SortedDistanceComparatorEx::compareStructures(
 }
 
 bool SortedDistanceComparatorEx::areSimilar(
-	const sstbx::common::Structure & str1,
-	const sstbx::common::Structure & str2) const
+	const spl::common::Structure & str1,
+	const spl::common::Structure & str2) const
 {
   ComparisonDataPtr comp1(generateComparisonData(str1));
   ComparisonDataPtr comp2(generateComparisonData(str2));
@@ -179,7 +179,7 @@ bool SortedDistanceComparatorEx::areSimilar(
 }
 
 ::std::auto_ptr<SortedDistanceComparisonDataEx>
-SortedDistanceComparatorEx::generateComparisonData(const sstbx::common::Structure & str) const
+SortedDistanceComparatorEx::generateComparisonData(const spl::common::Structure & str) const
 {
   const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
 

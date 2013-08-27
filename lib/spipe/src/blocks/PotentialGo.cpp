@@ -20,12 +20,11 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-// From SSTbx
-#include <build_cell/AtomsDescription.h>
-#include <common/Structure.h>
-#include <potential/PotentialData.h>
-#include <potential/IGeomOptimiser.h>
-#include <potential/IPotential.h>
+#include <spl/build_cell/AtomsDescription.h>
+#include <spl/common/Structure.h>
+#include <spl/potential/PotentialData.h>
+#include <spl/potential/IGeomOptimiser.h>
+#include <spl/potential/IPotential.h>
 
 #include "common/PipeFunctions.h"
 #include "common/StructureData.h"
@@ -38,13 +37,13 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssbc = ::sstbx::build_cell;
-namespace ssc = ::sstbx::common;
-namespace ssp = ::sstbx::potential;
+namespace ssbc = ::spl::build_cell;
+namespace ssc = ::spl::common;
+namespace ssp = ::spl::potential;
 namespace structure_properties = ssc::structure_properties;
 
 PotentialGo::PotentialGo(
-  sstbx::potential::IGeomOptimiserPtr optimiser,
+  spl::potential::IGeomOptimiserPtr optimiser,
   const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),
@@ -53,8 +52,8 @@ myOptimisationParams()
 {}
 
 PotentialGo::PotentialGo(
-	sstbx::potential::IGeomOptimiserPtr optimiser,
-  const ::sstbx::potential::OptimisationSettings & optimisationParams,
+	spl::potential::IGeomOptimiserPtr optimiser,
+  const ::spl::potential::OptimisationSettings & optimisationParams,
   const bool writeOutput):
 SpBlock("Potential geometry optimisation"),
 myOptimiser(optimiser),

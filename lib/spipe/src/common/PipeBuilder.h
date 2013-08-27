@@ -13,8 +13,8 @@
 //#include "StructurePipe.h"
 //
 //// Local includes
-//#include "common/PipeFactoryYaml.h"
-//#include "common/YamlKeywords.h"
+//#include "spl/common/PipeFactoryYaml.h"
+//#include "spl/common/YamlKeywords.h"
 //
 //
 //// FORWARD DECLARATIONS ////////////////////////////////////

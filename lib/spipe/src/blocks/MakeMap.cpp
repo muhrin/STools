@@ -12,17 +12,20 @@
 
 // NAMESPACES ////////////////////////////////
 
+namespace spipe {
+namespace blocks {
 
-namespace spipe { namespace blocks {
-
-MakeMap::MakeMap():
-SpBlock("Make map")
-{}
-
-void MakeMap::in(spipe::common::StructureData & data)
+MakeMap::MakeMap() :
+    SpBlock("Make map")
 {
-	out(data);
 }
 
-}}
+void
+MakeMap::in(spipe::common::StructureData & data)
+{
+  out(data);
+}
+
+}
+}
 

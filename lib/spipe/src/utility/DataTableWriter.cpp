@@ -14,39 +14,23 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spipe
-{
-namespace utility
-{
+namespace spipe {
+namespace utility {
 
 namespace fs = ::boost::filesystem;
 
-DataTableWriter::DataTableWriter(
-  spipe::utility::DataTable & table,
-  const std::string &filename,
-  const bool        append,
-  const size_t      writeDelay):
-myTable(table),
-myAppend(append),
-myWriteDelay(writeDelay),
-myOutputPath(::boost::filesystem::path(filename)),
-myDataSinceWrite(0),
-myColumnDelimiter(" ")
+DataTableWriter::DataTableWriter(spipe::utility::DataTable & table, const std::string &filename,
+    const bool append, const size_t writeDelay) :
+    myTable(table), myAppend(append), myWriteDelay(writeDelay), myOutputPath(
+        ::boost::filesystem::path(filename)), myDataSinceWrite(0), myColumnDelimiter(" ")
 {
   initialise();
 }
 
-DataTableWriter::DataTableWriter(
-  DataTable &                       table,
-  const ::boost::filesystem::path & filepath,
-  const bool                        append,
-  const size_t                      writeDelay ):
-myTable(table),
-myAppend(append),
-myWriteDelay(writeDelay),
-myOutputPath(filepath),
-myDataSinceWrite(0),
-myColumnDelimiter(" ")
+DataTableWriter::DataTableWriter(DataTable & table, const ::boost::filesystem::path & filepath,
+    const bool append, const size_t writeDelay) :
+    myTable(table), myAppend(append), myWriteDelay(writeDelay), myOutputPath(filepath), myDataSinceWrite(
+        0), myColumnDelimiter(" ")
 {
   initialise();
 }
@@ -60,7 +44,8 @@ DataTableWriter::~DataTableWriter()
   myTable.removeDataTableChangeListener(*this);
 }
 
-bool DataTableWriter::write()
+bool
+DataTableWriter::write()
 {
   using ::std::ios_base;
 
@@ -113,17 +98,19 @@ bool DataTableWriter::write()
   return true;
 }
 
-void DataTableWriter::notify(const DataTableValueChanged & evt)
+void
+DataTableWriter::notify(const DataTableValueChanged & evt)
 {
   myDataSinceWrite += diff(evt.getOldValue(), evt.getNewValue());
-  
+
   if(myDataSinceWrite > myWriteDelay)
   {
     write();
   }
 }
 
-void DataTableWriter::initialise()
+void
+DataTableWriter::initialise()
 {
   using ::std::ios_base;
 
@@ -156,7 +143,8 @@ void DataTableWriter::initialise()
   myTable.addDataTableChangeListener(*this);
 }
 
-size_t DataTableWriter::diff(const ::std::string & v1, const ::std::string & v2) const
+size_t
+DataTableWriter::diff(const ::std::string & v1, const ::std::string & v2) const
 {
   const size_t min = ::std::min(v1.size(), v2.size());
   size_t numDifferentChars = 0;
@@ -166,7 +154,7 @@ size_t DataTableWriter::diff(const ::std::string & v1, const ::std::string & v2)
       ++numDifferentChars;
   }
 
-  numDifferentChars += ::std::abs((int)v1.size() - (int)v2.size());
+  numDifferentChars += ::std::abs((int) v1.size() - (int) v2.size());
 
   return numDifferentChars;
 }

@@ -18,8 +18,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/variant.hpp>
 
-// From SSTbx
-#include <build_cell/BuildCellFwd.h>
+
+#include <spl/build_cell/BuildCellFwd.h>
 
 #include <pipelib/pipelib.h>
 
@@ -35,7 +35,7 @@ class RandomStructure : public virtual SpStartBlock, public virtual SpPipeBlock,
 {
 public:
 
-  typedef ::sstbx::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
+  typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
 	RandomStructure(
     const int numToGenerate,
@@ -57,9 +57,9 @@ public:
   // End from PipeBlock
 
 private:
-  typedef ::boost::scoped_ptr< ::sstbx::build_cell::IStructureGenerator> StructureGeneratorPtr;
+  typedef ::boost::scoped_ptr< ::spl::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
-  ::sstbx::build_cell::IStructureGenerator * getStructureGenerator();
+  ::spl::build_cell::IStructureGenerator * getStructureGenerator();
   ::std::string generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const;
 
 	const IStructureGeneratorPtr myStructureGenerator;

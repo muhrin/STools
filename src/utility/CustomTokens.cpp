@@ -10,19 +10,19 @@
 
 #include <sstream>
 
-// From SSTbx
-#include <analysis/SpaceGroup.h>
-#include <common/AtomsFormula.h>
-#include <common/Structure.h>
-#include <common/StructureProperties.h>
-#include <io/BoostFilesystem.h>
+
+#include <spl/analysis/SpaceGroup.h>
+#include <spl/common/AtomsFormula.h>
+#include <spl/common/Structure.h>
+#include <spl/common/StructureProperties.h>
+#include <spl/io/BoostFilesystem.h>
 
 // NAMESPACES ////////////////////////////////
 
 namespace fs = ::boost::filesystem;
-namespace ssa = ::sstbx::analysis;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
+namespace ssa = ::spl::analysis;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
 namespace structure_properties = ssc::structure_properties;
 
 namespace stools {
@@ -57,7 +57,7 @@ void EnergyToken::setRelativeEnergy(const double relativeEnergy)
 }
 
 EnergyToken::StructureValue
-EnergyToken::doGetValue(const ::sstbx::common::Structure & structure ) const
+EnergyToken::doGetValue(const ::spl::common::Structure & structure ) const
 {
   StructureValue relativeEnergy;
   if(myUsePerAtom && structure.getNumAtoms() == 0)
@@ -81,7 +81,7 @@ TypedToken< ::std::string>(name, symbol, defaultFormatString)
 {}
 
 ::boost::optional< ::std::string>
-FormulaToken::doGetValue(const ::sstbx::common::Structure & structure) const
+FormulaToken::doGetValue(const ::spl::common::Structure & structure) const
 {
   ::std::stringstream ss;
   ss << structure.getComposition();
@@ -135,13 +135,13 @@ OptionalDouble getEnergyPerAtom(const ssc::Structure & structure)
   return energyPerAtom;
 }
 
-OptionalUInt getNumAtoms(const ::sstbx::common::Structure & structure)
+OptionalUInt getNumAtoms(const ::spl::common::Structure & structure)
 {
   return structure.getNumAtoms();
 }
 
 ::boost::optional< ::std::string>
-getSpaceGroupSymbol(const ::sstbx::common::Structure & structure)
+getSpaceGroupSymbol(const ::spl::common::Structure & structure)
 {
   ::boost::optional< ::std::string> spgroup;
 
@@ -161,7 +161,7 @@ getSpaceGroupSymbol(const ::sstbx::common::Structure & structure)
 }
 
 ::boost::optional<unsigned int>
-getSpaceGroupNumber(const ::sstbx::common::Structure & structure)
+getSpaceGroupNumber(const ::spl::common::Structure & structure)
 {
   ::boost::optional<unsigned int> spgroup;
 
@@ -181,7 +181,7 @@ getSpaceGroupNumber(const ::sstbx::common::Structure & structure)
 }
 
 ::boost::optional<ssio::ResourceLocator>
-getRelativeLoadPath(const ::sstbx::common::Structure & structure)
+getRelativeLoadPath(const ::spl::common::Structure & structure)
 {
   ::boost::optional<ssio::ResourceLocator> loadLocator;
 

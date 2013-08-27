@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "io/Parsing.h"
+#include "spl/io/Parsing.h"
 
 #include <sstream>
 
@@ -19,7 +19,7 @@
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 const ::std::string PATTERN_FLOAT("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");

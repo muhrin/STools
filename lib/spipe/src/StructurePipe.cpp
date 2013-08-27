@@ -13,17 +13,17 @@
 #include <pipelib/pipelib.h>
 
 // Local includes
-#include <common/SharedData.h>
-#include <common/StructureData.h>
-#include <common/PipeBuilder.h>
-#include <common/PipeFactoryYaml.h>
+#include <spl/common/SharedData.h>
+#include <spl/common/StructureData.h>
+#include <spl/common/PipeBuilder.h>
+#include <spl/common/PipeFactoryYaml.h>
 
 // TODO: TEMPORARY!!
-#include <factory/ISchemaElementInstance.h>
-#include <factory/SsLibElements.h>
-#include <factory/SchemaDoc.h>
-#include <factory/SchemaMap.h>
-#include <common/YamlInputObjectAdapter.h>
+#include <spl/factory/ISchemaElementInstance.h>
+#include <spl/factory/SsLibElements.h>
+#include <spl/factory/SchemaDoc.h>
+#include <spl/factory/SchemaMap.h>
+#include <spl/common/YamlInputObjectAdapter.h>
 
 // MACROS ////////////////////////////////////
 
@@ -35,7 +35,7 @@ int main(const int argc, const char * const argv[])
 /*
   {// START -- TEMPORARY //////////////////////
 
-  namespace ssf = ::sstbx::factory;
+  namespace ssf = ::spl::factory;
 
   ssf::SsLibElements lib;
 

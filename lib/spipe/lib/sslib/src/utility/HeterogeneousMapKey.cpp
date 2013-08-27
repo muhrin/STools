@@ -6,13 +6,13 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "utility/HeterogeneousMapKey.h"
+#include "spl/utility/HeterogeneousMapKey.h"
 
 #include <boost/foreach.hpp>
 
-#include "utility/HeterogeneousMap.h"
+#include "spl/utility/HeterogeneousMap.h"
 
-namespace sstbx {
+namespace spl {
 namespace utility {
 
 KeyId::~KeyId()

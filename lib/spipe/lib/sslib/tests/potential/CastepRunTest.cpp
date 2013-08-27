@@ -10,13 +10,13 @@
 
 #include <boost/foreach.hpp>
 
-#include <io/CastepReader.h>
-#include <io/CellReaderWriter.h>
-#include <potential/CastepRun.h>
+#include <spl/io/CastepReader.h>
+#include <spl/io/CellReaderWriter.h>
+#include <spl/potential/CastepRun.h>
 
 // NAMESPACES ///////////////////////////////
-namespace ssio = ::sstbx::io;
-namespace ssp = ::sstbx::potential;
+namespace ssio = ::spl::io;
+namespace ssp = ::spl::potential;
 
 BOOST_AUTO_TEST_CASE(CastepRunTest)
 {

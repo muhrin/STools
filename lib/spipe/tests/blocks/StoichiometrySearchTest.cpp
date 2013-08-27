@@ -16,19 +16,19 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSLib
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
 
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <common/SharedData.h>
-#include <common/StructureData.h>
+#include <spl/common/SharedData.h>
+#include <spl/common/StructureData.h>
 #include <blocks/RandomStructure.h>
 #include <blocks/StoichiometrySearch.h>
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 
 typedef ::spipe::blocks::SpeciesParameter SpeciesParameter;
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
   speciesParams.push_back(SpeciesParameter("Cl", 13));
 
 
-  ::sstbx::UniquePtr<Pipe>::Type searchPipe(new Pipe());
+  ::spl::UniquePtr<Pipe>::Type searchPipe(new Pipe());
   blocks::RandomStructure * const randomStructure = searchPipe->addBlock(new blocks::RandomStructure(1));
   searchPipe->setStartBlock(randomStructure);
 

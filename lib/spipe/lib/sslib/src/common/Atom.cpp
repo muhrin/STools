@@ -6,12 +6,12 @@
  */
 
 // INCLUDES ///////////////
-#include "common/Atom.h"
+#include "spl/common/Atom.h"
 
-#include "SSLibAssert.h"
-#include "common/Structure.h"
+#include "spl/SSLibAssert.h"
+#include "spl/common/Structure.h"
 
-namespace sstbx {
+namespace spl {
 namespace common {
 
 const Structure & Atom::getStructure() const

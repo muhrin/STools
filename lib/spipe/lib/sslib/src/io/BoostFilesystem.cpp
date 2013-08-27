@@ -6,9 +6,9 @@
  */
 
 // INCLUDES /////////////////////////////////////
-#include "io/BoostFilesystem.h"
+#include "spl/io/BoostFilesystem.h"
 
-namespace sstbx {
+namespace spl {
 namespace io {
 
 namespace boostfs = ::boost::filesystem;

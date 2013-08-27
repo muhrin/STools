@@ -18,22 +18,22 @@
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <common/Structure.h>
-#include <common/UnitCell.h>
-#include <io/BoostFilesystem.h>
-#include <io/ResourceLocator.h>
-#include <io/ResourceLocator.h>
-#include <io/ResReaderWriter.h>
-#include <utility/DistanceMatrixComparator.h>
-#include <utility/IBufferedComparator.h>
-#include <utility/StableComparison.h>
-#include <utility/SortedDistanceComparator.h>
-#include <utility/SortedDistanceComparatorEx.h>
+#include <spl/common/Structure.h>
+#include <spl/common/UnitCell.h>
+#include <spl/io/BoostFilesystem.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/ResReaderWriter.h>
+#include <spl/utility/DistanceMatrixComparator.h>
+#include <spl/utility/IBufferedComparator.h>
+#include <spl/utility/StableComparison.h>
+#include <spl/utility/SortedDistanceComparator.h>
+#include <spl/utility/SortedDistanceComparatorEx.h>
 
 namespace fs = ::boost::filesystem;
-namespace ssio = ::sstbx::io;
-namespace ssc = ::sstbx::common;
-namespace ssu = ::sstbx::utility;
+namespace ssio = ::spl::io;
+namespace ssc = ::spl::common;
+namespace ssu = ::spl::utility;
 
 struct Result
 {

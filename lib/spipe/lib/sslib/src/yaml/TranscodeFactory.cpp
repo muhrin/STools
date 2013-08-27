@@ -6,23 +6,23 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "yaml/TranscodeFactory.h"
+#include "spl/yaml/TranscodeFactory.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 
-#include "factory/SsLibYamlKeywords.h"
-#include "io/Parsing.h"
-#include "yaml/TranscodeGeneral.h"
+#include "spl/factory/SsLibYamlKeywords.h"
+#include "spl/io/Parsing.h"
+#include "spl/yaml/TranscodeGeneral.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace ssf = ::sstbx::factory;
+namespace ssf = ::spl::factory;
 
 namespace YAML {
 
-Node convert< ::sstbx::factory::MinMax>::encode(const ::sstbx::factory::MinMax & rhs)
+Node convert< ::spl::factory::MinMax>::encode(const ::spl::factory::MinMax & rhs)
 {
   namespace kw = ssf::sslib_yaml_keywords;
 
@@ -36,7 +36,7 @@ Node convert< ::sstbx::factory::MinMax>::encode(const ::sstbx::factory::MinMax &
   return node;
 }
 
-bool convert< ::sstbx::factory::MinMax>::decode(const Node & node, ::sstbx::factory::MinMax & rhs)
+bool convert< ::spl::factory::MinMax>::decode(const Node & node, ::spl::factory::MinMax & rhs)
 {
   namespace kw = ssf::sslib_yaml_keywords;
 
@@ -58,7 +58,7 @@ bool convert< ::sstbx::factory::MinMax>::decode(const Node & node, ::sstbx::fact
 }
 
 // factory::AtomSpeciesCount
-Node convert< ::sstbx::factory::AtomSpeciesCount>::encode(const ::sstbx::factory::AtomSpeciesCount & rhs)
+Node convert< ::spl::factory::AtomSpeciesCount>::encode(const ::spl::factory::AtomSpeciesCount & rhs)
 {
   Node node;
   ::std::stringstream ss;
@@ -77,11 +77,11 @@ Node convert< ::sstbx::factory::AtomSpeciesCount>::encode(const ::sstbx::factory
   return node;
 }
 
-bool convert< ::sstbx::factory::AtomSpeciesCount>::decode(
-  const Node & node, ::sstbx::factory::AtomSpeciesCount & rhs)
+bool convert< ::spl::factory::AtomSpeciesCount>::decode(
+  const Node & node, ::spl::factory::AtomSpeciesCount & rhs)
 {
-  namespace ssbc = ::sstbx::build_cell;
-  namespace ssio = ::sstbx::io;
+  namespace ssbc = ::spl::build_cell;
+  namespace ssio = ::spl::io;
 
   if(!node.IsScalar())
     return false;

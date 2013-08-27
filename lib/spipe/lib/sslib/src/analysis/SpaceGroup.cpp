@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/SpaceGroup.h"
+#include "spl/analysis/SpaceGroup.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
@@ -15,9 +15,9 @@ extern "C"
 #  include <spglib/spglib.h>
 }
 
-#include "common/Structure.h"
+#include "spl/common/Structure.h"
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 namespace space_group {
 

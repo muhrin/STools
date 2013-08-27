@@ -7,34 +7,34 @@
 
 
 // INCLUDES /////////////////
-#include "build_cell/AtomsDescription.h"
+#include "spl/build_cell/AtomsDescription.h"
 
-#include "SSLibAssert.h"
-#include "common/AtomSpeciesId.h"
+#include "spl/SSLibAssert.h"
+#include "spl/common/AtomSpeciesId.h"
 
-namespace sstbx {
+namespace spl {
 namespace build_cell {
 
 AtomsDescription::AtomsDescription():
 myCount(1)
 {}
 
-AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  species, const size_t count):
+AtomsDescription::AtomsDescription(const ::spl::common::AtomSpeciesId::Value  species, const size_t count):
 mySpecies(species),
 myCount(count)
 {}
 
-AtomsDescription::AtomsDescription(const ::sstbx::common::AtomSpeciesId::Value  species, const CountRange count):
+AtomsDescription::AtomsDescription(const ::spl::common::AtomSpeciesId::Value  species, const CountRange count):
 mySpecies(species),
 myCount(count)
 {}
 
-const ::sstbx::common::AtomSpeciesId::Value & AtomsDescription::getSpecies() const
+const ::spl::common::AtomSpeciesId::Value & AtomsDescription::getSpecies() const
 {
 	return mySpecies;
 }
 
-void AtomsDescription::setSpecies(const ::sstbx::common::AtomSpeciesId::Value  species)
+void AtomsDescription::setSpecies(const ::spl::common::AtomSpeciesId::Value  species)
 {
 	mySpecies = species;
 }

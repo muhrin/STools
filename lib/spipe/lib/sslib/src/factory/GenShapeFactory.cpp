@@ -6,24 +6,24 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "factory/GenShapeFactory.h"
+#include "spl/factory/GenShapeFactory.h"
 
 
-// Local includes
-#include "build_cell/GenBox.h"
-#include "build_cell/GenSphere.h"
-#include "factory/SsLibElements.h"
-#include "math/Matrix.h"
+
+#include "spl/build_cell/GenBox.h"
+#include "spl/build_cell/GenSphere.h"
+#include "spl/factory/SsLibElements.h"
+#include "spl/math/Matrix.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx {
+namespace spl {
 namespace factory {
 
 // namespace aliases
-namespace ssbc  = ::sstbx::build_cell;
-namespace ssf   = ::sstbx::factory;
-namespace ssu   = ::sstbx::utility;
+namespace ssbc  = ::spl::build_cell;
+namespace ssf   = ::spl::factory;
+namespace ssu   = ::spl::utility;
 
 bool GenShapeFactory::createShape(GenShapePtr & shapeOut, const OptionsMap & shapeOptions) const
 {

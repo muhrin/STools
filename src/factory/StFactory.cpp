@@ -8,11 +8,11 @@
 // INCLUDES //////////////////////////////////
 #include "factory/StFactory.h"
 
-// SSLib includes
-#include <factory/SsLibElements.h>
-#include <math/Random.h>
-#include <potential/OptimisationSettings.h>
-#include <utility/UtilityFwd.h>
+
+#include <spl/factory/SsLibElements.h>
+#include <spl/math/Random.h>
+#include <spl/potential/OptimisationSettings.h>
+#include <spl/utility/UtilityFwd.h>
 
 // From SPipe
 #include <blocks/LowestFreeEnergy.h>
@@ -31,9 +31,9 @@ namespace sp = ::spipe;
 namespace spb = sp::blocks;
 namespace spf = sp::factory;
 
-namespace ssm = ::sstbx::math;
-namespace ssf = ::sstbx::factory;
-namespace ssp = ::sstbx::potential;
+namespace ssm = ::spl::math;
+namespace ssf = ::spl::factory;
+namespace ssp = ::spl::potential;
 
 bool Factory::createBuildPipe(PipePtr & pipeOut, const OptionsMap & options) const
 {

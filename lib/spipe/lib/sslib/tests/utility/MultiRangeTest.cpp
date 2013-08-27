@@ -13,9 +13,9 @@
 #include <boost/foreach.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 
-#include <utility/MultiRange.h>
+#include <spl/utility/MultiRange.h>
 
-//namespace ssu = ::sstbx::utility;
+//namespace ssu = ::spl::utility;
 
 
 BOOST_AUTO_TEST_CASE(IntegerMultiIndexTest)

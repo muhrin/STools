@@ -6,17 +6,17 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/SimplePairPotential.h"
+#include "spl/potential/SimplePairPotential.h"
 
 #include <memory>
 
-#include "common/DistanceCalculator.h"
-#include "common/UnitCell.h"
-#include "utility/IndexingEnums.h"
+#include "spl/common/DistanceCalculator.h"
+#include "spl/common/UnitCell.h"
+#include "spl/utility/IndexingEnums.h"
 
 // NAMESPACES ////////////////////////////////
 
-namespace sstbx
+namespace spl
 {
 namespace potential
 {
@@ -314,7 +314,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 
 ::boost::optional<double>
 SimplePairPotential::getPotentialRadius(
-    const ::sstbx::common::AtomSpeciesId::Value id) const
+    const ::spl::common::AtomSpeciesId::Value id) const
 {
   ::boost::optional<double> radius;
   for (size_t i = 0; i < mySpeciesList.size(); ++i)
@@ -330,7 +330,7 @@ SimplePairPotential::getPotentialRadius(
 
 ::boost::shared_ptr<IPotentialEvaluator>
 SimplePairPotential::createEvaluator(
-    const sstbx::common::Structure & structure) const
+    const spl::common::Structure & structure) const
 {
   // Build the data from the structure
   ::std::auto_ptr<SimplePairPotentialData> data(

@@ -5,7 +5,7 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/ConvexHull.h"
+#include "spl/analysis/ConvexHull.h"
 
 #ifdef SSLIB_USE_CGAL
 
@@ -15,11 +15,11 @@
 
 #include <CGAL/Delaunay_d.h>
 
-#include "common/StructureProperties.h"
+#include "spl/common/StructureProperties.h"
 
 //#define DEBUG_CONVEX_HULL_GENERATOR
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 
 const ConvexHull::NT ConvexHull::NT_ZERO(0);

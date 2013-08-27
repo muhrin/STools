@@ -27,22 +27,21 @@
 
 // From Pipelib //
 
-
-// From SSLib //
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
-#include <common/Types.h>
-#include <common/UnitCell.h>
-#include <io/BoostFilesystem.h>
-#include <io/ResourceLocator.h>
-#include <io/StructureReadWriteManager.h>
-#include <math/RunningStats.h>
-#include <utility/DistanceMatrixComparator.h>
-#include <utility/SortedDistanceComparator.h>
-#include <utility/SortedDistanceComparatorEx.h>
-#include <utility/IBufferedComparator.h>
-#include <utility/TransformFunctions.h>
-#include <utility/UniqueStructureSet.h>
+ //
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
+#include <spl/common/Types.h>
+#include <spl/common/UnitCell.h>
+#include <spl/io/BoostFilesystem.h>
+#include <spl/io/ResourceLocator.h>
+#include <spl/io/StructureReadWriteManager.h>
+#include <spl/math/RunningStats.h>
+#include <spl/utility/DistanceMatrixComparator.h>
+#include <spl/utility/SortedDistanceComparator.h>
+#include <spl/utility/SortedDistanceComparatorEx.h>
+#include <spl/utility/IBufferedComparator.h>
+#include <spl/utility/TransformFunctions.h>
+#include <spl/utility/UniqueStructureSet.h>
 
 // From StructurePipe
 #include <utility/PipeDataInitialisation.h>
@@ -55,10 +54,10 @@
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
 namespace sp = ::spipe;
-namespace ssu = ::sstbx::utility;
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssm = ::sstbx::math;
+namespace ssu = ::spl::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssm = ::spl::math;
 namespace structure_properties = ssc::structure_properties;
 
 // TYPEDEFS ////////////////////////////////////////
@@ -141,7 +140,7 @@ void doDiffGroups(
   const InputOptions & in
 );
 
-::sstbx::UniquePtr<ssu::IStructureComparator>::Type createComparator(const InputOptions & in);
+::spl::UniquePtr<ssu::IStructureComparator>::Type createComparator(const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
@@ -214,7 +213,7 @@ int main(const int argc, char * argv[])
   locGroups.populate(ss.str());
 
   // Choose the comparator
-  ::sstbx::UniquePtr<ssu::IStructureComparator>::Type comp = createComparator(in);
+  ::spl::UniquePtr<ssu::IStructureComparator>::Type comp = createComparator(in);
   if(!comp.get())
     return 1;
   
@@ -425,12 +424,12 @@ void doDiffGroups(
   }
 }
 
-::sstbx::UniquePtr<ssu::IStructureComparator>::Type createComparator(const InputOptions & in)
+::spl::UniquePtr<ssu::IStructureComparator>::Type createComparator(const InputOptions & in)
 {
-  ::sstbx::UniquePtr<ssu::IStructureComparator>::Type comp;
+  ::spl::UniquePtr<ssu::IStructureComparator>::Type comp;
   if(in.comparator == "sd")
   {
-    ::sstbx::UniquePtr<ssu::SortedDistanceComparator>::Type
+    ::spl::UniquePtr<ssu::SortedDistanceComparator>::Type
       sortedDist(new ssu::SortedDistanceComparator(in.tolerance, false, false));
     sortedDist->setCutoffFactor(in.cutoffFactor);
     comp.reset(sortedDist.release());

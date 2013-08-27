@@ -8,19 +8,19 @@
 // INCLUDES //////////////////////////////////
 #include "sslibtest.h"
 
-#include <SSLib.h>
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
-#include <io/CastepReader.h>
-#include <io/CellReaderWriter.h>
-#include <potential/CastepGeomOptimiser.h>
-#include <potential/OptimisationSettings.h>
-#include <utility/StableComparison.h>
+#include <spl/SSLib.h>
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
+#include <spl/io/CastepReader.h>
+#include <spl/io/CellReaderWriter.h>
+#include <spl/potential/CastepGeomOptimiser.h>
+#include <spl/potential/OptimisationSettings.h>
+#include <spl/utility/StableComparison.h>
 
-namespace ssc = ::sstbx::common;
-namespace ssio = ::sstbx::io;
-namespace ssp = ::sstbx::potential;
-namespace ssu = ::sstbx::utility;
+namespace ssc = ::spl::common;
+namespace ssio = ::spl::io;
+namespace ssp = ::spl::potential;
+namespace ssu = ::spl::utility;
 
 void testCastepOutput(ssc::Structure structure, const ::std::string & seed, const double enthalpy, const double pressure);
 

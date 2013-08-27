@@ -5,13 +5,13 @@
  *      Author: Martin Uhrin
  */
 
-#include "analysis/StructureConvexHullInfoSupplier.h"
+#include "spl/analysis/StructureConvexHullInfoSupplier.h"
 
 #ifdef SSLIB_USE_CGAL
 
-#include "common/Structure.h"
+#include "spl/common/Structure.h"
 
-namespace sstbx {
+namespace spl {
 namespace analysis {
 
 void StructureConvexHullInfoSupplier::addStructure(const common::Structure & structure, int id)

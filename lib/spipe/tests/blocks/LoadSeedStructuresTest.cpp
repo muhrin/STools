@@ -10,18 +10,18 @@
 
 #include <pipelib/pipelib.h>
 
-// From SSLib
-#include <common/AtomSpeciesDatabase.h>
-#include <common/Structure.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/common/Structure.h>
 
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <common/SharedData.h>
-#include <common/StructureData.h>
+#include <spl/common/SharedData.h>
+#include <spl/common/StructureData.h>
 #include <blocks/LoadSeedStructures.h>
 
-namespace ssc = ::sstbx::common;
+namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 
 class StructureSink : public ::spipe::SpFinishedSink

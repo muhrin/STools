@@ -6,14 +6,14 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "potential/OptimisationSettings.h"
+#include "spl/potential/OptimisationSettings.h"
 
 #include <boost/foreach.hpp>
 
 // NAMESPACES ////////////////////////////////
 
 
-namespace sstbx {
+namespace spl {
 namespace potential {
 
 void
