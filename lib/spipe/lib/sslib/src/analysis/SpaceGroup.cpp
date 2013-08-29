@@ -28,7 +28,7 @@ bool getSpacegroupInfo(
   const common::Structure & structure,
   const double precision)
 {
-  if(!structure.getUnitCell())
+  if(!structure.getUnitCell() || structure.getNumAtoms() == 0)
     return false;
 
   double lattice[3][3];

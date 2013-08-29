@@ -8,7 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/WriteStructure.h"
 
-
 #include <spl/common/Structure.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/io/BoostFilesystem.h>
@@ -32,33 +31,38 @@ namespace ssu = ::spl::utility;
 
 const bool WriteStructure::WRITE_MULTI_DEFAULT = true;
 
-WriteStructure::WriteStructure():
-SpBlock("Write structures"),
-myWriteMultiStructure(WRITE_MULTI_DEFAULT),
-myState(State::DISABLED)
-{}
+WriteStructure::WriteStructure() :
+    SpBlock("Write structures"), myWriteMultiStructure(WRITE_MULTI_DEFAULT), myState(
+        State::DISABLED)
+{
+}
 
-bool WriteStructure::getWriteMulti() const
+bool
+WriteStructure::getWriteMulti() const
 {
   return myWriteMultiStructure;
 }
 
-void WriteStructure::setWriteMulti(const bool writeMulti)
+void
+WriteStructure::setWriteMulti(const bool writeMulti)
 {
   myWriteMultiStructure = true;
 }
 
-const ::std::string & WriteStructure::getFileType() const
+const ::std::string &
+WriteStructure::getFileType() const
 {
   return myFileType;
 }
 
-void WriteStructure::setFileType(const ::std::string & extension)
+void
+WriteStructure::setFileType(const ::std::string & extension)
 {
   myFileType = extension;
 }
 
-void WriteStructure::pipelineStarting()
+void
+WriteStructure::pipelineStarting()
 {
   const ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
 
@@ -74,7 +78,8 @@ void WriteStructure::pipelineStarting()
   }
 }
 
-void WriteStructure::in(::spipe::common::StructureData & data)
+void
+WriteStructure::in(::spipe::common::StructureData & data)
 {
   const ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
   if(myState != State::DISABLED)
@@ -83,7 +88,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
     ssc::Structure * const structure = data.getStructure();
 
     const ssio::IStructureWriter * writer = NULL;
-    
+
     if(myState == State::USE_CUSTOM_WRITER)
       writer = rwMan.getWriter(myFileType);
     else
@@ -98,7 +103,7 @@ void WriteStructure::in(::spipe::common::StructureData & data)
         writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation, myFileType);
       else
         writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation);
-    	
+
       if(writeSuccessful)
       {
         // TODO: Produce error
@@ -109,13 +114,12 @@ void WriteStructure::in(::spipe::common::StructureData & data)
       // TODO: Error couldn't find writer
     }
   }
-	out(data);
+  out(data);
 }
 
 ssio::ResourceLocator
-WriteStructure::generateLocator(
-  ssc::Structure & structure,
-  const ssio::IStructureWriter & writer) const
+WriteStructure::generateLocator(ssc::Structure & structure,
+    const ssio::IStructureWriter & writer) const
 {
   // Check if the structure has a name already, otherwise give it one
   if(structure.getName().empty())
@@ -137,7 +141,8 @@ WriteStructure::generateLocator(
   return ssio::ResourceLocator(p, structure.getName());
 }
 
-bool WriteStructure::useMultiStructure(const ssio::IStructureWriter & writer) const
+bool
+WriteStructure::useMultiStructure(const ssio::IStructureWriter & writer) const
 {
   if(myWriteMultiStructure && writer.multiStructureSupport())
     return true;
