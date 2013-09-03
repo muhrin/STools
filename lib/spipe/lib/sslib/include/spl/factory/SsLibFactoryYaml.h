@@ -61,12 +61,11 @@ public:
   createStructureGenerator(const OptionsMap & map) const;
   build_cell::StructureBuilderPtr
   createStructureBuilder(const OptionsMap & map) const;
-  build_cell::AtomsGeneratorPtr
-  createAtomsGenerator(const OptionsMap & map,
-      io::AtomFormatParser & parser) const;
   build_cell::AtomsDescriptionPtr
   createAtomsDescription(const AtomsDataEntry & atomsEntry,
       const io::AtomFormatParser & parser) const;
+  build_cell::AtomsGroupPtr
+  createAtomsGroup(const OptionsMap & map, io::AtomFormatParser & parser) const;
   build_cell::RandomUnitCellPtr
   createRandomCellGenerator(const OptionsMap & map) const;
   potential::IPotentialPtr

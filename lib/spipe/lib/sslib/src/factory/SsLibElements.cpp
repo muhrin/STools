@@ -64,7 +64,7 @@ utility::Key<double> UNIT_CELL_BUILDER_VOLUME_DELTA;
 utility::Key<double> UNIT_CELL_BUILDER_MULTIPLIER;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
-utility::Key< ::std::map< ::std::string, double> > SPECIES_DISTANCES;
+utility::Key< ::std::map< ::std::string, double> > PAIR_DISTANCES;
 // Shape generators
 utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 utility::Key<utility::HeterogeneousMap> GEN_BOX;

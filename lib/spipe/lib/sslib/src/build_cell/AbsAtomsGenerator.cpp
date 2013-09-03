@@ -1,13 +1,13 @@
 /*
- * StructureBuilder.h
+ * AbsAbsAtomsGenerator.h
  *
- *  Created on: Nov 10, 2011
+ *  Created on: Jul 29, 2013
  *      Author: Martin Uhrin
  */
 
 
 // INCLUDES /////////////////
-#include "spl/build_cell/AtomsGenerator.h"
+#include "spl/build_cell/AbsAtomsGenerator.h"
 
 #include <boost/foreach.hpp>
 
@@ -28,110 +28,59 @@
 namespace spl {
 namespace build_cell {
 
-AtomsGenerator::AtomsGenerator():
-myNumReplicas(1),
-myTransformMode(TransformMode::FIXED)
-{
-  myPos.zeros();
-
-  myRot.zeros();
-  myRot(2) = 1.0; // Need this so we don't get NaNs in calculating roation
-}
-
-AtomsGenerator::AtomsGenerator(const AtomsGenerator & toCopy):
+AbsAtomsGenerator::AbsAtomsGenerator(const AbsAtomsGenerator & toCopy):
 myAtoms(toCopy.myAtoms),
-myGenShape(toCopy.myGenShape->clone()),
-myNumReplicas(toCopy.myNumReplicas),
-myTransformMode(toCopy.myTransformMode),
-myPos(toCopy.myPos),
-myRot(toCopy.myRot)
+myGenShape(toCopy.myGenShape->clone())
 {}
 
-void AtomsGenerator::insertAtoms(const AtomsDescription & atoms)
+void AbsAtomsGenerator::insertAtoms(const AtomsDescription & atoms)
 {
   myAtoms.push_back(atoms);
   // Invalidate all tickets
   myTickets.clear();
 }
 
-size_t AtomsGenerator::numAtoms() const
+size_t AbsAtomsGenerator::numAtoms() const
 {
   return myAtoms.size();
 }
 
-AtomsGenerator::const_iterator AtomsGenerator::beginAtoms() const
+AbsAtomsGenerator::const_iterator AbsAtomsGenerator::beginAtoms() const
 {
   return myAtoms.begin();
 }
 
-AtomsGenerator::const_iterator AtomsGenerator::endAtoms() const
+AbsAtomsGenerator::const_iterator AbsAtomsGenerator::endAtoms() const
 {
   return myAtoms.end();
 }
 
-const IGeneratorShape * AtomsGenerator::getGeneratorShape() const
+const IGeneratorShape * AbsAtomsGenerator::getGeneratorShape() const
 {
   return myGenShape.get();
 }
 
-void AtomsGenerator::setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape)
+void AbsAtomsGenerator::setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape)
 {
   myGenShape = genShape;
 }
 
-int AtomsGenerator::getNumReplicas() const
+void AbsAtomsGenerator::addSpeciesPairDistance(const SpeciesPair & pair, const double distance)
 {
-  return myNumReplicas;
-}
-
-void AtomsGenerator::setNumReplicas(const int numReplicas)
-{
-  if(myNumReplicas == numReplicas)
-    return;
-
-  myNumReplicas = numReplicas;
-  // Invalidate all tickets
-  myTickets.clear();
-}
-
-int AtomsGenerator::getTransformMode() const
-{
-  return myTransformMode;
-}
-
-void AtomsGenerator::setTransformMode(const int mode)
-{
-  myTransformMode = mode;
-}
-
-const ::arma::vec3 & AtomsGenerator::getPosition() const
-{
-  return myPos;
-}
-
-void AtomsGenerator::setPosition(const ::arma::vec3 & pos)
-{
-  myPos = pos;
-}
-
-const ::arma::vec4 & AtomsGenerator::getRotation() const
-{
-  return myRot;
-}
-
-void AtomsGenerator::setRotation(const ::arma::vec4 & rot)
-{
-  myRot = rot;
+  mySpeciesPairDistances[pair] = distance;
 }
 
 GenerationOutcome
-AtomsGenerator::generateFragment(
+AbsAtomsGenerator::generateFragment(
   StructureBuild & build,
   const GenerationTicket ticket,
   const common::AtomSpeciesDatabase & speciesDb
 ) const
 {
   typedef ::std::vector<unsigned int> Multiplicities;
+
+  // Push our current set of species pair distances onto the distances stack
+  StructureBuild::SpeciesDistancesPusher distsPusher(build, mySpeciesPairDistances);
 
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
@@ -158,44 +107,40 @@ AtomsGenerator::generateFragment(
   else
     possibleMultiplicities.push_back(1); // No symmetry so all points have multiplicity 1
 
-  ::arma::mat44 transform;
-  for(size_t i = 0; i < myNumReplicas; ++i)
+  const ::arma::mat44 transform = generateTransform(build);
+
+  BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
-    transform = generateTransform(build);
-
-    BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
+    if(atomsDesc.first->getPosition())
     {
-      if(atomsDesc.first->getPosition())
-      {
-        // If the atom has a fixed position then we should not apply symmetry
-        // and the multiplicity should be 1
-        // TODO: Check if this position is compatible with our symmetry operators!
-        multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
-      }
-      else
-        multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
-
-      if(multiplicities.empty())
-      {
-        outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
-        return outcome;
-      }
-
-      // Go over the multiplicities inserting the atoms
-      BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
-      {
-        common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
-        BuildAtomInfo & info = build.createAtomInfo(atom);
-        info.setMultiplicity(multiplicity);
-
-        position = generatePosition(info, *atomsDesc.first, build, multiplicity, transform);
-        atom.setPosition(position.first);
-        info.setFixed(position.second);
-
-        atom.setRadius(getRadius(*atomsDesc.first, speciesDb));
-      }
-      multiplicities.clear(); // Reset for next loop
+      // If the atom has a fixed position then we should not apply symmetry
+      // and the multiplicity should be 1
+      // TODO: Check if this position is compatible with our symmetry operators!
+      multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
     }
+    else
+      multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
+
+    if(multiplicities.empty())
+    {
+      outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
+      return outcome;
+    }
+
+    // Go over the multiplicities inserting the atoms
+    BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
+    {
+      common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
+      BuildAtomInfo & info = build.createAtomInfo(atom);
+      info.setMultiplicity(multiplicity);
+
+      position = generatePosition(info, *atomsDesc.first, build, multiplicity, transform);
+      atom.setPosition(position.first);
+      info.setFixed(position.second);
+
+      atom.setRadius(getRadius(*atomsDesc.first, speciesDb));
+    }
+    multiplicities.clear(); // Reset for next loop
   }
 
   // Finally solve any atom overlap
@@ -207,7 +152,7 @@ AtomsGenerator::generateFragment(
   return outcome;
 }
 
-AtomsGenerator::GenerationTicket AtomsGenerator::getTicket()
+AbsAtomsGenerator::GenerationTicket AbsAtomsGenerator::getTicket()
 {
   GenerationTicket::IdType ticketId = ++myLastTicketId;
 
@@ -229,7 +174,7 @@ AtomsGenerator::GenerationTicket AtomsGenerator::getTicket()
   return GenerationTicket(ticketId);
 }
 
-StructureContents AtomsGenerator::getGenerationContents(
+StructureContents AbsAtomsGenerator::getGenerationContents(
   const GenerationTicket ticket,
   const common::AtomSpeciesDatabase & speciesDb
 ) const
@@ -245,13 +190,13 @@ StructureContents AtomsGenerator::getGenerationContents(
   BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
     radius = getRadius(*atomsDesc.first, speciesDb);
-    contents.addAtoms(static_cast<size_t>(atomsDesc.second * myNumReplicas), radius);
+    contents.addAtoms(static_cast<size_t>(atomsDesc.second), radius);
   }
 
   return contents;
 }
 
-void AtomsGenerator::handleReleased(const GenerationTicketId & id)
+void AbsAtomsGenerator::handleReleased(const GenerationTicketId & id)
 {
   // Get the ticket
   TicketsMap::iterator it = myTickets.find(id);
@@ -261,13 +206,13 @@ void AtomsGenerator::handleReleased(const GenerationTicketId & id)
   myTickets.erase(it);
 }
 
-IFragmentGeneratorPtr AtomsGenerator::clone() const
+IFragmentGeneratorPtr AbsAtomsGenerator::clone() const
 {
-  return IFragmentGeneratorPtr(new AtomsGenerator(*this));
+  return IFragmentGeneratorPtr(new AbsAtomsGenerator(*this));
 }
 
-AtomsGenerator::AtomPosition
-AtomsGenerator::generatePosition(
+AbsAtomsGenerator::AtomPosition
+AbsAtomsGenerator::generatePosition(
   BuildAtomInfo & atomInfo,
   const AtomsDescription & atom,
   const StructureBuild & build,
@@ -319,7 +264,7 @@ AtomsGenerator::generatePosition(
           // TODO: return error
           return position;
         }
-        
+
         // Save the position
         position.first = newPos;
         atomInfo.setOperatorsMask(opMask);
@@ -331,7 +276,7 @@ AtomsGenerator::generatePosition(
   return position;
 }
 
-bool AtomsGenerator::generateSpecialPosition(
+bool AbsAtomsGenerator::generateSpecialPosition(
   ::arma::vec3 & posOut,
   SymmetryGroup::OpMask & opMaskOut,
   const SymmetryGroup::EigenspacesAndMasks & spaces,
@@ -344,7 +289,7 @@ bool AtomsGenerator::generateSpecialPosition(
   Indices indices;
   for(size_t i = 0; i < spaces.size(); ++i)
     indices.push_back(i);
-  
+
   Indices::iterator it;
   OptionalArmaVec3 pos;
   while(!indices.empty())
@@ -364,7 +309,7 @@ bool AtomsGenerator::generateSpecialPosition(
   return false; // Couldn't find one
 }
 
-OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
+OptionalArmaVec3 AbsAtomsGenerator::generateSpeciesPosition(
   const SymmetryGroup::Eigenspace & space,
   const IGeneratorShape & genShape,
   const ::arma::mat44 & transformation
@@ -378,7 +323,7 @@ OptionalArmaVec3 AtomsGenerator::generateSpeciesPosition(
   return OptionalArmaVec3(::arma::zeros< ::arma::vec>(3));
 }
 
-double AtomsGenerator::getRadius(
+double AbsAtomsGenerator::getRadius(
   const AtomsDescription & atom,
   const common::AtomSpeciesDatabase & speciesDb
 ) const
@@ -403,7 +348,7 @@ double AtomsGenerator::getRadius(
   return radius;
 }
 
-const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build) const
+const IGeneratorShape & AbsAtomsGenerator::getGenShape(const StructureBuild & build) const
 {
   if(myGenShape.get())
     return *myGenShape;
@@ -411,29 +356,14 @@ const IGeneratorShape & AtomsGenerator::getGenShape(const StructureBuild & build
     return build.getGenShape();
 }
 
-::arma::mat44 AtomsGenerator::generateTransform(const StructureBuild & build) const
+::arma::mat44 AbsAtomsGenerator::generateTransform(const StructureBuild & build) const
 {
-  using namespace utility::cart_coords_enum;
+  return ::arma::eye(4, 4);
+}
 
-  ::arma::vec4 axisAngle = myRot;
-  if(myTransformMode & TransformMode::RAND_ROT_DIR)
-    axisAngle.rows(X, Z) = math::normaliseCopy(::arma::randu< ::arma::vec>(3));
-  if(myTransformMode & TransformMode::RAND_ROT_ANGLE)
-    axisAngle(3) = math::randu(0.0, common::constants::TWO_PI);
-
-  ::arma::vec3 pos = myPos;
-  if(myTransformMode & TransformMode::RAND_POS)
-  {
-    // Create a random point somewhere within the global generation shape
-    pos = build.getGenShape().randomPoint();
-  }
-
-  ::arma::mat44 transform;
-  transform.eye();
-  math::setTranslation(transform, pos);
-  math::setRotation(transform, axisAngle);
-
-  return transform;
+void AbsAtomsGenerator::invalidateTickets()
+{
+  myTickets.clear();
 }
 
 }

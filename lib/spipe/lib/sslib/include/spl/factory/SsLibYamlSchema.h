@@ -234,8 +234,8 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addScalarEntry("pos", POSITION);
     addScalarEntry("rot", ROT_AXIS_ANGLE);
     addScalarEntry("num", NUM)->element()->defaultValue(1);
-    addEntry("speciesDistances", SPECIES_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
+    addEntry("pairDistances", PAIR_DISTANCES,
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
   }
 };
 
@@ -279,6 +279,8 @@ struct Builder : public yaml_schema::SchemaHeteroMap
     addEntry("genBox", GEN_BOX, new GenBox());
     addEntry("unitCell", UNIT_CELL_BUILDER, new UnitCellBuilder());
     addEntry("symmetry", SYMMETRY, new Symmetry());
+    addEntry("pairDistances", PAIR_DISTANCES,
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
   }
 };
 

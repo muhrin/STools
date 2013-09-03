@@ -20,7 +20,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "spl/build_cell/AtomsDescription.h"
-#include "spl/build_cell/AtomsGenerator.h"
+#include "spl/build_cell/AtomsGroup.h"
 #include "spl/build_cell/PointGroups.h"
 #include "spl/build_cell/RandomUnitCellGenerator.h"
 #include "spl/common/AtomSpeciesDatabase.h"
@@ -373,8 +373,7 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   {
     // Try creating the default atoms generator
     {
-      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(map,
-          atomsFormatParser);
+      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map, atomsFormatParser);
       if(atomsGenerator.get())
         builder->addGenerator(atomsGenerator);
     }
@@ -384,10 +383,8 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     {
       if(getStructureContentType(atomsEntry) == StructureContentType::GROUP)
       {
-        const OptionsMap * const groupOptions = ::boost::get< OptionsMap>(
-            atomsEntry).find(ATOMS_GROUP);
-        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(
-            *groupOptions, atomsFormatParser);
+        const OptionsMap * const groupOptions = ::boost::get<OptionsMap>(atomsEntry).find(ATOMS_GROUP);
+        build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(*groupOptions, atomsFormatParser);
         if(atomsGenerator.get())
           builder->addGenerator(atomsGenerator);
       }
@@ -425,12 +422,13 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   return builder;
 }
 
-build_cell::AtomsGeneratorPtr
-SsLibFactoryYaml::createAtomsGenerator(const OptionsMap & map,
-    io::AtomFormatParser & parser) const
+build_cell::AtomsGroupPtr
+SsLibFactoryYaml::createAtomsGroup(
+  const OptionsMap & map,
+  io::AtomFormatParser & parser
+) const
 {
-  build_cell::AtomsGeneratorPtr atomsGenerator(
-      new build_cell::AtomsGenerator());
+  build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
 
   // Try creating a generator shape
   UniquePtr< build_cell::IGeneratorShape>::Type genShape;
@@ -446,18 +444,16 @@ SsLibFactoryYaml::createAtomsGenerator(const OptionsMap & map,
   if(pos)
     atomsGenerator->setPosition(*pos);
   else
-    atomsGenerator->setTransformMode(
-        atomsGenerator->getTransformMode()
-            | build_cell::AtomsGenerator::TransformMode::RAND_POS);
+    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
+        build_cell::AtomsGroup::TransformMode::RAND_POS);
 
   if(rot)
     atomsGenerator->setRotation(*rot);
   else
   {
-    atomsGenerator->setTransformMode(
-        atomsGenerator->getTransformMode()
-            | build_cell::AtomsGenerator::TransformMode::RAND_ROT_DIR
-            | build_cell::AtomsGenerator::TransformMode::RAND_ROT_ANGLE);
+    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
+      build_cell::AtomsGroup::TransformMode::RAND_ROT_DIR |
+      build_cell::AtomsGroup::TransformMode::RAND_ROT_ANGLE);
   }
 
   // Check if there is a 'global' radius
@@ -481,6 +477,20 @@ SsLibFactoryYaml::createAtomsGenerator(const OptionsMap & map,
         if(atomsDescription.get())
           atomsGenerator->insertAtoms(*atomsDescription);
       }
+    }
+  }
+
+  // Species distances
+  typedef ::std::map< ::std::string, double> PairDistances;
+  const PairDistances * const pairDistances = map.find(PAIR_DISTANCES);
+  if(pairDistances)
+  {
+    ::std::vector< ::std::string> species;
+    BOOST_FOREACH(PairDistances::const_reference entry, *pairDistances)
+    {
+      ::boost::split(species, entry.first, ::boost::is_any_of("~"));
+      if(species.size() == 2)
+        atomsGenerator->addSpeciesPairDistance(build_cell::SpeciesPair(species[0], species[1]), entry.second);
     }
   }
 

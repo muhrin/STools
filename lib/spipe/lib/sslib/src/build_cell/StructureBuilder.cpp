@@ -48,7 +48,8 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   generationInfo.reserve(myGenerators.size());
 
   // First find out what the generators want to put in the structure
-  StructureContents contents;
+  IFragmentGenerator::GenerationTicket structureTicket = getTicket();
+  StructureContents contents = getGenerationContents(structureTicket, speciesDb);
   BOOST_FOREACH(IFragmentGenerator & generator, myGenerators)
   {
     const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
@@ -58,7 +59,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   // TODO: Sort fragment generators by volume (largest first)
 
   structureOut.reset(new common::Structure());
-  StructureBuild structureBuild(*structureOut, contents);
+  StructureBuild structureBuild(*structureOut, contents, speciesDb);
   if(!chooseSymmetry(structureBuild))
   {
     outcome.setFailure("Failed to generate a symmetry group");

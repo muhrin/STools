@@ -1,6 +1,6 @@
 # Ignore the build directory completely
-build/
-build_*/
+/build/
+/build_*/
 
 # Visual Studio files solution/project and build files
 *.sln

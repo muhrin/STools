@@ -8,11 +8,13 @@
 // INCLUEDES /////////////
 #include "spl/build_cell/StructureBuild.h"
 
+#include "spl/OptionalTypes.h"
 #include "spl/build_cell/BuildAtomInfo.h"
 #include "spl/build_cell/GenSphere.h"
 #include "spl/build_cell/Sphere.h"
 #include "spl/build_cell/StructureContents.h"
 #include "spl/build_cell/SymmetryGroup.h"
+#include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/Constants.h"
 #include "spl/common/Structure.h"
 #include "spl/common/UnitCell.h"
@@ -46,21 +48,33 @@ double StructureBuild::RadiusCalculator::getRadius(const double vol) const
 StructureBuild::StructureBuild(
   common::Structure & structure,
   const StructureContents & intendedContents,
-  const RadiusCalculator & radiusCalculator):
+  const common::AtomSpeciesDatabase & speciesDb,
+  const RadiusCalculator & radiusCalculator
+):
 myStructure(structure),
-myIntendedContents(intendedContents)
+myIntendedContents(intendedContents),
+mySpeciesDb(speciesDb)
 {
   myGenShape.reset(new GenSphere(radiusCalculator.getRadius(myIntendedContents.getVolume())));
+  myTransform.eye();
+  myTransformCurrent = true;
+  mySpeciesPairDistancesCurrent = true;
 }
 
 StructureBuild::StructureBuild(
   common::Structure & structure,
   const StructureContents & intendedContents,
+  const common::AtomSpeciesDatabase & speciesDb,
   GenShapePtr genShape):
 myStructure(structure),
 myIntendedContents(intendedContents),
+mySpeciesDb(speciesDb),
 myGenShape(genShape)
-{}
+{
+  myTransform.eye();
+  myTransformCurrent = true;
+  mySpeciesPairDistancesCurrent = true;
+}
 
 common::Structure & StructureBuild::getStructure()
 {
@@ -97,7 +111,7 @@ BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom)
   return it->second;
 }
 
-const BuildAtomInfo * StructureBuild::getAtomInfo(common::Atom & atom) const
+const BuildAtomInfo * StructureBuild::getAtomInfo(const common::Atom & atom) const
 {
   const AtomInfoMap::const_iterator it = myAtomsInfo.find(&atom);
 
@@ -168,7 +182,123 @@ StructureBuild::FixedSet StructureBuild::getFixedSet() const
 
 bool StructureBuild::extrudeAtoms()
 {
-  return myAtomsExtruder.extrudeAtoms(myStructure, getFixedSet());
+  return myAtomsExtruder.extrudeAtoms(myStructure, generateSepSqMatrix(), getFixedSet());
+}
+
+void StructureBuild::pushTransform(const ::arma::mat44 & transform)
+{
+  myTransformStack.push_back(transform);
+  myTransformCurrent = false;
+}
+
+void StructureBuild::popTransform()
+{
+  SSLIB_ASSERT(!myTransformStack.empty());
+
+  myTransformStack.pop_back();
+  myTransformCurrent = false;
+}
+
+const ::arma::mat44 & StructureBuild::getTransform() const
+{
+  if(!myTransformCurrent)
+  {
+    // Do it this way to stop accumulation of error from lots of push/pops
+    myTransform.eye();
+    for(int i = 0; i < myTransformStack.size(); ++i)
+      myTransform *= myTransformStack[i];
+    myTransformCurrent = true;
+  }
+  return myTransform;
+}
+
+void StructureBuild::pushSpeciesPairDistances(const SpeciesPairDistances & distances)
+{
+  mySpeciesPairDistancesStack.push_back(distances);
+  if(!distances.empty())
+    mySpeciesPairDistancesCurrent = false;
+}
+
+void StructureBuild::popSpeciesPairDistances()
+{
+  const bool wasEmpty = mySpeciesPairDistances.empty();
+  mySpeciesPairDistancesStack.pop_back();
+  if(!wasEmpty)
+    mySpeciesPairDistancesCurrent = false;
+}
+const StructureBuild::SpeciesPairDistances & StructureBuild::getSpeciesPairDistances() const
+{
+  typedef ::std::set< ::std::string> SpeciesSet;
+  static const double UNINITIALISED = -1.0;
+
+  if(!mySpeciesPairDistancesCurrent)
+  {
+    SpeciesPairDistances::const_iterator it;
+    for(int i = mySpeciesPairDistancesStack.size() - 1; i >= 0; --i)
+    {
+      BOOST_FOREACH(SpeciesPairDistances::const_reference pairDist, mySpeciesPairDistancesStack[i])
+      {
+        it = mySpeciesPairDistances.find(pairDist.first);
+        if(it == mySpeciesPairDistances.end())
+          mySpeciesPairDistances.insert(pairDist);
+      }
+    }
+    mySpeciesPairDistancesCurrent = true;
+  }
+  return mySpeciesPairDistances;
+}
+
+::arma::mat StructureBuild::generateSepSqMatrix() const
+{
+  const size_t numAtoms = myStructure.getNumAtoms();
+  ::arma::mat sepSq(numAtoms, numAtoms);
+
+  for(int i = 0; i < numAtoms; ++i)
+  {
+    const common::Atom & atomI = myStructure.getAtom(i);
+    const BuildAtomInfo * infoI = getAtomInfo(atomI);
+    for(int j = i; j < numAtoms; ++j)
+    {
+      const common::Atom & atomJ = myStructure.getAtom(j);
+      const BuildAtomInfo * infoJ = getAtomInfo(atomJ);
+
+      OptionalDouble rI, rJ;
+
+      // Try to set the radii from build info (the most specific knowledge we have)
+      if(infoI)
+        rI = infoI->radius;
+      if(infoJ)
+        rJ = infoJ->radius;
+
+      // If we couldn't find radii then try pair separation distances
+      if(!rI && !rJ)
+      {
+        // Try doing it by pair distances
+        SpeciesPairDistances::const_iterator it =
+            getSpeciesPairDistances().find(SpeciesPair(atomI.getSpecies(), atomJ.getSpecies()));
+        if(it != mySpeciesPairDistances.end())
+        {
+          // Give them each a half of the separation distance
+          rI.reset(0.5 * it->second);
+          rJ.reset(0.5 * it->second);
+        }
+      }
+
+      // Finally if we still don't have radii try getting it from the species database
+      // Try setting it from the species database
+      if(!rI)
+        rI = mySpeciesDb.getRadius(atomI.getSpecies());
+      if(!rJ)
+        rJ = mySpeciesDb.getRadius(atomJ.getSpecies());
+
+      double separation = 0.0;
+      if(rI) separation += *rI;
+      if(rJ) separation += *rJ;
+      sepSq(i, j) = separation * separation;
+    }
+  }
+
+  return ::arma::symmatl(sepSq);
 }
 
 }

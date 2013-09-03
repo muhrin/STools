@@ -1,5 +1,5 @@
 /*
- * StructureBuilder.h
+ * Sphere.h
  *
  *  Created on: Nov 10, 2011
  *      Author: Martin Uhrin
