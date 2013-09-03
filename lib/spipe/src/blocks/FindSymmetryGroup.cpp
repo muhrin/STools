@@ -1,12 +1,12 @@
 /*
- * DetermineSpaceGroup.cpp
+ * FindSymmetryGroup.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "blocks/DetermineSpaceGroup.h"
+#include "blocks/FindSymmetryGroup.h"
 
 #include <vector>
 
@@ -14,11 +14,6 @@
 #include <boost/scoped_array.hpp>
 
 #include <armadillo>
-
-extern "C"
-{
-#  include <spglib/spglib.h>
-}
 
 #include <spl/analysis/SpaceGroup.h>
 #include <spl/common/AtomSpeciesId.h>
@@ -38,14 +33,13 @@ namespace ssc = ::spl::common;
 namespace ssa = ::spl::analysis;
 namespace structure_properties = ssc::structure_properties;
 
-DetermineSpaceGroup::DetermineSpaceGroup():
-SpBlock("Determine space group")
+FindSymmetryGroup::FindSymmetryGroup():
+Block("Determine space group")
 {}
 
-void DetermineSpaceGroup::in(StructureDataType & data)
+void FindSymmetryGroup::in(common::StructureData * const data)
 {
-  // Express structure data in form that spglib can work with
-  ssc::Structure * const structure = data.getStructure();
+  ssc::Structure * const structure = data->getStructure();
 
   if(structure && structure->getUnitCell())
   {

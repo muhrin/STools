@@ -26,25 +26,25 @@ namespace factory {
 
 // GENERAL
 extern ::spl::utility::Key<int> NUM;
+extern ::spl::utility::Key<double> PERCENT;
 extern ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
-extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> LOWEST_ENERGY;
-extern ::spl::utility::Key<size_t> KEEP_TOP;
-extern ::spl::utility::Key<double> KEEP_WITHIN;
-
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
-extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PARAM_SWEEP;
 extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
+extern ::spl::utility::Key<bool> MULTI_WRITE;
+extern ::spl::utility::Key< ::std::string> FORMAT;
 
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
-extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> RANDOM_STRUCTURE;
-extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
-
-extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
-extern ::spl::utility::Key<bool> MULTI_WRITE;
-extern ::spl::utility::Key< ::std::string> FILE_TYPE;
 
 
 

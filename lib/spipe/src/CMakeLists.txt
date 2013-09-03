@@ -2,37 +2,35 @@
 ## spipe/blocks/
 
 set(spipe_Header_Files__blocks
-  blocks/DetermineSpaceGroup.h
+  blocks/BuildStructures.h
+  blocks/FindSymmetryGroup.h
   blocks/EdgeDetect.h
+  blocks/GeomOptimise.h
+  blocks/KeepTopN.h
+  blocks/KeepWithinXPercent.h
   blocks/LoadSeedStructures.h
-  blocks/LowestFreeEnergy.h
-  blocks/MakeConvexHull.h
-  blocks/MakeMap.h
-  blocks/NiggliReduction.h
-  blocks/ParamPotentialGo.h
-  blocks/PotentialGo.h
-  blocks/PotentialParamSweep.h
-  blocks/RandomStructure.h
+  blocks/NiggliReduce.h
+  blocks/ParamGeomOptimise.h
   blocks/RemoveDuplicates.h
-  blocks/StoichiometrySearch.h
-  blocks/WriteStructure.h
+  blocks/SearchStoichiometries.h
+  blocks/SweepPotentialParams.h
+  blocks/WriteStructures.h
 )
 source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 
 set(spipe_Source_Files__blocks
-  blocks/DetermineSpaceGroup.cpp
+  blocks/BuildStructures.cpp
+  blocks/FindSymmetryGroup.cpp
+  blocks/GeomOptimise.cpp
+  blocks/KeepTopN.cpp
+  blocks/KeepWithinXPercent.cpp
   blocks/LoadSeedStructures.cpp
-  blocks/LowestFreeEnergy.cpp
-  blocks/MakeConvexHull.cpp
-  blocks/MakeMap.cpp
-  blocks/NiggliReduction.cpp
-  blocks/ParamPotentialGo.cpp
-  blocks/PotentialGo.cpp
-  blocks/PotentialParamSweep.cpp
-  blocks/RandomStructure.cpp
+  blocks/NiggliReduce.cpp
+  blocks/ParamGeomOptimise.cpp
   blocks/RemoveDuplicates.cpp
-  blocks/StoichiometrySearch.cpp
-  blocks/WriteStructure.cpp
+  blocks/SearchStoichiometries.cpp
+  blocks/SweepPotentialParams.cpp
+  blocks/WriteStructures.cpp
 )
 source_group("Source Files\\blocks" FILES ${spipe_Source_Files__blocks})
 
@@ -64,15 +62,14 @@ source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
 
 set(spipe_Header_Files__factory
   factory/MapEntries.h
-  factory/Factory.h
+  factory/BlockFactory.h
   factory/YamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
 
 set(spipe_Source_Files__factory
   factory/MapEntries.cpp
-  factory/Factory.cpp
-  factory/YamlSchema.cpp
+  factory/BlockFactory.cpp
 )
 source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 

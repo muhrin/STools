@@ -13,27 +13,31 @@
 namespace spipe {
 namespace factory {
 
+///////////////////////////////////////////////////////////
+// MAP KEYS
+///////////////////////////////////////////////////////////
+
 // GENERAL
 ::spl::utility::Key<int> NUM;
+::spl::utility::Key<double> PERCENT;
 ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
-::spl::utility::Key< ::spl::utility::HeterogeneousMap> LOWEST_ENERGY;
-::spl::utility::Key<size_t> KEEP_TOP;
-::spl::utility::Key<double> KEEP_WITHIN;
-
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
-::spl::utility::Key< ::spl::utility::HeterogeneousMap> PARAM_SWEEP;
 ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
+::spl::utility::Key<bool> MULTI_WRITE;
+::spl::utility::Key< ::std::string> FORMAT;
 
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
-::spl::utility::Key< ::spl::utility::HeterogeneousMap> RANDOM_STRUCTURE;
-::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
-
-::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
-::spl::utility::Key<bool> MULTI_WRITE;
-::spl::utility::Key< ::std::string> FILE_TYPE;
 
 }
 }

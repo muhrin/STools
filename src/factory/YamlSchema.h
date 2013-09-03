@@ -11,7 +11,6 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-
 #include <spl/yaml_schema/YamlSchema.h>
 #include <spl/factory/SsLibYamlSchema.h>
 
@@ -26,29 +25,28 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // TYPEDEFS
 ///////////////////////////////////////////////////////////
-
+typedef ::spl::factory::HeteroMap HeteroMap;
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 
-struct Build : public ::spl::yaml_schema::SchemaHeteroMap
+struct Build : HeteroMap
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
   Build()
   {
     namespace spf = ::spipe::factory;
 
-    ::spl::utility::HeterogeneousMap randStructureDefault;
-    randStructureDefault[spf::NUM] = 1;
+    ::spl::utility::HeterogeneousMap buildStructuresDefault;
+    buildStructuresDefault[spf::NUM] = 1;
 
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
-    addEntry(
-      "randomStructures",
-      spf::RANDOM_STRUCTURE,
-      (new spf::blocks::RandomStructure())->defaultValue(randStructureDefault)
-    )->required();
-    addEntry("output", spf::WRITE_STRUCTURES, new spf::blocks::WriteStructure());
+    addEntry("buildStructures", spf::BUILD_STRUCTURES,
+        (new spf::blocks::BuildStructures())->defaultValue(
+            buildStructuresDefault))->required();
+    addEntry("writeStructures", spf::WRITE_STRUCTURES,
+        new spf::blocks::WriteStructures());
 
     // Defaults
     BindingType defaultOptions;
@@ -67,44 +65,24 @@ struct Search : public ::spl::yaml_schema::SchemaHeteroMap
 
     // Global options
     addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
-    addScalarEntry("castepExe", ssf::CASTEP_EXE)->element()
-      ->defaultValue("castep");
+    addScalarEntry("castepExe", ssf::CASTEP_EXE)->element()->defaultValue(
+        "castep");
 
-    addEntry(
-      "paramSweep",
-      spf::PARAM_SWEEP,
-      new spf::blocks::ParamSweep()
-    );
-    addEntry(
-      "randomStructures",
-      spf::RANDOM_STRUCTURE,
-      new spf::blocks::RandomStructure()
-    );
-    addEntry(
-      "geomOptimise",
-      spf::GEOM_OPTIMISE,
-      new spf::blocks::GeomOptimise()
-    );
-    addEntry(
-      "preGeomOptimise",
-      spf::PRE_GEOM_OPTIMISE,
-      new spf::blocks::GeomOptimise()
-    );
-    addEntry(
-      "lowestEnergy",
-      spf::LOWEST_ENERGY,
-      new spf::blocks::LowestEnergy()
-    );
-    addEntry(
-      "removeDuplicates",
-      spf::REMOVE_DUPLICATES,
-      new spf::blocks::RemoveDuplicates()
-    );
-    addEntry(
-      "output",
-      spf::WRITE_STRUCTURES,
-      new spf::blocks::WriteStructure()
-    );
+    addEntry("buildStructures", spf::BUILD_STRUCTURES,
+        new spf::blocks::BuildStructures());
+    addEntry("preGeomOptimise", spf::PRE_GEOM_OPTIMISE,
+        new spf::blocks::GeomOptimise());
+    addEntry("geomOptimise", spf::GEOM_OPTIMISE,
+        new spf::blocks::GeomOptimise());
+    addEntry("removeDuplicates", spf::REMOVE_DUPLICATES,
+        new spf::blocks::RemoveDuplicates());
+    addEntry("keepTopN", spf::KEEP_TOP_N, new spf::blocks::KeepTopN());
+    addEntry("keepWithinXPercent", spf::KEEP_WITHIN_X_PERCENT,
+        new spf::blocks::KeepWithinXPercent());
+    addEntry("writeStructures", spf::WRITE_STRUCTURES,
+        new spf::blocks::WriteStructures());
+    addEntry("sweepPotentialParams", spf::SWEEP_POTENTIAL_PARAMS,
+        new spf::blocks::SweepPotentialParams());
 
     // Defaults
 

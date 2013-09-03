@@ -77,23 +77,18 @@ int main(const int argc, char * argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
-  ::stools::factory::Factory factory(speciesDb);
+    ::stools::factory::Factory factory(speciesDb);
 
-  PipePtr pipe;
-  if(!factory.createBuildPipe(pipe, buildOptions))
+  sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
+  if(!pipe)
   {
     ::std::cerr << "Failed to create build pipe" << ::std::endl;
     return 1;
   }
 
   // Now run the pipe
-  typedef sp::SpSingleThreadedEngine Engine;
-  typedef Engine::RunnerPtr RunnerPtr;
-
-  Engine pipeEngine;
-  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-  runner->run(*pipe);
+  sp::SerialEngine pipeEngine;
+  pipeEngine.run(pipe);
 
   return 0;
 }

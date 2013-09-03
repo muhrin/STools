@@ -16,10 +16,6 @@
 
 // FORWARD DECLARES ////////////////////////////////
 namespace spipe {
-namespace common {
-class GlobalData;
-class SharedData;
-}
 namespace io{
 class StructureReadWriteManager;
 }
@@ -34,10 +30,6 @@ namespace spipe {
 namespace utility {
 
 void initStructureRwManDefault(::spl::io::StructureReadWriteManager & rwMan);
-
-::spipe::SpEngine::RunnerPtr generateRunnerInitDefault(::spipe::SpEngine & engine);
-
-void initGlobalDataDefault(::spipe::common::GlobalData & global);
 
 
 }

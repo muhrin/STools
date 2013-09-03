@@ -36,7 +36,6 @@ namespace common {
 class SharedData
 {
 public:
-
   typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
   static const char DIR_SUBSTRING_DELIMITER[];
@@ -46,19 +45,8 @@ public:
   bool
   appendToOutputDirName(const ::std::string & toAppend);
 
-  /**
-   /* Get the output path for the pipeline that owns this shared data relative to
-   /* the working directory where the code was executed.
-   /**/
   ::boost::filesystem::path
-  getOutputPath(const SpRunner & runner) const;
-
-  /**
-   /* Get the output path for the pipeline that owns this shared data relative to
-   /* the working directory where the code was executed.
-   /**/
-  ::boost::filesystem::path
-  getOutputPath(const SpRunnerAccess & runner) const;
+  getOutputPath() const;
 
   /**
    /* Get the output path for the pipeline that owns this shared data relative to
@@ -83,11 +71,6 @@ public:
 private:
   void
   reset();
-
-  void
-  buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunner & runner) const;
-  void
-  buildOutputPathRecursive(::boost::filesystem::path & path, const SpRunnerAccess & runner) const;
 
   IStructureGeneratorPtr myStructureGenerator;
   ::boost::filesystem::path myOutputDir;

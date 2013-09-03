@@ -1,13 +1,12 @@
 /*
- * PotentialGo.h
- * Potential Geometry Optimisation
+ * GeomOptimise.h
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef POTENTIAL_GO_H
-#define POTENTIAL_GO_H
+#ifndef GEOM_OPTIMISE_H
+#define GEOM_OPTIMISE_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
@@ -41,15 +40,13 @@ class IPotential;
 namespace spipe {
 namespace blocks {
 
-class PotentialGo : public SpPipeBlock, ::boost::noncopyable
+class GeomOptimise : public PipeBlock, ::boost::noncopyable
 {
 public:
+  GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser);
 
-  PotentialGo(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
-
-  PotentialGo(::spl::potential::IGeomOptimiserPtr optimiser,
-      const ::spl::potential::OptimisationSettings & optimisationParams, const bool writeOutput =
-          true);
+  GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
+      const ::spl::potential::OptimisationSettings & optimisationParams);
 
   // From Block ///////////////////////////////
   virtual void
@@ -58,8 +55,13 @@ public:
 
   // From PipeBlock ///////////////////////////
   virtual void
-  in(spipe::common::StructureData & data);
+  in(common::StructureData * const data);
   // End from PipeBlock ///////////////////////
+
+  bool
+  getWriteOutput() const;
+  void
+  setWriteOutput(const bool write);
 
 protected:
   ::spl::potential::IGeomOptimiser &
@@ -72,7 +74,7 @@ protected:
 
   // Should we write information about structures being optimised
   // to file.
-  const bool myWriteOutput;
+  bool myWriteOutput;
 
   const ::spl::potential::OptimisationSettings myOptimisationParams;
 
@@ -86,4 +88,4 @@ private:
 }
 }
 
-#endif /* POTENTIAL_GO_H */
+#endif /* GEOM_OPTIMISE_H */

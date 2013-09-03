@@ -28,7 +28,6 @@
 
 // NAMESPACES ////////////////////////////////
 
-
 namespace spipe {
 namespace blocks {
 
@@ -40,15 +39,15 @@ namespace ssu = ::spl::utility;
 
 const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
 
-LoadSeedStructures::LoadSeedStructures(
-  const ::std::string & seedStructures,
-  const bool tryToScaleVolumes):
-SpBlock("Load seed structures"),
-mySeedStructuresString(seedStructures),
-myTryToScaleVolumes(tryToScaleVolumes)
-{}
+LoadSeedStructures::LoadSeedStructures(const ::std::string & seedStructures,
+    const bool tryToScaleVolumes) :
+    Block("Load seed structures"), mySeedStructuresString(seedStructures), myTryToScaleVolumes(
+        tryToScaleVolumes)
+{
+}
 
-void LoadSeedStructures::pipelineInitialising()
+void
+LoadSeedStructures::pipelineInitialising()
 {
   myStructures.clear();
 
@@ -59,21 +58,22 @@ void LoadSeedStructures::pipelineInitialising()
     processEntry(entry);
 }
 
-void LoadSeedStructures::start()
+void
+LoadSeedStructures::start()
 {
-	using ::spipe::common::StructureData;
+  using ::spipe::common::StructureData;
 
   double oldVolume, newVolume;
   const ssc::UnitCell * unitCell;
   BOOST_FOREACH(const ssc::Structure & str, myStructures)
   {
-    StructureData & data = getRunner()->createData();
+    StructureData * const data = getEngine()->createData();
     // Make a clone of our structure
-    ssc::Structure & structure = data.setStructure(str.clone());
-    
+    ssc::Structure & structure = data->setStructure(str.clone());
+
     // Set up the structure name if needed
     if(structure.getName().empty())
-      structure.setName(common::generateStructureName(getRunner()->memory()));
+      structure.setName(common::generateStructureName(getEngine()->globalData()));
 
     unitCell = structure.getUnitCell();
     if(myTryToScaleVolumes && unitCell)
@@ -88,7 +88,8 @@ void LoadSeedStructures::start()
   }
 }
 
-int LoadSeedStructures::processEntry(const ::std::string & entry)
+int
+LoadSeedStructures::processEntry(const ::std::string & entry)
 {
   const EntryType type = entryType(entry);
 
@@ -104,9 +105,10 @@ int LoadSeedStructures::processEntry(const ::std::string & entry)
   return -1;
 }
 
-int LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
+int
+LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
 {
-  ::std::vector<fs::path> entryPaths;
+  ::std::vector< fs::path> entryPaths;
 
   if(!ssio::getWildcardPaths(entry, entryPaths))
     return -1;
@@ -122,17 +124,16 @@ int LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
   return numOut;
 }
 
-int LoadSeedStructures::processFileOrFolder(const ::spl::io::ResourceLocator & loc)
+int
+LoadSeedStructures::processFileOrFolder(const ::spl::io::ResourceLocator & loc)
 {
   // Try loading the file
-  const size_t numLoaded = getRunner()->memory().global().getStructureIo().readStructures(
-    myStructures,
-    loc
-  );
+  const size_t numLoaded = getEngine()->globalData().getStructureIo().readStructures(myStructures,
+      loc);
   if(numLoaded == 0)
     return -1;
 
-  return static_cast<int>(numLoaded);
+  return static_cast< int>(numLoaded);
 }
 
 LoadSeedStructures::EntryType
@@ -156,17 +157,17 @@ LoadSeedStructures::entryType(const ::std::string & entry) const
   return UNKNOWN;
 }
 
-double LoadSeedStructures::getTotalAtomicVolume(
-  const ::spl::common::Structure & structure) const
+double
+LoadSeedStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure) const
 {
-  typedef ::boost::optional<double> OptionalDouble;
+  typedef ::boost::optional< double> OptionalDouble;
 
-  ::std::vector<ssc::AtomSpeciesId::Value> species;
+  ::std::vector< ssc::AtomSpeciesId::Value> species;
   structure.getAtomSpecies(species);
 
   OptionalDouble radius;
   double dRadius, volume = 0.0;
-  const ssc::AtomSpeciesDatabase & speciesDb = getRunner()->memory().global().getSpeciesDatabase();
+  const ssc::AtomSpeciesDatabase & speciesDb = getEngine()->globalData().getSpeciesDatabase();
   BOOST_FOREACH(ssc::AtomSpeciesId::Value spec, species)
   {
     radius = speciesDb.getRadius(spec);

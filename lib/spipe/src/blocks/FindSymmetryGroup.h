@@ -1,13 +1,13 @@
 /*
- * NiggliReduction.h
+ * FindSymmetryGroup.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef NIGGLI_REDUCTION_H
-#define NIGGLI_REDUCTION_H
+#ifndef FIND_SYMMETRY_GROUP_H
+#define FIND_SYMMETRY_GROUP_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
@@ -20,19 +20,20 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
+
 namespace spipe {
 namespace blocks {
 
-class NiggliReduction : public SpPipeBlock, ::boost::noncopyable
+class FindSymmetryGroup : public PipeBlock, ::boost::noncopyable
 {
 public:
-	NiggliReduction();
+  FindSymmetryGroup();
 
-	virtual void in(StructureDataType & data);
+  // From PipeBlock //////////////////////
+  virtual void in(common::StructureData * const data);
+  // End from PipeBlock /////////////////
 };
 
+}}
 
-}
-}
-
-#endif /* NIGGLI_REDUCTION_H */
+#endif /* FIND_SYMMETRY_GROUP_H */

@@ -35,9 +35,9 @@ typedef ::spipe::blocks::SpeciesParameter SpeciesParameter;
 typedef ::spipe::blocks::StoichiometrySearch::SpeciesParameters SpeciesParameters;
 
 
-class StoichiometrySink : public ::spipe::SpFinishedSink
+class StoichiometrySink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::SpFinishedSink::PipelineDataPtr StructureDataPtr;
+  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
   typedef ::std::set<size_t> CountSet;
   typedef ::std::map<ssc::AtomSpeciesId::Value, CountSet> SpeciesCount;
 public:
@@ -94,7 +94,7 @@ private:
 
 BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
 {
-  typedef spipe::SpSingleThreadedEngine Engine;
+  typedef spipe::SerialEngine Engine;
   typedef Engine::RunnerPtr RunnerPtr;
   typedef ::spipe::SpPipe Pipe;
 

@@ -31,23 +31,29 @@ class Structure;
 namespace spipe {
 namespace blocks {
 
-class RemoveDuplicates : public SpPipeBlock, ::boost::noncopyable
+class RemoveDuplicates : public Barrier, ::boost::noncopyable
 {
 public:
-
   RemoveDuplicates(::spl::utility::IStructureComparatorPtr comparator);
   RemoveDuplicates(const ::spl::utility::IStructureComparator & comparator);
 
-	virtual void in(::spipe::common::StructureData & data);
+  virtual void
+  in(common::StructureData * const data);
 
   // From Block /////////////////////////
-	virtual void pipelineFinishing();
+  virtual void
+  pipelineFinishing();
   // End from Block ///////////////////
 
-private:
-  typedef spl::utility::UniqueStructureSet<StructureDataHandle> StructureSet;
+  // From Barrier ////////////////////////
+  virtual size_t release();
+  virtual bool hasData() const;
+  // End from Barrier ///////////////////
 
-	StructureSet	myStructureSet;
+private:
+  typedef spl::utility::UniqueStructureSet< common::StructureData *> StructureSet;
+
+  StructureSet myStructureSet;
 };
 
 }

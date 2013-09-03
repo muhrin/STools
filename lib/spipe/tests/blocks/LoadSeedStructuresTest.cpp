@@ -24,9 +24,9 @@
 namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 
-class StructureSink : public ::spipe::SpFinishedSink
+class StructureSink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::SpFinishedSink::PipelineDataPtr StructureDataPtr;
+  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
 public:
 
   StructureSink():myNumReceived(0) {}
@@ -43,7 +43,7 @@ private:
 
 BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
 {
-  typedef spipe::SpSingleThreadedEngine Engine;
+  typedef spipe::SerialEngine Engine;
   typedef spipe::SpPipe Pipe;
   typedef Engine::RunnerPtr RunnerPtr;
 

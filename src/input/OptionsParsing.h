@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include <pipelib/PipeRunner.h>
-
 // NAMESPACES ////////////////////////////////
 namespace YAML {
 class Node;

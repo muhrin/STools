@@ -19,38 +19,38 @@ namespace utility {
 namespace fs = ::boost::filesystem;
 
 DataTableSupport::DataTableSupport(const bool clearTableOnPipeFinish):
-myRunner(NULL),
+myEngine(NULL),
 myClearTableOnPipeFinish(clearTableOnPipeFinish)
 {}
 
 DataTableSupport::DataTableSupport(
   const ::boost::filesystem::path & filename,
   const bool clearTableOnPipeFinish):
-myRunner(NULL),
+myEngine(NULL),
 myFilename(filename),
 myClearTableOnPipeFinish(clearTableOnPipeFinish)
 {}
 
 DataTableSupport::~DataTableSupport()
 {
-  deregisterRunner();
+  deregisterEngine();
 }
 
-void DataTableSupport::registerRunner(SpRunnerAccess & runner)
+void DataTableSupport::registerEngine(EngineAccess * const engine)
 {
-  deregisterRunner();
+  deregisterEngine();
 
-  myRunner = &runner;
-  myRunner->addListener(*this);
+  myEngine = engine;
+  myEngine->addListener(*this);
 }
 
-bool DataTableSupport::deregisterRunner()
+bool DataTableSupport::deregisterEngine()
 {
-  if(!myRunner)
+  if(!myEngine)
     return false;
 
-  myRunner->removeListener(*this);
-  myRunner = NULL;
+  myEngine->removeListener(*this);
+  myEngine = NULL;
 
   return true;
 }
@@ -67,7 +67,7 @@ void DataTableSupport::setFilename(const fs::path & filename)
 
   myFilename = filename;
 
-  if(myRunner && myRunner->getState() == ::pipelib::PipelineState::RUNNING)
+  if(myEngine && myEngine->getState() == ::pipelib::PipelineState::RUNNING)
   {
     if(myWriter.get())
     {
@@ -80,7 +80,7 @@ void DataTableSupport::setFilename(const fs::path & filename)
   }
 }
 
-void DataTableSupport::notify(const ::pipelib::event::PipeRunnerStateChanged<SpRunnerAccess> & evt)
+void DataTableSupport::notify(const ::pipelib::event::PipeEngineStateChanged<EngineAccess> & evt)
 {
   if(evt.getNewState() == ::pipelib::PipelineState::RUNNING)
   {
@@ -97,10 +97,10 @@ void DataTableSupport::notify(const ::pipelib::event::PipeRunnerStateChanged<SpR
   }
 }
 
-void DataTableSupport::notify(const ::pipelib::event::PipeRunnerDestroyed<SpRunnerAccess> & evt)
+void DataTableSupport::notify(const ::pipelib::event::PipeEngineDestroyed<EngineAccess> & evt)
 {
-  if(myRunner == &evt.getRunner())
-    myRunner = NULL;
+  if(myEngine == &evt.getEngine())
+    myEngine = NULL;
 }
 
 bool DataTableSupport::createWriter()
@@ -108,7 +108,7 @@ bool DataTableSupport::createWriter()
   if(myFilename.empty())
     return false;
 
-  const fs::path outputPath(myRunner->memory().shared().getOutputPath(*myRunner) / myFilename);
+  const fs::path outputPath(myEngine->sharedData().getOutputPath() / myFilename);
   myWriter.reset(new DataTableWriter(myTable, outputPath)); 
 
   return true;

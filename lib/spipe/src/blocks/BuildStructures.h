@@ -1,13 +1,13 @@
 /*
- * RandomStructure.h
+ * BuildStructures.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef RANDOM_STRUCTURE_H
-#define RANDOM_STRUCTURE_H
+#ifndef BUILD_STRUCTURES_H
+#define BUILD_STRUCTURES_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
@@ -17,7 +17,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/variant.hpp>
-
 
 #include <spl/build_cell/BuildCellFwd.h>
 
@@ -30,46 +29,44 @@
 namespace spipe {
 namespace blocks {
 
-class RandomStructure : public virtual SpStartBlock, public virtual SpPipeBlock,
-  ::boost::noncopyable
+class BuildStructures : public virtual StartBlock,
+    public virtual PipeBlock,
+    ::boost::noncopyable
 {
 public:
-
   typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
-	RandomStructure(
-    const int numToGenerate,
-    IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr()
-  );
+  BuildStructures(const int numToGenerate,
+      IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr());
 
-  RandomStructure(
-    const float atomsMultiplierGenerate,
-    IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr()
-  );
-
+  BuildStructures(const float atomsMultiplierGenerate,
+      IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr());
 
   // From StartBlock ///
-	virtual void start();
+  virtual void
+  start();
   // End from StartBlock
 
   // From PipeBlock //
-	virtual void in(::spipe::common::StructureData & data);
+  virtual void
+  in(::spipe::common::StructureData * const data);
   // End from PipeBlock
 
 private:
   typedef ::boost::scoped_ptr< ::spl::build_cell::IStructureGenerator> StructureGeneratorPtr;
 
-  ::spl::build_cell::IStructureGenerator * getStructureGenerator();
-  ::std::string generateStructureName(const SpRunnerAccess & runner, const size_t structureNum) const;
+  ::spl::build_cell::IStructureGenerator *
+  getStructureGenerator();
+  ::std::string
+  generateStructureName(const size_t structureNum) const;
 
-	const IStructureGeneratorPtr myStructureGenerator;
+  const IStructureGeneratorPtr myStructureGenerator;
   const bool myFixedNumGenerate;
   const int myNumToGenerate;
   const float myAtomsMultiplierGenerate;
 };
 
-
 }
 }
 
-#endif /* RANDOM_STRUCTURE_H */
+#endif /* BUILD_STRUCTURES_H */

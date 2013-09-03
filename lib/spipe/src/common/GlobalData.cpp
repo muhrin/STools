@@ -12,6 +12,7 @@
 #include <spl/utility/UtilFunctions.h>
 
 #include "common/UtilityFunctions.h"
+#include "utility/PipeDataInitialisation.h"
 
 // NAMESPACES ////////////////////////////////
 namespace ssc = ::spl::common;
@@ -24,7 +25,9 @@ namespace common {
 const char GlobalData::DIR_SUBSTRING_DELIMITER[] = "_";
 
 GlobalData::GlobalData()
-{}
+{
+  utility::initStructureRwManDefault(myStructureIoManager);
+}
 
 bool GlobalData::appendToOutputDirName(const std::string & toAppend)
 {

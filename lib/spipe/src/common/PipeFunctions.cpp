@@ -17,18 +17,20 @@ namespace common {
 
 namespace ssu = ::spl::utility;
 
-::std::string getOutputFileStem(const MemoryAccessType & memory)
+::std::string getOutputFileStem(const SharedDataType & shared, const GlobalDataType & global)
 {
-  ::std::string stem = memory.global().getSeedName();
-  if(!stem.empty() && !memory.shared().getInstanceName().empty())
+  ::std::string stem = global.getSeedName();
+  if(!stem.empty() && !shared.getInstanceName().empty())
+  {
     stem += "-";
-  stem += memory.shared().getInstanceName();
+    stem += shared.getInstanceName();
+  }
   return stem;
 }
 
-::std::string generateStructureName(const MemoryAccessType & memory)
+::std::string generateStructureName(const GlobalDataType & global)
 {
-  ::std::string name = memory.global().getSeedName();
+  ::std::string name = global.getSeedName();
   if(!name.empty())
     name += "-";
   name += ssu::generateUniqueName(4);

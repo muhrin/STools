@@ -19,7 +19,7 @@
 
 // From SPipe
 #include <SpTypes.h>
-#include <factory/Factory.h>
+#include <factory/BlockFactory.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace spl {
@@ -34,41 +34,22 @@ namespace factory {
 class Factory
 {
 public:
-  typedef ::spl::UniquePtr< ::spipe::SpBlock>::Type BlockPtr;
-  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
+  typedef ::spipe::BlockHandle BlockHandle;
   typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
   Factory(::spl::common::AtomSpeciesDatabase & speciesDb):
     mySsLibFactory(speciesDb),
-    mySpFactory(speciesDb)
+    myBlockFactory(speciesDb)
   {}
 
-  bool createBuildPipe(PipePtr & pipeOut, const OptionsMap & options) const;
-  bool createSearchPipe(PipePtr & pipeOut, const OptionsMap & options) const;
-  bool createSearchPipeExtended(PipePtr & pipeOut, const OptionsMap & options) const;
-
-  bool createGeomOptimiseBlock(
-    BlockPtr & blockOut,
-    const OptionsMap & geomOptimiseOptions,
-    const OptionsMap * globalOptions = NULL
-  ) const;
+  BlockHandle createBuildPipe(const OptionsMap & options) const;
+  BlockHandle createSearchPipe(const OptionsMap & options) const;
+  BlockHandle createSearchPipeExtended(const OptionsMap & options) const;
 
 private:
+  static const BlockHandle NULL_HANDLE;
 
-  ::spipe::SpBlock * addWriteStructuresBlock(
-    ::spipe::SpPipe & pipe,
-    ::spipe::SpBlock * lastBlock,
-    const OptionsMap & outputOptions,
-    const bool useBarrier
-  ) const;
-
-  ::spipe::SpBlock * addAndConnect(
-    ::spipe::SpPipe & pipe,
-    ::spipe::SpBlock * const lastBlock,
-    ::spipe::SpBlock * const newBlock
-  ) const;
-
-  ::spipe::factory::Factory mySpFactory;
+  ::spipe::factory::BlockFactory myBlockFactory;
   ::spl::factory::SsLibFactoryYaml mySsLibFactory;
 
 };

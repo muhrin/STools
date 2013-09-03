@@ -54,9 +54,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int main(const int argc, char * argv[])
 {
-  typedef ::spl::UniquePtr< ::spipe::SpPipe>::Type PipePtr;
-  typedef sp::SpSingleThreadedEngine Engine;
-  typedef Engine::RunnerPtr RunnerPtr;
+  typedef sp::SerialEngine Engine;
 
   // Program options
   InputOptions in;
@@ -94,20 +92,19 @@ int main(const int argc, char * argv[])
   ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
   // Create the pipe the run the search
-  Engine pipeEngine;
-  RunnerPtr runner = spu::generateRunnerInitDefault(pipeEngine);
-  runner->memory().global().setSeedName(::spl::io::stemString(in.inputOptionsFile));
+  Engine engine;
+  engine.globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
-  ::stools::factory::Factory factory(runner->memory().global().getSpeciesDatabase());
+  ::stools::factory::Factory factory(engine.globalData().getSpeciesDatabase());
 
-  PipePtr pipe;
-  if(!factory.createSearchPipeExtended(pipe, schemaOptions))
+  sp::BlockHandle pipe = factory.createSearchPipeExtended(schemaOptions);
+  if(!pipe)
   {
     ::std::cerr << "Failed to create search pipe" << ::std::endl;
     return 1;
   }
 
-  runner->run(*pipe);
+  engine.run(pipe);
 
   return 0;
 }

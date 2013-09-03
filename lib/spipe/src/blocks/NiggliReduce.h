@@ -1,13 +1,13 @@
 /*
- * DetermineSpaceGroup.h
+ * NiggliReduce.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef DETERMINE_SPACE_GROUP_H
-#define DETERMINE_SPACE_GROUP_H
+#ifndef NIGGLI_REDUCE_H
+#define NIGGLI_REDUCE_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
@@ -20,21 +20,19 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
 namespace spipe {
 namespace blocks {
 
-class DetermineSpaceGroup : public SpPipeBlock, ::boost::noncopyable
+class NiggliReduce : public PipeBlock, ::boost::noncopyable
 {
 public:
+  NiggliReduce();
 
-  DetermineSpaceGroup();
-
-  // From PipeBlock //////////////////////
-  virtual void in(StructureDataType & data);
-  // End from PipeBlock /////////////////
+  virtual void
+  in(common::StructureData * const data);
 };
 
-}}
+}
+}
 
-#endif /* DETERMINE_SPACE_GROUP_H */
+#endif /* NIGGLI_REDUCE_H */

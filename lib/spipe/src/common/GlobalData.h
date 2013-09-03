@@ -14,7 +14,6 @@
 
 #include <boost/filesystem.hpp>
 
-
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/utility/HeterogeneousMap.h>
@@ -31,34 +30,40 @@ public:
 
   GlobalData();
 
-  bool appendToOutputDirName(const ::std::string & toAppend);
+  bool
+  appendToOutputDirName(const ::std::string & toAppend);
 
   /**
-  /* Get the output path for the pipeline that owns this shared data relative to
-  /* the parent pipeline (or global data output path if there is not parent).
-  /**/
-  const ::boost::filesystem::path & getOutputPath() const;
+   /* Get the output path for the pipeline that owns this shared data relative to
+   /* the parent pipeline (or global data output path if there is not parent).
+   /**/
+  const ::boost::filesystem::path &
+  getOutputPath() const;
 
-  const ::std::string & getSeedName() const;
-  void setSeedName(const ::std::string & seedName);
+  const ::std::string &
+  getSeedName() const;
+  void
+  setSeedName(const ::std::string & seedName);
 
-  ::spl::common::AtomSpeciesDatabase & getSpeciesDatabase();
-  const ::spl::common::AtomSpeciesDatabase & getSpeciesDatabase() const;
+  ::spl::common::AtomSpeciesDatabase &
+  getSpeciesDatabase();
+  const ::spl::common::AtomSpeciesDatabase &
+  getSpeciesDatabase() const;
 
-  ::spl::utility::HeterogeneousMap  objectsStore;
+  ::spl::utility::HeterogeneousMap objectsStore;
 
-  ::spl::io::StructureReadWriteManager & getStructureIo();
+  ::spl::io::StructureReadWriteManager &
+  getStructureIo();
 
 private:
+  void
+  reset();
 
-  void reset();
-
-  ::spl::common::AtomSpeciesDatabase  mySpeciesDatabase;
-  ::boost::filesystem::path             myOutputDir;
+  ::spl::common::AtomSpeciesDatabase mySpeciesDatabase;
+  ::boost::filesystem::path myOutputDir;
   ::std::string mySeedName;
   ::spl::io::StructureReadWriteManager myStructureIoManager;
 };
-
 
 }
 }

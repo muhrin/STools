@@ -1,17 +1,16 @@
 /*
- * RandomStructure.cpp
+ * BuildStructures.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "blocks/RandomStructure.h"
+#include "blocks/BuildStructures.h"
 
 #include <cmath>
 
 #include <boost/optional.hpp>
-
 
 #include <spl/SSLib.h>
 #include <spl/build_cell/AtomsDescription.h>
@@ -35,22 +34,23 @@ namespace ssbc = ::spl::build_cell;
 namespace ssc = ::spl::common;
 namespace ssu = ::spl::utility;
 
-RandomStructure::RandomStructure(const int numToGenerate, IStructureGeneratorPtr structureGenerator) :
-    SpBlock("Generate Random structures"), myNumToGenerate(numToGenerate), myAtomsMultiplierGenerate(
+BuildStructures::BuildStructures(const int numToGenerate,
+    IStructureGeneratorPtr structureGenerator) :
+    Block("Generate Random structures"), myNumToGenerate(numToGenerate), myAtomsMultiplierGenerate(
         0.0), myFixedNumGenerate(true), myStructureGenerator(structureGenerator)
 {
 }
 
-RandomStructure::RandomStructure(const float atomsMultiplierGenerate,
+BuildStructures::BuildStructures(const float atomsMultiplierGenerate,
     IStructureGeneratorPtr structureGenerator) :
-    SpBlock("Generate Random structures"), myNumToGenerate(0), myAtomsMultiplierGenerate(
+    Block("Generate Random structures"), myNumToGenerate(0), myAtomsMultiplierGenerate(
         atomsMultiplierGenerate), myFixedNumGenerate(false), myStructureGenerator(
         structureGenerator)
 {
 }
 
 void
-RandomStructure::start()
+BuildStructures::start()
 {
   using ::spipe::common::StructureData;
 
@@ -67,20 +67,21 @@ RandomStructure::start()
       // Create the random structure
       ssc::StructurePtr str;
       outcome = generator->generateStructure(str,
-          getRunner()->memory().global().getSpeciesDatabase());
+          getEngine()->globalData().getSpeciesDatabase());
 
       if(outcome.success() && str.get() && str->getNumAtoms() != 0)
       {
-        StructureData & data = getRunner()->createData();
-        data.setStructure(str);
+        StructureData * const data = getEngine()->createData();
+        data->setStructure(str);
 
-        data.getStructure()->setName(generateStructureName(*getRunner(), i));
+        data->getStructure()->setName(generateStructureName(i));
 
         if(!myFixedNumGenerate)
         {
           totalAtomsGenerated += static_cast< float>(str->getNumAtoms());
           numToGenerate = static_cast< int>(std::ceil(
-              myAtomsMultiplierGenerate * totalAtomsGenerated / static_cast< float>(i)));
+              myAtomsMultiplierGenerate * totalAtomsGenerated
+                  / static_cast< float>(i)));
         }
 
         // Send it down the pipe
@@ -91,7 +92,7 @@ RandomStructure::start()
 }
 
 void
-RandomStructure::in(::spipe::common::StructureData & data)
+BuildStructures::in(::spipe::common::StructureData * const data)
 {
   ssbc::IStructureGenerator * const generator = getStructureGenerator();
   if(!generator)
@@ -103,25 +104,26 @@ RandomStructure::in(::spipe::common::StructureData & data)
   // Create the random structure
   ssc::StructurePtr str;
   const ssbc::GenerationOutcome outcome = generator->generateStructure(str,
-      getRunner()->memory().global().getSpeciesDatabase());
+      getEngine()->globalData().getSpeciesDatabase());
 
   if(outcome.success() && str.get())
   {
-    data.setStructure(str);
+    data->setStructure(str);
 
     // Build up the name
-    if(data.getStructure()->getName().empty())
-      data.getStructure()->setName(common::generateStructureName(getRunner()->memory()));
+    if(data->getStructure()->getName().empty())
+      data->getStructure()->setName(
+          common::generateStructureName(getEngine()->globalData()));
 
     // Send it down the pipe
     out(data);
   }
   else
-    getRunner()->dropData(data);
+    drop(data);
 }
 
 ::spl::build_cell::IStructureGenerator *
-RandomStructure::getStructureGenerator()
+BuildStructures::getStructureGenerator()
 {
   ssbc::IStructureGenerator * generator = NULL;
   if(myStructureGenerator.get())
@@ -129,20 +131,20 @@ RandomStructure::getStructureGenerator()
   else
   {
     // Try finding one in shared memory
-    if(getRunner())
-      generator = getRunner()->memory().shared().getStructureGenerator();
+    if(getEngine())
+      generator = getEngine()->sharedData().getStructureGenerator();
   }
 
   return generator;
 }
 
 ::std::string
-RandomStructure::generateStructureName(const SpRunnerAccess & runner,
-    const size_t structureNum) const
+BuildStructures::generateStructureName(const size_t structureNum) const
 {
   // Build up the name
   ::std::stringstream ss;
-  ss << common::generateStructureName(runner.memory()) << "-" << structureNum;
+  ss << common::generateStructureName(getEngine()->globalData()) << "-"
+      << structureNum;
   return ss.str();
 }
 

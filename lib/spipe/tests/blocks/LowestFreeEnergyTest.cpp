@@ -30,9 +30,9 @@ namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 namespace structure_properties = ssc::structure_properties;
 
-class StructureSink : public ::spipe::SpFinishedSink
+class StructureSink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::SpFinishedSink::PipelineDataPtr StructureDataPtr;
+  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
 public:
 
   StructureSink():myNumReceived(0) {}
@@ -49,13 +49,13 @@ private:
   unsigned int myNumReceived;
 };
 
-class StructuresSender : public ::spipe::SpStartBlock
+class StructuresSender : public ::spipe::StartBlock
 {
 public:
   typedef ::spipe::StructureDataType StructureDataType;
 
   StructuresSender(const unsigned int numToGenerate):
-  ::spipe::SpStartBlock::BlockType("Send structures"),
+  ::spipe::StartBlock::BlockType("Send structures"),
   myNumToGenerate(numToGenerate) {}
 
   virtual void start()
@@ -87,7 +87,7 @@ private:
 
 BOOST_AUTO_TEST_CASE(LowestFreeEnergyTest)
 {
-  typedef spipe::SpSingleThreadedEngine Engine;
+  typedef spipe::SerialEngine Engine;
   typedef spipe::SpPipe Pipe;
   typedef Engine::RunnerPtr RunnerPtr;
 

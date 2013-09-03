@@ -50,7 +50,7 @@ StructureData::setStructure(ssio::StructuresContainer::auto_type structure)
 }
 
 ssio::ResourceLocator
-StructureData::getRelativeSavePath(const SpRunnerAccess & runner) const
+StructureData::getRelativeSavePath(const ::boost::filesystem::path & relativeTo) const
 {
   ssio::ResourceLocator relativeLocator;
 
@@ -70,8 +70,7 @@ StructureData::getRelativeSavePath(const SpRunnerAccess & runner) const
     // Make the path relative if necessary
     if(ssio::isAbsolute(relativePath))
     {
-      relativePath = ssio::make_relative(runner.memory().shared().getOutputPath(runner),
-          relativePath);
+      relativePath = ssio::make_relative(relativeTo, relativePath);
       relativeLocator.setPath(relativePath);
     }
   }

@@ -1,12 +1,12 @@
 /*
- * WriteStructure.cpp
+ * WriteStructures.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "blocks/WriteStructure.h"
+#include "blocks/WriteStructures.h"
 
 #include <spl/common/Structure.h>
 #include <spl/io/StructureReadWriteManager.h>
@@ -29,42 +29,43 @@ namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
 namespace ssu = ::spl::utility;
 
-const bool WriteStructure::WRITE_MULTI_DEFAULT = true;
+const bool WriteStructures::WRITE_MULTI_DEFAULT = true;
+const ::std::string WriteStructures::FORMAT_DEFAULT = "res";
 
-WriteStructure::WriteStructure() :
-    SpBlock("Write structures"), myWriteMultiStructure(WRITE_MULTI_DEFAULT), myState(
+WriteStructures::WriteStructures() :
+    Block("Write structures"), myWriteMultiStructure(WRITE_MULTI_DEFAULT), myState(
         State::DISABLED)
 {
 }
 
 bool
-WriteStructure::getWriteMulti() const
+WriteStructures::getWriteMulti() const
 {
   return myWriteMultiStructure;
 }
 
 void
-WriteStructure::setWriteMulti(const bool writeMulti)
+WriteStructures::setWriteMulti(const bool writeMulti)
 {
   myWriteMultiStructure = true;
 }
 
 const ::std::string &
-WriteStructure::getFileType() const
+WriteStructures::getFileType() const
 {
   return myFileType;
 }
 
 void
-WriteStructure::setFileType(const ::std::string & extension)
+WriteStructures::setFileType(const ::std::string & extension)
 {
   myFileType = extension;
 }
 
 void
-WriteStructure::pipelineStarting()
+WriteStructures::pipelineStarting()
 {
-  const ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
+  const ssio::StructureReadWriteManager & rwMan = getEngine()->globalData().getStructureIo();
 
   // Do we want to use a custom writer and does it exist?
   if(!myFileType.empty() && rwMan.getWriter(myFileType))
@@ -79,13 +80,13 @@ WriteStructure::pipelineStarting()
 }
 
 void
-WriteStructure::in(::spipe::common::StructureData & data)
+WriteStructures::in(common::StructureData * const data)
 {
-  const ssio::StructureReadWriteManager & rwMan = getRunner()->memory().global().getStructureIo();
+  const ssio::StructureReadWriteManager & rwMan = getEngine()->globalData().getStructureIo();
   if(myState != State::DISABLED)
   {
-    common::SharedData & shared = getRunner()->memory().shared();
-    ssc::Structure * const structure = data.getStructure();
+    common::SharedData & shared = getEngine()->sharedData();
+    ssc::Structure * const structure = data->getStructure();
 
     const ssio::IStructureWriter * writer = NULL;
 
@@ -100,9 +101,9 @@ WriteStructure::in(::spipe::common::StructureData & data)
 
       bool writeSuccessful;
       if(myState == State::USE_CUSTOM_WRITER)
-        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation, myFileType);
+        writeSuccessful = rwMan.writeStructure(*data->getStructure(), saveLocation, myFileType);
       else
-        writeSuccessful = rwMan.writeStructure(*data.getStructure(), saveLocation);
+        writeSuccessful = rwMan.writeStructure(*data->getStructure(), saveLocation);
 
       if(writeSuccessful)
       {
@@ -118,19 +119,19 @@ WriteStructure::in(::spipe::common::StructureData & data)
 }
 
 ssio::ResourceLocator
-WriteStructure::generateLocator(ssc::Structure & structure,
+WriteStructures::generateLocator(ssc::Structure & structure,
     const ssio::IStructureWriter & writer) const
 {
   // Check if the structure has a name already, otherwise give it one
   if(structure.getName().empty())
-    structure.setName(common::generateStructureName(getRunner()->memory()));
+    structure.setName(common::generateStructureName(getEngine()->globalData()));
 
   // Create the path to store the structure
-  fs::path p(getRunner()->memory().shared().getOutputPath(*getRunner()));
+  fs::path p(getEngine()->sharedData().getOutputPath());
 
   // Should all the structures be stored in one file or seaprate files?
   if(useMultiStructure(writer))
-    p /= common::getOutputFileStem(getRunner()->memory());
+    p /= common::getOutputFileStem(getEngine()->sharedData(), getEngine()->globalData());
   else
     p /= fs::path(structure.getName());
 
@@ -142,7 +143,7 @@ WriteStructure::generateLocator(ssc::Structure & structure,
 }
 
 bool
-WriteStructure::useMultiStructure(const ssio::IStructureWriter & writer) const
+WriteStructures::useMultiStructure(const ssio::IStructureWriter & writer) const
 {
   if(myWriteMultiStructure && writer.multiStructureSupport())
     return true;

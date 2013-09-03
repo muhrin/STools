@@ -16,10 +16,6 @@
 #include <spl/io/SslibReaderWriter.h>
 #include <spl/io/XyzReaderWriter.h>
 
-// From local
-#include "common/GlobalData.h"
-#include "common/SharedData.h"
-
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
@@ -39,17 +35,6 @@ void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
   rwMan.setDefaultWriter(ssio::SslibReaderWriter::DEFAULT_EXTENSION);
 }
 
-sp::SpEngine::RunnerPtr generateRunnerInitDefault(sp::SpEngine & engine)
-{
-  sp::SpEngine::RunnerPtr runner = engine.createRunner();
-  initGlobalDataDefault(runner->memory().global());
-  return runner;
-}
-
-void initGlobalDataDefault(spc::GlobalData & global)
-{
-  initStructureRwManDefault(global.getStructureIo());
-}
 
 }
 }

@@ -1,12 +1,12 @@
 /*
- * NiggliReduction.cpp
+ * NiggliReduce.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "blocks/NiggliReduction.h"
+#include "blocks/NiggliReduce.h"
 
 #include <spl/common/Structure.h>
 #include <spl/common/UnitCell.h>
@@ -15,23 +15,24 @@
 
 // NAMESPACES ////////////////////////////////
 
-
 namespace spipe {
 namespace blocks {
 
 namespace ssc = ::spl::common;
 
-NiggliReduction::NiggliReduction():
-SpBlock("Niggli reduction")
-{}
-
-void NiggliReduction::in(StructureDataType & data)
+NiggliReduce::NiggliReduce() :
+    Block("Niggli reduce")
 {
-  ssc::UnitCell * const cell = data.getStructure()->getUnitCell();
+}
+
+void
+NiggliReduce::in(common::StructureData * const data)
+{
+  ssc::UnitCell * const cell = data->getStructure()->getUnitCell();
   if(cell)
     cell->niggliReduce();
 
-	out(data);
+  out(data);
 }
 
 }

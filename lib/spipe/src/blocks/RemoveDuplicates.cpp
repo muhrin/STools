@@ -19,7 +19,6 @@
 
 // NAMESPACES ////////////////////////////////
 
-
 namespace spipe {
 namespace blocks {
 
@@ -27,67 +26,78 @@ namespace ssc = ::spl::common;
 namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
-RemoveDuplicates::RemoveDuplicates(ssu::IStructureComparatorPtr comparator):
-SpBlock("Remove duplicates"),
-myStructureSet(comparator)
-{}
-
-RemoveDuplicates::RemoveDuplicates(const spl::utility::IStructureComparator & comparator):
-SpBlock("Remove duplicates"),
-myStructureSet(comparator)
-{}
-
-void RemoveDuplicates::in(::spipe::common::StructureData & data)
+RemoveDuplicates::RemoveDuplicates(ssu::IStructureComparatorPtr comparator) :
+    Block("Remove duplicates"), myStructureSet(comparator)
 {
-  if(!data.getStructure())
+}
+
+RemoveDuplicates::RemoveDuplicates(
+    const spl::utility::IStructureComparator & comparator) :
+    Block("Remove duplicates"), myStructureSet(comparator)
+{
+}
+
+void
+RemoveDuplicates::in(common::StructureData * const data)
+{
+  if(!data->getStructure())
   {
     out(data);
     return;
   }
 
-  // Flag the data to say that we may want to use it again
-  const StructureDataHandle handle = getRunner()->createDataHandle(data);
-  const StructureSet::insert_return_type result = myStructureSet.insert(handle, *data.getStructure());
+  const StructureSet::insert_return_type result = myStructureSet.insert(data,
+      *data->getStructure());
 
-	if(result.second)
-	{
+  if(result.second)
+  {
     // Inserted
-    data.getStructure()->setProperty(structure_properties::searching::TIMES_FOUND, (unsigned int)1);
-		out(data);
-	}
-	else
-	{
-    // Not inserted
-    getRunner()->releaseDataHandle(handle);
-		// The structure is not unique so discard it
-		getRunner()->dropData(data);
-
-		// Up the 'times found' counter on the original structure
-		::spipe::common::StructureData & origStrData = getRunner()->getData(*result.first);
-    unsigned int * const timesFound =
-      origStrData.getStructure()->getProperty(structure_properties::searching::TIMES_FOUND);
-		if(timesFound)
-		{
-      *timesFound += 1;
-		}
-		else
-		{
-      origStrData.getStructure()->setProperty(
+    data->getStructure()->setProperty(
         structure_properties::searching::TIMES_FOUND,
-        (unsigned int)1
-      );
-		}
-	}
+        static_cast<unsigned int>(1));
+  }
+  else
+  {
+    // The structure is not unique so discard it
+    drop(data);
+
+    // Up the 'times found' counter on the original structure
+    ::spipe::common::StructureData * const origStrData = *result.first;
+    unsigned int * const timesFound = origStrData->getStructure()->getProperty(
+        structure_properties::searching::TIMES_FOUND);
+    if(timesFound)
+      *timesFound += 1;
+    else
+      origStrData->getStructure()->setProperty(
+          structure_properties::searching::TIMES_FOUND,
+          static_cast< unsigned int>(1));
+  }
 }
 
-void RemoveDuplicates::pipelineFinishing()
+void
+RemoveDuplicates::pipelineFinishing()
 {
-	// Make sure we clean up any data we are holding on to
-  BOOST_FOREACH(const StructureDataHandle & handle, myStructureSet)
-	{
-		getRunner()->releaseDataHandle(handle);
-	}
-	myStructureSet.clear();
+  myStructureSet.clear();
+}
+
+size_t
+RemoveDuplicates::release()
+{
+  const size_t numUnique = myStructureSet.size();
+
+  BOOST_FOREACH(common::StructureData * const data, myStructureSet)
+  {
+    out(data);
+  }
+  myStructureSet.clear();
+
+  return numUnique;
+}
+
+bool
+RemoveDuplicates::hasData() const
+{
+  return !myStructureSet.empty();
 }
 
 }

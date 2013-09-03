@@ -16,7 +16,6 @@
 
 #include <boost/filesystem.hpp>
 
-
 #include <spl/SSLib.h>
 #include <spl/common/Types.h>
 #include <spl/io/ResReaderWriter.h>
@@ -39,27 +38,27 @@ class ResourceLocator;
 namespace spipe {
 namespace blocks {
 
-class LoadSeedStructures : public SpStartBlock, ::boost::noncopyable
+class LoadSeedStructures : public StartBlock, ::boost::noncopyable
 {
 public:
 
   static const double ATOMIC_VOLUME_MULTIPLIER;
 
   /**
-  /*  seedStructures - Can be:
-  /*  - path to single structure
-  /*  - path to folder containing structures
-  /*  - wildcard path to structures or folders containig structures
-  /*  - a list containing a mixture of any of the above
-  /*
-  /**/
-  LoadSeedStructures(
-    const ::std::string & seedStructures,
-    const bool tryToScaleVolumes = true);
+   /*  seedStructures - Can be:
+   /*  - path to single structure
+   /*  - path to folder containing structures
+   /*  - wildcard path to structures or folders containig structures
+   /*  - a list containing a mixture of any of the above
+   /*
+   /**/
+  LoadSeedStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = true);
 
   // From StartBlock ///
-  virtual void pipelineInitialising();
-	virtual void start();
+  virtual void
+  pipelineInitialising();
+  virtual void
+  start();
   // End from StartBlock
 
 private:
@@ -67,18 +66,26 @@ private:
   typedef ::spl::common::StructurePtr StructurePtr;
   typedef ::spl::io::StructuresContainer StructuresContainer;
 
-  enum EntryType { UNKNOWN, FILE_PATH, FOLDER_PATH, WILDCARD_PATH };
+  enum EntryType
+  {
+    UNKNOWN, FILE_PATH, FOLDER_PATH, WILDCARD_PATH
+  };
 
-  int processEntry(const ::std::string & entry);
-  int processWildcardEntry(const ::std::string & entry);
-  int processFileOrFolder(const ::spl::io::ResourceLocator & loc);
-  EntryType entryType(const ::std::string & entry) const;
+  int
+  processEntry(const ::std::string & entry);
+  int
+  processWildcardEntry(const ::std::string & entry);
+  int
+  processFileOrFolder(const ::spl::io::ResourceLocator & loc);
+  EntryType
+  entryType(const ::std::string & entry) const;
 
-  double getTotalAtomicVolume(const ::spl::common::Structure & structure) const;
+  double
+  getTotalAtomicVolume(const ::spl::common::Structure & structure) const;
 
-  const ::std::string         mySeedStructuresString;
-  StructuresContainer         myStructures;
-  const bool                  myTryToScaleVolumes;
+  const ::std::string mySeedStructuresString;
+  StructuresContainer myStructures;
+  const bool myTryToScaleVolumes;
 };
 
 }

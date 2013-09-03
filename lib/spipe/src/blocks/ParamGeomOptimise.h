@@ -1,13 +1,13 @@
 /*
- * ParamPotentialGo.h
+ * ParamGeomOptimise.h
  * Parameterisable Potential Geometry Optimisation
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef PARAM_POTENTIAL_GO_H
-#define PARAM_POTENTIAL_GO_H
+#ifndef PARAM_GEOM_OPTIMISE_H
+#define PARAM_GEOM_OPTIMISE_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
@@ -21,7 +21,7 @@
 #include <pipelib/pipelib.h>
 
 #include "SpTypes.h"
-#include "blocks/PotentialGo.h"
+#include "blocks/GeomOptimise.h"
 #include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
@@ -37,13 +37,13 @@ class IGeomOptimiser;
 namespace spipe {
 namespace blocks {
 
-class ParamPotentialGo : public PotentialGo
+class ParamGeomOptimise : public GeomOptimise
 {
 public:
 
-  ParamPotentialGo(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
+  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
 
-  ParamPotentialGo(::spl::potential::IGeomOptimiserPtr optimiser,
+  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
       const ::spl::potential::OptimisationSettings & optimisationParams, const bool writeOutput =
           true);
 
@@ -54,7 +54,7 @@ public:
 
   // From PipeBlock ///////////////////////////
   virtual void
-  in(spipe::common::StructureData & data);
+  in(common::StructureData * const data);
   // End from PipeBlock ///////////////////////
 
 private:
@@ -74,4 +74,4 @@ private:
 }
 }
 
-#endif /* PARAM_POTENTIAL_GO_H */
+#endif /* PARAM_GEOM_OPTIMISE_H */

@@ -11,12 +11,9 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-
 #include <spl/factory/SsLibYamlSchema.h>
-#include <spl/utility/HeterogeneousMap.h>
-#include <spl/yaml_schema/YamlSchema.h>
 
-#include "blocks/WriteStructure.h"
+#include "blocks/WriteStructures.h"
 #include "factory/MapEntries.h"
 
 // DEFINES //////////////////////////////////////////////
@@ -27,74 +24,80 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // TYPEDEFS
 ///////////////////////////////////////////////////////////
-
+typedef ::spl::factory::HeteroMap HeteroMap;
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct GeomOptimise : ::spl::yaml_schema::SchemaHeteroMap
+struct BuildStructures : ::spl::factory::builder::Builder
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
-  GeomOptimise()
-  {
-    addEntry(
-      "optimiser",
-      ::spl::factory::OPTIMISER,
-      new ::spl::factory::Optimiser()
-    );
-    addEntry(
-      "potential",
-      ::spl::factory::POTENTIAL,
-      new ::spl::factory::Potential()
-    );
-    addScalarEntry("pressure", ::spl::factory::PRESSURE);
-  }
-};
-
-struct LowestEnergy : public ::spl::yaml_schema::SchemaHeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  LowestEnergy()
-  {
-    addScalarEntry("keepWithin", KEEP_WITHIN)->element()->defaultValue(0.1);
-    addScalarEntry("keepTop", KEEP_TOP);
-  }
-};
-
-struct ParamSweep : public ::spl::yaml_schema::SchemaHeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  ParamSweep()
-  {
-    addEntry(
-      "range",
-      PARAM_RANGE,
-      new ::spl::yaml_schema::SchemaWrapper< ::spl::yaml::VectorAsString< ::std::string> >
-    )->required();
-  }
-};
-
-struct RandomStructure : public ::spl::factory::builder::Builder
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  RandomStructure()
+  BuildStructures()
   {
     addScalarEntry("num", NUM)->element()->defaultValue(100);
   }
 };
 
-struct RemoveDuplicates : public ::spl::yaml_schema::SchemaHeteroMap
+struct FindSymmetryGroup : HeteroMap
+{
+  FindSymmetryGroup()
+  {}
+};
+
+struct KeepTopN : HeteroMap
+{
+  typedef ::spl::utility::HeterogeneousMap BindingType;
+  KeepTopN()
+  {
+    addScalarEntry("num", NUM)->element()->defaultValue(1);
+  }
+};
+
+struct KeepWithinXPercent : HeteroMap
+{
+  typedef ::spl::utility::HeterogeneousMap BindingType;
+  KeepWithinXPercent()
+  {
+    addScalarEntry("percent", PERCENT)->element()->defaultValue(5.0);
+  }
+};
+
+struct NiggliReduce : HeteroMap
+{
+  NiggliReduce()
+  {}
+};
+
+struct GeomOptimise : ::spl::factory::OptimisationSettings
+{
+  typedef ::spl::utility::HeterogeneousMap BindingType;
+  GeomOptimise()
+  {
+    addEntry("optimiser", ::spl::factory::OPTIMISER,
+        new ::spl::factory::Optimiser());
+  }
+};
+
+struct SweepPotentialParams : HeteroMap
+{
+  typedef ::spl::utility::HeterogeneousMap BindingType;
+  SweepPotentialParams()
+  {
+    addEntry("range", PARAM_RANGE,
+        new ::spl::yaml_schema::SchemaWrapper<
+            ::spl::yaml::VectorAsString< ::std::string> >)->required();
+  }
+};
+
+struct RemoveDuplicates : HeteroMap
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
   RemoveDuplicates()
   {
-    addEntry(
-      "comparator",
-      ::spl::factory::COMPARATOR,
-      new ::spl::factory::Comparator()
-    );
+    addEntry("comparator", ::spl::factory::COMPARATOR,
+        new ::spl::factory::Comparator());
 
     //::spl::utility::HeterogeneousMap defaultOptions;
     //defaultOptions[::spl::factory::COMPARATOR];
@@ -102,49 +105,20 @@ struct RemoveDuplicates : public ::spl::yaml_schema::SchemaHeteroMap
   }
 };
 
-struct WriteStructure : ::spl::yaml_schema::SchemaHeteroMap
+struct WriteStructures : HeteroMap
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
-  WriteStructure()
+  WriteStructures()
   {
-    addScalarEntry("multiWrite", MULTI_WRITE)->
-      element()->defaultValue(::spipe::blocks::WriteStructure::WRITE_MULTI_DEFAULT);
-    addScalarEntry("fileType", FILE_TYPE);
+    addScalarEntry("multiWrite", MULTI_WRITE)->element()->defaultValue(
+        ::spipe::blocks::WriteStructures::WRITE_MULTI_DEFAULT);
+    addScalarEntry("format", FORMAT)->element()->defaultValue(
+        ::spipe::blocks::WriteStructures::FORMAT_DEFAULT);
   }
 };
+
 
 } // namespace blocks
-
-namespace pipes {
-
-struct Search : ::spl::yaml_schema::SchemaHeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  Search()
-  {
-    // Simple options
-    addScalarEntry("pressure", ::spl::factory::PRESSURE);
-    addEntry(
-      "potential",
-      ::spl::factory::POTENTIAL,
-      new ::spl::factory::Potential()
-    );
-
-    // Fine-tune options
-    addEntry("randomStructure", RANDOM_STRUCTURE, new blocks::RandomStructure());
-    addEntry("preGeomOptimise", PRE_GEOM_OPTIMISE, new blocks::GeomOptimise());
-    addEntry("geomOptimise", GEOM_OPTIMISE, new blocks::GeomOptimise());
-    addEntry("removeDuplicates", REMOVE_DUPLICATES, new blocks::RemoveDuplicates());
-    addEntry("lowestEnergy", LOWEST_ENERGY, new blocks::LowestEnergy());
-    addEntry("output", WRITE_STRUCTURES, new blocks::WriteStructure());
-
-    // Defaults
-
-  }
-};
-
-} // namespace pipes
-
 }
 }
 

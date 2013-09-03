@@ -46,11 +46,7 @@ public:
   spl::common::Structure & setStructure(::spl::common::types::StructurePtr structure);
   spl::common::Structure & setStructure(::spl::io::StructuresContainer::auto_type structure);
 
-  /**
-  /* Get the path to where this structure was last saved relative to the output path
-  /* of a given structure pipe.
-  /**/
-  ::spl::io::ResourceLocator getRelativeSavePath(const SpRunnerAccess & runner) const;
+  ::spl::io::ResourceLocator getRelativeSavePath(const ::boost::filesystem::path & relativeTo) const;
 
   ::spl::utility::HeterogeneousMap  objectsStore;
 
