@@ -191,6 +191,9 @@ bool StructureReadWriteManager::writeStructure(
   if(it == myWriters.end())
     return false; // unknown extension
 
+  if(!it->second->multiStructureSupport())
+    locator.clearId();
+
   // Finally pass it on the the correct writer
   it->second->writeStructure(str, locator);
 

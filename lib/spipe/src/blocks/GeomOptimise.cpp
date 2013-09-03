@@ -61,7 +61,6 @@ GeomOptimise::in(common::StructureData * const data)
   {
     // Update our data table with the structure data
     updateTable(*structure);
-
     out(data);
   }
   else

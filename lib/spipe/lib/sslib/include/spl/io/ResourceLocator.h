@@ -39,9 +39,11 @@ public:
 
   const ::boost::filesystem::path & path() const;
   void setPath(const ::boost::filesystem::path & path);
+  void clearPath();
 
   const ::std::string & id() const;
   void setId(const ::std::string & resourceId);
+  void clearId();
 
   bool empty() const;
 

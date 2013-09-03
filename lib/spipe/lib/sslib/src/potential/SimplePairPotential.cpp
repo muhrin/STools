@@ -16,10 +16,8 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spl
-{
-namespace potential
-{
+namespace spl {
+namespace potential {
 
 // Using 0.5 prefactor as 2^(1/6) s is the equilibrium separation of the centres.
 // i.e. the diameter
@@ -69,9 +67,9 @@ SimplePairPotential::initCutoff(double cutoff)
   rCutoffSq = arma::pow(rCutoff, 2.0);
 
   double invRMaxN, invRMaxM;
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = 0; j < myNumSpecies; ++j)
+    for(size_t j = 0; j < myNumSpecies; ++j)
     {
       invRMaxN = pow(mySigma(i, j) / rCutoff(i, j), myN) * myBeta(i, j);
 
@@ -116,21 +114,21 @@ SimplePairPotential::getParams() const
   size_t idx = 0;
 
   // Epsilon
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j)
+    for(size_t j = i; j < myNumSpecies; ++j)
       params[idx++] = myEpsilon(i, j);
   }
   // Sigma
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j)
+    for(size_t j = i; j < myNumSpecies; ++j)
       params[idx++] = mySigma(i, j);
   }
   // Beta
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j)
+    for(size_t j = i; j < myNumSpecies; ++j)
       params[idx++] = myBeta(i, j);
   }
   // N-M
@@ -149,25 +147,25 @@ SimplePairPotential::setParams(const IParameterisable::PotentialParams & params)
   size_t idx = 0;
 
   // Epsilon
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j, ++idx)
+    for(size_t j = i; j < myNumSpecies; ++j, ++idx)
       myEpsilon(i, j) = params[idx];
   }
   myEpsilon = arma::symmatu(myEpsilon);
 
   // Sigma
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j, ++idx)
+    for(size_t j = i; j < myNumSpecies; ++j, ++idx)
       mySigma(i, j) = params[idx];
   }
   mySigma = arma::symmatu(mySigma);
 
   // Beta
-  for (size_t i = 0; i < myNumSpecies; ++i)
+  for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for (size_t j = i; j < myNumSpecies; ++j, ++idx)
+    for(size_t j = i; j < myNumSpecies; ++j, ++idx)
       myBeta(i, j) = params[idx];
   }
   myBeta = arma::symmatu(myBeta);
@@ -210,25 +208,25 @@ SimplePairPotential::evaluate(const common::Structure & structure,
   bool problemDuringCalculation = false;
 
   // Loop over all particle pairs (including self-interaction)
-  for (size_t i = 0; i < data.numParticles; ++i)
+  for(size_t i = 0; i < data.numParticles; ++i)
   {
     speciesI = data.species[i];
-    if (speciesI == DataType::IGNORE_ATOM)
+    if(speciesI == DataType::IGNORE_ATOM)
       continue;
 
     posI = data.pos.col(i);
 
-    for (size_t j = i; j < data.numParticles; ++j)
+    for(size_t j = i; j < data.numParticles; ++j)
     {
       speciesJ = data.species[j];
-      if (speciesJ == DataType::IGNORE_ATOM)
+      if(speciesJ == DataType::IGNORE_ATOM)
         continue;
 
       posJ = data.pos.col(j);
 
       // TODO: Buffer rSqs as getAllVectorsWithinCutoff needs to calculate it anyway!
       imageVectors.clear();
-      if (!distCalc.getVecsBetween(posI, posJ, rCutoff(speciesI, speciesJ),
+      if(!distCalc.getVecsBetween(posI, posJ, rCutoff(speciesI, speciesJ),
           imageVectors, MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES))
       {
         // We reached the maximum number of interaction vectors so indicate that there was a problem
@@ -241,7 +239,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
         rSq = dot(r, r);
 
         // Check that distance isn't near the 0 as this will cause near-singular values
-        if (rSq > MIN_SEPARATION_SQ)
+        if(rSq > MIN_SEPARATION_SQ)
         {
           modR = sqrt(rSq);
 
@@ -262,7 +260,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
           f = modF / modR * r;
 
           // Make sure we get energy/force correct for self-interaction
-          if (i == j)
+          if(i == j)
           {
             f *= 0.5;
             dE *= 0.5;
@@ -273,7 +271,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
           data.internalEnergy += dE;
           // force
           data.forces.col(i) -= f;
-          if (i != j)
+          if(i != j)
             data.forces.col(j) += f;
 
           // stress, diagonal is element wise multiplication of force and position
@@ -295,14 +293,14 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 
   // Now balance forces
   // (do sum of values for each component and divide by number of particles)
-  f = sum(data.forces, 1) / static_cast<double>(data.numParticles);
+  f = sum(data.forces, 1) / static_cast< double>(data.numParticles);
   data.forces.row(X) -= f(Y);
   data.forces.row(Y) -= f(X);
   data.forces.row(Z) -= f(Z);
 
   // Convert stress matrix to absolute values
   const common::UnitCell * const unitCell = structure.getUnitCell();
-  if (unitCell)
+  if(unitCell)
   {
     const double invVolume = 1.0 / unitCell->getVolume();
     data.stressMtx *= invVolume;
@@ -312,14 +310,14 @@ SimplePairPotential::evaluate(const common::Structure & structure,
   return !problemDuringCalculation;
 }
 
-::boost::optional<double>
+::boost::optional< double>
 SimplePairPotential::getPotentialRadius(
     const ::spl::common::AtomSpeciesId::Value id) const
 {
-  ::boost::optional<double> radius;
-  for (size_t i = 0; i < mySpeciesList.size(); ++i)
+  ::boost::optional< double> radius;
+  for(size_t i = 0; i < mySpeciesList.size(); ++i)
   {
-    if (mySpeciesList[i] == id)
+    if(mySpeciesList[i] == id)
     {
       radius.reset(RADIUS_FACTOR * mySigma(i, i));
       break;
@@ -328,16 +326,42 @@ SimplePairPotential::getPotentialRadius(
   return radius;
 }
 
-::boost::shared_ptr<IPotentialEvaluator>
+::boost::optional< double>
+SimplePairPotential::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
+    common::AtomSpeciesId::Value s2) const
+{
+  if(s1 < s2)
+    ::std::swap(s1, s2);
+
+  ::boost::optional< double> dist;
+  int idx1 = -1, idx2 = -1;
+  for(size_t i = 0; i < mySpeciesList.size(); ++i)
+  {
+    if(mySpeciesList[i] == s1)
+      idx1 = i;
+    if(mySpeciesList[i] == s2)
+      idx2 = i;
+
+    if(idx1 != -1 && idx2 != -1)
+      break;
+  }
+
+  if(idx1 != -1 && idx2 != -1)
+    dist.reset(::std::pow(2.0, 1.0 / 6.0) * mySigma(idx1, idx2));
+
+  return dist;
+}
+
+::boost::shared_ptr< IPotentialEvaluator>
 SimplePairPotential::createEvaluator(
     const spl::common::Structure & structure) const
 {
   // Build the data from the structure
-  ::std::auto_ptr<SimplePairPotentialData> data(
+  ::std::auto_ptr< SimplePairPotentialData> data(
       new SimplePairPotentialData(structure, mySpeciesList));
 
   // Create the evaluator
-  return ::boost::shared_ptr<IPotentialEvaluator>(
+  return ::boost::shared_ptr< IPotentialEvaluator>(
       new Evaluator(*this, structure, data));
 }
 
@@ -358,9 +382,14 @@ SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 void
 SimplePairPotential::updateSpeciesDb()
 {
-  BOOST_FOREACH(common::AtomSpeciesId::Value species, mySpeciesList)
+  for(int i = 0; i < myNumSpecies; ++i)
   {
-    myAtomSpeciesDb.setRadius(species, *getPotentialRadius(species));
+    myAtomSpeciesDb.setRadius(mySpeciesList[i], *getPotentialRadius(mySpeciesList[i]));
+    for(int j = i; j < myNumSpecies; ++j)
+    {
+      myAtomSpeciesDb.setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
+          *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));
+    }
   }
 }
 

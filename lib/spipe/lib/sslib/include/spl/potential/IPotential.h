@@ -52,6 +52,10 @@ public:
   virtual ::boost::optional< double>
   getPotentialRadius(const ::spl::common::AtomSpeciesId::Value id) const = 0;
 
+  virtual ::boost::optional< double>
+  getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
+      common::AtomSpeciesId::Value s2) const = 0;
+
   virtual ::boost::shared_ptr< IPotentialEvaluator>
   createEvaluator(const spl::common::Structure & structure) const = 0;
 

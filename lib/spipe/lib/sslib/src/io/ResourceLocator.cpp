@@ -83,6 +83,11 @@ void ResourceLocator::setPath(const fs::path & path)
   myPath = path;
 }
 
+void ResourceLocator::clearPath()
+{
+  myPath.clear();
+}
+
 const ::std::string & ResourceLocator::id() const
 {
   return myResourceId;
@@ -91,6 +96,11 @@ const ::std::string & ResourceLocator::id() const
 void ResourceLocator::setId(const ::std::string & resourceId)
 {
   myResourceId = resourceId;
+}
+
+void ResourceLocator::clearId()
+{
+  myResourceId.clear();
 }
 
 bool ResourceLocator::empty() const
