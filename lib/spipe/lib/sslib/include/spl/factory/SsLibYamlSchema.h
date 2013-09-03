@@ -22,63 +22,20 @@
 
 // DEFINES //////////////////////////////////////////////
 
-namespace spl
-{
-namespace factory
-{
+namespace spl {
+namespace factory {
 
 // TYPEDEFS //////////////////////////////////////
+typedef yaml_schema::SchemaHeteroMap HeteroMap;
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 typedef yaml_schema::SchemaList< yaml_schema::SchemaScalar< double> > SchemaDoubleList;
 
-// OPTIMISERS ////////////////////////////////////////////////
-struct Tpsd : public yaml_schema::SchemaHeteroMap
-{
-  Tpsd()
-  {
-    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
-    addScalarEntry("maxSteps", MAX_STEPS)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
-  }
-};
-
-struct Castep : public yaml_schema::SchemaHeteroMap
-{
-  Castep()
-  {
-    addScalarEntry("exe", CASTEP_EXE);
-    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()->defaultValue(
-        false);
-    addScalarEntry("seed", CASTEP_SEED)->required();
-    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()->defaultValue(
-        0);
-    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()->defaultValue(
-        2);
-
-  }
-};
-
-struct Optimiser : public yaml_schema::SchemaHeteroMap
-{
-  Optimiser()
-  {
-    addEntry("tpsd", TPSD, (new Tpsd));
-    addEntry("castep", CASTEP, (new Castep));
-
-    // Defaults
-    utility::HeterogeneousMap defaultOptimiser;
-    defaultOptimiser[TPSD];
-    defaultValue(defaultOptimiser);
-  }
-};
-
 // POTENTIALS ////////////////////////////////////////////////
 
-struct LennardJones : public yaml_schema::SchemaHeteroMap
+struct LennardJones : public HeteroMap
 {
   LennardJones()
   {
@@ -115,6 +72,53 @@ struct Potential : public yaml_schema::SchemaHeteroMap
   }
 };
 
+// OPTIMISERS ////////////////////////////////////////////////
+struct OptimisationSettings : public HeteroMap
+{
+  OptimisationSettings()
+  {
+    addScalarEntry("maxSteps", MAX_STEPS);
+    addScalarEntry("pressure", PRESSURE);
+  }
+};
+
+struct Tpsd : OptimisationSettings
+{
+  Tpsd()
+  {
+    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
+    addScalarEntry("maxSteps", MAX_STEPS)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
+    addScalarEntry("pressure", PRESSURE)->element()->defaultValue(0.0);
+    addEntry("potential", POTENTIAL, new Potential())->required();
+  }
+};
+
+struct Castep : public HeteroMap
+{
+  Castep()
+  {
+    addScalarEntry("exe", CASTEP_EXE);
+    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()->defaultValue(
+        false);
+    addScalarEntry("seed", CASTEP_SEED)->required();
+    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()->defaultValue(
+        0);
+    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()->defaultValue(
+        2);
+  }
+};
+
+struct Optimiser : public yaml_schema::SchemaHeteroMap
+{
+  Optimiser()
+  {
+    addEntry("tpsd", TPSD, new Tpsd());
+    addEntry("castep", CASTEP, new Castep());
+  }
+};
+
 // STRUCTURE //////////////////////////////////////
 struct AtomsDataMap : public yaml_schema::SchemaHeteroMap
 {
@@ -139,8 +143,7 @@ struct Structure : public yaml_schema::SchemaHeteroMap
 
 // STRUCTURE BUILDER //////////////////////////////
 
-namespace builder
-{
+namespace builder {
 
 struct GenSphere : public yaml_schema::SchemaHeteroMap
 {
@@ -232,7 +235,7 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addScalarEntry("rot", ROT_AXIS_ANGLE);
     addScalarEntry("num", NUM)->element()->defaultValue(1);
     addEntry("speciesDistances", SPECIES_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
   }
 };
 

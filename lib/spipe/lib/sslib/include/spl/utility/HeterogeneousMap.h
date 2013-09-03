@@ -26,56 +26,76 @@ namespace utility {
 
 class HeterogeneousMap
 {
-  typedef ::std::map<KeyId *, ::boost::any> AnyMap;
+  typedef ::std::map< KeyId *, ::boost::any> AnyMap;
 public:
 
-  template <typename Type>
-  struct value_type : public ::std::pair<Key<Type>, Type>
-  {};
+  template< typename Type>
+    struct value_type : public ::std::pair< Key< Type>, Type>
+    {
+    };
 
-  HeterogeneousMap() {}
+  HeterogeneousMap()
+  {
+  }
   HeterogeneousMap(const HeterogeneousMap & toCopy);
-  HeterogeneousMap & operator =(const HeterogeneousMap & rhs);
+  HeterogeneousMap &
+  operator =(const HeterogeneousMap & rhs);
   ~HeterogeneousMap();
- 
+
   // Capacity methods
-  bool empty() const;
-  size_t size() const;
-  size_t max_size() const;
+  bool
+  empty() const;
+  size_t
+  size() const;
+  size_t
+  max_size() const;
 
-	template <typename T>
-	bool insert(Key<T> & key, T value);
+  template< typename T>
+    bool
+    insert(Key< T> & key, T value);
 
-  template <typename T>
-  bool insert(value_type<T> & x);
+  template< typename T>
+    bool
+    insert(value_type< T> & x);
 
-  void insert(const HeterogeneousMap & map);
-  void insert(const HeterogeneousMap & map, const bool overwrite);
+  void
+  insert(const HeterogeneousMap & map);
+  void
+  insert(const HeterogeneousMap & map, const bool overwrite);
 
-  template <typename T>
-  T & operator [](Key<T> & x);
+  template< typename T>
+    T &
+    operator [](Key< T> & x);
 
-	template<typename T>
-	T * find(const Key<T> & key);
+  template< typename T>
+    T *
+    find(const Key< T> & key);
 
-	template<typename T>
-	const T * find(const Key<T> & key) const;
+  template< typename T>
+    const T *
+    find(const Key< T> & key) const;
 
-	template<typename T>
-	size_t erase(Key<T> & key);
+  template< typename T>
+    size_t
+    erase(Key< T> & key);
 
-  size_t erase(KeyId & key);
+  size_t
+  erase(KeyId & key);
 
-  void clear();
+  void
+  clear();
 
 private:
 
-  ::std::pair<AnyMap::iterator, bool> insert(const AnyMap::value_type & value);
-  ::std::pair<AnyMap::iterator, bool> insert(const AnyMap::value_type & value, const bool overwrite);
+  ::std::pair< AnyMap::iterator, bool>
+  insert(const AnyMap::value_type & value);
+  ::std::pair< AnyMap::iterator, bool>
+  insert(const AnyMap::value_type & value, const bool overwrite);
 
-  size_t eraseNoNotify(KeyId & key);
+  size_t
+  eraseNoNotify(KeyId & key);
 
-	AnyMap myAnyMap;
+  AnyMap myAnyMap;
 
   friend KeyId::~KeyId();
 };

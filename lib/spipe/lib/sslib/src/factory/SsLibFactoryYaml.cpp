@@ -19,7 +19,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-
 #include "spl/build_cell/AtomsDescription.h"
 #include "spl/build_cell/AtomsGenerator.h"
 #include "spl/build_cell/PointGroups.h"
@@ -30,11 +29,11 @@
 #include "spl/factory/SsLibElements.h"
 #include "spl/io/ResReaderWriter.h"
 #include "spl/potential/CastepGeomOptimiser.h"
+#include "spl/potential/OptimisationSettings.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
 #include "spl/potential/Types.h"
 #include "spl/utility/IndexingEnums.h"
 #include "spl/utility/SortedDistanceComparator.h"
-
 
 // NAMESPACES ////////////////////////////////
 
@@ -44,13 +43,13 @@ namespace factory {
 namespace fs = ::boost::filesystem;
 
 // Boost Tokenizer stuff
-typedef boost::tokenizer<boost::char_separator<char> > Tok;
-const boost::char_separator<char> tokSep(" \t");
+typedef boost::tokenizer< boost::char_separator< char> > Tok;
+const boost::char_separator< char> tokSep(" \t");
 
-SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb):
-myAtomSpeciesDb(atomSpeciesDb),
-myShapeFactory()
-{}
+SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb) :
+    myAtomSpeciesDb(atomSpeciesDb), myShapeFactory()
+{
+}
 
 build_cell::RandomUnitCellPtr
 SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
@@ -66,7 +65,8 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
   }
 
   {
-    const double * const contentsMultiplier = map.find(UNIT_CELL_BUILDER_MULTIPLIER);
+    const double * const contentsMultiplier = map.find(
+        UNIT_CELL_BUILDER_MULTIPLIER);
     if(contentsMultiplier)
       cell->setContentsMultiplier(*contentsMultiplier);
   }
@@ -109,7 +109,8 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
   {
     // Do this after settings the general min/max length/angles as this is a more specific
     // way of specifying the unit cell dimensions
-    const ::std::vector<utility::Range<double> > * const abc = map.find(UNIT_CELL_BUILDER_ABC);
+    const ::std::vector< utility::Range< double> > * const abc = map.find(
+        UNIT_CELL_BUILDER_ABC);
     if(abc)
     {
       // TODO: Eventuall emit error instead
@@ -148,7 +149,7 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
 {
   potential::IPotentialPtr pot;
 
-  const OptionsMap * const lj  = potentialOptions.find(LENNARD_JONES);
+  const OptionsMap * const lj = potentialOptions.find(LENNARD_JONES);
   if(lj)
   {
     // Get the species list
@@ -177,7 +178,8 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
     if(!cutoff)
       return pot;
 
-    const potential::CombiningRule::Value * const comb = lj->find(POT_COMBINING);
+    const potential::CombiningRule::Value * const comb = lj->find(
+        POT_COMBINING);
     if(!comb)
       return pot;
 
@@ -186,30 +188,17 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
     if((numSpecies != sigma->n_rows) || (numSpecies != beta->n_rows))
       return pot;
 
-    pot.reset(new potential::SimplePairPotential(
-      myAtomSpeciesDb,
-      *speciesVec,
-      *epsilon,
-      *sigma,
-      *cutoff,
-      *beta,
-      (*pow)(0),
-      (*pow)(1),
-      *comb
-    ));
+    pot.reset(
+        new potential::SimplePairPotential(myAtomSpeciesDb, *speciesVec,
+            *epsilon, *sigma, *cutoff, *beta, (*pow)(0), (*pow)(1), *comb));
   }
 
   return pot;
 }
 
-
-
 SsLibFactoryYaml::GeomOptimiserPtr
 SsLibFactoryYaml::createGeometryOptimiser(
-  const OptionsMap & optimiserMap,
-  const OptionsMap * potentialMap,
-  const OptionsMap * globalOptions
-) const
+    const OptionsMap & optimiserMap) const
 {
   GeomOptimiserPtr opt;
 
@@ -217,16 +206,20 @@ SsLibFactoryYaml::createGeometryOptimiser(
   const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
   if(tpsdOptions)
   {
+    const OptionsMap * const potentialOptions = tpsdOptions->find(POTENTIAL);
+
     // Have to have a potential with this optimiser
-    if(!potentialMap)
-      return opt; // TODO: Emit error
-    potential::IPotentialPtr potential = createPotential(*potentialMap);
+    if(!potentialOptions)
+      return opt;
+
+    potential::IPotentialPtr potential = createPotential(*potentialOptions);
     if(!potential.get())
-      return opt; // TODO: Emit error
+      return opt;
+
+    UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
+        new potential::TpsdGeomOptimiser(potential));
 
     const double * const tolerance = tpsdOptions->find(TOLERANCE);
-    
-    UniquePtr<potential::TpsdGeomOptimiser>::Type tpsd(new potential::TpsdGeomOptimiser(potential));
     if(tolerance)
       tpsd->setEnergyTolerance(*tolerance);
 
@@ -234,31 +227,48 @@ SsLibFactoryYaml::createGeometryOptimiser(
   }
   else if(castepOptions)
   {
-    const ::std::string * const castepExe = find(CASTEP_EXE, *castepOptions, globalOptions);
-    const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
-
     // Read in the settings
     potential::CastepGeomOptimiseSettings settings;
-    const bool * const keepIntermediates = castepOptions->find(CASTEP_KEEP_INTERMEDIATES);
-    const int * const numRoughSteps = castepOptions->find(CASTEP_NUM_ROUGH_STEPS);
-    const int * const numSelfConsistent = castepOptions->find(CASTEP_NUM_SELF_CONSISTENT);
+    const bool * const keepIntermediates = castepOptions->find(
+        CASTEP_KEEP_INTERMEDIATES);
     if(keepIntermediates)
       settings.keepIntermediateFiles = *keepIntermediates;
+
+    const int * const numRoughSteps = castepOptions->find(
+        CASTEP_NUM_ROUGH_STEPS);
     if(numRoughSteps)
       settings.numRoughSteps = *numRoughSteps;
+
+    const int * const numSelfConsistent = castepOptions->find(
+        CASTEP_NUM_SELF_CONSISTENT);
     if(numSelfConsistent)
       settings.numConsistentRelaxations = *numSelfConsistent;
 
-
-    if(castepExe && keepIntermediates && seed)
-      opt.reset(new potential::CastepGeomOptimiser(*castepExe, *seed, settings));
-    else
-    {
-      // TODO: Emit error
-    }
+    const ::std::string * const castepExe = castepOptions->find(CASTEP_EXE);
+    const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
+    if(castepExe && seed)
+      opt.reset(
+          new potential::CastepGeomOptimiser(*castepExe, *seed, settings));
   }
 
   return opt;
+}
+
+potential::OptimisationSettings
+SsLibFactoryYaml::createOptimisationSettings(const OptionsMap & options) const
+{
+  potential::OptimisationSettings settings;
+
+  settings.maxSteps = toOptional(options.find(MAX_STEPS));
+
+  const double * const pressure = options.find(PRESSURE);
+  if(pressure)
+  {
+    settings.pressure.reset(::arma::mat33());
+    settings.pressure->diag().fill(*pressure);
+  }
+
+  return settings;
 }
 
 utility::IStructureComparatorPtr
@@ -269,15 +279,18 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
   const OptionsMap * const comparatorMap = map.find(SORTED_DISTANCE);
   if(comparatorMap)
   {
-    const double  * const tolerance = map.find(TOLERANCE);
+    const double * const tolerance = map.find(TOLERANCE);
     const bool * const volAgnostic = map.find(SORTED_DISTANCE__VOLUME_AGNOSTIC);
     const bool * const usePrimitive = map.find(SORTED_DISTANCE__USE_PRIMITIVE);
-    
+
     // Create with the given options (if any)
     if(tolerance && volAgnostic && usePrimitive)
-      comparator.reset(new utility::SortedDistanceComparator(*tolerance, *volAgnostic, *usePrimitive));
+      comparator.reset(
+          new utility::SortedDistanceComparator(*tolerance, *volAgnostic,
+              *usePrimitive));
     else if(tolerance && volAgnostic)
-      comparator.reset(new utility::SortedDistanceComparator(*tolerance, *volAgnostic));
+      comparator.reset(
+          new utility::SortedDistanceComparator(*tolerance, *volAgnostic));
     else if(tolerance)
       comparator.reset(new utility::SortedDistanceComparator(*tolerance));
     else
@@ -288,13 +301,14 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
 }
 
 SsLibFactoryYaml::StructureContentType::Value
-SsLibFactoryYaml::getStructureContentType(const AtomsDataEntry & atomsEntry) const
+SsLibFactoryYaml::getStructureContentType(
+    const AtomsDataEntry & atomsEntry) const
 {
   // If it is a list then we know it's a compact atoms info object
-  if(::boost::get<AtomsCompactInfo>(&atomsEntry))
+  if(::boost::get< AtomsCompactInfo>(&atomsEntry))
     return StructureContentType::ATOMS;
 
-  const OptionsMap * const map = ::boost::get<OptionsMap>(&atomsEntry);
+  const OptionsMap * const map = ::boost::get< OptionsMap>(&atomsEntry);
   if(map)
   {
     if(map->find(SPECIES))
@@ -307,18 +321,21 @@ SsLibFactoryYaml::getStructureContentType(const AtomsDataEntry & atomsEntry) con
 }
 
 build_cell::AtomsDescriptionPtr
-SsLibFactoryYaml::createAtomsDescription(
-  const AtomsDataEntry & atomsEntry,
-  const io::AtomFormatParser & parser
-) const
+SsLibFactoryYaml::createAtomsDescription(const AtomsDataEntry & atomsEntry,
+    const io::AtomFormatParser & parser) const
 {
   build_cell::AtomsDescriptionPtr atomsDescription;
 
-  ::boost::optional<AtomSpeciesCount> speciesAndCount = parser.getValue(SPECIES, atomsEntry);
-  if(!speciesAndCount || (speciesAndCount->count.nullSpan() &&  speciesAndCount->count.lower() == 0 ))
+  ::boost::optional< AtomSpeciesCount> speciesAndCount = parser.getValue(
+      SPECIES, atomsEntry);
+  if(!speciesAndCount
+      || (speciesAndCount->count.nullSpan()
+          && speciesAndCount->count.lower() == 0))
     return atomsDescription;
 
-  atomsDescription.reset(new build_cell::AtomsDescription(speciesAndCount->species, speciesAndCount->count));
+  atomsDescription.reset(
+      new build_cell::AtomsDescription(speciesAndCount->species,
+          speciesAndCount->count));
 
   const OptionalDouble radius = parser.getValue(RADIUS, atomsEntry);
   if(radius)
@@ -338,7 +355,8 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
 
   io::AtomFormatParser atomsFormatParser;
   {
-    const io::AtomFormatParser::FormatDescription * const format = map.find(ATOMS_FORMAT);
+    const io::AtomFormatParser::FormatDescription * const format = map.find(
+        ATOMS_FORMAT);
     if(format)
       atomsFormatParser.setFormat(*format);
   }
@@ -355,7 +373,8 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   {
     // Try creating the default atoms generator
     {
-      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(map, atomsFormatParser);
+      build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(map,
+          atomsFormatParser);
       if(atomsGenerator.get())
         builder->addGenerator(atomsGenerator);
     }
@@ -365,8 +384,10 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     {
       if(getStructureContentType(atomsEntry) == StructureContentType::GROUP)
       {
-        const OptionsMap * const groupOptions = ::boost::get<OptionsMap>(atomsEntry).find(ATOMS_GROUP);
-        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(*groupOptions, atomsFormatParser);
+        const OptionsMap * const groupOptions = ::boost::get< OptionsMap>(
+            atomsEntry).find(ATOMS_GROUP);
+        build_cell::AtomsGeneratorPtr atomsGenerator = createAtomsGenerator(
+            *groupOptions, atomsFormatParser);
         if(atomsGenerator.get())
           builder->addGenerator(atomsGenerator);
       }
@@ -377,7 +398,8 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   const OptionsMap * unitCellBuilder = map.find(UNIT_CELL_BUILDER);
   if(unitCellBuilder)
   {
-    build_cell::IUnitCellGeneratorPtr ucGen(createRandomCellGenerator(*unitCellBuilder));
+    build_cell::IUnitCellGeneratorPtr ucGen(
+        createRandomCellGenerator(*unitCellBuilder));
     if(ucGen.get())
       builder->setUnitCellGenerator(ucGen);
   }
@@ -404,17 +426,16 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
 }
 
 build_cell::AtomsGeneratorPtr
-SsLibFactoryYaml::createAtomsGenerator(
-  const OptionsMap & map,
-  io::AtomFormatParser & parser
-) const
+SsLibFactoryYaml::createAtomsGenerator(const OptionsMap & map,
+    io::AtomFormatParser & parser) const
 {
-  build_cell::AtomsGeneratorPtr atomsGenerator(new build_cell::AtomsGenerator());
+  build_cell::AtomsGeneratorPtr atomsGenerator(
+      new build_cell::AtomsGenerator());
 
   // Try creating a generator shape
-  UniquePtr<build_cell::IGeneratorShape>::Type genShape;
+  UniquePtr< build_cell::IGeneratorShape>::Type genShape;
   myShapeFactory.createShape(genShape, map);
-  
+
   const int * const num = map.find(NUM);
   const ::arma::vec3 * const pos = map.find(POSITION);
   const ::arma::vec4 * const rot = map.find(ROT_AXIS_ANGLE);
@@ -425,16 +446,18 @@ SsLibFactoryYaml::createAtomsGenerator(
   if(pos)
     atomsGenerator->setPosition(*pos);
   else
-    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
-        build_cell::AtomsGenerator::TransformMode::RAND_POS);
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGenerator::TransformMode::RAND_POS);
 
   if(rot)
     atomsGenerator->setRotation(*rot);
   else
   {
-    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
-      build_cell::AtomsGenerator::TransformMode::RAND_ROT_DIR |
-      build_cell::AtomsGenerator::TransformMode::RAND_ROT_ANGLE);
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGenerator::TransformMode::RAND_ROT_DIR
+            | build_cell::AtomsGenerator::TransformMode::RAND_ROT_ANGLE);
   }
 
   // Check if there is a 'global' radius
@@ -453,7 +476,8 @@ SsLibFactoryYaml::createAtomsGenerator(
     {
       if(getStructureContentType(atomData) == StructureContentType::ATOMS)
       {
-        build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(atomData, parser);
+        build_cell::AtomsDescriptionPtr atomsDescription =
+            createAtomsDescription(atomData, parser);
         if(atomsDescription.get())
           atomsGenerator->insertAtoms(*atomsDescription);
       }
@@ -465,5 +489,4 @@ SsLibFactoryYaml::createAtomsGenerator(
 
 }
 }
-
 
