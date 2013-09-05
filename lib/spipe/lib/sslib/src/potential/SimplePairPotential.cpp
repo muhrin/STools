@@ -276,11 +276,11 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 
           // stress, diagonal is element wise multiplication of force and position
           // vector components
-          data.stressMtx.diag() += f % r;
+          data.stressMtx.diag() -= f % r;
 
-          data.stressMtx(Y, Z) += 0.5 * (f(Y) * r(Z) + f(Z) * r(Y));
-          data.stressMtx(Z, X) += 0.5 * (f(Z) * r(X) + f(X) * r(Z));
-          data.stressMtx(X, Y) += 0.5 * (f(X) * r(Y) + f(Y) * r(X));
+          data.stressMtx(Y, Z) -= 0.5 * (f(Y) * r(Z) + f(Z) * r(Y));
+          data.stressMtx(Z, X) -= 0.5 * (f(Z) * r(X) + f(X) * r(Z));
+          data.stressMtx(X, Y) -= 0.5 * (f(X) * r(Y) + f(Y) * r(X));
         }
       }
     }

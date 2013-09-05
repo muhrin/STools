@@ -57,7 +57,11 @@ extern utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
 extern utility::Key<int> CASTEP_NUM_SELF_CONSISTENT;
 extern utility::Key<int> CASTEP_NUM_ROUGH_STEPS;
 extern utility::Key<double> PRESSURE;
-extern utility::Key<int> MAX_STEPS;
+extern utility::Key<int> MAX_ITER;
+extern utility::Key<int> MAX_ITER;
+extern utility::Key<double> ENERGY_TOL;
+extern utility::Key<double> FORCE_TOL;
+extern utility::Key<double> STRESS_TOL;
 
 // POTENTIALS //////////////////////////////////////////////
 extern utility::Key<utility::HeterogeneousMap> POTENTIAL;

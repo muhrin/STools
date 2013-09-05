@@ -259,12 +259,12 @@ SsLibFactoryYaml::createOptimisationSettings(const OptionsMap & options) const
 {
   potential::OptimisationSettings settings;
 
-  settings.maxSteps = toOptional(options.find(MAX_STEPS));
+  settings.maxIter = toOptional(options.find(MAX_ITER));
 
   const double * const pressure = options.find(PRESSURE);
   if(pressure)
   {
-    settings.pressure.reset(::arma::mat33());
+    settings.pressure.reset(::arma::zeros(3, 3));
     settings.pressure->diag().fill(*pressure);
   }
 

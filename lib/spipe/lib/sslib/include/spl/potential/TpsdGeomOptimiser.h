@@ -37,12 +37,12 @@ namespace potential {
 class TpsdGeomOptimiser : public IGeomOptimiser
 {
 public:
-
   typedef ::spl::UniquePtr< IPotential>::Type PotentialPtr;
 
-  static const unsigned int DEFAULT_MAX_STEPS;
+  static const unsigned int DEFAULT_MAX_ITERATIONS;
   static const double DEFAULT_ENERGY_TOLERANCE;
   static const double DEFAULT_FORCE_TOLERANCE;
+  static const double DEFAULT_STRESS_TOLERANCE;
 
   TpsdGeomOptimiser(PotentialPtr potential);
 
@@ -51,13 +51,15 @@ public:
   void
   setEnergyTolerance(const double tolerance);
 
-  double getForceTolerance() const;
-  void setForceTolerance(const double tolerance);
+  double
+  getForceTolerance() const;
+  void
+  setForceTolerance(const double tolerance);
 
   unsigned int
-  getMaxSteps() const;
+  getMaxIterations() const;
   void
-  setMaxSteps(const unsigned int maxSteps);
+  setMaxIterations(const int maxIterations);
 
   // IGeomOptimiser interface //////////////////////////////
   virtual IPotential *
@@ -66,7 +68,8 @@ public:
   getPotential() const;
 
   virtual OptimisationOutcome
-  optimise(::spl::common::Structure & structure, const OptimisationSettings & options) const;
+  optimise(::spl::common::Structure & structure,
+      const OptimisationSettings & options) const;
   virtual OptimisationOutcome
   optimise(::spl::common::Structure & structure, OptimisationData & data,
       const OptimisationSettings & options) const;
@@ -75,7 +78,8 @@ public:
 
   OptimisationOutcome
   optimise(common::Structure & structure, OptimisationData & optimistaionData,
-      IPotentialEvaluator & evaluator, const OptimisationSettings & options) const;
+      IPotentialEvaluator & evaluator,
+      const OptimisationSettings & options) const;
 
   OptimisationOutcome
   optimise(common::Structure & structure, common::UnitCell & unitCell,
@@ -83,7 +87,6 @@ public:
       const OptimisationSettings & options) const;
 
 private:
-
   static const unsigned int CHECK_CELL_EVERY_N_STEPS;
   static const double CELL_MIN_NORM_VOLUME;
   static const double CELL_MAX_ANGLE_SUM;
@@ -92,16 +95,18 @@ private:
   bool
   cellReasonable(const common::UnitCell & unitCell) const;
   void
-  populateOptimistaionData(OptimisationData & optData, const common::Structure & structure,
-      const PotentialData & potData) const;
+  populateOptimistaionData(OptimisationData & optData,
+      const common::Structure & structure, const PotentialData & potData) const;
 
-  bool hasConverged(const double deltaEnergyPerIon, const double maxForceSq, const OptimisationSettings & options) const;
+  bool
+  hasConverged(const double deltaEnergyPerIon, const double maxForceSq,
+      const double maxStress, const OptimisationSettings & options) const;
 
   PotentialPtr myPotential;
 
   double myEnergyTolerance;
   double myForceTolerance;
-  unsigned int myMaxSteps;
+  int myMaxIterations;
 };
 
 }
