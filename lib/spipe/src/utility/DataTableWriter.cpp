@@ -63,10 +63,11 @@ DataTableWriter::write()
     myOutStream.seekp(myWriteMarker);
 
     // Print the header first
-    myOutStream << "# " << "[key]";
-    BOOST_FOREACH(const DataTable::Column & colInfo, myTable.myColumns)
+    myOutStream << "# ";
+    for(DataTable::ColumnInfoIterator it = myTable.columnInfoBegin(), end = myTable.columnInfoEnd();
+        it != end; ++it)
     {
-      myOutStream << myColumnDelimiter << colInfo.getName();
+      myOutStream << it->getName() << myColumnDelimiter;
     }
     myOutStream << ::std::endl;
 
@@ -76,24 +77,21 @@ DataTableWriter::write()
       myOutStream << "# " << note << ::std::endl;
     }
 
-    BOOST_FOREACH(const DataTable::RowMap::value_type & rowPair, myTable.myRows)
+    for(DataTable::RowIterator it = myTable.rowsBegin(), end = myTable.rowsEnd();
+        it != end; ++it)
     {
-      myOutStream << rowPair.first;
-      BOOST_FOREACH(const DataTable::Value & value, rowPair.second)
+      BOOST_FOREACH(const DataTable::Value & value, *it)
       {
-        myOutStream << myColumnDelimiter << value;
+        myOutStream << value << myColumnDelimiter;
       }
-      myOutStream << ::std::endl;
+      myOutStream << "\n";
     }
-
   }
   else
     return false;
 
   if(!myOutStream.is_open())
-  {
     myOutStream.close();
-  }
 
   return true;
 }

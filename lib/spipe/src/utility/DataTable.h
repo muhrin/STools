@@ -30,8 +30,6 @@ public:
   typedef ::std::string Key;
   typedef ::std::string Value;
 
-  static const int COL_UNDEFINED = -1;
-
   class Column
   {
   public:
@@ -53,6 +51,27 @@ public:
     friend class DataTable;
   };
 
+private:
+  typedef ::std::vector< Column> ColumnInfo;
+  typedef ::std::vector< Value> ColumnData;
+  /* Maps a row key to column data */
+  typedef ::std::map< Key, ColumnData *> RowMap;
+  typedef ::std::vector<ColumnData> Rows;
+
+public:
+  typedef Rows::const_iterator RowIterator;
+  typedef ColumnInfo::const_iterator ColumnInfoIterator;
+
+  static const int COL_UNDEFINED = -1;
+
+  DataTable();
+
+  RowIterator rowsBegin() const;
+  RowIterator rowsEnd() const;
+
+  ColumnInfoIterator columnInfoBegin() const;
+  ColumnInfoIterator columnInfoEnd() const;
+
   //void insert(const Key & key, const size_t col, const Value & value);
   size_t
   insert(const Key & key, const Column & col, const Value & value);
@@ -73,15 +92,9 @@ public:
   bool
   removeDataTableChangeListener(IDataTableChangeListener & listener);
 
+
+
 private:
-
-  /* Maps each column to a value*/
-  typedef ::std::vector< Value> ColumnData;
-  /* Maps a row key to column data */
-  typedef ::std::map< Key, ColumnData> RowMap;
-  // typedef ::std::vector<ColumnData> Rows; TODO: Complete this
-
-  typedef ::std::vector< Column> ColumnInfo;
 
   typedef ::pipelib::event::EventSupport< IDataTableChangeListener> ChangeListenerSupport;
   typedef ::std::vector< ::std::string> NotesContainer;
@@ -92,7 +105,8 @@ private:
   insertValue(const Key & key, const size_t col, const Value & value);
 
   ColumnInfo myColumns;
-  RowMap myRows;
+  Rows myRows;
+  RowMap myRowMap;
   NotesContainer myTableNotes;
 
   ChangeListenerSupport myChangeListenerSupport;
