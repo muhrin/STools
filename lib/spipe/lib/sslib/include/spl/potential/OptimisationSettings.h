@@ -45,8 +45,11 @@ struct OptimisationSettings
     };
   };
 
-  ::spl::OptionalUInt maxSteps;  // Max geom-optimisation steps
-  ::spl::OptionalArmaMat33 pressure;
+  OptionalUInt maxIter;
+  OptionalDouble energyTol;
+  OptionalDouble forceTol;
+  OptionalDouble stressTol;
+  OptionalArmaMat33 pressure;
   ::boost::optional<Optimise::Value> optimisationType;
 
   void insertConstraint(OptimisationConstraint & constraint);

@@ -52,9 +52,10 @@ private:
 
 // CONSTANTS ////////////////////////////////////////////////
 
-const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_STEPS = 50000;
+const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS = 10000;
 const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-12;
 const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-10;
+const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 1e-5;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
@@ -64,7 +65,8 @@ static const double INITIAL_STEPSIZE = 0.02;
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
 TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential) :
-    myPotential(potential), myEnergyTolerance(DEFAULT_ENERGY_TOLERANCE), myMaxSteps(DEFAULT_MAX_STEPS),
+    myPotential(potential), myEnergyTolerance(DEFAULT_ENERGY_TOLERANCE),
+    myMaxIterations(DEFAULT_MAX_ITERATIONS),
     myForceTolerance(DEFAULT_FORCE_TOLERANCE)
 {
 }
@@ -92,15 +94,15 @@ void TpsdGeomOptimiser::setForceTolerance(const double tolerance)
 }
 
 unsigned int
-TpsdGeomOptimiser::getMaxSteps() const
+TpsdGeomOptimiser::getMaxIterations() const
 {
-  return myMaxSteps;
+  return myMaxIterations;
 }
 
 void
-TpsdGeomOptimiser::setMaxSteps(const unsigned int maxSteps)
+TpsdGeomOptimiser::setMaxIterations(const int maxIterations)
 {
-  myMaxSteps = maxSteps;
+  myMaxIterations = maxIterations;
 }
 
 IPotential *
@@ -132,8 +134,8 @@ TpsdGeomOptimiser::optimise(::spl::common::Structure & structure, OptimisationDa
   common::UnitCell * const unitCell = structure.getUnitCell();
   OptimisationSettings localSettings = options;
 
-  if(!localSettings.maxSteps)
-    localSettings.maxSteps.reset(myMaxSteps);
+  if(!localSettings.maxIter)
+    localSettings.maxIter.reset(myMaxIterations);
   if(!localSettings.pressure)
     localSettings.pressure.reset(::arma::zeros< ::arma::mat>(3, 3));
   if(!localSettings.optimisationType)
@@ -154,7 +156,7 @@ OptimisationOutcome
 TpsdGeomOptimiser::optimise(common::Structure & structure, OptimisationData & optimisationData,
     IPotentialEvaluator & evaluator, const OptimisationSettings & settings) const
 {
-  SSLIB_ASSERT(settings.maxSteps.is_initialized());
+  SSLIB_ASSERT(settings.maxIter.is_initialized());
 
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
@@ -166,6 +168,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, OptimisationData & op
   // Forces, current are in data.myForces
   ::arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
   ::arma::rowvec fSqNorm(::arma::zeros(1, data.numParticles));
+  ::arma::mat33 residualStress;
 
   double xg, gg;
   ::arma::vec3 f;
@@ -184,7 +187,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, OptimisationData & op
 
   // Set the initial step size so get moving
   double step = INITIAL_STEPSIZE;
-  for(size_t i = 0; !converged && i < *settings.maxSteps; ++i)
+  for(int i = 0; !converged && i < *settings.maxIter; ++i)
   {
     // Save the energy and forces from last time around
     h0 = h;
@@ -225,7 +228,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, OptimisationData & op
     structure.setAtomPositions(data.pos);
 
     dH = h - h0;
-    converged = hasConverged(dH / dNumAtoms, fSqNorm.max(), settings);
+    residualStress = data.stressMtx + *settings.pressure;
+    converged = hasConverged(dH / dNumAtoms, fSqNorm.max(), residualStress.max(), settings);
   }
 
   // Only a successful optimisation if it has converged
@@ -236,7 +240,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, OptimisationData & op
   if(!converged)
   {
     ::std::stringstream ss;
-    ss << "Failed to converge after " << *settings.maxSteps << "steps";
+    ss << "Failed to converge after " << *settings.maxIter << " steps";
     return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
   }
 
@@ -249,7 +253,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
     OptimisationData & optimisationData, IPotentialEvaluator & evaluator,
     const OptimisationSettings & settings) const
 {
-  SSLIB_ASSERT(settings.maxSteps.is_initialized());
+  SSLIB_ASSERT(settings.maxIter.is_initialized());
   SSLIB_ASSERT(settings.pressure.is_initialized());
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
@@ -257,7 +261,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 #endif
 
   // Set up the external pressure
-  ::arma::mat33 pressureMtx = *settings.pressure;
+  const ::arma::mat33 pressureMtx = *settings.pressure;
   const double pressureMean = ::arma::trace(pressureMtx) / 3.0;
 
   // Get data about the structure to be optimised
@@ -270,6 +274,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
   // Forces, current are in data.myForces
   ::arma::mat f0(3, data.numParticles), deltaF(3, data.numParticles);
   ::arma::rowvec fSqNorm(::arma::zeros(1, data.numParticles));
+  ::arma::mat33 residualStress;
 
   ::arma::mat33 latticeCar;
   double gamma, volume, volumeSq;
@@ -293,7 +298,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 
   // Set the initial step size so get moving
   double step = INITIAL_STEPSIZE;
-  for(unsigned int i = 0; !converged && i < *settings.maxSteps; ++i)
+  int i;
+  for(i = 0; !converged && i < *settings.maxIter; ++i)
   {
     h0 = h;
     f0 = data.forces;
@@ -315,7 +321,6 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
       numLastEvaluationsWithProblem = 0;
     }
 
-    // Calculate the strain matrix
     s = data.stressMtx * latticeCar;
     // Calculate the enthalpy
     h = data.internalEnergy + pressureMean * volume;
@@ -356,8 +361,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
     {
-      // Move on cell vectors to relax strain
-      deltaLatticeCar = step * (s - pressureMtx * latticeCar);
+      // Move on cell vectors to relax stress
+      deltaLatticeCar = -step * (data.stressMtx + pressureMtx) * latticeCar;
       settings.applyLatticeConstraints(structure, latticeCar, deltaLatticeCar);
       latticeCar += deltaLatticeCar;
 
@@ -377,7 +382,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 
     dH = h - h0;
 
-    converged = hasConverged(dH / dNumAtoms, fSqNorm.max(), settings);
+    residualStress = data.stressMtx + *settings.pressure;
+    converged = hasConverged(dH / dNumAtoms, fSqNorm.max(), residualStress.max(), settings);
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
     debugger.postOptStepDebugHook(structure, i);
@@ -401,7 +407,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
   if(!converged)
   {
     ::std::stringstream ss;
-    ss << "Failed to converge after " << *settings.maxSteps << "steps";
+    ss << "Failed to converge after " << *settings.maxIter << " steps";
     return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
   }
 
@@ -442,12 +448,15 @@ TpsdGeomOptimiser::populateOptimistaionData(OptimisationData & optData,
 }
 
 bool TpsdGeomOptimiser::hasConverged(const double deltaEnergyPerIon, const double maxForceSq,
-    const OptimisationSettings & options) const
+    const double maxStress, const OptimisationSettings & options) const
 {
   bool converged = true;
 
   // TODO: Add lattice stress
   //if(*options.optimisationType & OptimisationSettings::Optimise::LATTICE)
+
+  if(options.stressTol && maxStress > *options.stressTol)
+    return false;
 
   if(*options.optimisationType & OptimisationSettings::Optimise::ATOMS)
     converged &= deltaEnergyPerIon < myEnergyTolerance && maxForceSq < myForceTolerance * myForceTolerance;

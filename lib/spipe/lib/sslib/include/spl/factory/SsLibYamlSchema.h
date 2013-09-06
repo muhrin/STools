@@ -77,7 +77,10 @@ struct OptimisationSettings : public HeteroMap
 {
   OptimisationSettings()
   {
-    addScalarEntry("maxSteps", MAX_STEPS);
+    addScalarEntry("maxIter", MAX_ITER);
+    addScalarEntry("energyTol", ENERGY_TOL);
+    addScalarEntry("forceTol", FORCE_TOL);
+    addScalarEntry("stressTol", STRESS_TOL);
     addScalarEntry("pressure", PRESSURE);
   }
 };
@@ -88,8 +91,14 @@ struct Tpsd : OptimisationSettings
   {
     addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
         potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
-    addScalarEntry("maxSteps", MAX_STEPS)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_MAX_STEPS);
+    addScalarEntry("maxIter", MAX_ITER)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS);
+    addScalarEntry("energyTol", ENERGY_TOL)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
+    addScalarEntry("forceTol", FORCE_TOL)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE);
+    addScalarEntry("stressTol", STRESS_TOL)->element()->defaultValue(
+        potential::TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE);
     addScalarEntry("pressure", PRESSURE)->element()->defaultValue(0.0);
     addEntry("potential", POTENTIAL, new Potential())->required();
   }
@@ -288,7 +297,7 @@ struct Builder : public yaml_schema::SchemaHeteroMap
 
 // STRUCTURE COMPARATORS //////////////////////////
 
-struct SortedDistance : public yaml_schema::SchemaHeteroMap
+struct SortedDistance : HeteroMap
 {
   SortedDistance()
   {
@@ -301,7 +310,7 @@ struct SortedDistance : public yaml_schema::SchemaHeteroMap
   }
 };
 
-struct Comparator : public yaml_schema::SchemaHeteroMap
+struct Comparator : HeteroMap
 {
   Comparator()
   {
@@ -316,7 +325,7 @@ struct Comparator : public yaml_schema::SchemaHeteroMap
 
 // UNIT CELL //////////////////////////////////////////
 
-struct UnitCell : public yaml_schema::SchemaHeteroMap
+struct UnitCell : HeteroMap
 {
   UnitCell()
   {
