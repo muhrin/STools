@@ -7,8 +7,9 @@
 
 // INCLUDES //////////////////////////////////
 
- //
-#include <spl/analysis/ConvexHullStructures.h>
+#ifdef SSLIB_USE_CGAL
+#  include <spl/analysis/ConvexHullStructures.h>
+#endif
 #include <spl/common/StructureProperties.h>
 #include <spl/common/Types.h>
 #include <spl/common/UnitCell.h>
@@ -29,7 +30,9 @@
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;
 namespace sp = ::spipe;
+#ifdef SSLIB_USE_CGAL
 namespace ssa = ::spl::analysis;
+#endif
 namespace ssu = ::spl::utility;
 namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
@@ -89,6 +92,7 @@ main(const int argc, char * argv[])
     }
   }
 
+#ifdef SSLIB_USE_CGAL
   if(in.stableCompositions || in.maxHullDist != MAX_HULL_DIST_IGNORE)
   {
     // Generate the convex hull
@@ -133,7 +137,7 @@ main(const int argc, char * argv[])
       }
     }
   }
-
+#endif
 
   // Filter out any that we don't want
   structures.erase(
