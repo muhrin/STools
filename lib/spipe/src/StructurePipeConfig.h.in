@@ -6,4 +6,5 @@
 // Build settings
 #cmakedefine SP_USE_QHULL
 #cmakedefine SP_USE_YAML
+#cmakedefine SP_ENABLE_THREAD_AWARE
 

@@ -20,6 +20,7 @@ set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 # Build settings
 set(SP_USE_YAML TRUE CACHE BOOL "Build StructurePipe with YAML support.")
 set(SP_ENABLE_TESTING FALSE CACHE BOOL "Build spipe tests.")
+set(SP_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable multithreaded awareness in spipe.")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"

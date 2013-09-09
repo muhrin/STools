@@ -5,10 +5,10 @@
  *      Author: Martin Uhrin
  */
 
-
 // INCLUDES /////////////////
 #include "spl/build_cell/StructureBuilder.h"
 
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 #include "spl/build_cell/GenerationOutcome.h"
@@ -24,32 +24,33 @@
 namespace spl {
 namespace build_cell {
 
-StructureBuilder::StructureBuilder():
-myPointGroup(PointGroupFamily::NONE, 0),
-myNumSymOps(0),
-myIsCluster(false)
-{}
+StructureBuilder::StructureBuilder() :
+    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0), myIsCluster(false)
+{
+}
 
-StructureBuilder::StructureBuilder(const StructureBuilder & toCopy):
-StructureBuilderCore(toCopy),
-myUnitCellGenerator(myUnitCellGenerator->clone()),
-myPointGroup(toCopy.myPointGroup),
-myNumSymOps(toCopy.myNumSymOps),
-myIsCluster(toCopy.myIsCluster)
-{}
+StructureBuilder::StructureBuilder(const StructureBuilder & toCopy) :
+    StructureBuilderCore(toCopy), myUnitCellGenerator(
+        myUnitCellGenerator->clone()), myPointGroup(toCopy.myPointGroup), myNumSymOps(
+        toCopy.myNumSymOps), myIsCluster(toCopy.myIsCluster)
+{
+}
 
 GenerationOutcome
-StructureBuilder::generateStructure(common::StructurePtr & structureOut, const common::AtomSpeciesDatabase & speciesDb)
+StructureBuilder::generateStructure(common::StructurePtr & structureOut,
+    const common::AtomSpeciesDatabase & speciesDb)
 {
   GenerationOutcome outcome;
 
-  typedef ::std::pair<const IFragmentGenerator *, IFragmentGenerator::GenerationTicket> GeneratorAndTicket;
-  ::std::vector<GeneratorAndTicket> generationInfo;
+  typedef ::std::pair< const IFragmentGenerator *,
+      IFragmentGenerator::GenerationTicket> GeneratorAndTicket;
+  ::std::vector< GeneratorAndTicket> generationInfo;
   generationInfo.reserve(myGenerators.size());
 
   // First find out what the generators want to put in the structure
   IFragmentGenerator::GenerationTicket structureTicket = getTicket();
-  StructureContents contents = getGenerationContents(structureTicket, speciesDb);
+  StructureContents contents = getGenerationContents(structureTicket,
+      speciesDb);
   BOOST_FOREACH(IFragmentGenerator & generator, myGenerators)
   {
     const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
@@ -71,14 +72,15 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   {
     common::UnitCellPtr cell;
     outcome = myUnitCellGenerator->generateCell(cell, contents, myIsCluster);
-    
+
     if(!outcome.success())
       return outcome;
 
     if(cell.get())
       structureOut->setUnitCell(cell);
     else
-      return GenerationOutcome::failure("Unit cell generator failed to generate unit cell");
+      return GenerationOutcome::failure(
+          "Unit cell generator failed to generate unit cell");
   }
 
   // By now we should have a unit cell and symmetry if needed
@@ -86,13 +88,13 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
   {
     outcome = generatorAndTicket.first->generateFragment(
-      structureBuild,
-      generatorAndTicket.second,
-      speciesDb
+        structureBuild,
+        generatorAndTicket.second,
+        speciesDb
     );
-    
+
     if(!outcome.success())
-      return outcome;
+    return outcome;
   }
 
   outcome = generateSymmetry(structureBuild);
@@ -105,37 +107,44 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut, const c
   return outcome;
 }
 
-void StructureBuilder::setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator)
+void
+StructureBuilder::setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator)
 {
   myUnitCellGenerator = unitCellGenerator;
 }
 
-const IUnitCellGenerator * StructureBuilder::getUnitCellGenerator() const
+const IUnitCellGenerator *
+StructureBuilder::getUnitCellGenerator() const
 {
   return myUnitCellGenerator.get();
 }
 
-void StructureBuilder::setPointGroup(const PointGroup & pointGroup)
+void
+StructureBuilder::setPointGroup(const PointGroup & pointGroup)
 {
   myPointGroup = pointGroup;
 }
 
-const PointGroup & StructureBuilder::getPointGroup() const
+const PointGroup &
+StructureBuilder::getPointGroup() const
 {
   return myPointGroup;
 }
 
-void StructureBuilder::setCluster(const bool isCluster)
+void
+StructureBuilder::setCluster(const bool isCluster)
 {
   myIsCluster = isCluster;
 }
 
-bool StructureBuilder::isCluster() const
+bool
+StructureBuilder::isCluster() const
 {
   return myIsCluster;
 }
 
-bool StructureBuilder::chooseSymmetry(StructureBuild & build) const
+bool
+StructureBuilder::chooseSymmetry(StructureBuild & build) const
 {
   if(myUnitCellGenerator.get())
   { // Crystal
@@ -151,20 +160,23 @@ bool StructureBuilder::chooseSymmetry(StructureBuild & build) const
     }
     else if(myNumSymOps != 0)
     {
-      const ::boost::optional<PointGroup> pointGroup(getRandomPointGroup(myNumSymOps));
+      const ::boost::optional< PointGroup> pointGroup(
+          getRandomPointGroup(myNumSymOps));
       if(!pointGroup)
         return false;
       StructureBuild::SymmetryGroupPtr group(new SymmetryGroup());
       generatePointGroup(*group, pointGroup->first, pointGroup->second);
-      build.setSymmetryGroup(group);      
+      build.setSymmetryGroup(group);
     }
   }
   return true;
 }
 
-GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) const
+GenerationOutcome
+StructureBuilder::generateSymmetry(StructureBuild & build) const
 {
-  using namespace utility::cart_coords_enum; // Pull in X Y Z as 0 1 2
+  using namespace utility::cart_coords_enum;
+  // Pull in X Y Z as 0 1 2
 
   SSLIB_ASSERT(build.getStructure().getNumAtoms() == build.getNumAtomInfos());
 
@@ -175,8 +187,8 @@ GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) con
   const common::UnitCell * const unitCell = structure.getUnitCell();
   const SymmetryGroup & group = *build.getSymmetryGroup();
 
-  for(StructureBuild::AtomInfoIterator it = build.beginAtomInfo(),
-    end = build.endAtomInfo(); it != end; ++it)
+  for(StructureBuild::AtomInfoIterator it = build.beginAtomInfo(), end =
+      build.endAtomInfo(); it != end; ++it)
   {
     const BuildAtomInfo::OpMask & opMask = it->getOpMask();
     for(size_t op = 1 /*skip identity*/; op < group.numOps(); ++op)
@@ -187,7 +199,8 @@ GenerationOutcome StructureBuilder::generateSymmetry(StructureBuild & build) con
         ::arma::mat44 opMat(group.getOp(op));
 
         if(unitCell) // Transform the translation from fractional to absolute      
-          opMat.col(3).rows(X, Z) = trans(unitCell->getOrthoMtx() * opMat.col(3).rows(X, Z));
+          opMat.col(3).rows(X, Z) = trans(
+              unitCell->getOrthoMtx() * opMat.col(3).rows(X, Z));
 
         common::Atom & oldAtom = it->getAtom(0);
         ::arma::vec4 oldPosition;

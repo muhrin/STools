@@ -54,8 +54,6 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int main(const int argc, char * argv[])
 {
-  typedef sp::SerialEngine Engine;
-
   // Program options
   InputOptions in;
 
@@ -92,7 +90,7 @@ int main(const int argc, char * argv[])
   ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
   // Create the pipe the run the search
-  Engine engine;
+  sp::BoostThreadEngine engine(2);
   engine.globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
   ::stools::factory::Factory factory(engine.globalData().getSpeciesDatabase());

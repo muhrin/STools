@@ -35,45 +35,54 @@ namespace detail {
 class StructureBuilderCore
 {
 public:
-  
-  template <class T>
-  void addGenerator(SSLIB_UNIQUE_PTR(T) generator);
+
+  template< class T>
+    void
+    addGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
 protected:
-  typedef ::boost::ptr_vector<IFragmentGenerator> Generators;
+  typedef ::boost::ptr_vector< IFragmentGenerator> Generators;
 
   Generators myGenerators;
 };
 
-template <class T>
-void StructureBuilderCore::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
-{
-  myGenerators.push_back(generator.release());
-}
+template< class T>
+  void
+  StructureBuilderCore::addGenerator(SSLIB_UNIQUE_PTR(T) generator)
+  {
+    myGenerators.push_back(generator.release());
+  }
 
 } // namespace detail
 
-class StructureBuilder : public detail::StructureBuilderCore, public IStructureGenerator, AbsAtomsGenerator
+class StructureBuilder : public detail::StructureBuilderCore,
+    public IStructureGenerator,
+    AbsAtomsGenerator
 {
 public:
   typedef AbsAtomsGenerator::const_iterator AtomsIterator;
 
   StructureBuilder();
   StructureBuilder(const StructureBuilder & toCopy);
-  
-  virtual GenerationOutcome generateStructure(
-    common::StructurePtr & structureOut,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
 
-  void setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator);
-  const IUnitCellGenerator * getUnitCellGenerator() const;
+  virtual GenerationOutcome
+  generateStructure(common::StructurePtr & structureOut,
+      const common::AtomSpeciesDatabase & speciesDb);
 
-  void setPointGroup(const PointGroup & pointGroup);
-  const PointGroup & getPointGroup() const;
+  void
+  setUnitCellGenerator(IUnitCellGeneratorPtr unitCellGenerator);
+  const IUnitCellGenerator *
+  getUnitCellGenerator() const;
 
-  void setCluster(const bool isCluster);
-  bool isCluster() const;
+  void
+  setPointGroup(const PointGroup & pointGroup);
+  const PointGroup &
+  getPointGroup() const;
+
+  void
+  setCluster(const bool isCluster);
+  bool
+  isCluster() const;
 
   // Make public the things we want from AbsAtomsGenerator
   using AbsAtomsGenerator::insertAtoms;
@@ -82,8 +91,10 @@ public:
   using AbsAtomsGenerator::endAtoms;
 
 private:
-  bool chooseSymmetry(StructureBuild & build) const;
-  GenerationOutcome generateSymmetry(StructureBuild & build) const;
+  bool
+  chooseSymmetry(StructureBuild & build) const;
+  GenerationOutcome
+  generateSymmetry(StructureBuild & build) const;
 
   PointGroup myPointGroup;
   unsigned int myNumSymOps;

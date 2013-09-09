@@ -18,8 +18,9 @@
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 #  include <sstream>
-#  include "common/AtomSpeciesDatabase.h"
-#  include "io/ResReaderWriter.h"
+#  include "spl/common/AtomSpeciesDatabase.h"
+#  include "spl/io/ResourceLocator.h"
+#  include "spl/io/ResReaderWriter.h"
 #endif
 
 // NAMESPACES ////////////////////////////////
@@ -40,7 +41,9 @@ public:
     {
       ::std::stringstream ss;
       ss << structure.getName() << "-" << step << "-" << "debug.res";
-      myWriter.writeStructure(structure, ss.str(), mySpeciesDb);
+      io::ResourceLocator loc;
+      if(loc.set(ss.str()))
+        myWriter.writeStructure(structure, loc);
     }
   }
 
@@ -307,6 +310,9 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
 
     volume = unitCell.getVolume();
     volumeSq = volume * volume;
+#ifdef TPSD_GEOM_OPTIMISER_DEBUG
+    ::std::cout << i << ": (1) volume = " << volume << ::std::endl;
+#endif
 
     // Evaluate the potential
     if(!evaluator.evalPotential().second)
@@ -352,6 +358,15 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
     {
       // Move the particles on by a step, saving the old positions
       deltaPos = step * data.forces;
+      const double maxDeltaPos = deltaPos.max();
+#ifdef TPSD_GEOM_OPTIMISER_DEBUG
+      ::std::cout << i << ": (2) volume = " << volume << ::std::endl;
+#endif
+      if(maxDeltaPos > 1.0)
+      {
+        step *= 1.0 / maxDeltaPos;
+        deltaPos = step * data.forces;
+      }
       data.pos += deltaPos;
     }
 
@@ -410,6 +425,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure, common::UnitCell & un
     ss << "Failed to converge after " << *settings.maxIter << " steps";
     return OptimisationOutcome::failure(OptimisationError::FAILED_TO_CONVERGE, ss.str());
   }
+
+#if TPSD_GEOM_OPTIMISER_DEBUG
+    ::std::cout << "Optimised after " << i << " iterations." << ::std::endl;
+#endif
 
   populateOptimistaionData(optimisationData, structure, data);
   return OptimisationOutcome::success();

@@ -15,7 +15,13 @@
 #include <string>
 #include <vector>
 
+#ifdef SP_ENABLE_THREAD_AWARE
+#  include <boost/thread/mutex.hpp>
+#endif
+
 #include <pipelib/event/EventSupport.h>
+
+#include "StructurePipe.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
@@ -57,10 +63,12 @@ private:
   /* Maps a row key to column data */
   typedef ::std::map< Key, ColumnData *> RowMap;
   typedef ::std::vector<ColumnData> Rows;
+  typedef ::std::vector< ::std::string> NotesContainer;
 
 public:
   typedef Rows::const_iterator RowIterator;
   typedef ColumnInfo::const_iterator ColumnInfoIterator;
+  typedef NotesContainer::const_iterator NotesIterator;
 
   static const int COL_UNDEFINED = -1;
 
@@ -71,6 +79,9 @@ public:
 
   ColumnInfoIterator columnInfoBegin() const;
   ColumnInfoIterator columnInfoEnd() const;
+
+  NotesIterator notesBegin() const;
+  NotesIterator notesEnd() const;
 
   //void insert(const Key & key, const size_t col, const Value & value);
   size_t
@@ -92,12 +103,8 @@ public:
   bool
   removeDataTableChangeListener(IDataTableChangeListener & listener);
 
-
-
 private:
-
   typedef ::pipelib::event::EventSupport< IDataTableChangeListener> ChangeListenerSupport;
-  typedef ::std::vector< ::std::string> NotesContainer;
 
   void
   insertColumn(const Column & colInfo, const size_t col);
@@ -111,7 +118,11 @@ private:
 
   ChangeListenerSupport myChangeListenerSupport;
 
-  friend class DataTableWriter;
+#ifdef SP_ENABLE_THREAD_AWARE
+  ::boost::mutex myTableMutex;
+  ::boost::mutex myNotesMutex;
+#endif
+
 };
 
 }

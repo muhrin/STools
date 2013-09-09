@@ -12,6 +12,8 @@
 #cmakedefine SSLIB_USE_CGAL
 #cmakedefine SSLIB_USE_LAPACK
 
+#cmakedefine SSLIB_ENABLE_THREAD_AWARE
+
 #cmakedefine SSLIB_DISABLE_CPP11
 
 #if __cplusplus >= 201103L && !SSLIB_DISABLE_CPP11

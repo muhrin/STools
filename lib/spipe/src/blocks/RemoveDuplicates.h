@@ -12,6 +12,9 @@
 #include <map>
 
 #include <boost/noncopyable.hpp>
+#ifdef SP_ENABLE_THREAD_AWARE
+#  include <boost/thread/mutex.hpp>
+#endif
 
 #include <pipelib/pipelib.h>
 
@@ -54,6 +57,10 @@ private:
   typedef spl::utility::UniqueStructureSet< common::StructureData *> StructureSet;
 
   StructureSet myStructureSet;
+
+#ifdef SP_ENABLE_THREAD_AWARE
+  ::boost::mutex myMutex;
+#endif
 };
 
 }

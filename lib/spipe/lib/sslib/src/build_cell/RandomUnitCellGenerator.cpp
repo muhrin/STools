@@ -27,7 +27,7 @@ const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_TARGET_VOLUME = 50.0;
 const double RandomUnitCellGenerator::DEFAULT_VOLUME_DELTA = 0.25;
 const double RandomUnitCellGenerator::DEFAULT_MAX_LENGTH_RATIO = 4.0;
-const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER = 4.0;
+const double RandomUnitCellGenerator::DEFAULT_BULK_CONTENTS_MULTIPLIER = 2.0;
 const double RandomUnitCellGenerator::DEFAULT_CLUSTER_CONTENTS_MULTIPLIER = 10.0;
 
 RandomUnitCellGenerator::ParameterValueAndSpecific

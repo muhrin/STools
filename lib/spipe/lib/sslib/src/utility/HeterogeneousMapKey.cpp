@@ -29,11 +29,18 @@ KeyId::~KeyId()
 
 void KeyId::insertedIntoMap(HeterogeneousMap & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
   myMaps.insert(&map);
 }
 
 void KeyId::removedFromMap(HeterogeneousMap & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
+
   MapsSet::iterator it = myMaps.find(&map);
   
   // We should know that we are in the map at the moment,

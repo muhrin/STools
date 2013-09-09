@@ -101,10 +101,18 @@ BuildStructures::in(::spipe::common::StructureData * const data)
     return;
   }
 
+#ifdef SP_ENABLE_THREAD_AWARE
+  myBuildStructuresMutex.lock();
+#endif
+
   // Create the random structure
   ssc::StructurePtr str;
   const ssbc::GenerationOutcome outcome = generator->generateStructure(str,
       getEngine()->globalData().getSpeciesDatabase());
+
+#ifdef SP_ENABLE_THREAD_AWARE
+  myBuildStructuresMutex.unlock();
+#endif
 
   if(outcome.success() && str.get())
   {

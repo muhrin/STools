@@ -46,6 +46,10 @@ RemoveDuplicates::in(common::StructureData * const data)
     return;
   }
 
+#ifdef SP_ENABLE_THREAD_AWARE
+  boost::lock_guard<boost::mutex> guard(myMutex);
+#endif
+
   const StructureSet::insert_return_type result = myStructureSet.insert(data,
       *data->getStructure());
 

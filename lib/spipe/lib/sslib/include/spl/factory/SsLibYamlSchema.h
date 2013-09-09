@@ -268,7 +268,7 @@ struct Symmetry : public yaml_schema::SchemaHeteroMap
   }
 };
 
-struct Builder : public yaml_schema::SchemaHeteroMap
+struct Builder : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
 
@@ -282,7 +282,7 @@ struct Builder : public yaml_schema::SchemaHeteroMap
     addEntry("atomsFormat", ATOMS_FORMAT,
         new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >());
     addScalarEntry("atomsRadius", RADIUS);
-    addScalarEntry("cluster", CLUSTER)->element()->defaultValue(true);
+    addScalarEntry("cluster", CLUSTER)->element()->defaultValue(false);
     addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
     addEntry("genSphere", GEN_SPHERE, new GenSphere());
     addEntry("genBox", GEN_BOX, new GenBox());

@@ -85,7 +85,6 @@ WriteStructures::in(common::StructureData * const data)
   const ssio::StructureReadWriteManager & rwMan = getEngine()->globalData().getStructureIo();
   if(myState != State::DISABLED)
   {
-    common::SharedData & shared = getEngine()->sharedData();
     ssc::Structure * const structure = data->getStructure();
 
     const ssio::IStructureWriter * writer = NULL;
