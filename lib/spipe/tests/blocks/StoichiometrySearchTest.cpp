@@ -16,30 +16,28 @@
 
 #include <pipelib/pipelib.h>
 
-
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <spl/common/SharedData.h>
-#include <spl/common/StructureData.h>
-#include <blocks/RandomStructure.h>
-#include <blocks/StoichiometrySearch.h>
+#include <common/SharedData.h>
+#include <common/StructureData.h>
+#include <blocks/BuildStructures.h>
+#include <blocks/SearchStoichiometries.h>
 
 namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 
 typedef ::spipe::blocks::SpeciesParameter SpeciesParameter;
-typedef ::spipe::blocks::StoichiometrySearch::SpeciesParameters SpeciesParameters;
-
+typedef ::spipe::blocks::SearchStoichiometries::SpeciesParameters SpeciesParameters;
 
 class StoichiometrySink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
-  typedef ::std::set<size_t> CountSet;
-  typedef ::std::map<ssc::AtomSpeciesId::Value, CountSet> SpeciesCount;
+  typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
+  typedef ::std::set< size_t> CountSet;
+  typedef ::std::map< ssc::AtomSpeciesId::Value, CountSet> SpeciesCount;
 public:
 
   StoichiometrySink(const SpeciesParameters & parameters)
@@ -52,9 +50,10 @@ public:
     }
   }
 
-  virtual void finished(StructureDataPtr structureData)
+  virtual void
+  finished(StructureDataPtr structureData)
   {
-    typedef ::std::vector<ssc::AtomSpeciesId::Value> Species;
+    typedef ::std::vector< ssc::AtomSpeciesId::Value> Species;
 
     const ssc::Structure * const structure = structureData->getStructure();
     BOOST_REQUIRE(structure != NULL);
@@ -75,10 +74,11 @@ public:
       countIt = it->second.find(structure->getNumAtomsOfSpecies(s));
       BOOST_REQUIRE(countIt != it->second.end());
       it->second.erase(countIt);
-    } 
+    }
   }
 
-  void doFinishedCheck() const
+  void
+  doFinishedCheck() const
   {
     BOOST_FOREACH(SpeciesCount::const_reference speciesCount, mySpeciesCount)
     {
@@ -91,33 +91,25 @@ private:
   SpeciesCount mySpeciesCount;
 };
 
-
 BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
 {
   typedef spipe::SerialEngine Engine;
-  typedef Engine::RunnerPtr RunnerPtr;
-  typedef ::spipe::SpPipe Pipe;
 
   // SETTINGS ////
   SpeciesParameters speciesParams;
   speciesParams.push_back(SpeciesParameter("Na", 7));
   speciesParams.push_back(SpeciesParameter("Cl", 13));
 
-
-  ::spl::UniquePtr<Pipe>::Type searchPipe(new Pipe());
-  blocks::RandomStructure * const randomStructure = searchPipe->addBlock(new blocks::RandomStructure(1));
-  searchPipe->setStartBlock(randomStructure);
-
-  Pipe stoichPipe;
-  blocks::StoichiometrySearch * const stoichSearch = stoichPipe.addBlock(new blocks::StoichiometrySearch(speciesParams, 1000, 0.5, searchPipe));
-  stoichPipe.setStartBlock(stoichSearch);
+  spipe::BlockHandle buildStructures(new blocks::BuildStructures(1));
+  spipe::BlockHandle searchStoichiometries(
+      new blocks::SearchStoichiometries(speciesParams, 1000, 0.5,
+          buildStructures));
 
   Engine engine;
-  RunnerPtr runner = engine.createRunner();
-
   StoichiometrySink sink(speciesParams);
-  runner->setFinishedDataSink(&sink);
-  runner->run(stoichPipe);
+
+  engine.setFinishedDataSink(&sink);
+  engine.run(searchStoichiometries);
 
   sink.doFinishedCheck();
 }

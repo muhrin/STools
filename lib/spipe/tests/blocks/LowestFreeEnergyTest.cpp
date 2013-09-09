@@ -22,9 +22,9 @@
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <spl/common/SharedData.h>
-#include <spl/common/StructureData.h>
-#include <blocks/LowestFreeEnergy.h>
+#include <common/SharedData.h>
+#include <common/StructureData.h>
+#include <blocks/KeepTopN.h>
 
 namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
@@ -32,7 +32,7 @@ namespace structure_properties = ssc::structure_properties;
 
 class StructureSink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
+  typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
 public:
 
   StructureSink():myNumReceived(0) {}
@@ -55,7 +55,7 @@ public:
   typedef ::spipe::StructureDataType StructureDataType;
 
   StructuresSender(const unsigned int numToGenerate):
-  ::spipe::StartBlock::BlockType("Send structures"),
+  ::spipe::Block("Send structures"),
   myNumToGenerate(numToGenerate) {}
 
   virtual void start()
@@ -75,7 +75,7 @@ public:
       structureData->setStructure(structure);
       
       // Register the data and send it on
-      out(getRunner()->registerData(structureData));
+      out(getEngine()->registerData(structureData));
     }
   }
 
@@ -88,33 +88,27 @@ private:
 BOOST_AUTO_TEST_CASE(LowestFreeEnergyTest)
 {
   typedef spipe::SerialEngine Engine;
-  typedef spipe::SpPipe Pipe;
-  typedef Engine::RunnerPtr RunnerPtr;
 
   // SETTINGS /////////////
-  const size_t NUM_TO_KEEP    = 2;
+  const size_t NUM_TO_KEEP = 2;
   const unsigned int NUM_STRUCTURES = 10;
 
-  Pipe pipe;
-  StructuresSender * const send = pipe.addBlock(new StructuresSender(NUM_STRUCTURES));
-  blocks::LowestFreeEnergy * const lowestEnergy = pipe.addBlock(new blocks::LowestFreeEnergy(NUM_TO_KEEP));
+  spipe::BlockHandle send(new StructuresSender(NUM_STRUCTURES));
+  spipe::BlockHandle keepLowest(new blocks::KeepTopN(NUM_TO_KEEP));
 
   // Set up the pipe
-  pipe.setStartBlock(send);
-  pipe.connect(send, lowestEnergy);
+  send->connect(keepLowest);
 
   StructureSink sink;
 
-
   Engine engine;
-  RunnerPtr runner = engine.createRunner();
-  runner->setFinishedDataSink(&sink);
-  runner->run(pipe);
+  engine.setFinishedDataSink(&sink);
+  engine.run(send);
 
   BOOST_REQUIRE(sink.getNumReceived() == NUM_TO_KEEP);
   // Now try again to make sure it is resetting itself correctly
   sink.reset();
-  runner->run(pipe);
+  engine.run(send);
   BOOST_REQUIRE(sink.getNumReceived() == NUM_TO_KEEP);
 }
 

@@ -13,7 +13,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <spl/build_cell/AtomsDescription.h>
-#include <spl/build_cell/AtomsGenerator.h>
+#include <spl/build_cell/AtomsGroup.h>
 #include <spl/build_cell/BuildCellFwd.h>
 #include <spl/build_cell/IFragmentGenerator.h>
 #include <spl/build_cell/IStructureGenerator.h>
@@ -118,12 +118,12 @@ SearchStoichiometries::start()
 
       if(numAtomsOfSpecies > 0)
       {
-        ::spl::UniquePtr< ssbc::AtomsGenerator>::Type atomsGenerator(
-            new ssbc::AtomsGenerator());
-        atomsGenerator->insertAtoms(
+        ::spl::UniquePtr< ssbc::AtomsGroup>::Type group(
+            new ssbc::AtomsGroup());
+        group->insertAtoms(
             ssbc::AtomsDescription(mySpeciesParameters[i].id,
                 numAtomsOfSpecies));
-        builder->addGenerator(atomsGenerator);
+        builder->addGenerator(group);
       }
 
       stoichStringStream << numAtomsOfSpecies;
@@ -145,7 +145,7 @@ SearchStoichiometries::start()
     sweepPipeData.appendToOutputDirName(stoichStringStream.str());
 
     // Find out the pipeline relative path to where all the structures are going to be saved
-    sweepPipeOutputPath = sweepPipeData.getPipeRelativeOutputPath().string();
+    sweepPipeOutputPath = sweepPipeData.getOutputPath().string();
 
     // Start the sweep pipeline
     mySubpipeEngine->run();
