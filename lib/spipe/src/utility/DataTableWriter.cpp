@@ -9,6 +9,7 @@
 #include "utility/DataTableWriter.h"
 
 #include <boost/foreach.hpp>
+#include <boost/range/iterator_range.hpp>
 
 #include "utility/DataTableValueChanged.h"
 
