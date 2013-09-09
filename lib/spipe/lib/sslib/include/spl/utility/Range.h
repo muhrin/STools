@@ -14,7 +14,7 @@
 #include "spl/SSLib.h"
 
 #include <boost/concept/assert.hpp>
-#include "boost/concept_check.hpp"
+#include <boost/concept_check.hpp>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
