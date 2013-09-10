@@ -6,7 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-
+#include <spl/SSLib.h>
 #ifdef SSLIB_USE_CGAL
 #  include <spl/analysis/ConvexHullStructures.h>
 #endif

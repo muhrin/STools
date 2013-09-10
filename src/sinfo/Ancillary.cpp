@@ -106,7 +106,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
         "keep only the top n of each composition")
 #ifdef SSLIB_USE_CGAL
         ("max-hull-dist",
-        po::value< double>(&in.maxHullDist)>default_value(MAX_HULL_DIST_IGNORE),
+        po::value< double>(&in.maxHullDist)->default_value(MAX_HULL_DIST_IGNORE),
         "only print structures that lie below this distance above the hull")
         ("stable-compositions,h",
         po::value< bool>(&in.stableCompositions)->default_value(false)->zero_tokens(),
