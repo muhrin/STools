@@ -27,6 +27,7 @@
 // Local
 #include "utility/PipeDataInitialisation.h"
 #include "input/OptionsParsing.h"
+#include "factory/PipeEngine.h"
 #include "factory/YamlSchema.h"
 
 // MACROS ////////////////////////////////////
@@ -39,6 +40,9 @@ namespace ssc   = ::spl::common;
 namespace ssm   = ::spl::math;
 namespace ssu   = ::spl::utility;
 namespace ssys  = ::spl::yaml_schema;
+
+namespace factory = ::stools::factory;
+namespace input = ::stools::input;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -69,17 +73,17 @@ int main(const int argc, char * argv[])
 
   // Read the yaml options
   YAML::Node searchNode;
-  result = ::stools::input::parseYaml(searchNode, in.inputOptionsFile);
+  result = input::parseYaml(searchNode, in.inputOptionsFile);
   if(result != 0)
     return result;
 
   // Add any additional options specified at the command line
-  if(!::stools::input::insertScalarValues(searchNode, in.additionalOptions))
+  if(!input::insertScalarValues(searchNode, in.additionalOptions))
     return false;
   
   // Parse the yaml
   ssys::SchemaParse parse;
-  stools::factory::Search searchSchema;
+  factory::Search searchSchema;
   ssu::HeterogeneousMap schemaOptions;
   searchSchema.nodeToValue(parse, schemaOptions, searchNode, true);
   if(parse.hasErrors())
@@ -90,19 +94,25 @@ int main(const int argc, char * argv[])
   ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
   // Create the pipe the run the search
-  sp::SerialEngine engine;
-  engine.globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
+  factory::PipeEnginePtr engine = factory::createPipeEngine(schemaOptions);
+  if(!engine.get())
+  {
+    ::std::cerr << "Error: Failed to create pipe engine" << ::std::endl;
+    return 1;
+  }
 
-  ::stools::factory::Factory factory(engine.globalData().getSpeciesDatabase());
+  engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
+
+  ::stools::factory::Factory factory(engine->globalData().getSpeciesDatabase());
 
   sp::BlockHandle pipe = factory.createSearchPipeExtended(schemaOptions);
   if(!pipe)
   {
-    ::std::cerr << "Failed to create search pipe" << ::std::endl;
+    ::std::cerr << "Error: Failed to create search pipe" << ::std::endl;
     return 1;
   }
 
-  engine.run(pipe);
+  engine->run(pipe);
 
   return 0;
 }

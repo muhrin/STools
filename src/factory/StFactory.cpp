@@ -163,6 +163,5 @@ Factory::createSearchPipeExtended(const OptionsMap & options) const
   return startBlock;
 }
 
-
 } // namespace stools
 } // namespace factory

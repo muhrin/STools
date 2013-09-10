@@ -51,7 +51,6 @@ private:
 
   ::spipe::factory::BlockFactory myBlockFactory;
   ::spl::factory::SsLibFactoryYaml mySsLibFactory;
-
 };
 
 

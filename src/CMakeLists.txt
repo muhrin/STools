@@ -9,6 +9,7 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 
 ## stools/factory
 set(stools_Header_Files__factory
+  factory/PipeEngine.h
   factory/StFactory.h
   factory/YamlSchema.h
 )

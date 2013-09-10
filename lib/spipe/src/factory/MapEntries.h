@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "spl/utility/HeterogeneousMapKey.h"
+#include <spl/utility/HeterogeneousMapKey.h>
 
 // DEFINES //////////////////////////////////////////////
 

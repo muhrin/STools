@@ -61,15 +61,20 @@ source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
 ## spipe/factory/
 
 set(spipe_Header_Files__factory
-  factory/MapEntries.h
   factory/BlockFactory.h
+  factory/MapEntries.h
+  factory/PipeEngineFactory.h
+  factory/PipeEngineSchema.h
+  factory/PipeEngineSchemaEntries.h
   factory/YamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
 
 set(spipe_Source_Files__factory
-  factory/MapEntries.cpp
   factory/BlockFactory.cpp
+  factory/MapEntries.cpp
+  factory/PipeEngineFactory.cpp
+  factory/PipeEngineSchemaEntries.cpp
 )
 source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 

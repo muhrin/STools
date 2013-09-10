@@ -16,6 +16,7 @@
 
 // From SPipe
 #include <factory/YamlSchema.h>
+#include <factory/PipeEngineSchema.h>
 
 // DEFINES //////////////////////////////////////////////
 
@@ -31,7 +32,21 @@ typedef ::spl::factory::HeteroMap HeteroMap;
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 
-struct Build : HeteroMap
+struct PipeSettings : HeteroMap
+{
+  PipeSettings()
+  {
+    namespace spf = ::spipe::factory;
+
+    addEntry("engine", spf::ENGINE, new spf::Engine())->element()->required();
+
+    ::spl::utility::HeterogeneousMap defaults;
+    defaults[spf::ENGINE][spf::SERIAL];
+    defaultValue(defaults);
+  }
+};
+
+struct Build : PipeSettings
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
   Build()
@@ -50,12 +65,14 @@ struct Build : HeteroMap
 
     // Defaults
     BindingType defaultOptions;
+    if(getDefault())
+      defaultOptions = *getDefault();
     defaultOptions[spf::WRITE_STRUCTURES];
     defaultValue(defaultOptions);
   }
 };
 
-struct Search : public ::spl::yaml_schema::SchemaHeteroMap
+struct Search : PipeSettings
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
   Search()
@@ -83,9 +100,6 @@ struct Search : public ::spl::yaml_schema::SchemaHeteroMap
         new spf::blocks::WriteStructures());
     addEntry("sweepPotentialParams", spf::SWEEP_POTENTIAL_PARAMS,
         new spf::blocks::SweepPotentialParams());
-
-    // Defaults
-
   }
 };
 

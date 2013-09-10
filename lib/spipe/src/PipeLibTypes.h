@@ -12,6 +12,8 @@
 // INCLUDES /////////////
 #include <pipelib/pipelib.h>
 
+#include <spl/SSLibTypes.h>
+
 // FORWARD DECLARES //////////////
 namespace spipe {
 namespace common {
@@ -22,6 +24,14 @@ class StructureData;
 }
 
 namespace spipe {
+
+template <typename T>
+struct UniquePtr
+{
+  typedef typename spl::UniquePtr<T>::Type Type;
+private:
+  UniquePtr() {}
+};
 
 // TYPEDEFS ///////////////////////
 
