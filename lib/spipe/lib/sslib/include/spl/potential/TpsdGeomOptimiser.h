@@ -43,6 +43,8 @@ public:
   static const double DEFAULT_ENERGY_TOLERANCE;
   static const double DEFAULT_FORCE_TOLERANCE;
   static const double DEFAULT_STRESS_TOLERANCE;
+  static const double DEFAULT_MAX_DELTA_POS_FACTOR;
+  static const double DEFAULT_MAX_DELTA_LATTICE_FACTOR;
 
   TpsdGeomOptimiser(PotentialPtr potential);
 
@@ -101,6 +103,12 @@ private:
   bool
   hasConverged(const double deltaEnergyPerIon, const double maxForceSq,
       const double maxStress, const OptimisationSettings & options) const;
+
+  bool
+  capStepsize(const common::Structure & structure,
+      const ::arma::mat * const deltaPos,
+      const ::arma::mat * const deltaLatticeCar,
+      const OptimisationSettings & settings, double * const stepsize) const;
 
   PotentialPtr myPotential;
 

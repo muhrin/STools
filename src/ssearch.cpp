@@ -90,7 +90,7 @@ int main(const int argc, char * argv[])
   ::stools::input::seedRandomNumberGenerator(schemaOptions);
 
   // Create the pipe the run the search
-  sp::BoostThreadEngine engine(2);
+  sp::SerialEngine engine;
   engine.globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
   ::stools::factory::Factory factory(engine.globalData().getSpeciesDatabase());
