@@ -13,7 +13,7 @@
 
 #ifdef PIPELIB_USE_BOOST_THREAD
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
