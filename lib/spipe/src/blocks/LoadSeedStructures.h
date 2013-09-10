@@ -41,7 +41,6 @@ namespace blocks {
 class LoadSeedStructures : public StartBlock, ::boost::noncopyable
 {
 public:
-
   static const double ATOMIC_VOLUME_MULTIPLIER;
 
   /**
@@ -62,7 +61,6 @@ public:
   // End from StartBlock
 
 private:
-
   typedef ::spl::common::StructurePtr StructurePtr;
   typedef ::spl::io::StructuresContainer StructuresContainer;
 

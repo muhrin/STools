@@ -2,6 +2,12 @@
 
 cmake_minimum_required(VERSION 2.6)
 
+## Include subprojects ################################
+
+add_subdirectory(lib/spipe)	# StructurePipe
+
+# Begin STools ########################################
+
 set(STOOLS_VERSION_MAJOR 0)
 set(STOOLS_VERSION_MINOR 4)
 set(STOOLS_VERSION_PATCH 0)
@@ -17,9 +23,7 @@ project(STools)
 set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 
-
 ## End configuration options ###########################
-
 
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
@@ -32,7 +36,6 @@ configure_file(
 ## FIND PACKAGES ########################################
 # First add any user specified paths to the package search array
 set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
-
 
 # Boost #
 # Tell Windows builds to look for static boost libraries
@@ -65,8 +68,6 @@ if(NOT YAML_CPP_LIBRARIES)
 endif(NOT YAML_CPP_LIBRARIES)
 
 ## END FIND PACKAGES ####################################
-
-add_subdirectory(lib/spipe)	# StructurePipe
 
 set(STOOLS_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/src # To find STools.h

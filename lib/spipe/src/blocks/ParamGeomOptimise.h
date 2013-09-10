@@ -40,7 +40,6 @@ namespace blocks {
 class ParamGeomOptimise : public GeomOptimise
 {
 public:
-
   ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
 
   ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
@@ -58,7 +57,6 @@ public:
   // End from PipeBlock ///////////////////////
 
 private:
-
   typedef ::std::vector< double> PotentialParams;
 
   void

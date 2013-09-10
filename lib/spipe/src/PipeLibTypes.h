@@ -40,6 +40,7 @@ typedef pipelib::StartBlock< StructureDataType, SharedDataType, GlobalDataType> 
 
 // Pipe engine
 typedef pipelib::PipeEngine< StructureDataType, SharedDataType, GlobalDataType> Engine;
+typedef pipelib::BoostThreadEngine< StructureDataType, SharedDataType, GlobalDataType> BoostThreadEngine;
 typedef pipelib::SerialEngine< StructureDataType, SharedDataType, GlobalDataType> SerialEngine;
 typedef pipelib::EngineSetup< StructureDataType, SharedDataType, GlobalDataType> EngineSetup;
 typedef pipelib::EngineAccess< StructureDataType, SharedDataType, GlobalDataType> EngineAccess;

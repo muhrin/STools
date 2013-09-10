@@ -10,6 +10,7 @@
 #define HETEROGENEOUS_MAP_KEY_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "spl/SSLib.h"
 
 #include <ostream>
 #include <set>
@@ -18,6 +19,9 @@
 #include <boost/concept/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+#  include <boost/thread/mutex.hpp>
+#endif
 
 namespace spl {
 namespace utility {
@@ -37,13 +41,16 @@ public:
   { return this == &rhs; }
 
 private:
-
   typedef ::std::set<HeterogeneousMap *> MapsSet;
 
   void insertedIntoMap(HeterogeneousMap & map);
   void removedFromMap(HeterogeneousMap & map);
 
   MapsSet myMaps;
+
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::mutex myMutex;
+#endif
 
   friend class HeterogeneousMap;
 };
@@ -80,7 +87,6 @@ template <class Data>
 class KeyIdEx : private ::boost::noncopyable
 {
 public:
-
   KeyIdEx(const Data & data):
   myData(data)
   {}
@@ -91,7 +97,6 @@ public:
   { return myData; }
 
 private:
-
   typedef ::std::set<HeterogeneousMapEx<Data> *> MapsSet;
 
   void insertedIntoMap(HeterogeneousMapEx<Data> & map);
@@ -100,6 +105,10 @@ private:
   MapsSet myMaps;
 
   const Data myData;
+
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::mutex myMutex;
+#endif
 
   friend class HeterogeneousMapEx<Data>;
 };

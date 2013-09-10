@@ -21,7 +21,7 @@
 #include <spl/factory/SsLibYamlKeywords.h>
 #include <spl/factory/SsLibYamlSchema.h>
 #include <spl/utility/HeterogeneousMap.h>
-#include <yaml_schema/SchemaMap.h>
+#include <spl/yaml_schema/SchemaMap.h>
 
 namespace ssbc = ::spl::build_cell;
 namespace ssc  = ::spl::common;

@@ -24,15 +24,15 @@ namespace potential {
 struct PotentialData
 {
   PotentialData();
-	explicit PotentialData(const spl::common::Structure & structure);
+  explicit
+  PotentialData(const spl::common::Structure & structure);
 
-  ::std::size_t		numParticles;
-	double					internalEnergy;
-  ::arma::mat     pos;
-  ::arma::mat     forces;
-  ::arma::mat33	  stressMtx;
+  ::std::size_t numParticles;
+  double internalEnergy;
+  ::arma::mat pos;
+  ::arma::mat forces;
+  ::arma::mat33 stressMtx;
 };
-
 
 }
 }

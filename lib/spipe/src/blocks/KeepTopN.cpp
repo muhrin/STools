@@ -85,6 +85,10 @@ KeepTopN::hasData() const
 void
 KeepTopN::keep(StructureDataType * const structure, const double energy)
 {
+#ifdef SP_ENABLE_THREAD_AWARE
+  boost::lock_guard<boost::mutex> guard(myMutex);
+#endif
+
   myStructures[energy] = structure;
   if(myStructures.size() > myKeepTopN)
   {

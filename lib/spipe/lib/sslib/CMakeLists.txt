@@ -22,6 +22,7 @@ set(LAPACK_ROOT "" CACHE FILEPATH "Path to LAPACK library")
 
 # Build options ###
 set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
+set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE Bool "Enable awareness of multithreaded environment (requires Boost thread)")
 set(SSLIB_USE_YAML TRUE CACHE BOOL "SSLib should use YAML for input")
 set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as convex hulls")
 set(SSLIB_USE_LAPACK TRUE CACHE BOOL "Enable functionality that uses LAPACK")
@@ -50,7 +51,11 @@ set(CMAKE_PREFIX_PATH
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
-find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+if(SSLIB_ENABLE_THREAD_AWARE)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem thread)
+else()
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+endif(SSLIB_ENABLE_THREAD_AWARE)
 
 #
 # LAPACK #

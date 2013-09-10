@@ -77,7 +77,7 @@ int main(const int argc, char * argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-    ::stools::factory::Factory factory(speciesDb);
+  ::stools::factory::Factory factory(speciesDb);
 
   sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
   if(!pipe)
@@ -87,7 +87,7 @@ int main(const int argc, char * argv[])
   }
 
   // Now run the pipe
-  sp::SerialEngine pipeEngine;
+  sp::BoostThreadEngine pipeEngine(4);
   pipeEngine.run(pipe);
 
   return 0;

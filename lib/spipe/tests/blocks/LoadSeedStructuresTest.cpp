@@ -17,8 +17,8 @@
 // From SPipe
 #include <SpTypes.h>
 #include <StructurePipe.h>
-#include <spl/common/SharedData.h>
-#include <spl/common/StructureData.h>
+#include <common/SharedData.h>
+#include <common/StructureData.h>
 #include <blocks/LoadSeedStructures.h>
 
 namespace ssc = ::spl::common;
@@ -26,7 +26,7 @@ namespace blocks = ::spipe::blocks;
 
 class StructureSink : public ::spipe::FinishedSink
 {
-  typedef ::spipe::FinishedSink::PipelineDataPtr StructureDataPtr;
+  typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
 public:
 
   StructureSink():myNumReceived(0) {}
@@ -44,20 +44,14 @@ private:
 BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
 {
   typedef spipe::SerialEngine Engine;
-  typedef spipe::SpPipe Pipe;
-  typedef Engine::RunnerPtr RunnerPtr;
 
   StructureSink sink;
 
-  Pipe pipe;
-  blocks::LoadSeedStructures * const load = pipe.addBlock(new blocks::LoadSeedStructures("structures/*.res"));
-  pipe.setStartBlock(load);
+  spipe::BlockHandle load(new blocks::LoadSeedStructures("structures/*.res"));
 
   Engine engine;
-  RunnerPtr runner = engine.createRunner();
-
-  runner->setFinishedDataSink(&sink);
-  runner->run(pipe);
+  engine.setFinishedDataSink(&sink);
+  engine.run(load);
 
   BOOST_REQUIRE(sink.getNumReceived() == 10);
 }

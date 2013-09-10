@@ -78,10 +78,24 @@ DataTable::ColumnInfoIterator DataTable::columnInfoEnd() const
   return myColumns.end();
 }
 
+DataTable::NotesIterator DataTable::notesBegin() const
+{
+  return myTableNotes.begin();
+}
+
+DataTable::NotesIterator DataTable::notesEnd() const
+{
+  return myTableNotes.end();
+}
+
 size_t
 DataTable::insert(const DataTable::Key & key, const DataTable::Column & col,
     const DataTable::Value & value)
 {
+#ifdef SP_ENABLE_THREAD_AWARE
+  ::boost::lock_guard<boost::mutex> guard(myTableMutex);
+#endif
+
   bool found = false;
   int colNo = COL_UNDEFINED;
   for(size_t i = 1; i < myColumns.size(); ++i)
@@ -112,6 +126,9 @@ DataTable::insert(const DataTable::Key & key, const DataTable::Column & col,
 void
 DataTable::addTableNote(const ::std::string & note)
 {
+#ifdef SP_ENABLE_THREAD_AWARE
+  ::boost::lock_guard<boost::mutex> guard(myNotesMutex);
+#endif
   myTableNotes.push_back(note);
 }
 

@@ -20,6 +20,7 @@ set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 # Build settings
 set(SP_USE_YAML TRUE CACHE BOOL "Build StructurePipe with YAML support.")
 set(SP_ENABLE_TESTING FALSE CACHE BOOL "Build spipe tests.")
+set(SP_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable multithreaded awareness in spipe.")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
@@ -45,7 +46,7 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex)
 
 ## Armadillo ##
 if(NOT ARMADILLO_INCLUDE_DIRS)
-  find_package(Armadillo CONFIG REQUIRED)
+  find_package(Armadillo NO_MODULE REQUIRED)
   if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
     set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
   endif()
@@ -85,6 +86,7 @@ set(SPIPE_INCLUDE_DIRS
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
+  ${PIPELIB_INCLUDE_DIRS}
   ${SSLIB_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}

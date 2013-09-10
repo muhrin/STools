@@ -17,6 +17,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/variant.hpp>
+#ifdef SP_ENABLE_THREAD_AWARE
+#  include <boost/thread/mutex.hpp>
+#endif
 
 #include <spl/build_cell/BuildCellFwd.h>
 
@@ -64,6 +67,9 @@ private:
   const bool myFixedNumGenerate;
   const int myNumToGenerate;
   const float myAtomsMultiplierGenerate;
+#ifdef SP_ENABLE_THREAD_AWARE
+  ::boost::mutex myBuildStructuresMutex;
+#endif
 };
 
 }

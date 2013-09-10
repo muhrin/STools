@@ -9,6 +9,7 @@
 #include "utility/DataTableWriter.h"
 
 #include <boost/foreach.hpp>
+#include <boost/range/iterator_range.hpp>
 
 #include "utility/DataTableValueChanged.h"
 
@@ -72,7 +73,8 @@ DataTableWriter::write()
     myOutStream << ::std::endl;
 
     // Now print any table notes
-    BOOST_FOREACH(const ::std::string & note, myTable.myTableNotes)
+    BOOST_FOREACH(const ::std::string & note,
+        ::boost::make_iterator_range(myTable.notesBegin(), myTable.notesEnd()))
     {
       myOutStream << "# " << note << ::std::endl;
     }

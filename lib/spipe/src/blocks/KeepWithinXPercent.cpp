@@ -86,6 +86,10 @@ KeepWithinXPercent::hasData() const
 void
 KeepWithinXPercent::keep(StructureDataType * const structure, const double energy)
 {
+#ifdef SP_ENABLE_THREAD_AWARE
+  boost::lock_guard<boost::mutex> guard(myMutex);
+#endif
+
   // Check if we have any structures yet
   if(myStructures.empty())
     myStructures[energy] = structure;
@@ -101,6 +105,10 @@ KeepWithinXPercent::keep(StructureDataType * const structure, const double energ
 void
 KeepWithinXPercent::newLowest(StructureDataType * const structure, const double energy)
 {
+  // WARNING: This must be called from keep(...) or another method that locks a mutex
+  // to make sure the operations in this method remain thread safe as it doesn't
+  // use a lock itself
+
   myStructures[energy] = structure;
   const double cutoff = getCutoff();
 
