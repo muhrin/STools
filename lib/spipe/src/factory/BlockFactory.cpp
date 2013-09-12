@@ -21,6 +21,7 @@
 #include "blocks/GeomOptimise.h"
 #include "blocks/ParamGeomOptimise.h"
 #include "blocks/RemoveDuplicates.h"
+#include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/SweepPotentialParams.h"
 #include "blocks/WriteStructures.h"
 #include "common/CommonData.h"
@@ -185,6 +186,20 @@ BlockFactory::createRemoveDuplicatesBlock(BlockHandle * blockOut,
     return false;
 
   blockOut->reset(new blocks::RemoveDuplicates(comparator));
+  return true;
+}
+
+bool
+BlockFactory::createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
+    const OptionsMap & options, BlockHandle subpipe) const
+{
+  if(!subpipe)
+    return false;
+
+  const ::std::string * const queueFile = options.find(QUEUE_FILE);
+  const ::std::string * const doneFile = options.find(DONE_FILE);
+
+  blockOut->reset(new blocks::RunPotentialParamsQueue(queueFile, doneFile, subpipe));
   return true;
 }
 

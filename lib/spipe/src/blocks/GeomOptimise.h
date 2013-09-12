@@ -44,7 +44,6 @@ class GeomOptimise : public PipeBlock, ::boost::noncopyable
 {
 public:
   GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser);
-
   GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
       const ::spl::potential::OptimisationSettings & optimisationParams);
 

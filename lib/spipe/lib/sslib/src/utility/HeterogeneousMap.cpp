@@ -23,7 +23,8 @@ HeterogeneousMap::HeterogeneousMap(const HeterogeneousMap & toCopy)
   *this = toCopy;
 }
 
-HeterogeneousMap & HeterogeneousMap::operator =(const HeterogeneousMap & rhs)
+HeterogeneousMap &
+HeterogeneousMap::operator =(const HeterogeneousMap & rhs)
 {
   clear();
   insert(rhs);
@@ -35,22 +36,26 @@ HeterogeneousMap::~HeterogeneousMap()
   clear();
 }
 
-bool HeterogeneousMap::empty() const
+bool
+HeterogeneousMap::empty() const
 {
   return myAnyMap.empty();
 }
 
-size_t HeterogeneousMap::size() const
+size_t
+HeterogeneousMap::size() const
 {
   return myAnyMap.size();
 }
 
-size_t HeterogeneousMap::max_size() const
+size_t
+HeterogeneousMap::max_size() const
 {
   return myAnyMap.max_size();
 }
 
-void HeterogeneousMap::insert(const HeterogeneousMap & map)
+void
+HeterogeneousMap::insert(const HeterogeneousMap & map)
 {
   BOOST_FOREACH(const AnyMap::value_type & value, map.myAnyMap)
   {
@@ -58,7 +63,8 @@ void HeterogeneousMap::insert(const HeterogeneousMap & map)
   }
 }
 
-void HeterogeneousMap::insert(const HeterogeneousMap & map, const bool overwrite)
+void
+HeterogeneousMap::insert(const HeterogeneousMap & map, const bool overwrite)
 {
   BOOST_FOREACH(const AnyMap::value_type & value, map.myAnyMap)
   {
@@ -66,7 +72,8 @@ void HeterogeneousMap::insert(const HeterogeneousMap & map, const bool overwrite
   }
 }
 
-void HeterogeneousMap::clear()
+void
+HeterogeneousMap::clear()
 {
   // Tell all the keys that they are being removed from the map
   BOOST_FOREACH(AnyMap::value_type & value, myAnyMap)
@@ -77,7 +84,8 @@ void HeterogeneousMap::clear()
   myAnyMap.clear();
 }
 
-size_t HeterogeneousMap::erase(KeyId & key)
+size_t
+HeterogeneousMap::erase(KeyId & key)
 {
   const AnyMap::iterator it = myAnyMap.find(&key);
 
@@ -89,10 +97,10 @@ size_t HeterogeneousMap::erase(KeyId & key)
   return 1;
 }
 
-::std::pair<HeterogeneousMap::AnyMap::iterator, bool>
+::std::pair< HeterogeneousMap::AnyMap::iterator, bool>
 HeterogeneousMap::insert(const AnyMap::value_type & value)
 {
-  const ::std::pair<AnyMap::iterator, bool> result = myAnyMap.insert(value);
+  const ::std::pair< AnyMap::iterator, bool> result = myAnyMap.insert(value);
 
   if(result.second)
   {
@@ -100,13 +108,19 @@ HeterogeneousMap::insert(const AnyMap::value_type & value)
     value.first->insertedIntoMap(*this);
   }
 
-	return result;
+  return result;
 }
 
-::std::pair<HeterogeneousMap::AnyMap::iterator, bool>
+::std::pair< HeterogeneousMap::AnyMap::iterator, bool>
 HeterogeneousMap::insert(const AnyMap::value_type & value, const bool overwrite)
 {
-  ::std::pair<AnyMap::iterator, bool> result = insert(value);
+  ::std::pair< AnyMap::iterator, bool> result = insert(value);
+
+  if(result.second)
+  {
+    // Tell the key that it now stores a value in this map
+    value.first->insertedIntoMap(*this);
+  }
 
   // If it wasn't inserted and we should overwrite the value then do so
   if(!result.second && overwrite)
@@ -115,10 +129,11 @@ HeterogeneousMap::insert(const AnyMap::value_type & value, const bool overwrite)
     result.second = true; // The value _was_ inserted
   }
 
-	return result;
+  return result;
 }
 
-size_t HeterogeneousMap::eraseNoNotify(KeyId & key)
+size_t
+HeterogeneousMap::eraseNoNotify(KeyId & key)
 {
   const AnyMap::iterator it = myAnyMap.find(&key);
 

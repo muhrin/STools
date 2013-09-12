@@ -30,12 +30,16 @@ namespace factory {
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> RUN_POTENTIAL_PARAMS_QUEUE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
 ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 ::spl::utility::Key<bool> MULTI_WRITE;
 ::spl::utility::Key< ::std::string> FORMAT;
+
+::spl::utility::Key< ::std::string> QUEUE_FILE;
+::spl::utility::Key< ::std::string> DONE_FILE;
 
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
 

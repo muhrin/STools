@@ -45,7 +45,7 @@ struct GlobalKeys
 {
   // The current parameterised potential parameters
   static ::spl::utility::Key< ::std::vector<double> >  POTENTIAL_PARAMS;
-  static ::spl::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
+//static ::spl::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
 
 };
 

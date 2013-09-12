@@ -12,6 +12,7 @@ set(spipe_Header_Files__blocks
   blocks/NiggliReduce.h
   blocks/ParamGeomOptimise.h
   blocks/RemoveDuplicates.h
+  blocks/RunPotentialParamsQueue.h
   blocks/SearchStoichiometries.h
   blocks/SweepPotentialParams.h
   blocks/WriteStructures.h
@@ -28,6 +29,7 @@ set(spipe_Source_Files__blocks
   blocks/NiggliReduce.cpp
   blocks/ParamGeomOptimise.cpp
   blocks/RemoveDuplicates.cpp
+  blocks/RunPotentialParamsQueue.cpp
   blocks/SearchStoichiometries.cpp
   blocks/SweepPotentialParams.cpp
   blocks/WriteStructures.cpp
@@ -83,6 +85,7 @@ source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 set(spipe_Header_Files__utility
   utility/PipeDataInitialisation.h
   utility/DataTable.h
+  utility/DataTableInserters.h
   utility/DataTableSupport.h
   utility/DataTableValueChanged.h
   utility/DataTableWriter.h
@@ -93,6 +96,7 @@ source_group("Header Files\\utility" FILES ${spipe_Header_Files__utility})
 set(spipe_Source_Files__utility
   utility/PipeDataInitialisation.cpp
   utility/DataTable.cpp
+  utility/DataTableInserters.cpp
   utility/DataTableSupport.cpp
   utility/DataTableValueChanged.cpp
   utility/DataTableWriter.cpp

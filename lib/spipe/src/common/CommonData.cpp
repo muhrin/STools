@@ -110,7 +110,6 @@ bool ParamRange::parseParamString(const size_t idx, const ::std::string & paramS
 
 // Objects keys ////////////////
 ssu::Key< ::std::vector<double> > GlobalKeys::POTENTIAL_PARAMS;
-ssu::Key<ParamRange> GlobalKeys::POTENTIAL_SWEEP_RANGE;
 
 
 }

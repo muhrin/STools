@@ -97,5 +97,13 @@ isAbsolute(const boostfs::path & toCheck)
 #endif
 }
 
+bool
+createFile(const ::boost::filesystem::path & toCreate)
+{
+  boostfs::ofstream file(toCreate);
+  file.close();
+  return boostfs::exists(toCreate);
+}
+
 }
 }

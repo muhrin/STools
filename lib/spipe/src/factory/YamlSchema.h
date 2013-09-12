@@ -13,6 +13,7 @@
 
 #include <spl/factory/SsLibYamlSchema.h>
 
+#include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/WriteStructures.h"
 #include "factory/MapEntries.h"
 
@@ -43,7 +44,8 @@ struct BuildStructures : ::spl::factory::builder::Builder
 struct FindSymmetryGroup : HeteroMap
 {
   FindSymmetryGroup()
-  {}
+  {
+  }
 };
 
 struct KeepTopN : HeteroMap
@@ -67,7 +69,8 @@ struct KeepWithinXPercent : HeteroMap
 struct NiggliReduce : HeteroMap
 {
   NiggliReduce()
-  {}
+  {
+  }
 };
 
 struct GeomOptimise : ::spl::factory::OptimisationSettings
@@ -77,17 +80,6 @@ struct GeomOptimise : ::spl::factory::OptimisationSettings
   {
     addEntry("optimiser", ::spl::factory::OPTIMISER,
         new ::spl::factory::Optimiser());
-  }
-};
-
-struct SweepPotentialParams : HeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  SweepPotentialParams()
-  {
-    addEntry("range", PARAM_RANGE,
-        new ::spl::yaml_schema::SchemaWrapper<
-            ::spl::yaml::VectorAsString< ::std::string> >)->required();
   }
 };
 
@@ -105,6 +97,28 @@ struct RemoveDuplicates : HeteroMap
   }
 };
 
+struct RunPotentialParamsQueue : HeteroMap
+{
+  RunPotentialParamsQueue()
+  {
+    addScalarEntry("queueFile", QUEUE_FILE)->element()->defaultValue(
+        spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE);
+    addScalarEntry("doneFile", DONE_FILE)->element()->defaultValue(
+        spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE);
+  }
+};
+
+struct SweepPotentialParams : HeteroMap
+{
+  typedef ::spl::utility::HeterogeneousMap BindingType;
+  SweepPotentialParams()
+  {
+    addEntry("range", PARAM_RANGE,
+        new ::spl::yaml_schema::SchemaWrapper<
+            ::spl::yaml::VectorAsString< ::std::string> >)->required();
+  }
+};
+
 struct WriteStructures : HeteroMap
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;
@@ -116,7 +130,6 @@ struct WriteStructures : HeteroMap
         ::spipe::blocks::WriteStructures::FORMAT_DEFAULT);
   }
 };
-
 
 } // namespace blocks
 }

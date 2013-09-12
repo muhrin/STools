@@ -35,16 +35,9 @@ operator<<(std::ostream & os, const spl::common::Structure & p);
 std::ostream &
 operator<<(std::ostream & os, const spl::common::Structure & p);
 
-namespace spl
-{
-
+namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace utility
-{
-class HeterogeneousMap;
-}
-namespace common
-{
+namespace common {
 class AtomsFormula;
 class DistanceCalculator;
 class UnitCell;
@@ -53,7 +46,7 @@ class Structure : public UnitCell::UnitCellListener
 {
 public:
 
-  typedef utility::NamedProperty<utility::HeterogeneousMap> VisibleProperty;
+  typedef utility::NamedProperty< utility::HeterogeneousMap> VisibleProperty;
 
   explicit
   Structure(UnitCellPtr cell = UnitCellPtr());
@@ -104,38 +97,39 @@ public:
   void
   getAtomPositions(::arma::mat & posMtx) const;
   void
-  getAtomPositions(::arma::subview<double> & posMtx) const;
+  getAtomPositions(::arma::subview< double> & posMtx) const;
   void
   setAtomPositions(const ::arma::mat & posMtx);
 
   void
-  getAtomSpecies(::std::vector<AtomSpeciesId::Value> & species) const;
+  getAtomSpecies(::std::vector< AtomSpeciesId::Value> & species) const;
   size_t
   getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
-  AtomsFormula getComposition() const;
+  AtomsFormula
+  getComposition() const;
 
   const DistanceCalculator &
   getDistanceCalculator() const;
 
-  template<typename T>
+  template< typename T>
     T *
-    getProperty(const utility::Key<T> & key);
+    getProperty(const utility::Key< T> & key);
 
-  template<typename T>
+  template< typename T>
     const T *
-    getProperty(const utility::Key<T> & key) const;
+    getProperty(const utility::Key< T> & key) const;
 
-  template<typename T>
+  template< typename T>
     void
-    setProperty(utility::Key<T> & key, const T & value);
+    setProperty(utility::Key< T> & key, const T & value);
 
-  template<typename T>
+  template< typename T>
     void
-    setPropertyFromString(utility::Key<T> & key, const ::std::string & value);
+    setPropertyFromString(utility::Key< T> & key, const ::std::string & value);
 
-  template<typename T>
+  template< typename T>
     bool
-    eraseProperty(utility::Key<T> & key);
+    eraseProperty(utility::Key< T> & key);
 
   ::boost::optional< ::std::string>
   getVisibleProperty(const VisibleProperty & property) const;
@@ -145,7 +139,7 @@ public:
   bool
   makePrimitive();
 
-  UniquePtr<Structure>::Type
+  UniquePtr< Structure>::Type
   getPrimitiveCopy() const;
 
   void
@@ -162,7 +156,7 @@ public:
 
 private:
 
-  typedef ::boost::ptr_vector<Atom> AtomsContainer;
+  typedef ::boost::ptr_vector< Atom> AtomsContainer;
 
   void
   atomMoved(const Atom & atom) const;
@@ -194,38 +188,38 @@ private:
   friend class Atom;
 };
 
-template<typename T>
+template< typename T>
   T *
-  Structure::getProperty(const utility::Key<T> & key)
+  Structure::getProperty(const utility::Key< T> & key)
   {
     return myTypedProperties.find(key);
   }
 
-template<typename T>
+template< typename T>
   const T *
-  Structure::getProperty(const utility::Key<T> & key) const
+  Structure::getProperty(const utility::Key< T> & key) const
   {
     return myTypedProperties.find(key);
   }
 
-template<typename T>
+template< typename T>
   void
-  Structure::setProperty(utility::Key<T> & key, const T & value)
+  Structure::setProperty(utility::Key< T> & key, const T & value)
   {
     myTypedProperties[key] = value;
   }
 
-template<typename T>
+template< typename T>
   void
-  Structure::setPropertyFromString(utility::Key<T> & key,
+  Structure::setPropertyFromString(utility::Key< T> & key,
       const ::std::string & value)
   {
-    setProperty(key, ::boost::lexical_cast<T>(value));
+    setProperty(key, ::boost::lexical_cast< T>(value));
   }
 
-template<typename T>
+template< typename T>
   bool
-  Structure::eraseProperty(utility::Key<T> & key)
+  Structure::eraseProperty(utility::Key< T> & key)
   {
     return myTypedProperties.erase(key) != 0;
   }

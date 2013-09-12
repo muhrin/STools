@@ -3,6 +3,7 @@
 
 #include "pipelib/PipelibConfig.h"
 #include "pipelib/Pipeline.h"
+#include "pipelib/PipeEngine.h"
 #include "pipelib/Block.h"
 #include "pipelib/BoostThreadEngine.h"
 #include "pipelib/PipeBlock.h"

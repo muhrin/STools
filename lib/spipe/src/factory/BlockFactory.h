@@ -62,6 +62,9 @@ public:
   createRemoveDuplicatesBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool
+  createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
+      const OptionsMap & options, BlockHandle subpipe) const;
+  bool
   createSweepPotentialParamsBlock(BlockHandle * const blockOut,
       const OptionsMap & options, BlockHandle sweepPipe) const;
   bool

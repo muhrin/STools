@@ -28,9 +28,9 @@
 // DEFINES ////////////////////////////////////////
 
 #if (BOOST_VERSION / 100000) <= 1 && ((BOOST_VERSION / 100) % 1000) <= 47
-	#define	NS_BOOST_IPC_DETAIL boost::interprocess::detail
+#  define NS_BOOST_IPC_DETAIL boost::interprocess::detail
 #else
-	#define NS_BOOST_IPC_DETAIL boost::interprocess::ipcdetail
+#  define NS_BOOST_IPC_DETAIL boost::interprocess::ipcdetail
 #endif
 
 // FUNCTIONS ////////////////////////////////////////
@@ -40,17 +40,21 @@ namespace os {
 
 typedef NS_BOOST_IPC_DETAIL::OS_process_id_t ProcessId;
 
-ProcessId getProcessId();
+ProcessId
+getProcessId();
 
-void parseParameters(
-  ::std::vector< ::std::string> & outParams,
-  const ::std::string & exeString
-);
+void
+parseParameters(::std::vector< ::std::string> & outParams,
+    const ::std::string & exeString);
 
-int runBlocking(const ::std::string & exe, const ::std::vector< ::std::string> & argv);
-int runBlocking(const ::std::vector< ::std::string> & exeAndArgv);
-int runBlocking(const ::boost::filesystem::path & exe, const ::std::vector< ::std::string> & argv);
-
+int
+runBlocking(const ::std::string & exe,
+    const ::std::vector< ::std::string> & argv);
+int
+runBlocking(const ::std::vector< ::std::string> & exeAndArgv);
+int
+runBlocking(const ::boost::filesystem::path & exe,
+    const ::std::vector< ::std::string> & argv);
 
 }
 }

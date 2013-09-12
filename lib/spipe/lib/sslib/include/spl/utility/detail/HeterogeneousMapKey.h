@@ -32,12 +32,19 @@ KeyIdEx<Data>::~KeyIdEx()
 template <class Data>
 void KeyIdEx<Data>::insertedIntoMap(HeterogeneousMapEx<Data> & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
   myMaps.insert(&map);
 }
 
 template <class Data>
 void KeyIdEx<Data>::removedFromMap(HeterogeneousMapEx<Data> & map)
 {
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myMutex);
+#endif
+
   typename MapsSet::iterator it = myMaps.find(&map);
   
   // We should know that we are in the map at the moment,

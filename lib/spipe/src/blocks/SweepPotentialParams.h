@@ -25,7 +25,6 @@
 // Local includes
 #include "SpTypes.h"
 #include "common/CommonData.h"
-#include "utility/DataTable.h"
 #include "utility/DataTableSupport.h"
 
 namespace spipe {
@@ -42,7 +41,7 @@ class SweepPotentialParams : public StartBlock, public FinishedSink, ::boost::no
 public:
   static const ::std::string POTPARAMS_FILE_EXTENSION;
 
-  SweepPotentialParams(const common::ParamRange & paramRange, BlockHandle sweepPipeline);
+  SweepPotentialParams(const common::ParamRange & paramRange, BlockHandle & sweepPipeline);
 
   // From Block /////////////////////////////////
   virtual void

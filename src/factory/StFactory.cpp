@@ -158,8 +158,19 @@ Factory::createSearchPipeExtended(const OptionsMap & options) const
     if(!myBlockFactory.createSweepPotentialParamsBlock(&sweepStartBlock, *paramSweepOptions, startBlock))
       return NULL_HANDLE;
 
-    startBlock = sweepStartBlock;
+    return sweepStartBlock;
   }
+
+  const OptionsMap * const runParamsQueueOptions = options.find(spf::RUN_POTENTIAL_PARAMS_QUEUE);
+  if(runParamsQueueOptions)
+  {
+    BlockHandle runQueueBlock;
+    if(!myBlockFactory.createRunPotentialParamsQueueBlock(&runQueueBlock, *runParamsQueueOptions, startBlock))
+      return BlockHandle();
+
+    return runQueueBlock;
+  }
+
   return startBlock;
 }
 

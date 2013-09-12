@@ -40,7 +40,6 @@ template< typename Pipe, typename Shared, typename Global>
 template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::~BoostThreadEngine()
   {
-    myEventSupport.notify(event::makeDestroyedEvent(*this));
   }
 
 template< typename Pipe, typename Shared, typename Global>
@@ -64,8 +63,13 @@ template< typename Pipe, typename Shared, typename Global>
     if(!isAttached())
       return false;
 
+    // Tell all blocks
     ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
         ::boost::bind(&Self::notifyDetached, this, _1));
+
+    // Tell any listeners
+    myEventSupport.notify(event::makeDetachedEvent(*this));
+
     clear();
     return true;
   }

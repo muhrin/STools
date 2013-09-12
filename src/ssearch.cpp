@@ -22,12 +22,12 @@
 #include <pipelib/pipelib.h>
 
 // From StructurePipe
+#include <factory/PipeEngine.h>
 #include <factory/StFactory.h>
 
 // Local
 #include "utility/PipeDataInitialisation.h"
 #include "input/OptionsParsing.h"
-#include "factory/PipeEngine.h"
 #include "factory/YamlSchema.h"
 
 // MACROS ////////////////////////////////////
@@ -36,8 +36,6 @@
 namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
-namespace ssc   = ::spl::common;
-namespace ssm   = ::spl::math;
 namespace ssu   = ::spl::utility;
 namespace ssys  = ::spl::yaml_schema;
 
@@ -102,7 +100,6 @@ int main(const int argc, char * argv[])
   }
 
   engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
-
   ::stools::factory::Factory factory(engine->globalData().getSpeciesDatabase());
 
   sp::BlockHandle pipe = factory.createSearchPipeExtended(schemaOptions);

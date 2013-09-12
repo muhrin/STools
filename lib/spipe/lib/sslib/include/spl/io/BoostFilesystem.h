@@ -52,6 +52,8 @@ namespace io {
 absolute(const ::boost::filesystem::path & p);
 bool isAbsolute(const ::boost::filesystem::path & toCheck);
 
+bool createFile(const ::boost::filesystem::path & toCreate);
+
 }
 }
 

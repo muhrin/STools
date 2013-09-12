@@ -37,12 +37,16 @@ extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERC
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> RUN_POTENTIAL_PARAMS_QUEUE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
 extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 extern ::spl::utility::Key<bool> MULTI_WRITE;
 extern ::spl::utility::Key< ::std::string> FORMAT;
+
+extern ::spl::utility::Key< ::std::string> QUEUE_FILE;
+extern ::spl::utility::Key< ::std::string> DONE_FILE;
 
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
 

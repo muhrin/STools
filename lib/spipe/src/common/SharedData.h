@@ -18,10 +18,10 @@
 
 #include <armadillo>
 
-
 #include <spl/build_cell/IStructureGenerator.h>
 #include <spl/build_cell/BuildCellFwd.h>
 #include <spl/io/BoostFilesystem.h>
+#include <spl/utility/HeterogeneousMap.h>
 
 // Local includes
 #include "PipeLibTypes.h"
@@ -75,7 +75,6 @@ private:
   IStructureGeneratorPtr myStructureGenerator;
   ::boost::filesystem::path myOutputDir;
   ::std::string myInstanceName;
-
 };
 
 template< class T>

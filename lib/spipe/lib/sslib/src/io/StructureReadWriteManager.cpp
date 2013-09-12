@@ -16,7 +16,6 @@
 
 // NAMESPACES ////////////////////////////////
 
-
 namespace spl {
 namespace io {
 
@@ -59,7 +58,8 @@ StructureReadWriteManager::writers() const
   return WritersConstRange(beginWriters(), endWriters());
 }
 
-size_t StructureReadWriteManager::numWriters() const
+size_t
+StructureReadWriteManager::numWriters() const
 {
   return myWriters.size();
 }
@@ -88,7 +88,6 @@ StructureReadWriteManager::endReaders() const
   return ReadersConstIterator(myReaders.end());
 }
 
-
 StructureReadWriteManager::ReadersRange
 StructureReadWriteManager::readers()
 {
@@ -101,66 +100,76 @@ StructureReadWriteManager::readers() const
   return ReadersConstRange(beginReaders(), endReaders());
 }
 
-size_t StructureReadWriteManager::numReaders() const
+size_t
+StructureReadWriteManager::numReaders() const
 {
   return myReaders.size();
 }
 
-void StructureReadWriteManager::insertWriter(WriterPtr writer)
+void
+StructureReadWriteManager::insertWriter(WriterPtr writer)
 {
   myWritersStore.push_back(writer.release());
   registerWriter(myWritersStore.back());
 }
 
-void StructureReadWriteManager::insertReader(UniquePtr<IStructureReader>::Type reader)
+void
+StructureReadWriteManager::insertReader(
+    UniquePtr< IStructureReader>::Type reader)
 {
   myReadersStore.push_back(reader.release());
   registerReader(myReadersStore.back());
 }
 
-void StructureReadWriteManager::registerWriter(spl::io::IStructureWriter &writer)
+void
+StructureReadWriteManager::registerWriter(spl::io::IStructureWriter &writer)
 {
   BOOST_FOREACH(const ::std::string & ext, writer.getSupportedFileExtensions())
-	{
+  {
     myWriters.insert(WritersMap::value_type(ext, &writer));
-	}
+  }
 }
 
-void StructureReadWriteManager::deregisterWriter(spl::io::IStructureWriter &writer)
+void
+StructureReadWriteManager::deregisterWriter(spl::io::IStructureWriter &writer)
 {
-	using ::std::string;
+  using ::std::string;
 
-	for(WritersMap::iterator it = myWriters.begin(), end = myWriters.end();
-		it != end; /*increment done in loop*/)
-	{
-		if(it->second == &writer)
-			myWriters.erase(it++);
-		else
-			++it;
-	}
+  for(WritersMap::iterator it = myWriters.begin(), end = myWriters.end();
+      it != end; /*increment done in loop*/)
+  {
+    if(it->second == &writer)
+      myWriters.erase(it++);
+    else
+      ++it;
+  }
 }
 
-void StructureReadWriteManager::registerReader(IStructureReader & reader)
+void
+StructureReadWriteManager::registerReader(IStructureReader & reader)
 {
   BOOST_FOREACH(const ::std::string & ext, reader.getSupportedFileExtensions())
-	{
+  {
     myReaders.insert(ReadersMap::value_type(ext, &reader));
-	}
+  }
 }
 
-void StructureReadWriteManager::deregisterReader(IStructureReader & reader)
+void
+StructureReadWriteManager::deregisterReader(IStructureReader & reader)
 {
-	for(ReadersMap::iterator it = myReaders.begin(), end = myReaders.end();
-		it != end; /*increment done in loop*/)
-	{
-		if(it->second == &reader)
-			myReaders.erase(it++);
-		else
-			++it;
-	}
+  for(ReadersMap::iterator it = myReaders.begin(), end = myReaders.end();
+      it != end; /*increment done in loop*/)
+  {
+    if(it->second == &reader)
+      myReaders.erase(it++);
+    else
+      ++it;
+  }
 }
 
-bool StructureReadWriteManager::writeStructure(::spl::common::Structure & str, ResourceLocator locator) const
+bool
+StructureReadWriteManager::writeStructure(::spl::common::Structure & str,
+    ResourceLocator locator) const
 {
   // TODO: Add status return value to this method
   ::std::string ext;
@@ -180,10 +189,9 @@ bool StructureReadWriteManager::writeStructure(::spl::common::Structure & str, R
   return writeStructure(str, locator, ext);
 }
 
-bool StructureReadWriteManager::writeStructure(
-  common::Structure & str,
-  ResourceLocator locator,
-  const ::std::string & fileType) const
+bool
+StructureReadWriteManager::writeStructure(common::Structure & str,
+    ResourceLocator locator, const ::std::string & fileType) const
 {
   // TODO: Add status return value to this method
   const WritersMap::const_iterator it = myWriters.find(fileType);
@@ -203,7 +211,8 @@ bool StructureReadWriteManager::writeStructure(
   return true;
 }
 
-common::types::StructurePtr StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
+common::types::StructurePtr
+StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
 {
   // TODO: Add status return value to this method
 
@@ -220,7 +229,7 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(const Resou
 
   // Finally pass it on the the correct reader
   structure = it->second->readStructure(locator);
-  
+
   if(structure.get())
     postRead(*structure, locator);
 
@@ -228,11 +237,9 @@ common::types::StructurePtr StructureReadWriteManager::readStructure(const Resou
   return structure;
 }
 
-size_t StructureReadWriteManager::readStructures(
-  StructuresContainer & outStructures,
-  const ResourceLocator & locator,
-  const int maxDepth
-) const
+size_t
+StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
+    const ResourceLocator & locator, const int maxDepth) const
 {
   if(!fs::exists(locator.path()))
     return 0;
@@ -245,14 +252,13 @@ size_t StructureReadWriteManager::readStructures(
     if(!getExtension(ext, locator))
       return 0;
 
-	  const ReadersMap::const_iterator it = myReaders.find(ext);
+    const ReadersMap::const_iterator it = myReaders.find(ext);
 
-	  if(it == myReaders.end())
-		  return 0; /*unknown extension*/
+    if(it == myReaders.end())
+      return 0; /*unknown extension*/
 
-	  // Finally pass it on the the correct reader
-    const size_t numRead =
-      it->second->readStructures(outStructures, locator);
+    // Finally pass it on the the correct reader
+    const size_t numRead = it->second->readStructures(outStructures, locator);
 
     // Set the path to where it was read from
     for(size_t i = originalSize; i < originalSize + numRead; ++i)
@@ -270,7 +276,8 @@ size_t StructureReadWriteManager::readStructures(
     return 0;
 }
 
-const IStructureWriter * StructureReadWriteManager::getWriter(const ::std::string & ext) const
+const IStructureWriter *
+StructureReadWriteManager::getWriter(const ::std::string & ext) const
 {
   const WritersMap::const_iterator it = myWriters.find(ext);
 
@@ -280,7 +287,8 @@ const IStructureWriter * StructureReadWriteManager::getWriter(const ::std::strin
   return it->second;
 }
 
-bool StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)
+bool
+StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)
 {
   myDefaultWriteExtension = extension;
 
@@ -292,7 +300,8 @@ bool StructureReadWriteManager::setDefaultWriter(const ::std::string & extension
   return true;
 }
 
-const IStructureWriter * StructureReadWriteManager::getDefaultWriter() const
+const IStructureWriter *
+StructureReadWriteManager::getDefaultWriter() const
 {
   const WritersMap::const_iterator it = myWriters.find(myDefaultWriteExtension);
 
@@ -302,27 +311,28 @@ const IStructureWriter * StructureReadWriteManager::getDefaultWriter() const
   return it->second;
 }
 
-bool StructureReadWriteManager::getExtension(::std::string & ext, const ResourceLocator & locator) const
+bool
+StructureReadWriteManager::getExtension(::std::string & ext,
+    const ResourceLocator & locator) const
 {
-	// Get the extension
-	if(!locator.path().has_filename())
-		return false; /*invalid path*/
+  // Get the extension
+  if(!locator.path().has_filename())
+    return false; /*invalid path*/
 
-	const fs::path extPath = locator.path().extension();
-	if(extPath.empty())
-		return false; /*no extension*/
+  const fs::path extPath = locator.path().extension();
+  if(extPath.empty())
+    return false; /*no extension*/
 
   ext = extPath.string(); // Returns e.g. '.txt'
-	ext.erase(0,1); // Erase the dot from the extensions
+  ext.erase(0, 1); // Erase the dot from the extensions
 
   return true;
 }
 
-size_t StructureReadWriteManager::doReadAllStructuresFromPath(
- StructuresContainer & outStructures,
- const ::boost::filesystem::path & path,
- const size_t maxDepth,
- const size_t currentDepth) const
+size_t
+StructureReadWriteManager::doReadAllStructuresFromPath(
+    StructuresContainer & outStructures, const ::boost::filesystem::path & path,
+    const size_t maxDepth, const size_t currentDepth) const
 {
   // Preconditions:
   // fs::exists(path)
@@ -340,17 +350,17 @@ size_t StructureReadWriteManager::doReadAllStructuresFromPath(
     }
     else if(currentDepth < maxDepth && fs::is_directory(entry))
     {
-      numRead += doReadAllStructuresFromPath(outStructures, entry, maxDepth, currentDepth + 1);
+      numRead += doReadAllStructuresFromPath(outStructures, entry, maxDepth,
+          currentDepth + 1);
     }
   }
 
   return numRead;
 }
 
-void StructureReadWriteManager::postRead(
-  common::Structure & structure,
-  const ResourceLocator & locator
-) const
+void
+StructureReadWriteManager::postRead(common::Structure & structure,
+    const ResourceLocator & locator) const
 {
   // If the structure doesn't have a name, set it to the locator
   if(structure.getName().empty())
@@ -364,10 +374,9 @@ void StructureReadWriteManager::postRead(
   structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
 }
 
-void StructureReadWriteManager::postWrite(
-  common::Structure & structure,
-  const ResourceLocator & locator
-) const
+void
+StructureReadWriteManager::postWrite(common::Structure & structure,
+    const ResourceLocator & locator) const
 {
   structure.setProperty(properties::io::LAST_ABS_FILE_PATH, locator);
 }

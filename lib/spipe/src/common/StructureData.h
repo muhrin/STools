@@ -18,6 +18,7 @@
 
 
 #include <spl/SSLib.h>
+#include <spl/common/Structure.h>
 #include <spl/common/Types.h>
 #include <spl/io/BoostFilesystem.h>
 #include <spl/io/IStructureReader.h>

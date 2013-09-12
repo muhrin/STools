@@ -25,9 +25,7 @@
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
-
 
 namespace spl {
 namespace io {
@@ -44,12 +42,15 @@ StructureYamlGenerator::StructureYamlGenerator()
   myAtomInfoParser.setFormat(format);
 }
 
-StructureYamlGenerator::StructureYamlGenerator(const AtomYamlFormatParser::AtomsFormat & format):
-myAtomInfoParser(format)
-{}
+StructureYamlGenerator::StructureYamlGenerator(
+    const AtomYamlFormatParser::AtomsFormat & format) :
+    myAtomInfoParser(format)
+{
+}
 
 YAML::Node
-StructureYamlGenerator::generateNode(const ::spl::common::Structure & structure) const
+StructureYamlGenerator::generateNode(
+    const ::spl::common::Structure & structure) const
 {
   using namespace utility::cell_params_enum;
 
@@ -58,20 +59,19 @@ StructureYamlGenerator::generateNode(const ::spl::common::Structure & structure)
   // Name
   if(!structure.getName().empty())
     root[kw::STRUCTURE__NAME] = structure.getName();
-  
+
   // Unit cell
   const common::UnitCell * const cell = structure.getUnitCell();
   if(cell)
     root[kw::STRUCTURE__CELL] = *cell;
 
   // Atoms
-  for(size_t i = 0 ; i < structure.getNumAtoms(); ++i)
+  for(size_t i = 0; i < structure.getNumAtoms(); ++i)
     root[kw::STRUCTURE__ATOMS].push_back(generateNode(structure.getAtom(i)));
 
   // Properties
   BOOST_FOREACH(const StructureProperty & property, structure_properties::VISIBLE_PROPERTIES)
     addProperty(root[kw::STRUCTURE__PROPERTIES], structure, property);
-  
 
   return root;
 }
@@ -87,11 +87,11 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 
   if(node[kw::STRUCTURE__NAME])
     structure->setName(node[kw::STRUCTURE__NAME].as< ::std::string>());
-  
+
   if(node[kw::STRUCTURE__CELL])
   {
     common::types::UnitCellPtr cell(new common::UnitCell());
-    *cell = node[kw::STRUCTURE__CELL].as<common::UnitCell>();
+    *cell = node[kw::STRUCTURE__CELL].as< common::UnitCell>();
     structure->setUnitCell(cell);
   }
 
@@ -136,8 +136,8 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
   return structure;
 }
 
-YAML::Node StructureYamlGenerator::generateNode(
-  const ::spl::common::Atom & atom) const
+YAML::Node
+StructureYamlGenerator::generateNode(const ::spl::common::Atom & atom) const
 {
   using namespace utility::cart_coords_enum;
 
@@ -159,12 +159,13 @@ YAML::Node StructureYamlGenerator::generateNode(
   return myAtomInfoParser.generateNode(atomInfo);
 }
 
-bool StructureYamlGenerator::addProperty(
-  YAML::Node propertiesNode,
-  const common::Structure & structure,
-  const StructureProperty & property) const
+bool
+StructureYamlGenerator::addProperty(YAML::Node propertiesNode,
+    const common::Structure & structure,
+    const StructureProperty & property) const
 {
-  ::boost::optional< ::std::string> value = structure.getVisibleProperty(property);
+  ::boost::optional< ::std::string> value = structure.getVisibleProperty(
+      property);
 
   if(!value)
     return false;
@@ -174,16 +175,16 @@ bool StructureYamlGenerator::addProperty(
   return true;
 }
 
-void StructureYamlGenerator::praseProperties(
-  common::Structure & structure,
-  const YAML::Node & propertiesNode) const
+void
+StructureYamlGenerator::praseProperties(common::Structure & structure,
+    const YAML::Node & propertiesNode) const
 {
   common::Structure::VisibleProperty * property;
-  for(YAML::const_iterator it = propertiesNode.begin(), end = propertiesNode.end();
-    it != end; ++it)
+  for(YAML::const_iterator it = propertiesNode.begin(), end =
+      propertiesNode.end(); it != end; ++it)
   {
-    property =
-      structure_properties::VISIBLE_PROPERTIES.getProperty(it->first.as< ::std::string>());
+    property = structure_properties::VISIBLE_PROPERTIES.getProperty(
+        it->first.as< ::std::string>());
 
     if(property)
     {

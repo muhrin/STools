@@ -27,6 +27,7 @@ public:
 
   GenSphere(const double radius);
   GenSphere(const GenSphere & toCopy);
+  virtual ~GenSphere() {}
 
   ::arma::vec3 getPosition() const;
   void setPosition(const ::arma::vec3 & pos);

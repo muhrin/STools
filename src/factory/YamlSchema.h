@@ -100,6 +100,8 @@ struct Search : PipeSettings
         new spf::blocks::WriteStructures());
     addEntry("sweepPotentialParams", spf::SWEEP_POTENTIAL_PARAMS,
         new spf::blocks::SweepPotentialParams());
+    addEntry("runPotentialParamsQueue", spf::RUN_POTENTIAL_PARAMS_QUEUE,
+        new spf::blocks::RunPotentialParamsQueue());
   }
 };
 
