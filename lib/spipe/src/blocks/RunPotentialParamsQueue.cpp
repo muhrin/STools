@@ -12,8 +12,8 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-#include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/tokenizer.hpp>
@@ -47,12 +47,6 @@ RunPotentialParamsQueue::RunPotentialParamsQueue(BlockHandle & sweepPipeline) :
         NULL), myQueueFile(DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
         DEFAULT_PARAMS_DONE_FILE)
 {
-  if(!fs::exists(myQueueFile))
-    spl::io::createFile(myQueueFile);
-  myQueueFileLock = ip::file_lock(myQueueFile.c_str());
-  if(!exists(myDoneFile))
-    spl::io::createFile(myDoneFile);
-  myDoneFileLock = ip::file_lock(myDoneFile.c_str());
 }
 
 RunPotentialParamsQueue::RunPotentialParamsQueue(
@@ -62,12 +56,6 @@ RunPotentialParamsQueue::RunPotentialParamsQueue(
         NULL), myQueueFile(queueFile ? *queueFile : DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
         doneFile ? *doneFile : DEFAULT_PARAMS_DONE_FILE)
 {
-  if(!fs::exists(myQueueFile))
-    spl::io::createFile(myQueueFile);
-  myQueueFileLock = ip::file_lock(myQueueFile.c_str());
-  if(!exists(myDoneFile))
-    spl::io::createFile(myDoneFile);
-  myDoneFileLock = ip::file_lock(myDoneFile.c_str());
 }
 
 void
@@ -150,7 +138,8 @@ RunPotentialParamsQueue::getWork()
   if(!fs::exists(myQueueFile))
     return false;
 
-  ip::scoped_lock< ip::file_lock> lockQueue(myQueueFileLock);
+  ::boost::interprocess::file_lock lock(myQueueFile.c_str());
+  ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::fstream queueStream(myQueueFile);
   ::std::string line;
@@ -226,8 +215,12 @@ RunPotentialParamsQueue::readParams(const ::std::string & paramsLine) const
 void
 RunPotentialParamsQueue::updateDoneParams()
 {
+  if(!fs::exists(myDoneFile))
+    return;
+
   // Update the file of finish parameters
-  ip::scoped_lock< ip::file_lock> lockQueue(myDoneFileLock);
+  ::boost::interprocess::file_lock lock(myDoneFile.c_str());
+  ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::ofstream doneStream(myDoneFile, std::ios::out | std::ios::app);
   ::std::for_each(myDoneParams.begin(), myDoneParams.end(),

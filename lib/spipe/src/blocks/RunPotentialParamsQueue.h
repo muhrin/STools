@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -84,9 +83,6 @@ private:
 
   const ::boost::filesystem::path myQueueFile;
   const ::boost::filesystem::path myDoneFile;
-
-  ::boost::interprocess::file_lock myQueueFileLock;
-  ::boost::interprocess::file_lock myDoneFileLock;
 
   Params myCurrentParams;
 

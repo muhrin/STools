@@ -83,6 +83,7 @@ target_link_libraries(stools_common
 #################################
 ## sbuild: Build a structure   ##
 #################################
+
 set(stools_Header_Files__sbuild
 )
 source_group("Header Files" FILES ${stools_Header_Files__sbuild})
@@ -283,6 +284,41 @@ target_link_libraries(sinfo
 set(stools_targets
   ${stools_targets}
   sinfo
+)
+
+########################
+## slock: Lock a file ##
+########################
+
+set(stools_Header_Files__slock
+)
+source_group("Header Files\\slock" FILES ${stools_Header_Files__slock})
+
+set(stools_Source_Files__slock
+)
+source_group("Source Files\\sinfo" FILES ${stools_Source_Files__slock})
+
+set(stools_Files__slock
+  ${stools_Header_Files__slock}
+  ${stools_Source_Files__slock}
+  slock.cpp
+)
+
+add_executable(slock
+  ${stools_Files__slock}
+)
+
+find_package(Boost 1.36.0 COMPONENTS date_time filesystem system
+  thread program_options REQUIRED)
+
+# Libraries we need to link to
+target_link_libraries(slock
+  ${Boost_LIBRARIES}
+)
+
+set(stools_targets
+  ${stools_targets}
+  slock
 )
 
 ############################################
