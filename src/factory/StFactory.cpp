@@ -123,10 +123,14 @@ Factory::createSearchPipe(const OptionsMap & options) const
   }
 
   // Find out what the symmetry group is
-  if(myBlockFactory.createFindSymmetryGroupBlock(&block, OptionsMap()))
-    lastBlock = lastBlock->connect(block);
-  else
-    return NULL_HANDLE;
+  const OptionsMap * const findSymmetryOptions = options.find(spf::FIND_SYMMETRY_GROUP);
+  if(findSymmetryOptions)
+  {
+    if(myBlockFactory.createFindSymmetryGroupBlock(&block, *findSymmetryOptions))
+      lastBlock = lastBlock->connect(block);
+    else
+      return NULL_HANDLE;
+  }
 
   const OptionsMap * const writeStructuresOptions = options.find(spf::WRITE_STRUCTURES);
   if(writeStructuresOptions)
