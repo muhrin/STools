@@ -51,7 +51,10 @@ main(const int argc, char * argv[])
   const fs::path fileToLock(in.lockFile);
 
   if(!fs::exists(fileToLock))
+  {
+    ::std::cerr << "Error: file " << in.lockFile << " does not exist.\n";
     return 1;
+  }
 
   ip::file_lock lock(fileToLock.c_str());
 

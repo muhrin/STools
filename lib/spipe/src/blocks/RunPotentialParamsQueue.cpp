@@ -19,6 +19,7 @@
 #include <boost/tokenizer.hpp>
 
 #include <spl/io/BoostFilesystem.h>
+#include <spl/os/Process.h>
 #include <spl/utility/UtilFunctions.h>
 
 // Local includes
@@ -142,32 +143,42 @@ RunPotentialParamsQueue::getWork()
   ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::fstream queueStream(myQueueFile);
+  ::std::stringstream sout;
   ::std::string line;
-  bool foundParams = false;
-  for(int i = 0; i < 10; ++i)
+  size_t numParamsRead = 0;
+  while(numParamsRead < 10)
   {
     if(!::std::getline(queueStream, line))
       break;
-    const ::boost::optional< Params> & params = readParams(line);
-    if(params)
+
+    if(!line.empty() && line[0] != '#')
     {
-      foundParams = true;
-      myParamsQueue.push(*params);
+      const ::boost::optional< Params> & params = readParams(line);
+      if(params)
+      {
+        ++numParamsRead;
+        myParamsQueue.push(*params);
+        sout << "#" << spl::os::getProcessId() << " " << line;
+      }
+      else
+        sout << line << "\n";
     }
+    // Save the line
+    sout << line << "\n";
   }
 
-  if(foundParams)
+  if(numParamsRead > 0)
   {
-    // Now we need to remove the lines we took as work from the file so save the rest
-    // of the file to a buffer
-    ::std::stringstream sout;
+    // Save the rest of the file to buffer
     ::std::copy(::std::istreambuf_iterator< char>(queueStream),
         ::std::istreambuf_iterator< char>(),
         ::std::ostreambuf_iterator< char>(sout));
 
-    queueStream.close();
-    queueStream.open(myQueueFile, ::std::fstream::out | ::std::fstream::trunc);
+    // Go back to the start of the file
+    queueStream.clear(); // Clear the EoF flag
+    queueStream.seekg(0, ::std::ios::beg);
 
+    // Write out the whole new contents
     ::std::copy(::std::istreambuf_iterator< char>(sout),
         ::std::istreambuf_iterator< char>(),
         ::std::ostreambuf_iterator< char>(queueStream));
@@ -175,7 +186,7 @@ RunPotentialParamsQueue::getWork()
 
   queueStream.close();
 
-  return foundParams;
+  return numParamsRead > 0;
 }
 
 void
