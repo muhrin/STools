@@ -25,14 +25,16 @@ class PipeEngineFactory
 {
 public:
   typedef ::spl::utility::HeterogeneousMap HeteroMap;
-  typedef typename UniquePtr<Engine>::Type EnginePtr;
+  typedef UniquePtr<Engine>::Type EnginePtr;
 
   EnginePtr
   createEngine(const HeteroMap & settings) const;
   UniquePtr<SerialEngine>::Type
   createSerialEngine(const HeteroMap & settings) const;
+#ifdef SP_ENABLE_THREAD_AWARE
   UniquePtr<BoostThreadEngine>::Type
   createBoostThreadEngine(const HeteroMap & settings) const;
+#endif
 };
 
 }

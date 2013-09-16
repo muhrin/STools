@@ -46,7 +46,7 @@ const ::std::string RunPotentialParamsQueue::POTPARAMS_FILE_EXTENSION =
 
 // The number of work items to take the first time around, after that it will
 // be determined according to a target time to finish each chunk
-static const int INITIAL_NUM_WORK_ITEMS = 10;
+static const int INITIAL_NUM_WORK_ITEMS = 20;
 static const posix_time::time_duration DEFAULT_TARGET_CHUNK_TIME =
     posix_time::minutes(10);
 
