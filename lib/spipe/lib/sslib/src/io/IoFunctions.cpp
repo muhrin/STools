@@ -124,13 +124,13 @@ int getPrecision(const double num, const unsigned int digitsAfterDecimal)
 
 void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal)
 {
-  out << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
+  out << ::std::fixed << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
 }
 
 ::std::string toString(const double num, const unsigned digitsAfterDecimal)
 {
   ::std::stringstream ss;
-  ss << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
+  ss << ::std::fixed << ::std::setprecision(getPrecision(num, digitsAfterDecimal)) << num;
   return ss.str();
 }
 

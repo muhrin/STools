@@ -34,10 +34,8 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace spl
-{
-namespace io
-{
+namespace spl {
+namespace io {
 
 namespace fs = ::boost::filesystem;
 namespace ssc = ::spl::common;
@@ -185,8 +183,9 @@ ResReaderWriter::writeStructure(::spl::common::Structure & str,
     const AtomSpeciesId::Value id = species[i];
 
     strFile << endl << speciesSymbols[id] << " " << speciesOrder[id] << " "
-        << ::std::setprecision(12) << positions(X, i) << " " << positions(Y, i)
-        << " " << positions(Z, i) << " 1.0";
+        << toString(positions(X, i), DIGITS_AFTER_DECIMAL) << " "
+        << toString(positions(Y, i), DIGITS_AFTER_DECIMAL) << " "
+        << toString(positions(Z, i), DIGITS_AFTER_DECIMAL) << " 1.0";
   }
 
   // End atoms ///////////

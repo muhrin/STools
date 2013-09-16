@@ -139,11 +139,11 @@ RunPotentialParamsQueue::getWork()
   if(!fs::exists(myQueueFile))
     return false;
 
-  ::boost::interprocess::file_lock lock(myQueueFile.c_str());
+  ip::file_lock lock(myQueueFile.c_str());
   ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::fstream queueStream(myQueueFile);
-  ::std::stringstream sout;
+  ::std::stringstream takenWorkItems, originalContents;
   ::std::string line;
   size_t numParamsRead = 0;
   while(numParamsRead < 10)
@@ -158,13 +158,10 @@ RunPotentialParamsQueue::getWork()
       {
         ++numParamsRead;
         myParamsQueue.push(*params);
-        sout << "#" << spl::os::getProcessId() << " " << line;
+        takenWorkItems << "#" << spl::os::getProcessId() << " " << line << "\n";
       }
-      else
-        sout << line << "\n";
     }
-    // Save the line
-    sout << line << "\n";
+    originalContents << line << "\n";
   }
 
   if(numParamsRead > 0)
@@ -172,18 +169,22 @@ RunPotentialParamsQueue::getWork()
     // Save the rest of the file to buffer
     ::std::copy(::std::istreambuf_iterator< char>(queueStream),
         ::std::istreambuf_iterator< char>(),
-        ::std::ostreambuf_iterator< char>(sout));
+        ::std::ostreambuf_iterator< char>(originalContents));
 
     // Go back to the start of the file
     queueStream.clear(); // Clear the EoF flag
     queueStream.seekg(0, ::std::ios::beg);
 
     // Write out the whole new contents
-    ::std::copy(::std::istreambuf_iterator< char>(sout),
+    // First the rest of the file
+    ::std::copy(::std::istreambuf_iterator< char>(originalContents),
+        ::std::istreambuf_iterator< char>(),
+        ::std::ostreambuf_iterator< char>(queueStream));
+    // Then the part of the queue that we're running
+    ::std::copy(::std::istreambuf_iterator< char>(takenWorkItems),
         ::std::istreambuf_iterator< char>(),
         ::std::ostreambuf_iterator< char>(queueStream));
   }
-
   queueStream.close();
 
   return numParamsRead > 0;
@@ -230,7 +231,7 @@ RunPotentialParamsQueue::updateDoneParams()
     return;
 
   // Update the file of finish parameters
-  ::boost::interprocess::file_lock lock(myDoneFile.c_str());
+  ip::file_lock lock(myDoneFile.c_str());
   ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::ofstream doneStream(myDoneFile, std::ios::out | std::ios::app);

@@ -208,7 +208,8 @@ void CellReaderWriter::writeStructure(::std::ostream & os, common::Structure & s
   using namespace utility::cell_params_enum;
 
   // Use full precision when printing numbers
-  os << ::std::setprecision(::std::numeric_limits<double>::digits10);
+  os.precision(::std::numeric_limits<double>::digits10);
+  os << ::std::fixed;
 
   const common::UnitCell * unitCell = structure.getUnitCell();
 
