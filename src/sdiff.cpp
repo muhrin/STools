@@ -429,10 +429,12 @@ void doDiffGroups(
   ::spl::UniquePtr<ssu::IStructureComparator>::Type comp;
   if(in.comparator == "sd")
   {
-    ::spl::UniquePtr<ssu::SortedDistanceComparator>::Type
-      sortedDist(new ssu::SortedDistanceComparator(in.tolerance, false, false));
-    sortedDist->setCutoffFactor(in.cutoffFactor);
-    comp.reset(sortedDist.release());
+    ssu::SortedDistanceComparator::ConstructionInfo constructInfo;
+    constructInfo.tolerance = in.tolerance;
+    constructInfo.usePrimitive = false;
+    constructInfo.volumeAgnostic = false;
+    constructInfo.cutoffFactor = in.cutoffFactor;
+    comp.reset(new ssu::SortedDistanceComparator(constructInfo));
   }
   else if(in.comparator == "sdex")
     comp.reset(new ssu::SortedDistanceComparatorEx());

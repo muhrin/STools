@@ -279,22 +279,24 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
   const OptionsMap * const comparatorMap = map.find(SORTED_DISTANCE);
   if(comparatorMap)
   {
-    const double * const tolerance = map.find(TOLERANCE);
-    const bool * const volAgnostic = map.find(SORTED_DISTANCE__VOLUME_AGNOSTIC);
-    const bool * const usePrimitive = map.find(SORTED_DISTANCE__USE_PRIMITIVE);
+    utility::SortedDistanceComparator::ConstructionInfo constructInfo;
 
-    // Create with the given options (if any)
-    if(tolerance && volAgnostic && usePrimitive)
-      comparator.reset(
-          new utility::SortedDistanceComparator(*tolerance, *volAgnostic,
-              *usePrimitive));
-    else if(tolerance && volAgnostic)
-      comparator.reset(
-          new utility::SortedDistanceComparator(*tolerance, *volAgnostic));
-    else if(tolerance)
-      comparator.reset(new utility::SortedDistanceComparator(*tolerance));
-    else
-      comparator.reset(new utility::SortedDistanceComparator());
+    {
+      const double * const tolerance = map.find(TOLERANCE);
+      if(tolerance)
+        constructInfo.tolerance = *tolerance;
+    }
+    {
+      const bool * const volAgnostic = map.find(SORTED_DISTANCE__VOLUME_AGNOSTIC);
+      if(volAgnostic)
+        constructInfo.volumeAgnostic = *volAgnostic;
+    }
+    {
+      const bool * const usePrimitive = map.find(SORTED_DISTANCE__USE_PRIMITIVE);
+      if(usePrimitive)
+        constructInfo.usePrimitive = *usePrimitive;
+    }
+    comparator.reset(new utility::SortedDistanceComparator(constructInfo));
   }
 
   return comparator;

@@ -15,26 +15,23 @@
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/utility/IStructureComparator.h"
 #include "spl/utility/IndexAdapters.h"
 #include "spl/utility/MapEx.h"
 
-namespace spl
-{
+namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace common
-{
+namespace common {
 class Structure;
 }
-namespace math
-{
+namespace math {
 class RunningStats;
 }
 
-namespace utility
-{
+namespace utility {
 
 class SortedDistanceComparisonData
 {
@@ -64,22 +61,39 @@ private:
 class SortedDistanceComparator : public IStructureComparator
 {
   typedef ::std::vector< double> DistancesVec;
-public:
 
+public:
   typedef SortedDistanceComparisonData DataTyp;
   typedef IBufferedComparator BufferedTyp;
   typedef ::spl::UniquePtr< DataTyp>::Type ComparisonDataPtr;
 
   static const double DEFAULT_TOLERANCE;
-  static const double CUTOFF_FACTOR;
+  static const double DEFAULT_CUTOFF_FACTOR;
+  static const bool DEFAULT_USE_PRIMITIVE;
+  static const bool DEFAULT_VOLUME_AGNOSTIC;
 
-  SortedDistanceComparator(double tolerance = DEFAULT_TOLERANCE,
-      const bool volumeAgnostic = false, const bool usePrimitive = true);
+  struct ConstructionInfo
+  {
+    ConstructionInfo()
+    {
+      tolerance = DEFAULT_TOLERANCE;
+      cutoffFactor = DEFAULT_CUTOFF_FACTOR;
+      usePrimitive = DEFAULT_USE_PRIMITIVE;
+      volumeAgnostic = DEFAULT_VOLUME_AGNOSTIC;
+    }
+    double tolerance;
+    double cutoffFactor;
+    bool usePrimitive;
+    bool volumeAgnostic;
+  };
 
-  void
-  setCutoffFactor(const double cutoffFactor);
-  double
-  getCutoffFactor() const;
+  SortedDistanceComparator();
+  SortedDistanceComparator(const ConstructionInfo & info);
+
+//  void
+//  setCutoffFactor(const double cutoffFactor);
+//  double
+//  getCutoffFactor() const;
 
   // From IStructureComparator ////////////////
 

@@ -37,7 +37,8 @@ namespace ssu = ::spl::utility;
 namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
 
-void addToken(const ::std::string & token, InputOptions & in);
+void
+addToken(const ::std::string & token, InputOptions & in);
 
 int
 main(const int argc, char * argv[])
@@ -114,10 +115,12 @@ main(const int argc, char * argv[])
 
     if(in.stableCompositions)
     {
-      for(StructuresContainer::iterator it = structures.begin(); it != structures.end();
+      for(StructuresContainer::iterator it = structures.begin();
+          it != structures.end();
           /* increment in loop body */)
       {
-        if(hullStructures.getStability(*it) != ssa::ConvexHullStructures::Stability::STABLE)
+        if(hullStructures.getStability(*it)
+            != ssa::ConvexHullStructures::Stability::STABLE)
           it = structures.erase(it);
         else
           ++it;
@@ -142,7 +145,7 @@ main(const int argc, char * argv[])
   // Filter out any that we don't want
   structures.erase(
       ::std::remove_if(structures.begin(), structures.end(), formulaFilter),
-       structures.end());
+      structures.end());
 
   if(in.compositionTop != 0)
   {
@@ -247,9 +250,11 @@ main(const int argc, char * argv[])
 
   if(in.uniqueMode)
   {
+    ssu::SortedDistanceComparator::ConstructionInfo constructInfo;
+    constructInfo.tolerance = in.uniqueTolerance;
     ssu::UniqueStructureSet< ssc::Structure *> uniqueStructures(
         ssu::IStructureComparatorPtr(
-            new ssu::SortedDistanceComparator(in.uniqueTolerance)));
+            new ssu::SortedDistanceComparator(constructInfo)));
     int idx = 0;
     SortedKeys::iterator it = sortedKeys.begin();
     while(it != sortedKeys.end())
@@ -276,7 +281,8 @@ main(const int argc, char * argv[])
   return 0;
 }
 
-void addToken(const ::std::string & token, InputOptions & in)
+void
+addToken(const ::std::string & token, InputOptions & in)
 {
   if(!in.infoString.empty())
     in.infoString += "";

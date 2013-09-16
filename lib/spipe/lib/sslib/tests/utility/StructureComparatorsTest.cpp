@@ -78,9 +78,12 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   // SETTINGS ////////////////
   // List of comparators to test
   Comparators comparators;
-  comparators.push_back(new ssu::SortedDistanceComparator(
-    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, true, true)
-  );
+  {
+    ssu::SortedDistanceComparator::ConstructionInfo constructInfo;
+    constructInfo.volumeAgnostic = true;
+    constructInfo.usePrimitive = true;
+    comparators.push_back(new ssu::SortedDistanceComparator(constructInfo));
+  }
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
   //comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
@@ -188,8 +191,12 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   // SETTINGS ////////////////
   // List of comparators to test
   Comparators comparators;
-  comparators.push_back(new ssu::SortedDistanceComparator(
-    ssu::SortedDistanceComparator::DEFAULT_TOLERANCE, false, false));
+  {
+    ssu::SortedDistanceComparator::ConstructionInfo constructInfo;
+    constructInfo.volumeAgnostic = false;
+    constructInfo.usePrimitive = false;
+    comparators.push_back(new ssu::SortedDistanceComparator(constructInfo));
+  }
   //comparators.push_back(new ssu::SortedDistanceComparatorEx());
   //comparators.push_back(new ssu::DistanceMatrixComparator());
   const size_t NUM_COMPARATORS = comparators.size();
