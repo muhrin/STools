@@ -151,6 +151,7 @@ RunPotentialParamsQueue::getWork()
     if(!::std::getline(queueStream, line))
       break;
 
+    bool takenWork = false;
     if(!line.empty() && line[0] != '#')
     {
       const ::boost::optional< Params> & params = readParams(line);
@@ -159,9 +160,11 @@ RunPotentialParamsQueue::getWork()
         ++numParamsRead;
         myParamsQueue.push(*params);
         takenWorkItems << "#" << spl::os::getProcessId() << " " << line << "\n";
+        takenWork = true;
       }
     }
-    originalContents << line << "\n";
+    if(!takenWork)
+      originalContents << line << "\n";
   }
 
   if(numParamsRead > 0)
