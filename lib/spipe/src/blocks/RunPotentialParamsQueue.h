@@ -14,9 +14,12 @@
 #include <string>
 #include <vector>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp> //no i/o just types
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+
+#include <spl/math/RunningStats.h>
 
 // Local includes
 #include "SpTypes.h"
@@ -70,6 +73,8 @@ private:
   ::boost::optional< Params> readParams(const ::std::string & paramsLine) const;
   void
   updateDoneParams();
+  void
+  updateWorkChunkSize();
 
   void
   releaseBufferedStructures(
@@ -90,6 +95,10 @@ private:
   ::std::vector< Params> myDoneParams;
 
   ::std::vector< StructureDataType *> myBuffer;
+
+  int myNumWorkItemsChunk;
+  ::spl::math::GenericRunningStats< ::boost::posix_time::time_duration> myWorkItemsTiming;
+  const ::boost::posix_time::time_duration myTargetChunkTime;
 
   ::spipe::utility::DataTableSupport myTableSupport;
 };

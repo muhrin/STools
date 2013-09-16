@@ -33,6 +33,7 @@ namespace blocks {
 
 namespace fs = ::boost::filesystem;
 namespace ip = ::boost::interprocess;
+namespace posix_time = ::boost::posix_time;
 
 namespace splu = ::spl::utility;
 
@@ -43,11 +44,18 @@ const ::std::string RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE =
 const ::std::string RunPotentialParamsQueue::POTPARAMS_FILE_EXTENSION =
     "potparams";
 
+// The number of work items to take the first time around, after that it will
+// be determined according to a target time to finish each chunk
+static const int INITIAL_NUM_WORK_ITEMS = 10;
+static const posix_time::time_duration DEFAULT_TARGET_CHUNK_TIME =
+    posix_time::minutes(10);
+
 RunPotentialParamsQueue::RunPotentialParamsQueue(BlockHandle & sweepPipeline) :
     Block("Run potential params queue"), mySweepPipeline(sweepPipeline), mySubpipeEngine(
         NULL), myQueueFile(DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
-        DEFAULT_PARAMS_DONE_FILE)
+        DEFAULT_PARAMS_DONE_FILE), myTargetChunkTime(DEFAULT_TARGET_CHUNK_TIME)
 {
+  myNumWorkItemsChunk = INITIAL_NUM_WORK_ITEMS;
 }
 
 RunPotentialParamsQueue::RunPotentialParamsQueue(
@@ -55,8 +63,9 @@ RunPotentialParamsQueue::RunPotentialParamsQueue(
     BlockHandle & sweepPipeline) :
     Block("Run potential params queue"), mySweepPipeline(sweepPipeline), mySubpipeEngine(
         NULL), myQueueFile(queueFile ? *queueFile : DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
-        doneFile ? *doneFile : DEFAULT_PARAMS_DONE_FILE)
+        doneFile ? *doneFile : DEFAULT_PARAMS_DONE_FILE), myTargetChunkTime(DEFAULT_TARGET_CHUNK_TIME)
 {
+  myNumWorkItemsChunk = INITIAL_NUM_WORK_ITEMS;
 }
 
 void
@@ -105,6 +114,9 @@ RunPotentialParamsQueue::start()
   {
     while(!myParamsQueue.empty())
     {
+      const posix_time::ptime startTime =
+          posix_time::microsec_clock::universal_time();
+
       myCurrentParams = myParamsQueue.front();
 
       // Store the potential parameters in shared memory
@@ -126,10 +138,15 @@ RunPotentialParamsQueue::start()
       myDoneParams.push_back(myCurrentParams);
       myParamsQueue.pop();
 
+      // Save how long it took to process that parameter set
+      myWorkItemsTiming.insert(
+          posix_time::microsec_clock::universal_time() - startTime);
+
       // Send the resultant structures down our pipe
       releaseBufferedStructures(subpipeOutputPath);
     }
     updateDoneParams();
+    updateWorkChunkSize();
   }
 }
 
@@ -146,7 +163,7 @@ RunPotentialParamsQueue::getWork()
   ::std::stringstream takenWorkItems, originalContents;
   ::std::string line;
   size_t numParamsRead = 0;
-  while(numParamsRead < 10)
+  while(numParamsRead < myNumWorkItemsChunk)
   {
     if(!::std::getline(queueStream, line))
       break;
@@ -244,6 +261,26 @@ RunPotentialParamsQueue::updateDoneParams()
 
   doneStream.close();
   myDoneParams.clear();
+}
+
+void
+RunPotentialParamsQueue::updateWorkChunkSize()
+{
+  const posix_time::time_duration meanDuration = myWorkItemsTiming.mean();
+  if(meanDuration > myTargetChunkTime)
+  {
+    // One work item takes longer than our target time so just do one
+    // at a time
+    myNumWorkItemsChunk = 1;
+    return;
+  }
+
+  // Can't divide two times so keep multiplying up until we get the duration we want
+  int i = meanDuration * myNumWorkItemsChunk > myTargetChunkTime ? 1 : myNumWorkItemsChunk + 1;
+  for(; meanDuration * i < myTargetChunkTime; ++i)
+  { // Nothing to do
+  }
+  myNumWorkItemsChunk = i;
 }
 
 void
