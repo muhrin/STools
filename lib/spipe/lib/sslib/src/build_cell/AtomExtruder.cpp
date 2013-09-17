@@ -130,6 +130,8 @@ AtomExtruder::extrude(const common::DistanceCalculator & distanceCalc,
   typedef ::boost::multi_array< ::arma::vec, 2> array_type;
   typedef array_type::index index;
 
+  using ::std::sqrt;
+
   const int numAtoms = static_cast< int>(atoms.size());
   if(numAtoms == 0)
     return true;
@@ -180,15 +182,22 @@ AtomExtruder::extrude(const common::DistanceCalculator & distanceCalc,
             prefactor = 0.5; // None fixed, share displacement equally
 
           sep = sqrt(sepSq);
-          sepDiff = sqrt(sepSqMtx(row, col)) - sep;
+          if(sep != 0.0)
+          {
+            sepDiff = sqrt(sepSqMtx(row, col)) - sep;
 
-          // Generate the displacement vector
-          dr = prefactor * sepDiff / sep * sepVec;
+            // Generate the displacement vector
+            dr = prefactor * sepDiff / sep * sepVec;
 
-          if(!fixedList[row])
-            atoms[row]->setPosition(posI - dr);
-          if(!fixedList[col])
-            atoms[col]->setPosition(posJ + dr);
+            if(!fixedList[row])
+              atoms[row]->setPosition(posI - dr);
+            if(!fixedList[col])
+              atoms[col]->setPosition(posJ + dr);
+          }
+          else
+          {
+            // TODO: Perturb the atoms a little to get them moving
+          }
         }
       }
     }

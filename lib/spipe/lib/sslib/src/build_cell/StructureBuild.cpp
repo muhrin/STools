@@ -273,7 +273,7 @@ StructureBuild::getSpeciesPairDistances() const
 StructureBuild::generateSepSqMatrix() const
 {
   const size_t numAtoms = myStructure.getNumAtoms();
-  ::arma::mat sepSq(numAtoms, numAtoms);
+  ::arma::mat sepSq = ::arma::zeros(numAtoms, numAtoms);
 
   for(int i = 0; i < numAtoms; ++i)
   {
@@ -330,7 +330,7 @@ StructureBuild::generateSepSqMatrix() const
     }
   }
 
-  return ::arma::symmatl(sepSq);
+  return ::arma::symmatu(sepSq);
 }
 
 }

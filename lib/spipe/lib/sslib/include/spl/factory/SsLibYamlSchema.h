@@ -306,7 +306,7 @@ struct SortedDistance : HeteroMap
     addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()->defaultValue(
         false);
     addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()->defaultValue(
-        true);
+        false);
   }
 };
 

@@ -31,6 +31,11 @@
 #include "factory/YamlSchema.h"
 
 // MACROS ////////////////////////////////////
+//#define STOOLS_DEBUG
+
+#ifdef STOOLS_DEBUG
+#include <fenv.h>
+#endif
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
@@ -56,6 +61,10 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
 int main(const int argc, char * argv[])
 {
+#ifdef STOOLS_DEBUG
+  feenableexcept(FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW);
+#endif
+
   // Program options
   InputOptions in;
 

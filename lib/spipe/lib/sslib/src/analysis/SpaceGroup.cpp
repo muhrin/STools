@@ -80,17 +80,23 @@ bool getSpacegroupInfo(
     spg_get_dataset(lattice, positions, species.get(), numAtoms, precision);
 
   // Extract the spacegroup info
-  outInfo.number = (unsigned int)spgData->spacegroup_number;
-  outInfo.iucSymbol = spgData->international_symbol;
-  ::boost::algorithm::trim(outInfo.iucSymbol);
-  outInfo.hallSymbol = spgData->hall_symbol;
-  ::boost::algorithm::trim(outInfo.hallSymbol);
+  const bool foundSpacegroup = spgData->spacegroup_number != 0;
+  if(foundSpacegroup)
+  {
+    outInfo.number = static_cast<unsigned int>(spgData->spacegroup_number);
+    outInfo.iucSymbol = spgData->international_symbol;
+    ::boost::algorithm::trim(outInfo.iucSymbol);
+    outInfo.hallSymbol = spgData->hall_symbol;
+    ::boost::algorithm::trim(outInfo.hallSymbol);
+  }
 
   // Clean up
   spg_free_dataset(spgData);
+  spgData = NULL;
   delete [] positions;
+  positions = NULL;
 
-  return true;
+  return foundSpacegroup;
 }
 
 }
