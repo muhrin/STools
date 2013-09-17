@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
 
     {
       ssc::UnitCellPtr cell;
-      BOOST_REQUIRE(randomCell.generateCell(cell).success());
+      BOOST_REQUIRE(randomCell.generateCell(cell).isSuccess());
       structure.setUnitCell(cell);
     }
     const ssc::UnitCell * const cell = structure.getUnitCell();

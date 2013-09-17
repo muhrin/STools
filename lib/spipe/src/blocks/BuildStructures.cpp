@@ -69,7 +69,7 @@ BuildStructures::start()
       outcome = generator->generateStructure(str,
           getEngine()->globalData().getSpeciesDatabase());
 
-      if(outcome.success() && str.get() && str->getNumAtoms() != 0)
+      if(outcome.isSuccess() && str.get() && str->getNumAtoms() != 0)
       {
         StructureData * const data = getEngine()->createData();
         data->setStructure(str);
@@ -114,7 +114,7 @@ BuildStructures::in(::spipe::common::StructureData * const data)
   myBuildStructuresMutex.unlock();
 #endif
 
-  if(outcome.success() && str.get())
+  if(outcome.isSuccess() && str.get())
   {
     data->setStructure(str);
 

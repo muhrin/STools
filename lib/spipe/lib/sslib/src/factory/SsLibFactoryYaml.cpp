@@ -6,8 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "spl/SSLib.h"
-
 #include "spl/factory/SsLibFactoryYaml.h"
 
 #include <memory>
@@ -197,8 +195,7 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
 }
 
 SsLibFactoryYaml::GeomOptimiserPtr
-SsLibFactoryYaml::createGeometryOptimiser(
-    const OptionsMap & optimiserMap) const
+SsLibFactoryYaml::createGeometryOptimiser(const OptionsMap & optimiserMap) const
 {
   GeomOptimiserPtr opt;
 
@@ -287,12 +284,14 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
         constructInfo.tolerance = *tolerance;
     }
     {
-      const bool * const volAgnostic = map.find(SORTED_DISTANCE__VOLUME_AGNOSTIC);
+      const bool * const volAgnostic = map.find(
+          SORTED_DISTANCE__VOLUME_AGNOSTIC);
       if(volAgnostic)
         constructInfo.volumeAgnostic = *volAgnostic;
     }
     {
-      const bool * const usePrimitive = map.find(SORTED_DISTANCE__USE_PRIMITIVE);
+      const bool * const usePrimitive = map.find(
+          SORTED_DISTANCE__USE_PRIMITIVE);
       if(usePrimitive)
         constructInfo.usePrimitive = *usePrimitive;
     }
@@ -353,7 +352,22 @@ SsLibFactoryYaml::createAtomsDescription(const AtomsDataEntry & atomsEntry,
 build_cell::StructureBuilderPtr
 SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
 {
-  build_cell::StructureBuilderPtr builder(new build_cell::StructureBuilder());
+  build_cell::StructureBuilder::ConstructInfo constructInfo;
+
+  { // Atoms overlap
+    const double * const atomsOverlap = map.find(ATOMS_OVERLAP);
+    if(atomsOverlap)
+      constructInfo.atomsOverlap = *atomsOverlap;
+  }
+
+  { // Cluster mode
+    const bool * const isCluster = map.find(CLUSTER);
+    if(isCluster)
+      constructInfo.isCluster = *isCluster;
+  }
+
+  build_cell::StructureBuilderPtr builder(
+      new build_cell::StructureBuilder(constructInfo));
 
   io::AtomFormatParser atomsFormatParser;
   {
@@ -375,7 +389,8 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
   {
     // Try creating the default atoms generator
     {
-      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map, atomsFormatParser);
+      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map,
+          atomsFormatParser);
       if(atomsGenerator.get())
         builder->addGenerator(atomsGenerator);
     }
@@ -385,8 +400,10 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     {
       if(getStructureContentType(atomsEntry) == StructureContentType::GROUP)
       {
-        const OptionsMap * const groupOptions = ::boost::get<OptionsMap>(atomsEntry).find(ATOMS_GROUP);
-        build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(*groupOptions, atomsFormatParser);
+        const OptionsMap * const groupOptions = ::boost::get< OptionsMap>(
+            atomsEntry).find(ATOMS_GROUP);
+        build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(
+            *groupOptions, atomsFormatParser);
         if(atomsGenerator.get())
           builder->addGenerator(atomsGenerator);
       }
@@ -416,19 +433,12 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
     }
   }
 
-  // Cluster mode
-  const bool * const clusterMode = map.find(CLUSTER);
-  if(clusterMode)
-    builder->setCluster(*clusterMode);
-
   return builder;
 }
 
 build_cell::AtomsGroupPtr
-SsLibFactoryYaml::createAtomsGroup(
-  const OptionsMap & map,
-  io::AtomFormatParser & parser
-) const
+SsLibFactoryYaml::createAtomsGroup(const OptionsMap & map,
+    io::AtomFormatParser & parser) const
 {
   build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
 
@@ -446,16 +456,18 @@ SsLibFactoryYaml::createAtomsGroup(
   if(pos)
     atomsGenerator->setPosition(*pos);
   else
-    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
-        build_cell::AtomsGroup::TransformMode::RAND_POS);
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGroup::TransformMode::RAND_POS);
 
   if(rot)
     atomsGenerator->setRotation(*rot);
   else
   {
-    atomsGenerator->setTransformMode(atomsGenerator->getTransformMode() |
-      build_cell::AtomsGroup::TransformMode::RAND_ROT_DIR |
-      build_cell::AtomsGroup::TransformMode::RAND_ROT_ANGLE);
+    atomsGenerator->setTransformMode(
+        atomsGenerator->getTransformMode()
+            | build_cell::AtomsGroup::TransformMode::RAND_ROT_DIR
+            | build_cell::AtomsGroup::TransformMode::RAND_ROT_ANGLE);
   }
 
   // Check if there is a 'global' radius
@@ -492,7 +504,8 @@ SsLibFactoryYaml::createAtomsGroup(
     {
       ::boost::split(species, entry.first, ::boost::is_any_of("~"));
       if(species.size() == 2)
-        atomsGenerator->addSpeciesPairDistance(build_cell::SpeciesPair(species[0], species[1]), entry.second);
+        atomsGenerator->addSpeciesPairDistance(
+            build_cell::SpeciesPair(species[0], species[1]), entry.second);
     }
   }
 

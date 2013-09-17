@@ -83,6 +83,7 @@ extern utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
 // STRUCTURE BUILDER //////////////////////////////
 extern utility::Key<utility::HeterogeneousMap> BUILDER;
 extern utility::Key<bool> CLUSTER;
+extern utility::Key<double> ATOMS_OVERLAP;
 extern utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
 extern utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
 extern utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;

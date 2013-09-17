@@ -54,6 +54,7 @@ struct OptimisationData
   OptionalArmaMat33 pressureMtx;
   OptionalArmaMat33 stressMtx;
   OptionalArmaMat ionicForces;
+  OptionalUInt numIters;
 
   void
   saveToStructure(common::Structure & structure) const;

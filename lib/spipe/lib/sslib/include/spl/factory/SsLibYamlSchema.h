@@ -41,13 +41,10 @@ struct LennardJones : public HeteroMap
   {
     addEntry("spec", SPECIES_LIST,
         new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >)->required();
-
     addEntry("eps", LJ_EPSILON,
         new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
-
     addEntry("sig", LJ_SIGMA,
         new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
-
     addEntry("beta", LJ_BETA,
         new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
 
@@ -244,7 +241,7 @@ struct AtomsGroup : public yaml_schema::SchemaHeteroMap
     addScalarEntry("rot", ROT_AXIS_ANGLE);
     addScalarEntry("num", NUM)->element()->defaultValue(1);
     addEntry("pairDistances", PAIR_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
   }
 };
 
@@ -289,7 +286,8 @@ struct Builder : HeteroMap
     addEntry("unitCell", UNIT_CELL_BUILDER, new UnitCellBuilder());
     addEntry("symmetry", SYMMETRY, new Symmetry());
     addEntry("pairDistances", PAIR_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar<double> >());
+        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
+    addScalarEntry("overlap", ATOMS_OVERLAP);
   }
 };
 

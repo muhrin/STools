@@ -34,7 +34,7 @@
 //#define STOOLS_DEBUG
 
 #ifdef STOOLS_DEBUG
-#include <fenv.h>
+#  include <fenv.h>
 #endif
 
 // NAMESPACES ////////////////////////////////

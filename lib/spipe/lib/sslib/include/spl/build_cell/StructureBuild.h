@@ -98,11 +98,11 @@ public:
   };
 
   StructureBuild(common::Structure & structure,
-      const StructureContents & intendedContents,
+      const StructureContents & intendedContents, const double atomsOverlap,
       const common::AtomSpeciesDatabase & speciesDb,
       const RadiusCalculator & radiusCalculator = RadiusCalculator());
   StructureBuild(common::Structure & structure,
-      const StructureContents & intendedContents,
+      const StructureContents & intendedContents, const double atomsOverlap,
       const common::AtomSpeciesDatabase & speciesDb, GenShapePtr genShape);
 
   common::Structure &
@@ -173,6 +173,8 @@ private:
   AtomExtruder myAtomsExtruder;
   SymmetryGroupPtr mySymmetryGroup;
   GenShapePtr myGenShape;
+
+  const double myAtomsOverlap;
 
   TransformStack myTransformStack;
   mutable ::arma::mat44 myTransform;

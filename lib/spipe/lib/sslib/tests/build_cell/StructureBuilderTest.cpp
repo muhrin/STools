@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(StructureBuilderClusterTest)
   for(unsigned int i = 0; i < TIMES_TO_GENERATE; ++i)
   {
     outcome = builder.generateStructure(structure, speciesDb);
-    BOOST_CHECK(outcome.success());
+    BOOST_CHECK(outcome.isSuccess());
     BOOST_REQUIRE(structure->getNumAtoms() == totalAtoms);
   }
 

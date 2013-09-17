@@ -24,15 +24,28 @@
 namespace spl {
 namespace build_cell {
 
+const double StructureBuilder::DEFAULT_ATOMS_OVERLAP = 0.1;
+const bool StructureBuilder::DEFAULT_IS_CLUSTER = false;
+
+
 StructureBuilder::StructureBuilder() :
-    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0), myIsCluster(false)
+    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0),
+    myIsCluster(DEFAULT_IS_CLUSTER),
+    myAtomsOverlap(DEFAULT_ATOMS_OVERLAP)
+{
+}
+
+StructureBuilder::StructureBuilder(const ConstructInfo & info) :
+    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0),
+    myIsCluster(info.isCluster), myAtomsOverlap(info.atomsOverlap)
 {
 }
 
 StructureBuilder::StructureBuilder(const StructureBuilder & toCopy) :
     StructureBuilderCore(toCopy), myUnitCellGenerator(
         myUnitCellGenerator->clone()), myPointGroup(toCopy.myPointGroup), myNumSymOps(
-        toCopy.myNumSymOps), myIsCluster(toCopy.myIsCluster)
+        toCopy.myNumSymOps), myIsCluster(toCopy.myIsCluster),
+        myAtomsOverlap(toCopy.myAtomsOverlap)
 {
 }
 
@@ -57,10 +70,10 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
     generationInfo.push_back(GeneratorAndTicket(&generator, ticket));
     contents += generator.getGenerationContents(ticket, speciesDb);
   }
-  // TODO: Sort fragment generators by volume (largest first)
 
   structureOut.reset(new common::Structure());
-  StructureBuild structureBuild(*structureOut, contents, speciesDb);
+  StructureBuild structureBuild(*structureOut, contents, myAtomsOverlap,
+      speciesDb);
   if(!chooseSymmetry(structureBuild))
   {
     outcome.setFailure("Failed to generate a symmetry group");
@@ -73,7 +86,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
     common::UnitCellPtr cell;
     outcome = myUnitCellGenerator->generateCell(cell, contents, myIsCluster);
 
-    if(!outcome.success())
+    if(!outcome.isSuccess())
       return outcome;
 
     if(cell.get())
@@ -93,12 +106,12 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
         speciesDb
     );
 
-    if(!outcome.success())
+    if(!outcome.isSuccess())
     return outcome;
   }
 
   outcome = generateSymmetry(structureBuild);
-  if(!outcome.success())
+  if(!outcome.isSuccess())
     return outcome;
 
   // TODO: Check global constraints
@@ -129,12 +142,6 @@ const PointGroup &
 StructureBuilder::getPointGroup() const
 {
   return myPointGroup;
-}
-
-void
-StructureBuilder::setCluster(const bool isCluster)
-{
-  myIsCluster = isCluster;
 }
 
 bool

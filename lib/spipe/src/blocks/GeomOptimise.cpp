@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/GeomOptimise.h"
 
+#include <boost/lexical_cast.hpp>
+
 #include <spl/build_cell/AtomsDescription.h>
 #include <spl/common/Structure.h>
 #include <spl/potential/PotentialData.h>
@@ -55,12 +57,13 @@ void
 GeomOptimise::in(common::StructureData * const data)
 {
   ssc::Structure * const structure = data->getStructure();
+  ssp::OptimisationData optData;
   const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure,
-      myOptimisationParams);
+      optData, myOptimisationParams);
   if(outcome.isSuccess())
   {
     // Update our data table with the structure data
-    updateTable(*structure);
+    updateTable(*structure, optData);
     out(data);
   }
   else
@@ -97,7 +100,8 @@ GeomOptimise::getTableSupport()
 }
 
 void
-GeomOptimise::updateTable(const ssc::Structure & structure)
+GeomOptimise::updateTable(const ssc::Structure & structure,
+    const ::spl::potential::OptimisationData & optimisationData)
 {
   utility::DataTable & table = myTableSupport.getTable();
   const ::std::string & strName = structure.getName();
@@ -110,6 +114,9 @@ GeomOptimise::updateTable(const ssc::Structure & structure)
     table.insert(strName, "energy/atom",
         common::getString(
             *internalEnergy / static_cast< double>(structure.getNumAtoms())));
+    if(optimisationData.numIters)
+      table.insert(strName, "iters",
+          ::boost::lexical_cast< ::std::string>(*optimisationData.numIters));
   }
 }
 

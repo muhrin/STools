@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     ssc::Structure structure;
     {
       ssc::UnitCellPtr cell;
-      BOOST_REQUIRE(randomCell.generateCell(cell).success());
+      BOOST_REQUIRE(randomCell.generateCell(cell).isSuccess());
       structure.setUnitCell(cell);
     }
 

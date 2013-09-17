@@ -54,9 +54,7 @@ DataTableWriter::write()
   myDataSinceWrite = 0;
 
   if(!myOutStream.is_open())
-  {
     myOutStream.open(myOutputPath, ios_base::out | ios_base::in);
-  }
 
   if(myOutStream.good())
   {
@@ -70,13 +68,13 @@ DataTableWriter::write()
     {
       myOutStream << it->getName() << myColumnDelimiter;
     }
-    myOutStream << ::std::endl;
+    myOutStream << "\n";
 
     // Now print any table notes
     BOOST_FOREACH(const ::std::string & note,
         ::boost::make_iterator_range(myTable.notesBegin(), myTable.notesEnd()))
     {
-      myOutStream << "# " << note << ::std::endl;
+      myOutStream << "# " << note << "\n";
     }
 
     for(DataTable::RowIterator it = myTable.rowsBegin(), end = myTable.rowsEnd();
@@ -92,7 +90,7 @@ DataTableWriter::write()
   else
     return false;
 
-  if(!myOutStream.is_open())
+  if(myOutStream.is_open())
     myOutStream.close();
 
   return true;
@@ -126,11 +124,8 @@ DataTableWriter::initialise()
   }
 
   ::std::ios_base::openmode openMode = ios_base::out;
-
   if(fileExists && myAppend)
-  {
     openMode = openMode | ios_base::app | ios_base::ate;
-  }
 
   // Try opening the file
   myOutStream.open(myOutputPath, openMode);

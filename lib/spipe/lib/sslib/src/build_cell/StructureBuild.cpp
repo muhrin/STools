@@ -48,11 +48,11 @@ StructureBuild::RadiusCalculator::getRadius(const double vol) const
 }
 
 StructureBuild::StructureBuild(common::Structure & structure,
-    const StructureContents & intendedContents,
+    const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb,
     const RadiusCalculator & radiusCalculator) :
-    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
-        speciesDb)
+    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
+        atomsOverlap), mySpeciesDb(speciesDb)
 {
   myGenShape.reset(
       new GenSphere(
@@ -63,10 +63,10 @@ StructureBuild::StructureBuild(common::Structure & structure,
 }
 
 StructureBuild::StructureBuild(common::Structure & structure,
-    const StructureContents & intendedContents,
+    const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb, GenShapePtr genShape) :
-    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
-        speciesDb), myGenShape(genShape)
+    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
+        atomsOverlap), mySpeciesDb(speciesDb), myGenShape(genShape)
 {
   myTransform.eye();
   myTransformCurrent = true;
@@ -187,7 +187,7 @@ StructureBuild::getFixedSet() const
   BOOST_FOREACH(AtomInfoMap::const_reference atomInfo, myAtomsInfo)
   {
     if(atomInfo.second->isFixed())
-    fixedSet.insert(atomInfo.first->getIndex());
+      fixedSet.insert(atomInfo.first->getIndex());
   }
 
   return fixedSet;
@@ -261,7 +261,7 @@ StructureBuild::getSpeciesPairDistances() const
       {
         it = mySpeciesPairDistances.find(pairDist.first);
         if(it == mySpeciesPairDistances.end())
-        mySpeciesPairDistances.insert(pairDist);
+          mySpeciesPairDistances.insert(pairDist);
       }
     }
     mySpeciesPairDistancesCurrent = true;
@@ -307,7 +307,8 @@ StructureBuild::generateSepSqMatrix() const
         }
       }
 
-      rI = mySpeciesDb.getSpeciesPairDistance(atomI.getSpecies(), atomJ.getSpecies());
+      rI = mySpeciesDb.getSpeciesPairDistance(atomI.getSpecies(),
+          atomJ.getSpecies());
       if(rI)
       {
         rJ.reset(0.5 * *rI);
@@ -330,7 +331,7 @@ StructureBuild::generateSepSqMatrix() const
     }
   }
 
-  return ::arma::symmatu(sepSq);
+  return (1.0 - myAtomsOverlap) * ::arma::symmatu(sepSq);
 }
 
 }

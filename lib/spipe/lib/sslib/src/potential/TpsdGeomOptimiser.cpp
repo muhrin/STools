@@ -202,7 +202,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Set the initial step size so get moving
   double stepsize = INITIAL_STEPSIZE;
-  for(int i = 0; !converged && i < *settings.maxIter; ++i)
+  int iter;
+  for(iter = 0; !converged && iter < *settings.maxIter; ++iter)
   {
     // Save the energy and forces from last time around
     h0 = h;
@@ -269,7 +270,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   }
 
   if(outcome.isSuccess())
+  {
     populateOptimistaionData(optimisationData, structure, data);
+    optimisationData.numIters.reset(iter - 1);
+  }
   return outcome;
 }
 
@@ -325,8 +329,8 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Set the initial step size so get moving
   double step = INITIAL_STEPSIZE;
-  int i;
-  for(i = 0; !converged && i < *settings.maxIter; ++i)
+  int iter;
+  for(iter = 0; !converged && iter < *settings.maxIter; ++iter)
   {
     h0 = h;
     f0 = data.forces;
@@ -429,7 +433,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     debugger.postOptStepDebugHook(structure, i);
 #endif
 
-    if((i + 1 % CHECK_CELL_EVERY_N_STEPS == 0) && !cellReasonable(unitCell))
+    if((iter + 1 % CHECK_CELL_EVERY_N_STEPS == 0) && !cellReasonable(unitCell))
     {
       outcome = OptimisationOutcome::failure(
           OptimisationError::PROBLEM_WITH_STRUCTURE,
@@ -461,7 +465,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 #endif
 
   if(outcome.isSuccess())
+  {
     populateOptimistaionData(optimisationData, structure, data);
+    optimisationData.numIters.reset(iter - 1);
+  }
 
   return outcome;
 }

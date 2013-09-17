@@ -62,7 +62,22 @@ class StructureBuilder : public detail::StructureBuilderCore,
 public:
   typedef AbsAtomsGenerator::const_iterator AtomsIterator;
 
+  static const double DEFAULT_ATOMS_OVERLAP;
+  static const bool DEFAULT_IS_CLUSTER;
+
+  struct ConstructInfo
+  {
+    ConstructInfo()
+    {
+      atomsOverlap = DEFAULT_ATOMS_OVERLAP;
+      isCluster = DEFAULT_IS_CLUSTER;
+    }
+    double atomsOverlap;
+    bool isCluster;
+  };
+
   StructureBuilder();
+  StructureBuilder(const ConstructInfo & info);
   StructureBuilder(const StructureBuilder & toCopy);
 
   virtual GenerationOutcome
@@ -79,8 +94,6 @@ public:
   const PointGroup &
   getPointGroup() const;
 
-  void
-  setCluster(const bool isCluster);
   bool
   isCluster() const;
 
@@ -98,7 +111,8 @@ private:
 
   PointGroup myPointGroup;
   unsigned int myNumSymOps;
-  bool myIsCluster;
+  const bool myIsCluster;
+  const double myAtomsOverlap;
 
   IUnitCellGeneratorPtr myUnitCellGenerator;
 };

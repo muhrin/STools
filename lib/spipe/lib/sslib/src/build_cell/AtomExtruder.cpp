@@ -17,7 +17,7 @@
 namespace spl {
 namespace build_cell {
 
-const int AtomExtruder::DEFAULT_MAX_ITERATIONS = 7000;
+const int AtomExtruder::DEFAULT_MAX_ITERATIONS = 5000;
 const double AtomExtruder::DEFAULT_TOLERANCE = 0.001;
 
 AtomExtruder::AtomExtruder() :

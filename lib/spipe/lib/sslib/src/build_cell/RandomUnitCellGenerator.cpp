@@ -158,7 +158,7 @@ GenerationOutcome RandomUnitCellGenerator::generateCell(
   const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(), structureIsCluster);
   cellOut->setVolume(generateVolume(volAndDelta));
 
-  return outcome.success();
+  return GenerationOutcome::success();
 }
 
 GenerationOutcome RandomUnitCellGenerator::generateCell(

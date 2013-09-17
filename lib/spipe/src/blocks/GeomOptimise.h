@@ -69,7 +69,8 @@ protected:
   getTableSupport();
 
   void
-  updateTable(const spl::common::Structure & structure);
+  updateTable(const spl::common::Structure & structure,
+      const ::spl::potential::OptimisationData & optimisationData);
 
   // Should we write information about structures being optimised
   // to file.
