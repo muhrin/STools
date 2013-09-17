@@ -12,6 +12,9 @@
 // INCLUDES /////////////////////////////////////////////
 
 #include <boost/foreach.hpp>
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+#  include <boost/thread/lock_guard.hpp> 
+#endif
 
 #include "spl/SSLibAssert.h"
 
