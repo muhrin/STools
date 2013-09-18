@@ -39,6 +39,8 @@ class BuildStructures : public virtual StartBlock,
 public:
   typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
 
+  static const int DEFAULT_MAX_ATTEMPTS;
+
   BuildStructures(const int numToGenerate,
       IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr());
 
@@ -67,6 +69,7 @@ private:
   const bool myFixedNumGenerate;
   const int myNumToGenerate;
   const float myAtomsMultiplierGenerate;
+  const int myMaxAttempts;
 #ifdef SP_ENABLE_THREAD_AWARE
   ::boost::mutex myBuildStructuresMutex;
 #endif

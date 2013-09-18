@@ -34,10 +34,13 @@ namespace ssbc = ::spl::build_cell;
 namespace ssc = ::spl::common;
 namespace ssu = ::spl::utility;
 
+const int BuildStructures::DEFAULT_MAX_ATTEMPTS = 1000;
+
 BuildStructures::BuildStructures(const int numToGenerate,
     IStructureGeneratorPtr structureGenerator) :
     Block("Generate Random structures"), myNumToGenerate(numToGenerate), myAtomsMultiplierGenerate(
-        0.0), myFixedNumGenerate(true), myStructureGenerator(structureGenerator)
+        0.0), myFixedNumGenerate(true), myStructureGenerator(structureGenerator),
+        myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
 {
 }
 
@@ -45,7 +48,7 @@ BuildStructures::BuildStructures(const float atomsMultiplierGenerate,
     IStructureGeneratorPtr structureGenerator) :
     Block("Generate Random structures"), myNumToGenerate(0), myAtomsMultiplierGenerate(
         atomsMultiplierGenerate), myFixedNumGenerate(false), myStructureGenerator(
-        structureGenerator)
+        structureGenerator), myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
 {
 }
 
@@ -64,28 +67,34 @@ BuildStructures::start()
     ssbc::GenerationOutcome outcome;
     for(int i = 0; i < numToGenerate; ++i)
     {
-      // Create the random structure
-      ssc::StructurePtr str;
-      outcome = generator->generateStructure(str,
-          getEngine()->globalData().getSpeciesDatabase());
-
-      if(outcome.isSuccess() && str.get() && str->getNumAtoms() != 0)
+      bool generatedStructure = false;
+      for(int attempt = 0; !generatedStructure && attempt < myMaxAttempts;
+          ++attempt)
       {
-        StructureData * const data = getEngine()->createData();
-        data->setStructure(str);
+        // Create the random structure
+        ssc::StructurePtr str;
+        outcome = generator->generateStructure(str,
+            getEngine()->globalData().getSpeciesDatabase());
 
-        data->getStructure()->setName(generateStructureName(i));
-
-        if(!myFixedNumGenerate)
+        if(outcome.isSuccess() && str.get() && str->getNumAtoms() != 0)
         {
-          totalAtomsGenerated += static_cast< float>(str->getNumAtoms());
-          numToGenerate = static_cast< int>(std::ceil(
-              myAtomsMultiplierGenerate * totalAtomsGenerated
-                  / static_cast< float>(i)));
-        }
+          generatedStructure = true;
 
-        // Send it down the pipe
-        out(data);
+          StructureData * const data = getEngine()->createData();
+          data->setStructure(str);
+          data->getStructure()->setName(generateStructureName(i));
+
+          if(!myFixedNumGenerate)
+          {
+            totalAtomsGenerated += static_cast< float>(str->getNumAtoms());
+            numToGenerate = static_cast< int>(std::ceil(
+                myAtomsMultiplierGenerate * totalAtomsGenerated
+                    / static_cast< float>(i)));
+          }
+
+          // Send it down the pipe
+          out(data);
+        }
       }
     }
   }
