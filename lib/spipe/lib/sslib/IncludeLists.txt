@@ -15,6 +15,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/IConvexHullOutputter.h
   include/spl/analysis/SpaceGroup.h
   include/spl/analysis/StructureConvexHullInfoSupplier.h
+  include/spl/analysis/StructureTriangulation.h
   include/spl/analysis/VoronoiMap.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
@@ -135,6 +136,7 @@ source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 
 ## math
 set(sslib_Header_Files__math
+  include/spl/math/LinearAlgebra.h
   include/spl/math/Matrix.h
   include/spl/math/NumberAlgorithms.h
   include/spl/math/Random.h

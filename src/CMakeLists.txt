@@ -388,6 +388,44 @@ set(stools_targets
   ssearch
 )
 
+############################################################
+## strian: Structure triangulation for nearest neighbour, ##
+## coordination polyhedra etc.                            ##
+############################################################
+if(SSLIB_USE_CGAL)
+
+set(stools_Header_Files__strian
+)
+source_group("Header Files" FILES ${stools_Header_Files__ssearch})
+
+set(stools_Source_Files__strian
+  strian.cpp
+)
+source_group("Source Files" FILES ${stools_Source_Files__ssearch})
+
+set(stools_Files__strian
+  ${stools_Header_Files__strian}
+  ${stools_Source_Files__strian}
+)
+
+add_executable(strian
+  ${stools_Files__strian}
+)
+
+add_dependencies(strian stools_common)
+
+# Libraries we need to link to
+target_link_libraries(strian
+  stools_common
+)
+
+set(stools_targets
+  ${stools_targets}
+  strian
+)
+
+endif(SSLIB_USE_CGAL)
+
 ##################
 ## StructureMap ##
 ##################
