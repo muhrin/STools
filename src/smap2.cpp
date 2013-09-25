@@ -1,36 +1,39 @@
 /*
- * slock.cpp
+ * smap2.cpp
  *
- *  Created on: Aug 18, 2011
+ *  Created on: Sep 23, 2013
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
 #include "STools.h"
 
-#include <iostream>
-#include <string>
+#include <spl/SSLib.h>
+#ifdef SSLIB_USE_CGAL
 
-#include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/program_options.hpp>
-#include <boost/thread.hpp>
+#include <boost/tokenizer.hpp>
 
-#include "utility/BoostCapabilities.h"
+
+// FORWARD DECLARES //////////////////////////
+class DataRow;
 
 // MACROS ////////////////////////////////////
 
+
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
-namespace ip = ::boost::interprocess;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
 {
-  bool tryLock;
-  ::std::string lockFile;
+  ::std::string inputFile;
 };
+
+
+// TYPEDEFS /////////////////////////////////
+
 
 // CONSTANTS /////////////////////////////////
 
@@ -41,6 +44,12 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 int
 main(const int argc, char * argv[])
 {
+  typedef boost::tokenizer< boost::char_separator< char> > Tok;
+
+  using ::boost::lexical_cast;
+
+  static const boost::char_separator< char> tokSep(" \t");
+
   // Program options
   InputOptions in;
 
@@ -48,29 +57,10 @@ main(const int argc, char * argv[])
   if(result != 0)
     return result;
 
-  const fs::path fileToLock(in.lockFile);
-
-  if(!fs::exists(fileToLock))
+  if(!fs::exists(fs::path(in.inputFile)))
   {
-    ::std::cerr << "Error: file " << in.lockFile << " does not exist.\n";
+    ::std::cerr << "Input file " << in.inputFile << " does not exist.";
     return 1;
-  }
-
-  ip::file_lock lock(fileToLock.c_str());
-
-  ::std::cout << "Locking " << fileToLock.string() << "..." << ::std::flush;
-  if(in.tryLock)
-  {
-    if(!lock.try_lock())
-      return 1;
-  }
-  else
-    lock.lock();
-
-  ::std::cout << "locked." << ::std::endl;
-  while(true)
-  {
-    boost::this_thread::sleep(boost::posix_time::seconds(100));
   }
 
 
@@ -88,17 +78,12 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   try
   {
     po::options_description general(
-        "slock\nUsage: " + exeName + " file_to_lock...\nOptions");
-    general.add_options()
-        ("help", "Show help message")
-        ("try,t", po::value< bool>(&in.tryLock)->default_value(false),
-        "Try locking the file, return immediately if unsuccessful")
-        ("lock-file", po::value< ::std::string>(&in.lockFile)_ADD_REQUIRED_,
-                "The file to lock")
-        ;
+        "smap\nUsage: " + exeName + " [options] input_file...\nOptions");
+    general.add_options()("help", "Show help message")("input-file",
+        po::value< ::std::string>(&in.inputFile), "input file");
 
     po::positional_options_description p;
-    p.add("lock-file", 1);
+    p.add("input-file", 1);
 
     po::options_description cmdLineOptions;
     cmdLineOptions.add(general);
@@ -126,3 +111,6 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   // Everything went fine
   return 0;
 }
+
+
+#endif /* SSLIB_USE_CGAL */

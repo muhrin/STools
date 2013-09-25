@@ -58,15 +58,6 @@ else()
 endif(SSLIB_ENABLE_THREAD_AWARE)
 
 #
-# LAPACK #
-#if(SSLIB_USE_LAPACK)
-#  find_package(LAPACK REQUIRED)
-#  if(NOT LAPACK_FOUND)
-#    message(STATUS "LAPACK Not found")
-#  endif(NOT LAPACK_FOUND)
-#endif(SSLIB_USE_LAPACK)
-
-#
 # Armadillo #
 if(NOT ARMADILLO_INCLUDE_DIRS)
   find_package(Armadillo CONFIG REQUIRED)
