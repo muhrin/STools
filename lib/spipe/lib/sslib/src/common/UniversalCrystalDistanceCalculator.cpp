@@ -11,32 +11,38 @@
 #include "spl/common/Structure.h"
 #include "spl/common/UnitCell.h"
 
-
 namespace spl {
 namespace common {
 
-UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(const Structure & structure):
-DistanceCalculator(structure)
-{}
+UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(
+    const Structure & structure) :
+    DistanceCalculator(structure)
+{
+}
 
-::arma::vec3 UniversalCrystalDistanceCalculator::getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b, const unsigned int maxCellMultiples) const
+::arma::vec3
+UniversalCrystalDistanceCalculator::getVecMinImg(const ::arma::vec3 & a,
+    const ::arma::vec3 & b, const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
-	// Make sure cart1 and 2 are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
-	double minModDRSq = dot(dR, dR);
-	const double minModDR = sqrt(minModDRSq);
+  // Make sure cart1 and 2 are in the unit cell at the origin
+  const ::arma::vec3 dR = cell.wrapVec(b) - cell.wrapVec(a);
+  double minModDRSq = dot(dR, dR);
+  const double minModDR = ::std::sqrt(minModDRSq);
 
-	// Get the lattice vectors
+  // Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
-	// Maximum multiple of cell vectors we need to go to
-	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, C, minModDR));
-	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, C, minModDR));
-	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, minModDR));
+  // Maximum multiple of cell vectors we need to go to
+  int A_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(B, C, minModDR)));
+  int B_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(A, C, minModDR)));
+  int C_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(A, B, minModDR)));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -45,57 +51,54 @@ DistanceCalculator(structure)
 
   // Loop variables
   ::arma::vec3 minDR = dR;
-  const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
-	double modDRSq;
+  double modDRSq;
   ::arma::vec3 nA, nAPlusNB, dRImg;
-  size_t numDistances = 0;
-	for(int a = -A_max; a <= A_max; ++a)
-	{
-		nA = a * A;
-		for(int b = -B_max; b <= B_max; ++b)
-		{
-		  nAPlusNB = nA + b * B;
-			for(int c = -C_max; c <= C_max; ++c)
-			{
+  for(int a = -A_max; a <= A_max; ++a)
+  {
+    nA = a * A;
+    for(int b = -B_max; b <= B_max; ++b)
+    {
+      nAPlusNB = nA + b * B;
+      for(int c = -C_max; c <= C_max; ++c)
+      {
         dRImg = nAPlusNB + c * C + dR;
-				
-				modDRSq = dot(dRImg, dRImg);
-				if(modDRSq < minModDRSq)
-				{
-					minModDRSq	= modDRSq;
-					minDR		= dRImg;
-				}
-			}
-		}
-	}
 
-	return minDR;
+        modDRSq = dot(dRImg, dRImg);
+        if(modDRSq < minModDRSq)
+        {
+          minModDRSq = modDRSq;
+          minDR = dRImg;
+        }
+      }
+    }
+  }
+
+  return minDR;
 }
 
-bool UniversalCrystalDistanceCalculator::getDistsBetween(
-    const ::arma::vec3 & a,
-    const ::arma::vec3 & b,
-    const double cutoff,
-    ::std::vector<double> & outValues,
-    const size_t maxValues,
+bool
+UniversalCrystalDistanceCalculator::getDistsBetween(const ::arma::vec3 & a,
+    const ::arma::vec3 & b, const double cutoff,
+    ::std::vector< double> & outValues, const size_t maxValues,
     const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
-	// Make sure a and b are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
+  // Make sure a and b are in the unit cell at the origin
+  const ::arma::vec3 dR = cell.wrapVec(b) - cell.wrapVec(a);
 
-	// Get the lattice vectors
+  // Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
-  const double safeCutoff = cutoff + sqrt(::arma::dot(dR, dR));
-
-	// Maximum multiple of cell vectors we need to go to
-	int A_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff));
-	int B_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff));
-	int C_max = (int)ceil(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff));
+  // Maximum multiple of cell vectors we need to go to
+  int A_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(B, C, cutoff)));
+  int B_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(A, C, cutoff)));
+  int C_max = static_cast< int>(::std::ceil(
+      getNumPlaneRepetitionsToBoundSphere(A, B, cutoff)));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -106,62 +109,66 @@ bool UniversalCrystalDistanceCalculator::getDistsBetween(
   size_t numFound = 0;
   ::arma::vec3 rA, rAB, outVec;
   double testDistSq;
-	for(int a = -A_max; a <= A_max; ++a)
-	{
+  for(int a = -A_max; a <= A_max; ++a)
+  {
     rA = a * A;
-		for(int b = -B_max; b <= B_max; ++b)
-		{
+    for(int b = -B_max; b <= B_max; ++b)
+    {
       rAB = rA + b * B;
-			for(int c = -C_max; c <= C_max; ++c)
-			{
+      for(int c = -C_max; c <= C_max; ++c)
+      {
         outVec = rAB + c * C + dR;
         testDistSq = ::arma::dot(outVec, outVec);
 
-				if(testDistSq < cutoffSq)
-				{
-          outValues.push_back(sqrt(testDistSq));
+        if(testDistSq < cutoffSq)
+        {
+          outValues.push_back(::std::sqrt(testDistSq));
           if(++numFound >= maxValues)
             return false;
-				}
+        }
       }
-		}
-	}
+    }
+  }
 
   // Completed successfully
   return !problemDuringCalculation;
 }
 
-bool UniversalCrystalDistanceCalculator::getVecsBetween(
-  const ::arma::vec3 & a,
-  const ::arma::vec3 & b,
-  const double cutoff,
-  ::std::vector< ::arma::vec3> & outValues,
-  const size_t maxValues,
-  const unsigned int maxCellMultiples) const
+bool
+UniversalCrystalDistanceCalculator::getVecsBetween(const ::arma::vec3 & a,
+    const ::arma::vec3 & b, const double cutoff,
+    ::std::vector< ::arma::vec3> & outValues, const size_t maxValues,
+    const unsigned int maxCellMultiples) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
-	// Make sure a and b are in the unit cell at the origin
-  const ::arma::vec3		dR		= cell.wrapVec(b) - cell.wrapVec(a);
+  // Make sure a and b are in the unit cell at the origin
+  const ::arma::vec3 dR = cell.wrapVec(b) - cell.wrapVec(a);
 
-	// Get the lattice vectors
+  // Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
   const ::arma::vec3 B(cell.getBVec());
   const ::arma::vec3 C(cell.getCVec());
 
   ::arma::vec3 aCrossB = ::arma::cross(A, B);
-  aCrossB /= sqrt(::arma::dot(aCrossB, aCrossB));
+  aCrossB /= ::std::sqrt(::arma::dot(aCrossB, aCrossB));
 
   ::arma::vec3 bCrossC = ::arma::cross(B, C);
-  bCrossC /= sqrt(::arma::dot(bCrossC, bCrossC));
+  bCrossC /= ::std::sqrt(::arma::dot(bCrossC, bCrossC));
 
   ::arma::vec3 aCrossC = ::arma::cross(A, C);
-  aCrossC /= sqrt(::arma::dot(aCrossC, aCrossC));
+  aCrossC /= ::std::sqrt(::arma::dot(aCrossC, aCrossC));
 
-	// Maximum multiple of cell vectors we need to go to
-  int A_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(B, C, cutoff + ::std::abs(::arma::dot(dR, bCrossC))));
-  int B_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, C, cutoff + ::std::abs(::arma::dot(dR, aCrossC))));
-  int C_max = (int)floor(getNumPlaneRepetitionsToBoundSphere(A, B, cutoff + ::std::abs(::arma::dot(dR, aCrossB))));
+  // Maximum multiple of cell vectors we need to go to
+  int A_max = static_cast< int>(::std::floor(
+      getNumPlaneRepetitionsToBoundSphere(B, C,
+          cutoff + ::std::abs(::arma::dot(dR, bCrossC)))));
+  int B_max = static_cast< int>(::std::floor(
+      getNumPlaneRepetitionsToBoundSphere(A, C,
+          cutoff + ::std::abs(::arma::dot(dR, aCrossC)))));
+  int C_max = static_cast< int>(::std::floor(
+      getNumPlaneRepetitionsToBoundSphere(A, B,
+          cutoff + ::std::abs(::arma::dot(dR, aCrossB)))));
 
   bool problemDuringCalculation = false;
   problemDuringCalculation |= capMultiples(A_max, maxCellMultiples);
@@ -172,41 +179,42 @@ bool UniversalCrystalDistanceCalculator::getVecsBetween(
   ::arma::vec3 outVec;
   size_t numFound = 0;
   ::arma::vec3 rA, rAB;
-	for(int a = -A_max; a <= A_max; ++a)
-	{
+  for(int a = -A_max; a <= A_max; ++a)
+  {
     rA = a * A;
-		for(int b = -B_max; b <= B_max; ++b)
-		{
+    for(int b = -B_max; b <= B_max; ++b)
+    {
       rAB = rA + b * B;
-			for(int c = -C_max; c <= C_max; ++c)
-			{
+      for(int c = -C_max; c <= C_max; ++c)
+      {
         outVec = rAB + c * C + dR;
 
         if(::arma::dot(outVec, outVec) < cutoffSq)
-				{
+        {
           outValues.push_back(outVec);
           if(++numFound >= maxValues)
             return false;
-				}
+        }
       }
-		}
-	}
+    }
+  }
 
   // Completed successfully
   return !problemDuringCalculation;
 }
 
-bool UniversalCrystalDistanceCalculator::isValid() const
+bool
+UniversalCrystalDistanceCalculator::isValid() const
 {
   return myStructure.getUnitCell() != NULL;
 }
 
-double UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
-  const ::arma::vec3 & planeVec1,
-  const ::arma::vec3 & planeVec2,
-	const double radius) const
+double
+UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
+    const ::arma::vec3 & planeVec1, const ::arma::vec3 & planeVec2,
+    const double radius) const
 {
-	// The vector normal to the plane
+  // The vector normal to the plane
   const ::arma::vec3 normal = ::arma::cross(planeVec1, planeVec2);
   const double unitCellVolume = myStructure.getUnitCell()->getVolume(); // = a . |b x c|
 

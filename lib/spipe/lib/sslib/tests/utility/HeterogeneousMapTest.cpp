@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(HeterogeneousMapTest)
   intValPtr = map1.find(INT_KEY);
   BOOST_REQUIRE(intValPtr && *intValPtr == intVal);
 
-  const int mapSizeBefore = map1.size();
+  const size_t mapSizeBefore = map1.size();
   {
     ssu::Key<double> scopedDoubleKey;
     ssu::Key<int> scopedIntKeyCopy = INT_KEY;

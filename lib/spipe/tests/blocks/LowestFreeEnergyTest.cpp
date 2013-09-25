@@ -37,7 +37,7 @@ public:
 
   StructureSink():myNumReceived(0) {}
 
-  void finished(StructureDataPtr data)
+  virtual void finished(StructureDataPtr data)
   { ++myNumReceived; }
 
   unsigned int getNumReceived()
@@ -69,7 +69,7 @@ public:
       StructureDataPtr structureData(new StructureDataType());
       StructurePtr structure(new ssc::Structure());
       structure->setProperty(
-        structure_properties::general::ENERGY_INTERNAL,
+        structure_properties::general::ENTHALPY,
         -static_cast<double>(i) // Set the energy to be the negative of the index (easy to remember)
       );
       structureData->setStructure(structure);

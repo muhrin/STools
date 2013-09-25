@@ -42,8 +42,8 @@ public:
   AtomsGroup();
   AtomsGroup(const AtomsGroup & toCopy);
   
-  int getNumReplicas() const;
-  void setNumReplicas(const int numReplicas);
+  unsigned int getNumReplicas() const;
+  void setNumReplicas(const unsigned int numReplicas);
 
   int getTransformMode() const;
   void setTransformMode(const int mode);

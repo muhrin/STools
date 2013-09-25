@@ -255,7 +255,7 @@ main(const int argc, char * argv[])
     ssu::UniqueStructureSet< ssc::Structure *> uniqueStructures(
         ssu::IStructureComparatorPtr(
             new ssu::SortedDistanceComparator(constructInfo)));
-    int idx = 0;
+
     SortedKeys::iterator it = sortedKeys.begin();
     while(it != sortedKeys.end())
     {

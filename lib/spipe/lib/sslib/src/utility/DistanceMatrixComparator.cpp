@@ -189,24 +189,7 @@ bool
 DistanceMatrixComparator::areComparable(const DataTyp & str1Data,
     const DataTyp & str2Data) const
 {
-  size_t minAtoms, maxAtoms;
-
-  if(str1Data.distancesMtx.n_cols > str2Data.distancesMtx.n_cols)
-  {
-    minAtoms = str2Data.distancesMtx.n_cols;
-    maxAtoms = str1Data.distancesMtx.n_cols;
-  }
-  else
-  {
-    minAtoms = str1Data.distancesMtx.n_cols;
-    maxAtoms = str2Data.distancesMtx.n_cols;
-  }
-
-  if(minAtoms == 0)
-    return false;
-
-  return true;
-
+  return str1Data.distancesMtx.n_cols != 0 && str2Data.distancesMtx.n_cols != 0;
 }
 
 double

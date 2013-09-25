@@ -143,14 +143,10 @@ Result processInputOptions(InputOptions & in, const int argc, char * argv[])
 
   // Get any input from standard in (piped)
   std::string lineInput;
-  bool foundPipedInput = false;
   if(stools::utility::isStdInPipedOrFile())
   {
     while(std::cin >> lineInput)
-    {
       in.inputFiles.push_back(lineInput);
-      foundPipedInput = true;
-    }
   }
 
   if(in.inputFiles.empty())
@@ -205,7 +201,7 @@ void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const 
     ::std::stringstream ss;
     ss << pair.first << "(" << structure.getAtom(pair.first).getSpecies() << ")" <<
         "-" << pair.second << "(" << structure.getAtom(pair.second).getSpecies() << ")" << ": ";
-    for(int i = startOffset; i < startOffset + numDists; ++i)
+    for(size_t i = startOffset; i < startOffset + numDists; ++i)
       ss << dists[i] << " ";
     ::std::cout << ss.str() << ::std::endl;
   }

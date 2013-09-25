@@ -223,7 +223,7 @@ StructureBuild::getTransform() const
   {
     // Do it this way to stop accumulation of error from lots of push/pops
     myTransform.eye();
-    for(int i = 0; i < myTransformStack.size(); ++i)
+    for(size_t i = 0; i < myTransformStack.size(); ++i)
       myTransform *= myTransformStack[i];
     myTransformCurrent = true;
   }
@@ -274,11 +274,11 @@ StructureBuild::generateSepSqMatrix() const
   const size_t numAtoms = myStructure.getNumAtoms();
   ::arma::mat sepSq = ::arma::zeros(numAtoms, numAtoms);
 
-  for(int i = 0; i < numAtoms; ++i)
+  for(size_t i = 0; i < numAtoms; ++i)
   {
     const common::Atom & atomI = myStructure.getAtom(i);
     const BuildAtomInfo * infoI = getAtomInfo(atomI);
-    for(int j = i; j < numAtoms; ++j)
+    for(size_t j = i; j < numAtoms; ++j)
     {
       const common::Atom & atomJ = myStructure.getAtom(j);
       const BuildAtomInfo * infoJ = getAtomInfo(atomJ);

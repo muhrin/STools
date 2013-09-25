@@ -72,8 +72,8 @@ static const double INITIAL_STEPSIZE = 0.02;
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
 TpsdGeomOptimiser::TpsdGeomOptimiser(PotentialPtr potential) :
-    myPotential(potential), myEnergyTolerance(DEFAULT_ENERGY_TOLERANCE), myMaxIterations(
-        DEFAULT_MAX_ITERATIONS), myForceTolerance(DEFAULT_FORCE_TOLERANCE)
+    myPotential(potential), myEnergyTolerance(DEFAULT_ENERGY_TOLERANCE),
+    myForceTolerance(DEFAULT_FORCE_TOLERANCE), myMaxIterations(DEFAULT_MAX_ITERATIONS)
 {
 }
 
@@ -202,7 +202,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Set the initial step size so get moving
   double stepsize = INITIAL_STEPSIZE;
-  int iter;
+  unsigned int iter;
   for(iter = 0; !converged && iter < *settings.maxIter; ++iter)
   {
     // Save the energy and forces from last time around
@@ -306,7 +306,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   ::arma::mat33 residualStress;
 
   ::arma::mat33 latticeCar;
-  double gamma, volume, volumeSq, pressure;
+  double volume, pressure;
   double xg, gg;
 
   data.forces.ones();
@@ -329,7 +329,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Set the initial step size so get moving
   double step = INITIAL_STEPSIZE;
-  int iter;
+  unsigned int iter;
   for(iter = 0; !converged && iter < *settings.maxIter; ++iter)
   {
     h0 = h;
@@ -337,7 +337,6 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     s0 = s;
 
     volume = unitCell.getVolume();
-    volumeSq = volume * volume;
 
     // Evaluate the potential
     if(!evaluator.evalPotential().second)

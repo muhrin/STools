@@ -161,17 +161,15 @@ UniquePtr<IGeneratorShape>::Type GenBox::clone() const
 }
 
 
-/**
-/* To get the shell use rejection algorithm based on flattening a box of a certain
-/* thickness and finding points on that:
-/*    -
-/*   |s|
-/*  - - - -
-/* |s|b|s|t|
-/*  - - - -
-/*   |s|
-/*    -
-/**/
+// To get the shell use rejection algorithm based on flattening a box of a certain
+// thickness and finding points on that:
+//    -
+//   |s|
+//  - - - -
+// |s|b|s|t|
+//  - - - -
+//   |s|
+//    -
 ::arma::vec3 GenBox::randomPoint(const ::arma::mat44 & fullTransform) const
 {
   using namespace utility::cart_coords_enum;

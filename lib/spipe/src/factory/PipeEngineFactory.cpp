@@ -26,7 +26,7 @@ PipeEngineFactory::createEngine(const HeteroMap & settings) const
 #ifdef SP_ENABLE_THREAD_AWARE
   else if(multithreadedSettings)
     return EnginePtr(createBoostThreadEngine(*multithreadedSettings).release());
-#endif SP_ENABLE_THREAD_AWARE
+#endif
 
   return EnginePtr();
 }

@@ -31,7 +31,7 @@ public:
 
   StructureSink():myNumReceived(0) {}
 
-  void finished(StructureDataPtr data)
+  virtual void finished(StructureDataPtr data)
   { ++myNumReceived; }
 
   unsigned int getNumReceived()

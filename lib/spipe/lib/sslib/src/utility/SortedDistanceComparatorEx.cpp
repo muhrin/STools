@@ -181,19 +181,17 @@ bool SortedDistanceComparatorEx::areSimilar(
 ::std::auto_ptr<SortedDistanceComparisonDataEx>
 SortedDistanceComparatorEx::generateComparisonData(const spl::common::Structure & str) const
 {
-  const common::DistanceCalculator & distCalc = str.getDistanceCalculator();
-
   const common::UnitCell * const unitCell = str.getUnitCell();
 
   double maxDist = 0.0;
   if(unitCell)
   {
     ::arma::vec3 diag = unitCell->getLongestDiagonal();
-    double longestDiag = sqrt(::arma::dot(diag, diag));
+    double longestDiag = ::std::sqrt(::arma::dot(diag, diag));
     maxDist = 1.75 * longestDiag;
   }
 
-	return ::std::auto_ptr<SortedDistanceComparisonDataEx>(new SortedDistanceComparisonDataEx(str, maxDist));
+  return makeUniquePtr(new SortedDistanceComparisonDataEx(str, maxDist));
 }
 
 ::boost::shared_ptr<SortedDistanceComparatorEx::BufferedTyp> SortedDistanceComparatorEx::generateBuffered() const
