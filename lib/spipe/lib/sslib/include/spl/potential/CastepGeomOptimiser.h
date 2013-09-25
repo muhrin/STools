@@ -14,7 +14,6 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include "spl/common/AtomSpeciesDatabase.h" // TODO: Remove this dependency
 #include "spl/potential/CastepRun.h"
 #include "spl/potential/IGeomOptimiser.h"
 #include "spl/io/CastepReader.h"
@@ -76,7 +75,6 @@ private:
   const ::std::string myCastepSeed;
   const io::CellReaderWriter myCellReaderWriter;
   const io::CastepReader myCastepReader;
-  const common::AtomSpeciesDatabase mySpeciesDb; // HACK: Keep a copy here for now
   const ::std::string myCastepExe;
 };
 
@@ -98,40 +96,32 @@ public:
   OptimisationOutcome runFullRelax(
     common::Structure & structure,
     OptimisationData & data,
-    const ::std::string & castepExeAndArgs,
-    const common::AtomSpeciesDatabase & speciesDb
+    const ::std::string & castepExeAndArgs
   );
   OptimisationOutcome updateStructure(
     common::Structure & structure,
-    OptimisationData & data,
-    const common::AtomSpeciesDatabase & speciesDb
+    OptimisationData & data
   );
 
 private:
   static const int MAX_RELAX_ATTEMPTS;
 
   bool copyParamFile() const;
-  OptimisationOutcome makeCellCopy(
-    common::Structure & structure,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
+  OptimisationOutcome makeCellCopy(common::Structure & structure);
   OptimisationOutcome doPreRelaxation(
     common::Structure & structure,
     OptimisationData & optimisationData,
-    const common::AtomSpeciesDatabase & speciesDb,
     const ::std::string & castepExeAndArgs
   );
   OptimisationOutcome doRelaxation(
     common::Structure & structure,
     OptimisationData & optimistaionData,
-    const common::AtomSpeciesDatabase & speciesDb,
     const ::std::string & castepExeAndArgs
   );
   bool optimisationSucceeded();
   bool parseOptimisationInfo(
     common::Structure & structure,
-    OptimisationData & data,
-    const common::AtomSpeciesDatabase & speciesDb
+    OptimisationData & data
   );
 
   CastepRun myCastepRun;

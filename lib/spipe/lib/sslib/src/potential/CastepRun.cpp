@@ -14,7 +14,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/Structure.h"
 #include "spl/io/BoostFilesystem.h"
 #include "spl/io/CastepReader.h"
@@ -171,10 +170,7 @@ CastepRunResult::Value CastepRun::runCastep(const ::std::string & castepExeStrin
   return CastepRunResult::SUCCESS;
 }
 
-CastepRunResult::Value CastepRun::updateStructureFromOutput(
-  common::Structure & structure,
-  const common::AtomSpeciesDatabase & speciesDb
-)
+CastepRunResult::Value CastepRun::updateStructureFromOutput(common::Structure & structure)
 {
   CastepRunResult::Value result = openCastepFile();
   if(result != CastepRunResult::SUCCESS)

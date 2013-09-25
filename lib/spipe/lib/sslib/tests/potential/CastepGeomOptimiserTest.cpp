@@ -9,7 +9,6 @@
 #include "sslibtest.h"
 
 #include <spl/SSLib.h>
-#include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 #include <spl/io/CastepReader.h>
 #include <spl/io/CellReaderWriter.h>
@@ -47,7 +46,6 @@ BOOST_AUTO_TEST_CASE(ReadCastepOutputTest)
 
 void testCastepOutput(ssc::Structure structure, const ::std::string & seed, const double enthalpy, const double pressure)
 {
-  static const ssc::AtomSpeciesDatabase SPECIES_DB;
   static const ssio::CastepReader CASTEP_READER;
   static const ssio::CellReaderWriter CELL_READER;
 
@@ -66,7 +64,7 @@ void testCastepOutput(ssc::Structure structure, const ::std::string & seed, cons
     runSettings
   );
   ssp::OptimisationData optimisationData;
-  const bool updatedSuccessfully = optRun.updateStructure(structure, optimisationData, SPECIES_DB).isSuccess();
+  const bool updatedSuccessfully = optRun.updateStructure(structure, optimisationData).isSuccess();
   BOOST_REQUIRE(updatedSuccessfully);
 
   // Enthalpy

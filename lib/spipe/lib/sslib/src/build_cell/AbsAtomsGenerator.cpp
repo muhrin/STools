@@ -328,7 +328,7 @@ double AbsAtomsGenerator::getRadius(
   const common::AtomSpeciesDatabase & speciesDb
 ) const
 {
-  double radius;
+  double radius = 0.0;
   ::boost::optional<double> optionalRadius;
 
   // Try getting it from the atom
@@ -341,8 +341,6 @@ double AbsAtomsGenerator::getRadius(
     optionalRadius = speciesDb.getRadius(atom.getSpecies());
     if(optionalRadius)
       radius = *optionalRadius;
-    else
-      radius = 0.0;
   }
 
   return radius;

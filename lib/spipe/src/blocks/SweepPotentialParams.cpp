@@ -14,6 +14,7 @@
 #include <spl/utility/MultiIdxRange.h>
 #include <spl/utility/UtilFunctions.h>
 
+#include "common/Assert.h"
 #include "common/PipeFunctions.h"
 #include "common/SharedData.h"
 #include "common/StructureData.h"
@@ -39,8 +40,8 @@ SweepPotentialParams::SweepPotentialParams(
     Block("Potential param sweep"), myParamRange(paramRange),
     myStepExtents(paramRange.nSteps.size()), mySweepPipeline(sweepPipeline)
 {
-  SP_ASSERT(myParamRange.from.size() == myParamRange.step.size());
-  SP_ASSERT(myParamRange.from.size() == myParamRange.nSteps.size());
+  SPIPE_ASSERT(myParamRange.from.size() == myParamRange.step.size());
+  SPIPE_ASSERT(myParamRange.from.size() == myParamRange.nSteps.size());
 
   myNumParams = myParamRange.nSteps.size();
   for(size_t i = 0; i < myNumParams; ++i)

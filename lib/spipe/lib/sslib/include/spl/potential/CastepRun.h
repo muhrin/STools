@@ -25,7 +25,6 @@
 namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
-class AtomSpeciesDatabase;
 class Structure;
 }
 namespace io {
@@ -74,10 +73,7 @@ public:
 
   CastepRunResult::Value runCastep(const ::std::string & castepExeString);
 
-  CastepRunResult::Value updateStructureFromOutput(
-    common::Structure & structure,
-    const common::AtomSpeciesDatabase & speciesDb
-  );
+  CastepRunResult::Value updateStructureFromOutput(common::Structure & structure);
 
   CastepRunResult::Value deleteAllOutput();
   CastepRunResult::Value deleteAllFiles();
