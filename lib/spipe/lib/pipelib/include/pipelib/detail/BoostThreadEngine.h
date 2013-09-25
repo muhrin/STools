@@ -21,8 +21,7 @@ namespace pipelib {
 template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine(
       const size_t numThreads) :
-      myNumThreads(numThreads), myRoot(this), myMaxReleases(
-          DEFAULT_MAX_RELEASES)
+      myRoot(this), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(numThreads)
   {
     init();
   }
@@ -30,7 +29,7 @@ template< typename Pipe, typename Shared, typename Global>
 template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine(
       const size_t numThreads, BlockHandleType & startBlock) :
-      myNumThreads(numThreads), myRoot(this), myMaxReleases(
+      myRoot(this), myNumThreads(numThreads), myMaxReleases(
           DEFAULT_MAX_RELEASES)
   {
     init();
@@ -397,6 +396,10 @@ template< typename Pipe, typename Shared, typename Global>
       // Tell any listeners
       myEventSupport.notify(
           event::makeStateChangedEvent(*this, oldState, myState));
+      break;
+
+    case PipelineState::UNINITIALISED:
+      PIPELIB_ASSERT_MSG(true, "Can't change state to uninitialised.");
       break;
     }
   }

@@ -51,8 +51,8 @@ StructureBuild::StructureBuild(common::Structure & structure,
     const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb,
     const RadiusCalculator & radiusCalculator) :
-    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
-        atomsOverlap), mySpeciesDb(speciesDb)
+    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
+        speciesDb), myAtomsOverlap(atomsOverlap)
 {
   myGenShape.reset(
       new GenSphere(
@@ -65,8 +65,8 @@ StructureBuild::StructureBuild(common::Structure & structure,
 StructureBuild::StructureBuild(common::Structure & structure,
     const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb, GenShapePtr genShape) :
-    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
-        atomsOverlap), mySpeciesDb(speciesDb), myGenShape(genShape)
+    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
+        speciesDb), myGenShape(genShape), myAtomsOverlap(atomsOverlap)
 {
   myTransform.eye();
   myTransformCurrent = true;
@@ -250,7 +250,6 @@ const StructureBuild::SpeciesPairDistances &
 StructureBuild::getSpeciesPairDistances() const
 {
   typedef ::std::set< ::std::string> SpeciesSet;
-  static const double UNINITIALISED = -1.0;
 
   if(!mySpeciesPairDistancesCurrent)
   {

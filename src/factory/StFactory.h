@@ -38,8 +38,8 @@ public:
   typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
   Factory(::spl::common::AtomSpeciesDatabase & speciesDb):
-    mySsLibFactory(speciesDb),
-    myBlockFactory(speciesDb)
+    myBlockFactory(speciesDb),
+    mySsLibFactory(speciesDb)
   {}
 
   BlockHandle createBuildPipe(const OptionsMap & options) const;

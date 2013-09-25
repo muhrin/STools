@@ -47,7 +47,7 @@ SearchStoichiometries::SearchStoichiometries(
     const ::spl::common::AtomSpeciesId::Value species1,
     const ::spl::common::AtomSpeciesId::Value species2, const size_t maxAtoms,
     BlockHandle & subpipe, StructureBuilderPtr structureBuilder) :
-    Block("Sweep stoichiometry"), myMaxAtoms(maxAtoms), mySubpipe(subpipe), myStructureGenerator(
+    Block("Sweep stoichiometry"), mySubpipe(subpipe), myMaxAtoms(maxAtoms), myStructureGenerator(
         structureBuilder)
 {
   mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
@@ -58,9 +58,10 @@ SearchStoichiometries::SearchStoichiometries(
     const SpeciesParameters & speciesParameters, const size_t maxAtoms,
     const double atomsRadius, BlockHandle & sweepPipe,
     StructureBuilderPtr structureBuilder) :
-    Block("Sweep stoichiometry"), mySpeciesParameters(speciesParameters), myMaxAtoms(
-        maxAtoms), mySubpipe(sweepPipe), myTableSupport(fs::path("stoich.dat")), myStructureGenerator(
-        structureBuilder)
+    Block("Sweep stoichiometry"), mySubpipe(sweepPipe),
+    myTableSupport(fs::path("stoich.dat")), myMaxAtoms(maxAtoms),
+    mySpeciesParameters(speciesParameters),
+    myStructureGenerator(structureBuilder)
 {
 }
 
@@ -118,8 +119,7 @@ SearchStoichiometries::start()
 
       if(numAtomsOfSpecies > 0)
       {
-        ::spl::UniquePtr< ssbc::AtomsGroup>::Type group(
-            new ssbc::AtomsGroup());
+        ::spl::UniquePtr< ssbc::AtomsGroup>::Type group(new ssbc::AtomsGroup());
         group->insertAtoms(
             ssbc::AtomsDescription(mySpeciesParameters[i].id,
                 numAtomsOfSpecies));
@@ -184,7 +184,8 @@ SearchStoichiometries::releaseBufferedStructures(
   BOOST_FOREACH(StructureDataTyp * const strData, myBuffer)
   {
     structure = strData->getStructure();
-    lastSavedRelative = strData->getRelativeSavePath(getEngine()->sharedData().getOutputPath());
+    lastSavedRelative = strData->getRelativeSavePath(
+        getEngine()->sharedData().getOutputPath());
 
     if(!lastSavedRelative.empty())
     {

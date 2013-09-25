@@ -37,9 +37,9 @@ SimplePairPotential::SimplePairPotential(
     const ::arma::mat & sigma, const double cutoffFactor,
     const ::arma::mat & beta, const double n, const double m,
     const CombiningRule::Value combiningRule) :
-    myName("Simple pair potential"), myAtomSpeciesDb(atomSpeciesDb), myNumSpecies(
+    myAtomSpeciesDb(atomSpeciesDb), myName("Simple pair potential"), myNumSpecies(
         speciesList.size()), mySpeciesList(speciesList), myEpsilon(epsilon), mySigma(
-        sigma), myBeta(beta), myM(m), myN(n), myCutoffFactor(cutoffFactor), myCombiningRule(
+        sigma), myBeta(beta), myCutoffFactor(cutoffFactor), myM(m), myN(n), myCombiningRule(
         combiningRule)
 {
   SSLIB_ASSERT(myNumSpecies == myEpsilon.n_rows);
@@ -208,7 +208,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
   bool problemDuringCalculation = false;
 
   // Loop over all particle pairs (including self-interaction)
-  for(size_t i = 0; i < data.numParticles; ++i)
+  for(int i = 0; i < static_cast<int>(data.numParticles); ++i)
   {
     speciesI = data.species[i];
     if(speciesI == DataType::IGNORE_ATOM)
@@ -216,7 +216,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 
     posI = data.pos.col(i);
 
-    for(size_t j = i; j < data.numParticles; ++j)
+    for(int j = i; j < static_cast<int>(data.numParticles); ++j)
     {
       speciesJ = data.species[j];
       if(speciesJ == DataType::IGNORE_ATOM)
@@ -382,10 +382,10 @@ SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 void
 SimplePairPotential::updateSpeciesDb()
 {
-  for(int i = 0; i < myNumSpecies; ++i)
+  for(int i = 0; i < static_cast<int>(myNumSpecies); ++i)
   {
     myAtomSpeciesDb.setRadius(mySpeciesList[i], *getPotentialRadius(mySpeciesList[i]));
-    for(int j = i; j < myNumSpecies; ++j)
+    for(int j = i; j < static_cast<int>(myNumSpecies); ++j)
     {
       myAtomSpeciesDb.setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
           *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));

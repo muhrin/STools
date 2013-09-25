@@ -20,18 +20,20 @@ namespace utility {
 
 namespace fs = ::boost::filesystem;
 
-DataTableWriter::DataTableWriter(spipe::utility::DataTable & table, const std::string &filename,
-    const bool append, const size_t writeDelay) :
-    myTable(table), myAppend(append), myWriteDelay(writeDelay), myOutputPath(
-        ::boost::filesystem::path(filename)), myDataSinceWrite(0), myColumnDelimiter(" ")
+DataTableWriter::DataTableWriter(spipe::utility::DataTable & table,
+    const std::string &filename, const bool append, const size_t writeDelay) :
+    myTable(table), myOutputPath(::boost::filesystem::path(filename)), myAppend(
+        append), myColumnDelimiter(" "), myWriteDelay(writeDelay), myDataSinceWrite(
+        0)
 {
   initialise();
 }
 
-DataTableWriter::DataTableWriter(DataTable & table, const ::boost::filesystem::path & filepath,
-    const bool append, const size_t writeDelay) :
-    myTable(table), myAppend(append), myWriteDelay(writeDelay), myOutputPath(filepath), myDataSinceWrite(
-        0), myColumnDelimiter(" ")
+DataTableWriter::DataTableWriter(DataTable & table,
+    const ::boost::filesystem::path & filepath, const bool append,
+    const size_t writeDelay) :
+    myTable(table), myOutputPath(filepath), myAppend(append), myColumnDelimiter(
+        " "), myWriteDelay(writeDelay), myDataSinceWrite(0)
 {
   initialise();
 }
@@ -63,8 +65,8 @@ DataTableWriter::write()
 
     // Print the header first
     myOutStream << "# ";
-    for(DataTable::ColumnInfoIterator it = myTable.columnInfoBegin(), end = myTable.columnInfoEnd();
-        it != end; ++it)
+    for(DataTable::ColumnInfoIterator it = myTable.columnInfoBegin(), end =
+        myTable.columnInfoEnd(); it != end; ++it)
     {
       myOutStream << it->getName() << myColumnDelimiter;
     }
@@ -77,8 +79,8 @@ DataTableWriter::write()
       myOutStream << "# " << note << "\n";
     }
 
-    for(DataTable::RowIterator it = myTable.rowsBegin(), end = myTable.rowsEnd();
-        it != end; ++it)
+    for(DataTable::RowIterator it = myTable.rowsBegin(), end =
+        myTable.rowsEnd(); it != end; ++it)
     {
       BOOST_FOREACH(const DataTable::Value & value, *it)
       {

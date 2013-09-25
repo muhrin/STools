@@ -102,7 +102,7 @@ int main(const int argc, char * argv[])
   if(!in.customEndpoints.empty())
   {
     bool error = false;
-    for(int i = 0; i < in.customEndpoints.size(); ++i)
+    for(size_t i = 0; i < in.customEndpoints.size(); ++i)
     {
       if(!endpoints[i].fromString(in.customEndpoints[i]))
       {
@@ -187,7 +187,7 @@ int main(const int argc, char * argv[])
     {
       // Create the info supplier
       ssa::StructureConvexHullInfoSupplier infoSupplier;
-      for(int i = 0; i < structureIds.size(); ++i)
+      for(size_t i = 0; i < structureIds.size(); ++i)
         infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
 
       ::spl::UniquePtr<ssa::IConvexHullOutputter>::Type outputter = generateOutputter(in);

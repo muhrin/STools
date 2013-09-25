@@ -179,10 +179,10 @@ main(const int argc, char * argv[])
 
     BOOST_FOREACH(FormulasMap::reference form, formulasMap)
     {
-      if(form.second.size() > in.compositionTop)
+      if(static_cast<int>(form.second.size()) > in.compositionTop)
       {
         TopN::reverse_iterator it = form.second.rbegin();
-        for(int i = 0; i < form.second.size() - in.compositionTop; ++i, ++it)
+        for(int i = 0; i < static_cast<int>(form.second.size()) - in.compositionTop; ++i, ++it)
           toRemove.insert(it->second);
       }
     }

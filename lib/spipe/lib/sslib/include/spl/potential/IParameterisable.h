@@ -32,21 +32,15 @@ public:
   {
   }
 
-  /**
-   /* Returns the number of parameters that this potential has.
-   /*/
+  // Returns the number of parameters that this potential has.
   virtual size_t
   getNumParams() const = 0;
 
-  /**
-   /* Get the current parameters vector for this potential.
-   /**/
+  // Get the current parameters vector for this potential.
   virtual PotentialParams
   getParams() const = 0;
 
-  /**
-   /* Set the parameters for this potential.
-   /**/
+  // Set the parameters for this potential.
   virtual void
   setParams(const PotentialParams & params) = 0;
 };

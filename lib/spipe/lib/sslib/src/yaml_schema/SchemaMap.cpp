@@ -84,13 +84,13 @@ struct SchemaEntryAutoGenerator<utility::HeterogeneousMap, boost::false_type> {}
 // TODO: Deal with lists
 
 SchemaHeteroMapEntryBase::SchemaHeteroMapEntryBase(const ::std::string & name):
-myName(name),
-myRequired(false)
+myRequired(false),
+myName(name)
 {}
 
 SchemaHeteroMapEntryBase::SchemaHeteroMapEntryBase(const SchemaHeteroMapEntryBase & toCopy):
-myName(toCopy.myName),
-myRequired(false)
+myRequired(false),
+myName(toCopy.myName)
 {}
 
 SchemaHeteroMapEntryBase * SchemaHeteroMapEntryBase::required()

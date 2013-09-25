@@ -25,11 +25,9 @@ public:
 
   static const unsigned int DIGITS_AFTER_DECIMAL;
 
-  /**
-  /* Write a structure out to disk.
-  /* The user can supply their own species database, however it is up to them
-  /* to make sure that the implementation is thread safe if necessary.
-  /**/
+  // Write a structure out to disk.
+  // The user can supply their own species database, however it is up to them
+  // to make sure that the implementation is thread safe if necessary.
   virtual void writeStructure(
     ::spl::common::Structure & str,
     const ResourceLocator & locator
@@ -48,9 +46,7 @@ public:
 
   // End from IStructureReader //
 
-  /**
-  /* Does this reader support reading multiple structures from a single file.
-  /**/
+  // Does this reader support reading multiple structures from a single file.
   virtual bool multiStructureSupport() const;
 
 private:

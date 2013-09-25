@@ -81,21 +81,15 @@ template< typename Pipe, typename Shared, typename Global>
 
     ConnectorType connect;
 
-    /**
-     /* Get the number of outputs that this block has.
-     /**/
+    // Get the number of outputs that this block has.
     size_t
     getNumOutputs() const;
 
-    /**
-     /* Clear the output on a particular channel.
-     /**/
+    // Clear the output on a particular channel.
     bool
     clearOutput(const Channel channel = CHANNEL_DEFAULT);
 
-    /**
-     /* Get the output on a particular channel.
-     /**/
+    // Get the output on a particular channel.
     HandleType
     getOutput(const Channel channel = CHANNEL_DEFAULT) const;
 
@@ -151,9 +145,7 @@ template< typename Pipe, typename Shared, typename Global>
 
   protected:
 
-    /**
-     /* Get the PipeEngine driving this block.  Can return NULL if not running.
-     /**/
+    // Get the PipeEngine driving this block.  Can return NULL if not running.
     EngineAccessType *
     getEngine();
     const EngineAccessType *
@@ -203,9 +195,8 @@ template< typename Pipe, typename Shared, typename Global>
 
     HandleType
     doConnect(HandleType & to);
-    /**
-     /* Set the output block for a particular channel.
-     /**/
+
+    // Set the output block for a particular channel.
     HandleType
     doConnect(HandleType & to, const Channel channel);
 

@@ -96,7 +96,7 @@ private:
 
   ::std::vector< StructureDataType *> myBuffer;
 
-  int myNumWorkItemsChunk;
+  size_t myNumWorkItemsChunk;
   ::spl::math::GenericRunningStats< ::boost::posix_time::time_duration> myWorkItemsTiming;
   const ::boost::posix_time::time_duration myTargetChunkTime;
 

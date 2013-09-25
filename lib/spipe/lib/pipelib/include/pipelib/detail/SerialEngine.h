@@ -30,14 +30,17 @@ namespace pipelib {
 
 template< typename Pipe, typename Shared, typename Global>
   SerialEngine< Pipe, Shared, Global>::SerialEngine() :
-      myGlobal(new Global()), myIsRoot(true), myMaxReleases(DEFAULT_MAX_RELEASES)
+      myIsRoot(true), myMaxReleases(DEFAULT_MAX_RELEASES), myGlobal(
+          new Global())
   {
     init();
   }
 
 template< typename Pipe, typename Shared, typename Global>
-  SerialEngine< Pipe, Shared, Global>::SerialEngine(BlockHandleType & startBlock) :
-      myGlobal(new Global()), myIsRoot(true), myMaxReleases(DEFAULT_MAX_RELEASES)
+  SerialEngine< Pipe, Shared, Global>::SerialEngine(
+      BlockHandleType & startBlock) :
+      myIsRoot(true), myGlobal(new Global()), myMaxReleases(
+          DEFAULT_MAX_RELEASES)
   {
     init();
     attach(startBlock);
@@ -117,7 +120,7 @@ template< typename Pipe, typename Shared, typename Global>
   }
 
 template< typename Pipe, typename Shared, typename Global>
-const typename SerialEngine< Pipe, Shared, Global>::BlockHandleType &
+  const typename SerialEngine< Pipe, Shared, Global>::BlockHandleType &
   SerialEngine< Pipe, Shared, Global>::getStartBlock() const
   {
     return myStartBlock;
@@ -125,14 +128,16 @@ const typename SerialEngine< Pipe, Shared, Global>::BlockHandleType &
 
 template< typename Pipe, typename Shared, typename Global>
   void
-  SerialEngine< Pipe, Shared, Global>::setFinishedDataSink(FinishedSinkType * sink)
+  SerialEngine< Pipe, Shared, Global>::setFinishedDataSink(
+      FinishedSinkType * sink)
   {
     myFinishedSink = sink;
   }
 
 template< typename Pipe, typename Shared, typename Global>
   void
-  SerialEngine< Pipe, Shared, Global>::setDroppedDataSink(DroppedSinkType * sink)
+  SerialEngine< Pipe, Shared, Global>::setDroppedDataSink(
+      DroppedSinkType * sink)
   {
     myDroppedSink = sink;
   }
@@ -181,8 +186,8 @@ template< typename Pipe, typename Shared, typename Global>
 
 template< typename Pipe, typename Shared, typename Global>
   void
-  SerialEngine< Pipe, Shared, Global>::out(Pipe * data, const BlockType & outBlock,
-      const Channel channel)
+  SerialEngine< Pipe, Shared, Global>::out(Pipe * data,
+      const BlockType & outBlock, const Channel channel)
   {
     const BlockHandleType & inBlock = outBlock.getOutput(channel);
     if(inBlock.get())
@@ -192,10 +197,12 @@ template< typename Pipe, typename Shared, typename Global>
       // So this data is finished, check if we have a sink, otherwise delete
       typename DataStore::iterator it = findData(data);
 
-      PIPELIB_ASSERT_MSG(it != myDataStore.end(), "Couldn't find data in data store");
+      PIPELIB_ASSERT_MSG(it != myDataStore.end(),
+          "Couldn't find data in data store");
 
       if(myFinishedSink)
-        myFinishedSink->finished(makeUniquePtr(myDataStore.release(it).release()));
+        myFinishedSink->finished(
+            makeUniquePtr(myDataStore.release(it).release()));
       else
         myDataStore.erase(it);
     }
@@ -216,7 +223,8 @@ template< typename Pipe, typename Shared, typename Global>
     // So this data is finished, check if we have a sink, otherwise delete
     typename DataStore::iterator it = findData(data);
 
-    PIPELIB_ASSERT_MSG(it != myDataStore.end(), "Couldn't find data in data store");
+    PIPELIB_ASSERT_MSG(it != myDataStore.end(),
+        "Couldn't find data in data store");
 
     if(myDroppedSink)
       myDroppedSink->dropped(makeUniquePtr(myDataStore.release(it).release()));
@@ -245,8 +253,8 @@ template< typename Pipe, typename Shared, typename Global>
   SerialEngine< Pipe, Shared, Global>::releaseEngine(Base * engine)
   {
     bool found = false;
-    for(typename ChildEngines::iterator it = myChildren.begin(), end = myChildren.end(); it != end;
-        ++it)
+    for(typename ChildEngines::iterator it = myChildren.begin(), end =
+        myChildren.end(); it != end; ++it)
     {
       if(&(*it) == engine)
       {
@@ -260,22 +268,24 @@ template< typename Pipe, typename Shared, typename Global>
 
 template< typename Pipe, typename Shared, typename Global>
   void
-  SerialEngine< Pipe, Shared, Global>::registerBarrier(BarrierType * const barrier)
+  SerialEngine< Pipe, Shared, Global>::registerBarrier(
+      BarrierType * const barrier)
   {
     myBarriers.push_back(barrier);
   }
 
 template< typename Pipe, typename Shared, typename Global>
-  SerialEngine< Pipe, Shared, Global>::SerialEngine(::boost::shared_ptr<Global> & global) :
-      myGlobal(global), myIsRoot(false), myMaxReleases(DEFAULT_MAX_RELEASES)
+  SerialEngine< Pipe, Shared, Global>::SerialEngine(
+      ::boost::shared_ptr< Global> & global) :
+       myIsRoot(false), myMaxReleases(DEFAULT_MAX_RELEASES), myGlobal(global)
   {
     init();
   }
 
 template< typename Pipe, typename Shared, typename Global>
-  SerialEngine< Pipe, Shared, Global>::SerialEngine(::boost::shared_ptr<Global> & global,
-      BlockHandleType & pipe) :
-      myGlobal(global), myIsRoot(false), myMaxReleases(DEFAULT_MAX_RELEASES)
+  SerialEngine< Pipe, Shared, Global>::SerialEngine(
+      ::boost::shared_ptr< Global> & global, BlockHandleType & pipe) :
+      myIsRoot(false), myMaxReleases(DEFAULT_MAX_RELEASES), myGlobal(global)
   {
     init();
     attach(pipe);
@@ -308,7 +318,8 @@ template< typename Pipe, typename Shared, typename Global>
 
 template< typename Pipe, typename Shared, typename Global>
   void
-  SerialEngine< Pipe, Shared, Global>::changeState(const PipelineState::Value newState)
+  SerialEngine< Pipe, Shared, Global>::changeState(
+      const PipelineState::Value newState)
   {
     const PipelineState::Value oldState = myState;
     switch (newState)
@@ -316,45 +327,58 @@ template< typename Pipe, typename Shared, typename Global>
     case PipelineState::INITIALISED:
 
       // Tell the blocks
-      ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
+      ::std::for_each(myStartBlock->beginPreorder(),
+          myStartBlock->endPreorder(),
           ::boost::bind(&Self::notifyInitialising, this, _1, this));
 
       // Sort the barriers so when we release at the end they're in the correct order
       this->sortBarriers(&myBarriers);
 
       myState = PipelineState::INITIALISED;
-      ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
+      ::std::for_each(myStartBlock->beginPreorder(),
+          myStartBlock->endPreorder(),
           ::boost::bind(&Self::notifyInitialised, this, _1));
 
       // Tell any listeners
-      myEventSupport.notify(event::makeStateChangedEvent(*this, oldState, myState));
+      myEventSupport.notify(
+          event::makeStateChangedEvent(*this, oldState, myState));
       break;
 
     case PipelineState::RUNNING:
 
-      ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
+      ::std::for_each(myStartBlock->beginPreorder(),
+          myStartBlock->endPreorder(),
           ::boost::bind(&Self::notifyStarting, this, _1));
       myState = PipelineState::RUNNING;
-      myEventSupport.notify(event::makeStateChangedEvent(*this, oldState, myState));
+      myEventSupport.notify(
+          event::makeStateChangedEvent(*this, oldState, myState));
       doRun();
 
       break;
     case PipelineState::STOPPED:
       myState = PipelineState::STOPPED;
       // Tell any listeners
-      myEventSupport.notify(event::makeStateChangedEvent(*this, oldState, myState));
+      myEventSupport.notify(
+          event::makeStateChangedEvent(*this, oldState, myState));
       break;
     case PipelineState::FINISHED:
 
-      ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
+      ::std::for_each(myStartBlock->beginPreorder(),
+          myStartBlock->endPreorder(),
           ::boost::bind(&Self::notifyFinishing, this, _1));
       myState = PipelineState::FINISHED;
       myShared.reset(new Shared());
-      ::std::for_each(myStartBlock->beginPreorder(), myStartBlock->endPreorder(),
+      ::std::for_each(myStartBlock->beginPreorder(),
+          myStartBlock->endPreorder(),
           ::boost::bind(&Self::notifyFinished, this, _1, this));
 
       // Tell any listeners
-      myEventSupport.notify(event::makeStateChangedEvent(*this, oldState, myState));
+      myEventSupport.notify(
+          event::makeStateChangedEvent(*this, oldState, myState));
+      break;
+
+    case PipelineState::UNINITIALISED:
+      PIPELIB_ASSERT_MSG(true, "Can't change state to uninitialised.");
       break;
     }
   }

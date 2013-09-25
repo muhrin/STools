@@ -17,7 +17,6 @@
  *      Author: Martin Uhrin
  */
 
-
 #ifndef GENERIC_BUFFERED_COMPARATOR_H
 #define GENERIC_BUFFERED_COMPARATOR_H
 
@@ -33,47 +32,55 @@
 namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
-  class Structure;
+class Structure;
 }
 namespace utility {
 
-template <class ComparatorTyp>
-class GenericBufferedComparator : public IBufferedComparator
-{
-  typedef IBufferedComparator::HandleId HandleId;
-public:
+template< class ComparatorTyp>
+  class GenericBufferedComparator : public IBufferedComparator
+  {
+    typedef IBufferedComparator::HandleId HandleId;
+  public:
 
-  // The comparator must have DataTyp defined
-  typedef typename ComparatorTyp::DataTyp DataTyp;
+    // The comparator must have DataTyp defined
+    typedef typename ComparatorTyp::DataTyp DataTyp;
 
-  GenericBufferedComparator(const ComparatorTyp & comparator);
-  virtual ~GenericBufferedComparator() {}
+    GenericBufferedComparator(const ComparatorTyp & comparator);
+    virtual
+    ~GenericBufferedComparator()
+    {
+    }
 
-	virtual double compareStructures(
-		const ComparisonDataHandle & str1,
-		const ComparisonDataHandle & str2);
+    virtual double
+    compareStructures(const ComparisonDataHandle & str1,
+        const ComparisonDataHandle & str2);
 
-	virtual bool areSimilar(
-		const ComparisonDataHandle & str1,
-		const ComparisonDataHandle & str2);
+    virtual bool
+    areSimilar(const ComparisonDataHandle & str1,
+        const ComparisonDataHandle & str2);
 
-  virtual ComparisonDataHandle generateComparisonData(const spl::common::Structure & structure);
+    virtual ComparisonDataHandle
+    generateComparisonData(const spl::common::Structure & structure);
 
-  virtual const IStructureComparator & getComparator() const;
+    virtual const IStructureComparator &
+    getComparator() const;
 
-private:
+  private:
 
-  typedef ::boost::ptr_map<HandleId, DataTyp> DataMap;
+    typedef ::boost::ptr_map< HandleId, DataTyp> DataMap;
 
-  const DataTyp & getComparisonData(const HandleId & id);
-  void handleReleased(const HandleId & id);
-  HandleId generateHandleId();
+    const DataTyp &
+    getComparisonData(const HandleId & id);
+    void
+    handleReleased(const HandleId & id);
+    HandleId
+    generateHandleId();
 
-  HandleId                myLastHandleId;
-  const ComparatorTyp &   myComparator;
-  DataMap                 myComparisonData;
-  size_t                  myTotalData;
-};
+    HandleId myLastHandleId;
+    const ComparatorTyp & myComparator;
+    DataMap myComparisonData;
+    size_t myTotalData;
+  };
 
 }
 }

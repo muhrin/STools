@@ -58,8 +58,8 @@ myRequired(false)
 
 template <typename T>
 SchemaElementBase<T>::SchemaElementBase(const SchemaElementBase & toCopy):
-myRequired(toCopy.myRequired),
-myDefault(toCopy.myDefault)
+myDefault(toCopy.myDefault),
+myRequired(toCopy.myRequired)
 {}
 
 template <typename T>

@@ -40,9 +40,7 @@ public:
     const ResourceLocator & resourceLocator
   ) const = 0;
 
-  /**
-  /* Read structure(s) from disk.
-  /**/
+  // Read structure(s) from disk.
   virtual size_t readStructures(
     StructuresContainer & outStructures,
     const ResourceLocator & resourceLocator
@@ -50,9 +48,7 @@ public:
 
   virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
 
-  /**
-  /* Does this reader support reading multiple structures from a single file.
-  /**/
+  // Does this reader support reading multiple structures from a single file.
   virtual bool multiStructureSupport() const = 0;
 };
 

@@ -217,6 +217,7 @@ bool SchemaHomoMap<T>::valueToNode(YAML::Node & node, const BindingType & value,
       node[entry.first] = entryNode;
     }
   }
+  return true;
 }
 
 template <typename T>
@@ -246,6 +247,7 @@ bool SchemaHomoMap<T>::nodeToValue(SchemaParse & parse, BindingType & value, con
         value[it->first.Scalar()] = mappedValue;
     }
   }
+  return true;
 }
 
 template <typename T>

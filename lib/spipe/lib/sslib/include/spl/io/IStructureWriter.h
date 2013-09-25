@@ -34,9 +34,7 @@ public:
 
   virtual ~IStructureWriter() {}
 
-  /**
-  /* Write a structure out to disk.
-  /**/
+  // Write a structure out to disk.
   virtual void writeStructure(
     ::spl::common::Structure & str,
     const ResourceLocator & locator
@@ -44,9 +42,7 @@ public:
 
   virtual ::std::vector<std::string> getSupportedFileExtensions() const = 0;
 
-  /**
-  /* Does this writer support writing multiple structures to a single file.
-  /**/
+  // Does this writer support writing multiple structures to a single file.
   virtual bool multiStructureSupport() const = 0;
 };
 

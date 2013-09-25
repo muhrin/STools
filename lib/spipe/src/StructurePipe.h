@@ -31,10 +31,6 @@
 		std::cout << " in file " << __FILE__ << "\n";  \
 	}
 #endif
-// Create a breakpoint
-//__asm { \
-		//	int 3 \
-		//} 
 
 // INCLUDES /////////////
 #include <pipelib/pipelib.h>

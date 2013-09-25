@@ -84,13 +84,13 @@ private:
   {
     ptrdiff_t largest = ::std::numeric_limits<ptrdiff_t>::min();
     int largestIdx = -1;
-    for(size_t i = 0; i < (int)myNumElements; ++i)
+    for(size_t i = 0; i < myNumElements; ++i)
     {
       if(myIndexDirections[i] != 0 &&
         myIndexMapping[i] > largest)
       {
         largest = myIndexMapping[i];
-        largestIdx = (size_t)i;
+        largestIdx = i;
       }
     }
 

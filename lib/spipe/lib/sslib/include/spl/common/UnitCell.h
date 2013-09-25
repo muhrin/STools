@@ -47,9 +47,14 @@ public:
   class UnitCellListener
   {
   public:
-    virtual ~UnitCellListener() {}
-    virtual void onUnitCellChanged(UnitCell & unitCell) = 0;
-    virtual void onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+    virtual
+    ~UnitCellListener()
+    {
+    }
+    virtual void
+    onUnitCellChanged(UnitCell & unitCell) = 0;
+    virtual void
+    onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
         const double newVol) = 0;
   };
 
@@ -87,10 +92,8 @@ public:
 
   const ::arma::mat33 & getOrthoMtx() const;
 
-  /**
-  /* Set the orthogonalisation matrix.
-  /* Returns false and UnitCell remains unchanged if orthoMtx is singular, true otherwise.
-  /**/
+  // Set the orthogonalisation matrix.
+  // Returns false and UnitCell remains unchanged if orthoMtx is singular, true otherwise.
   bool setOrthoMtx(const ::arma::mat33 & orthoMtx);
 
   const ::arma::mat33 & getFracMtx() const;

@@ -38,17 +38,18 @@ const int BuildStructures::DEFAULT_MAX_ATTEMPTS = 1000;
 
 BuildStructures::BuildStructures(const int numToGenerate,
     IStructureGeneratorPtr structureGenerator) :
-    Block("Generate Random structures"), myNumToGenerate(numToGenerate), myAtomsMultiplierGenerate(
-        0.0), myFixedNumGenerate(true), myStructureGenerator(structureGenerator),
-        myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
+    Block("Generate Random structures"), myStructureGenerator(
+        structureGenerator), myFixedNumGenerate(true), myNumToGenerate(
+        numToGenerate), myAtomsMultiplierGenerate(0.0), myMaxAttempts(
+        DEFAULT_MAX_ATTEMPTS)
 {
 }
 
 BuildStructures::BuildStructures(const float atomsMultiplierGenerate,
     IStructureGeneratorPtr structureGenerator) :
-    Block("Generate Random structures"), myNumToGenerate(0), myAtomsMultiplierGenerate(
-        atomsMultiplierGenerate), myFixedNumGenerate(false), myStructureGenerator(
-        structureGenerator), myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
+    Block("Generate Random structures"), myStructureGenerator(
+        structureGenerator), myFixedNumGenerate(false), myNumToGenerate(0), myAtomsMultiplierGenerate(
+        atomsMultiplierGenerate), myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
 {
 }
 

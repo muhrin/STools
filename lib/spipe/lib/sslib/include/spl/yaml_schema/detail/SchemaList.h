@@ -36,8 +36,8 @@ myEntrySchema()
 
 template <class EntrySchema>
 SchemaList<EntrySchema>::SchemaList(const SchemaList & toCopy):
-myEntrySchema(toCopy.myEntrySchema),
-myLength(toCopy.myLength)
+myLength(toCopy.myLength),
+myEntrySchema(toCopy.myEntrySchema)
 {}
 
 template <class EntrySchema>
@@ -68,7 +68,7 @@ bool SchemaList<EntrySchema>::nodeToValue(
     return false;
   }
 
-  if(myLength != -1 && myLength != node.size())
+  if(myLength != -1 && myLength != static_cast<int>(node.size()))
   {
     parse.logError(SchemaParseErrorCode::SEQUENCE_LENGTH_MISMATCH, "Sequence is wrong length");
     return false;

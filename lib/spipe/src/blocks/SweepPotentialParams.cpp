@@ -36,11 +36,11 @@ const ::std::string SweepPotentialParams::POTPARAMS_FILE_EXTENSION = "potparams"
 
 SweepPotentialParams::SweepPotentialParams(
     const common::ParamRange & paramRange, BlockHandle & sweepPipeline) :
-    Block("Potential param sweep"), myParamRange(paramRange), mySweepPipeline(
-        sweepPipeline), myStepExtents(paramRange.nSteps.size())
+    Block("Potential param sweep"), myParamRange(paramRange),
+    myStepExtents(paramRange.nSteps.size()), mySweepPipeline(sweepPipeline)
 {
-  SP_ASSERT(
-      (myParamRange.from.size() == myParamRange.step.size()) && (myParamRange.from.size() == myParamRange.nSteps.size()));
+  SP_ASSERT(myParamRange.from.size() == myParamRange.step.size());
+  SP_ASSERT(myParamRange.from.size() == myParamRange.nSteps.size());
 
   myNumParams = myParamRange.nSteps.size();
   for(size_t i = 0; i < myNumParams; ++i)

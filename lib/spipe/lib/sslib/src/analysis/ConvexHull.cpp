@@ -104,7 +104,8 @@ ConvexHull::entriesEnd() const
 
 const ConvexHull::HullEntry & ConvexHull::getEntry(const PointId & id) const
 {
-  SSLIB_ASSERT_MSG(id >= 0 && id < myEntries.size(), "Invalid point id supplies, out of range");
+  SSLIB_ASSERT_MSG(id >= 0 && id < static_cast<int>(myEntries.size()),
+      "Invalid point id supplied: out of range");
   // Make sure the hull is generated
   getHull();
 
