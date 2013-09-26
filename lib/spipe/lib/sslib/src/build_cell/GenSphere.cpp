@@ -17,8 +17,8 @@ namespace spl {
 namespace build_cell {
 
 GenSphere::GenSphere(const double radius):
-myRadius(::std::abs(radius)),
-myTransform(::arma::eye< ::arma::mat>(4, 4))
+myTransform(::arma::eye< ::arma::mat>(4, 4)),
+myRadius(::std::abs(radius))
 {}
 
 GenSphere::GenSphere(const GenSphere & toCopy):

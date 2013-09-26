@@ -21,7 +21,7 @@ const int AtomExtruder::DEFAULT_MAX_ITERATIONS = 5000;
 const double AtomExtruder::DEFAULT_TOLERANCE = 0.001;
 
 AtomExtruder::AtomExtruder() :
-    myMaxIterations(DEFAULT_MAX_ITERATIONS), myTolerance(DEFAULT_TOLERANCE)
+    myTolerance(DEFAULT_TOLERANCE), myMaxIterations(DEFAULT_MAX_ITERATIONS)
 {
 }
 
@@ -88,7 +88,7 @@ AtomExtruder::extrudeAtoms(common::Structure & structure,
   SSLIB_ASSERT(sepSqMtx.n_rows == structure.getNumAtoms());
 
   Atoms atoms;
-  for(int i = 0; i < structure.getNumAtoms(); ++i)
+  for(size_t i = 0; i < structure.getNumAtoms(); ++i)
     atoms.push_back(&structure.getAtom(i));
 
   FixedList fixedList(structure.getNumAtoms(), false);
@@ -150,7 +150,7 @@ AtomExtruder::extrude(const common::DistanceCalculator & distanceCalc,
   int row, col;
   bool success = false;
 
-  for(size_t iters = 0; iters < myMaxIterations; ++iters)
+  for(int iters = 0; iters < myMaxIterations; ++iters)
   {
     // First loop over calculating separations and checking for overlap
     maxOverlapFractionSq = calcMaxOverlapFractionSq(distanceCalc, atoms,

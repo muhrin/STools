@@ -44,13 +44,12 @@ private:
 
   Atom(const AtomSpeciesId::Value species, Structure & structure, const size_t index);
 
-  /**
-  /* Special constructor for use by Structure that copies everything an
-  /* atom except the structure and index within the structure which are
-  /* provided by the caller.
-  /*
-  /* Make sure to update this if any changes are made to Atom!
-  /**/
+
+  // Special constructor for use by Structure that copies everything an
+  // atom except the structure and index within the structure which are
+  // provided by the caller.
+  //
+  // Make sure to update this if any changes are made to Atom!
   Atom(const Atom & toCopy, Structure & structure, const size_t index);
 
   void setIndex(const size_t index);

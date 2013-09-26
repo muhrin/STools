@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "sslibtest.h"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -114,10 +115,7 @@ BOOST_AUTO_TEST_CASE(VectorTest)
 
     totalPerms *= i;
     numPerms = 0;
-    BOOST_FOREACH(const Range::iterator_t::value_type & permutation, permutations)
-    {
-      ++numPerms;
-    }
+    numPerms = ::std::distance(permutations.begin(), permutations.end());
     BOOST_REQUIRE(numPerms == totalPerms);
   }
 }

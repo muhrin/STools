@@ -96,7 +96,6 @@ DataTable::insert(const DataTable::Key & key, const DataTable::Column & col,
   ::boost::lock_guard<boost::mutex> guard(myTableMutex);
 #endif
 
-  bool found = false;
   int colNo = COL_UNDEFINED;
   for(size_t i = 1; i < myColumns.size(); ++i)
   {
@@ -182,12 +181,8 @@ DataTable::removeDataTableChangeListener(IDataTableChangeListener & listener)
 void
 DataTable::insertColumn(const Column & colInfo, const size_t col)
 {
-  SP_ASSERT(col != COL_UNDEFINED);
-
   if(myColumns.size() <= col)
-  {
     myColumns.resize(col + 1);
-  }
 
   myColumns[col] = colInfo;
 }

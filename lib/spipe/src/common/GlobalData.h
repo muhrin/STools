@@ -33,10 +33,8 @@ public:
   bool
   appendToOutputDirName(const ::std::string & toAppend);
 
-  /**
-   /* Get the output path for the pipeline that owns this shared data relative to
-   /* the parent pipeline (or global data output path if there is not parent).
-   /**/
+  // Get the output path for the pipeline that owns this shared data relative to
+  // the parent pipeline (or global data output path if there is not parent).
   const ::boost::filesystem::path &
   getOutputPath() const;
 

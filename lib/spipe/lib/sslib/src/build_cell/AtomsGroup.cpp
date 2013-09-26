@@ -46,12 +46,12 @@ myPos(toCopy.myPos),
 myRot(toCopy.myRot)
 {}
 
-int AtomsGroup::getNumReplicas() const
+unsigned int AtomsGroup::getNumReplicas() const
 {
   return myNumReplicas;
 }
 
-void AtomsGroup::setNumReplicas(const int numReplicas)
+void AtomsGroup::setNumReplicas(const unsigned int numReplicas)
 {
   if(myNumReplicas == numReplicas)
     return;
@@ -98,7 +98,7 @@ AtomsGroup::generateFragment(
 ) const
 {
   GenerationOutcome outcome;
-  for(size_t i = 0; i < myNumReplicas; ++i)
+  for(unsigned int i = 0; i < myNumReplicas; ++i)
   {
     outcome = AbsAtomsGenerator::generateFragment(build, ticket, speciesDb);
     if(!outcome.isSuccess())

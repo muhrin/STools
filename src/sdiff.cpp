@@ -389,7 +389,6 @@ void doDiffGroups(
     g2ComparisonHandles[i] = comparator->generateComparisonData(*g2[i]);
   }
 
-  double mean = 0.0, min = ::std::numeric_limits<double>::max(), max = 0.0;
   ssm::RunningStats stats;
   for(size_t i = 0; i < g1.size(); ++i)
   {
@@ -491,8 +490,8 @@ int LocatorGroups::insertLocator(const ::std::string & locString)
     return -1;
 
   // First check if we already have an equivalent locator
-  int i;
-  for(i = 0; i < static_cast<int>(myLocators.size()); ++i)
+  size_t i;
+  for(i = 0; i < myLocators.size(); ++i)
   {
     if(ssio::equivalent(loc, myLocators[i]))
       break;

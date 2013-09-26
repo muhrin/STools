@@ -35,71 +35,68 @@ namespace utility {
 
 struct DistanceMatrixComparisonData
 {
-  typedef ::std::map<common::AtomSpeciesId::Value, ::std::vector<size_t> > SortedIndices;
+  typedef ::std::map< common::AtomSpeciesId::Value, ::std::vector< size_t> > SortedIndices;
 
   DistanceMatrixComparisonData(const common::Structure & structure);
 
-  ::arma::mat     distancesMtx;
-  ::std::vector<common::AtomSpeciesId::Value> speciesList;
-  ::std::set<common::AtomSpeciesId::Value>    speciesSet;
+  ::arma::mat distancesMtx;
+  ::std::vector< common::AtomSpeciesId::Value> speciesList;
+  ::std::set< common::AtomSpeciesId::Value> speciesSet;
 };
 
 class DistanceMatrixComparator : public IStructureComparator
 {
 public:
   typedef DistanceMatrixComparisonData DataTyp;
-  typedef UniquePtr<DataTyp>::Type ComparisonDataPtr;
+  typedef UniquePtr< DataTyp>::Type ComparisonDataPtr;
 
   static const double STRUCTURES_INCOMPARABLE;
   static const double DEFAULT_TOLERANCE;
 
-  /**
-  /* fastComparisonAtomLimit - above this many atoms use fast comparison method as
-  /* the number of permutations (N!) will be too large.
-  /*
-  /**/
+  // fastComparisonAtomLimit - above this many atoms use fast comparison method as
+  // the number of permutations (N!) will be too large.
   DistanceMatrixComparator(const size_t fastComparisonAtomsLimit = 12);
-  DistanceMatrixComparator(const double tolerance, const size_t fastComparisonAtomsLimit = 12);
+  DistanceMatrixComparator(const double tolerance,
+      const size_t fastComparisonAtomsLimit = 12);
 
   // From IStructureComparator ////////////////
 
-	virtual double compareStructures(
-		const common::Structure & str1,
-		const common::Structure & str2) const;
+  virtual double
+  compareStructures(const common::Structure & str1,
+      const common::Structure & str2) const;
 
-	virtual bool areSimilar(
-		const common::Structure & str1,
-		const common::Structure & str2) const;
+  virtual bool
+  areSimilar(const common::Structure & str1,
+      const common::Structure & str2) const;
 
-  virtual ::boost::shared_ptr<IBufferedComparator> generateBuffered() const;
+  virtual ::boost::shared_ptr< IBufferedComparator>
+  generateBuffered() const;
 
   // End from IStructureComparator /////////////
 
   // Methods needed to conform to expectations laid out by GenericBufferedComparator ///
-  bool areSimilar(
-    const DataTyp & str1Data,
-    const DataTyp & str2Data) const;
+  bool
+  areSimilar(const DataTyp & str1Data, const DataTyp & str2Data) const;
 
-  double compareStructures(
-    const DataTyp & str1Data,
-    const DataTyp & str2Data) const;
+  double
+  compareStructures(const DataTyp & str1Data, const DataTyp & str2Data) const;
 
-  ComparisonDataPtr generateComparisonData(const common::Structure & structure) const;
+  ComparisonDataPtr
+  generateComparisonData(const common::Structure & structure) const;
   // End conformation methods //////////////
 
 private:
 
-  bool areComparable(
-    const DataTyp & str1Data,
-    const DataTyp & str2Data) const;
+  bool
+  areComparable(const DataTyp & str1Data, const DataTyp & str2Data) const;
 
-  double compareStructuresFull(
-    const DataTyp & str1Data,
-    const DataTyp & str2Data) const;
+  double
+  compareStructuresFull(const DataTyp & str1Data,
+      const DataTyp & str2Data) const;
 
-  double compareStructuresFast(
-    const DataTyp & str1Data,
-    const DataTyp & str2Data) const;
+  double
+  compareStructuresFast(const DataTyp & str1Data,
+      const DataTyp & str2Data) const;
 
   const size_t myFastComparisonAtomsLimit;
   const double myTolerance;

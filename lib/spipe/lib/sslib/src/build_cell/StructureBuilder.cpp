@@ -27,25 +27,23 @@ namespace build_cell {
 const double StructureBuilder::DEFAULT_ATOMS_OVERLAP = 0.1;
 const bool StructureBuilder::DEFAULT_IS_CLUSTER = false;
 
-
 StructureBuilder::StructureBuilder() :
-    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0),
-    myIsCluster(DEFAULT_IS_CLUSTER),
-    myAtomsOverlap(DEFAULT_ATOMS_OVERLAP)
+    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0), myIsCluster(
+        DEFAULT_IS_CLUSTER), myAtomsOverlap(DEFAULT_ATOMS_OVERLAP)
 {
 }
 
 StructureBuilder::StructureBuilder(const ConstructInfo & info) :
-    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0),
-    myIsCluster(info.isCluster), myAtomsOverlap(info.atomsOverlap)
+    myPointGroup(PointGroupFamily::NONE, 0), myNumSymOps(0), myIsCluster(
+        info.isCluster), myAtomsOverlap(info.atomsOverlap)
 {
 }
 
 StructureBuilder::StructureBuilder(const StructureBuilder & toCopy) :
-    StructureBuilderCore(toCopy), myUnitCellGenerator(
-        myUnitCellGenerator->clone()), myPointGroup(toCopy.myPointGroup), myNumSymOps(
-        toCopy.myNumSymOps), myIsCluster(toCopy.myIsCluster),
-        myAtomsOverlap(toCopy.myAtomsOverlap)
+    StructureBuilderCore(toCopy), myPointGroup(toCopy.myPointGroup), myNumSymOps(
+        toCopy.myNumSymOps), myIsCluster(toCopy.myIsCluster), myAtomsOverlap(
+        toCopy.myAtomsOverlap), myUnitCellGenerator(
+        myUnitCellGenerator->clone())
 {
 }
 
@@ -100,14 +98,11 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
   // so generate the atoms
   BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
   {
-    outcome = generatorAndTicket.first->generateFragment(
-        structureBuild,
-        generatorAndTicket.second,
-        speciesDb
-    );
+    outcome = generatorAndTicket.first->generateFragment(structureBuild,
+        generatorAndTicket.second, speciesDb);
 
     if(!outcome.isSuccess())
-    return outcome;
+      return outcome;
   }
 
   outcome = generateSymmetry(structureBuild);

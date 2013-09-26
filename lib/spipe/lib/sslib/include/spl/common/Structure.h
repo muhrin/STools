@@ -175,12 +175,9 @@ private:
 
   utility::HeterogeneousMap myTypedProperties;
 
-  /**
-   /* Flag to indicate whether the structure has changed since
-   /* the last time that all atom positions were requested
-   /**/
+  // Flag to indicate whether the structure has changed since
+  // the last time that all atom positions were requested
   mutable bool myAtomPositionsCurrent;
-
   mutable ::arma::mat myAtomPositionsBuffer;
 
   mutable DistanceCalculatorDelegator myDistanceCalculator;

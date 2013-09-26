@@ -95,7 +95,7 @@ void StructureTriangulation::buildTriangulation() const
   const common::UnitCell * cell = myStructure.getUnitCell();
 
   // Now insert the basis + images (if periodic) into the triangulation
-  for(int atomIdx = 0; atomIdx < myStructure.getNumAtoms(); ++atomIdx)
+  for(size_t atomIdx = 0; atomIdx < myStructure.getNumAtoms(); ++atomIdx)
   {
     const ::arma::vec3 & pos = myStructure.getAtom(atomIdx).getPosition();
     if(cell)

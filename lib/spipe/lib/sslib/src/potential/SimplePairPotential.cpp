@@ -37,9 +37,9 @@ SimplePairPotential::SimplePairPotential(
     const ::arma::mat & sigma, const double cutoffFactor,
     const ::arma::mat & beta, const double n, const double m,
     const CombiningRule::Value combiningRule) :
-    myName("Simple pair potential"), myAtomSpeciesDb(atomSpeciesDb), myNumSpecies(
+    myAtomSpeciesDb(atomSpeciesDb), myName("Simple pair potential"), myNumSpecies(
         speciesList.size()), mySpeciesList(speciesList), myEpsilon(epsilon), mySigma(
-        sigma), myBeta(beta), myM(m), myN(n), myCutoffFactor(cutoffFactor), myCombiningRule(
+        sigma), myBeta(beta), myCutoffFactor(cutoffFactor), myN(n), myM(m), myCombiningRule(
         combiningRule)
 {
   SSLIB_ASSERT(myNumSpecies == myEpsilon.n_rows);
@@ -195,7 +195,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
   double sigmaOModR, invRM, invRN;
   double dE, modR, modF;
   size_t speciesI, speciesJ; // Species indices
-  ::arma::vec3 r, f; // Displacement and force vectors
+  ::arma::vec3 f; // Displacement and force vectors
   ::arma::vec3 posI, posJ; // Position vectors
 
   resetAccumulators(data);
@@ -210,17 +210,19 @@ SimplePairPotential::evaluate(const common::Structure & structure,
   // Loop over all particle pairs (including self-interaction)
   for(size_t i = 0; i < data.numParticles; ++i)
   {
-    speciesI = data.species[i];
-    if(speciesI == DataType::IGNORE_ATOM)
+    if(data.species[i] == DataType::IGNORE_ATOM)
       continue;
+    else
+      speciesI = static_cast<size_t>(data.species[i]);
 
     posI = data.pos.col(i);
 
     for(size_t j = i; j < data.numParticles; ++j)
     {
-      speciesJ = data.species[j];
-      if(speciesJ == DataType::IGNORE_ATOM)
+      if(data.species[j] == DataType::IGNORE_ATOM)
         continue;
+      else
+        speciesJ = static_cast<size_t>(data.species[j]);
 
       posJ = data.pos.col(j);
 
@@ -233,7 +235,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
         problemDuringCalculation = true;
       }
 
-      BOOST_FOREACH(r, imageVectors)
+      BOOST_FOREACH(const ::arma::vec3 & r, imageVectors)
       {
         // Get the distance squared
         rSq = dot(r, r);
@@ -382,10 +384,10 @@ SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 void
 SimplePairPotential::updateSpeciesDb()
 {
-  for(int i = 0; i < myNumSpecies; ++i)
+  for(int i = 0; i < static_cast<int>(myNumSpecies); ++i)
   {
     myAtomSpeciesDb.setRadius(mySpeciesList[i], *getPotentialRadius(mySpeciesList[i]));
-    for(int j = i; j < myNumSpecies; ++j)
+    for(int j = i; j < static_cast<int>(myNumSpecies); ++j)
     {
       myAtomSpeciesDb.setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
           *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));

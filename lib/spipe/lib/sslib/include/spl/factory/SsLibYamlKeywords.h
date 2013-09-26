@@ -24,9 +24,7 @@ namespace sslib_yaml_keywords {
 /** The id type used by elements in the yaml document */
 typedef ::std::string     KwTyp;
 
-/**
-/* A list of the keywords used in the yaml sslib input files
-/**/
+// A list of the keywords used in the yaml sslib input files
 // General
 static const KwTyp ATOMS    = "atoms";
 static const KwTyp DEFAULT  = "default";
@@ -38,7 +36,6 @@ static const KwTyp SPEC     = "spec";
 static const KwTyp TYPE     = "type";
 static const KwTyp VALUE    = "value";
 static const KwTyp VOL      = "vol";
-
 
 // Structure description ///
 static const KwTyp STRUCTURE                      = "structure";

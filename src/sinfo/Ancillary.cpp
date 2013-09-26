@@ -138,13 +138,11 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
 
   // Get any input from standard in (piped)
   std::string lineInput;
-  bool foundPipedInput = false;
   if(stools::utility::isStdInPipedOrFile())
   {
     while(std::cin >> lineInput)
     {
       in.inputFiles.push_back(lineInput);
-      foundPipedInput = true;
     }
   }
 

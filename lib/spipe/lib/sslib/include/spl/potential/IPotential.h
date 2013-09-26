@@ -38,17 +38,12 @@ public:
   {
   }
 
-  /**
-   /* Get the name of this potential.
-   /*
-   /**/
+  // Get the name of this potential.
   virtual const ::std::string &
   getName() const = 0;
 
-  /**
-   /* Get the potential radius for a particular atom species.  Return value is optional as the potential may
-   /* not know or may not deal with the species specified.
-   /**/
+  // Get the potential radius for a particular atom species.  Return value is optional as the potential may
+  // not know or may not deal with the species specified.
   virtual ::boost::optional< double>
   getPotentialRadius(const ::spl::common::AtomSpeciesId::Value id) const = 0;
 

@@ -67,7 +67,6 @@ BOOST_AUTO_TEST_CASE(LongestDiagonal)
     }
 
     diag = cell->getLongestDiagonal();
-    const double diagLengthSq = ::arma::dot(diag, diag);
 
     BOOST_REQUIRE(ssu::stable::eq(maxLengthSq, ::arma::dot(diag, diag)));
   }

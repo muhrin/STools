@@ -76,8 +76,6 @@ void checkSimilar(const ssc::Structure & str1, const ssc::Structure & str2)
 {
   BOOST_REQUIRE(str1.getNumAtoms() == str2.getNumAtoms());
 
-  const size_t numAtoms = str1.getNumAtoms();
-
   ::std::vector<ssc::AtomSpeciesId::Value> species1, species2;
   str1.getAtomSpecies(species1);
   str2.getAtomSpecies(species2);

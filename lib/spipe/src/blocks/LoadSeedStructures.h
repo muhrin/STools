@@ -43,14 +43,11 @@ class LoadSeedStructures : public StartBlock, ::boost::noncopyable
 public:
   static const double ATOMIC_VOLUME_MULTIPLIER;
 
-  /**
-   /*  seedStructures - Can be:
-   /*  - path to single structure
-   /*  - path to folder containing structures
-   /*  - wildcard path to structures or folders containig structures
-   /*  - a list containing a mixture of any of the above
-   /*
-   /**/
+  // seedStructures - Can be:
+  // - path to single structure
+  // - path to folder containing structures
+  // - wildcard path to structures or folders containig structures
+  // - a list containing a mixture of any of the above
   LoadSeedStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = true);
 
   // From StartBlock ///

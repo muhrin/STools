@@ -104,7 +104,8 @@ ConvexHull::entriesEnd() const
 
 const ConvexHull::HullEntry & ConvexHull::getEntry(const PointId & id) const
 {
-  SSLIB_ASSERT_MSG(id >= 0 && id < myEntries.size(), "Invalid point id supplies, out of range");
+  SSLIB_ASSERT_MSG(id >= 0 && id < static_cast<int>(myEntries.size()),
+      "Invalid point id supplied: out of range");
   // Make sure the hull is generated
   getHull();
 
@@ -342,7 +343,7 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
   ::std::vector< HullTraits::FT> tempVec(myHullDims);
   VectorD v(myHullDims);
   int numEndpoints = 0;
-  for(int i = 0; i < myEndpoints.size(); ++i)
+  for(size_t i = 0; i < myEndpoints.size(); ++i)
   {
     numAtoms = composition.wholeNumberOf(myEndpoints[i].first);
     if(numAtoms != 0)
@@ -482,7 +483,7 @@ ConvexHull::canGenerate() const
 void
 ConvexHull::initEndpoints(const EndpointLabels & labels)
 {
-  for(int i = 0; i < labels.size(); ++i)
+  for(size_t i = 0; i < labels.size(); ++i)
   {
     myEndpoints.push_back(::std::make_pair(labels[i], PointD(myHullDims)));
     // Make sure we're using the reduced, i.e. most simple, formula

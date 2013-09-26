@@ -34,6 +34,8 @@ public:
   using detail::SchemaElementBase<T>::getDefault;
   using detail::SchemaElementBase<T>::isRequired;
 
+  virtual ~SchemaScalar() {}
+
   virtual bool valueToNode(YAML::Node & node, const T & value, const bool useDefaultOnFail) const;
   virtual bool nodeToValue(SchemaParse & parse, T & value, const YAML::Node & node, const bool useDefaultOnFail) const;
   virtual SchemaScalar * clone() const;

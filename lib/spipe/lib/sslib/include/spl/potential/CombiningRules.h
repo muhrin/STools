@@ -20,12 +20,11 @@
 namespace spl {
 namespace potential {
 
-/**
-/* Combining rules for setting off-diagonal length/energy scale terms. See
-/* http://www.sklogwiki.org/SklogWiki/index.php/Combining_rules
-/* for good reference.
-/* If a rule is being used it will overwrite any off diagonal parameters.
-/**/
+
+// Combining rules for setting off-diagonal length/energy scale terms. See
+// http://www.sklogwiki.org/SklogWiki/index.php/Combining_rules
+// for good reference.
+// If a rule is being used it will overwrite any off diagonal parameters.
 struct CombiningRule
 {
   enum Value

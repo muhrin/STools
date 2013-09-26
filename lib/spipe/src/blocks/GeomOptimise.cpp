@@ -32,15 +32,15 @@ namespace ssp = ::spl::potential;
 namespace structure_properties = ssc::structure_properties;
 
 GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser) :
-    Block("Geometry optimise"), myOptimiser(optimiser), myWriteOutput(
-        true), myOptimisationParams()
+    Block("Geometry optimise"), myWriteOutput(true), myOptimisationParams(), myOptimiser(
+        optimiser)
 {
 }
 
 GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
     const ::spl::potential::OptimisationSettings & optimisationParams) :
-    Block("Potential geometry optimisation"), myOptimiser(optimiser), myWriteOutput(
-        true), myOptimisationParams(optimisationParams)
+    Block("Potential geometry optimisation"), myWriteOutput(true), myOptimisationParams(
+        optimisationParams), myOptimiser(optimiser)
 {
 }
 
@@ -49,7 +49,8 @@ GeomOptimise::pipelineInitialising()
 {
   if(myWriteOutput)
     myTableSupport.setFilename(
-        common::getOutputFileStem(getEngine()->sharedData(), getEngine()->globalData()) + ".geomopt");
+        common::getOutputFileStem(getEngine()->sharedData(),
+            getEngine()->globalData()) + ".geomopt");
   myTableSupport.registerEngine(getEngine());
 }
 

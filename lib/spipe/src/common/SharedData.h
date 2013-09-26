@@ -48,10 +48,8 @@ public:
   ::boost::filesystem::path
   getOutputPath() const;
 
-  /**
-   /* Get the output path for the pipeline that owns this shared data relative to
-   /* the parent pipeline (or global data output path if there is no parent).
-   /**/
+  // Get the output path for the pipeline that owns this shared data relative to
+  // the parent pipeline (or global data output path if there is no parent).
   const ::boost::filesystem::path &
   getPipeRelativeOutputPath() const;
 

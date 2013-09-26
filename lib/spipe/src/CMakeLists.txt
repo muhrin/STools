@@ -39,6 +39,7 @@ source_group("Source Files\\blocks" FILES ${spipe_Source_Files__blocks})
 ## spipe/common/
 
 set(spipe_Header_Files__common
+  common/Assert.h
   common/CommonData.h
   common/GlobalData.h
   common/PipeBuilder.h

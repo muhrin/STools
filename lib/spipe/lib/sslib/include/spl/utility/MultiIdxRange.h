@@ -134,9 +134,9 @@ class MultiIdxRange : public ::boost::iterator_range<utility_detail::ConstMultiI
 
 public:
   MultiIdxRange(const MultiIdx<Integer> & first, const MultiIdx<Integer> & last):
+    base_t(iterator_t(first, *this), iterator_t(last, *this)),
     myBegin(first),
-    myEnd(last),
-    base_t(iterator_t(first, *this), iterator_t(last, *this))
+    myEnd(last)
   {
     SSLIB_ASSERT(myBegin != myEnd);
   }

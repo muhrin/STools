@@ -17,10 +17,9 @@
 namespace spl {
 namespace math {
 
-/**
-/* Euclid's algorithm for computing the greatest common divisor.
-/**/
-inline unsigned int greatestCommonDivisor(const unsigned int a, const unsigned int b)
+// Euclid's algorithm for computing the greatest common divisor.
+inline unsigned int
+greatestCommonDivisor(const unsigned int a, const unsigned int b)
 {
   unsigned int larger;
   unsigned int smaller;
@@ -42,22 +41,26 @@ inline unsigned int greatestCommonDivisor(const unsigned int a, const unsigned i
     remainder = larger % smaller;
     larger = smaller;
     smaller = remainder;
-  } while(remainder != 0);
+  }
+  while(remainder != 0);
 
   return larger;
 }
 
-inline unsigned int greatestCommonDivisor(const ::std::vector<unsigned int> numbers)
+inline unsigned int
+greatestCommonDivisor(const ::std::vector< unsigned int> numbers)
 {
   if(numbers.empty())
     return 0;
 
   unsigned int result = numbers[0];
-  for(int i = 0; i < numbers.size(); ++i) result = greatestCommonDivisor(result, numbers[i]);
+  for(size_t i = 0; i < numbers.size(); ++i)
+    result = greatestCommonDivisor(result, numbers[i]);
   return result;
 }
 
-inline unsigned int leastCommonMultiple(const unsigned a, const unsigned b)
+inline unsigned int
+leastCommonMultiple(const unsigned a, const unsigned b)
 {
   return a / greatestCommonDivisor(a, b) * b;
 }

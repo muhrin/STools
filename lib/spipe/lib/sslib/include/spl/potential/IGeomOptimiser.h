@@ -81,11 +81,9 @@ public:
   {
   }
 
-  /**
-   /* Get the potential being used by the geometry optimiser.  Not all
-   /* geometry optimisers need to have a potential in which case NULL
-   /* will be returned.
-   /**/
+  // Get the potential being used by the geometry optimiser.  Not all
+  // geometry optimisers need to have a potential in which case NULL
+  // will be returned.
   virtual IPotential *
   getPotential() = 0;
   virtual const IPotential *

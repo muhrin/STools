@@ -51,8 +51,8 @@ StructureBuild::StructureBuild(common::Structure & structure,
     const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb,
     const RadiusCalculator & radiusCalculator) :
-    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
-        atomsOverlap), mySpeciesDb(speciesDb)
+    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
+        speciesDb), myAtomsOverlap(atomsOverlap)
 {
   myGenShape.reset(
       new GenSphere(
@@ -65,8 +65,8 @@ StructureBuild::StructureBuild(common::Structure & structure,
 StructureBuild::StructureBuild(common::Structure & structure,
     const StructureContents & intendedContents, const double atomsOverlap,
     const common::AtomSpeciesDatabase & speciesDb, GenShapePtr genShape) :
-    myStructure(structure), myIntendedContents(intendedContents), myAtomsOverlap(
-        atomsOverlap), mySpeciesDb(speciesDb), myGenShape(genShape)
+    myStructure(structure), myIntendedContents(intendedContents), mySpeciesDb(
+        speciesDb), myGenShape(genShape), myAtomsOverlap(atomsOverlap)
 {
   myTransform.eye();
   myTransformCurrent = true;
@@ -223,7 +223,7 @@ StructureBuild::getTransform() const
   {
     // Do it this way to stop accumulation of error from lots of push/pops
     myTransform.eye();
-    for(int i = 0; i < myTransformStack.size(); ++i)
+    for(size_t i = 0; i < myTransformStack.size(); ++i)
       myTransform *= myTransformStack[i];
     myTransformCurrent = true;
   }
@@ -250,7 +250,6 @@ const StructureBuild::SpeciesPairDistances &
 StructureBuild::getSpeciesPairDistances() const
 {
   typedef ::std::set< ::std::string> SpeciesSet;
-  static const double UNINITIALISED = -1.0;
 
   if(!mySpeciesPairDistancesCurrent)
   {
@@ -275,11 +274,11 @@ StructureBuild::generateSepSqMatrix() const
   const size_t numAtoms = myStructure.getNumAtoms();
   ::arma::mat sepSq = ::arma::zeros(numAtoms, numAtoms);
 
-  for(int i = 0; i < numAtoms; ++i)
+  for(size_t i = 0; i < numAtoms; ++i)
   {
     const common::Atom & atomI = myStructure.getAtom(i);
     const BuildAtomInfo * infoI = getAtomInfo(atomI);
-    for(int j = i; j < numAtoms; ++j)
+    for(size_t j = i; j < numAtoms; ++j)
     {
       const common::Atom & atomJ = myStructure.getAtom(j);
       const BuildAtomInfo * infoJ = getAtomInfo(atomJ);

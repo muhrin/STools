@@ -40,14 +40,12 @@ class SimplePairPotential : public IPotential, public IParameterisable
 {
 public:
 
-  /**
-   /* A list from 0 to N of the species that each row (and column) of the parameter
-   /* matrices corresponds to.  The entries should be unique.
-   /*                      Na Cl
-   /* epsilon_{ij} = Na (  1  0.5 )
-   /*                CL ( 0.5  1  )
-   /* speciesMap(0 => Na, 1 => Cl)
-   /**/
+  // A list from 0 to N of the species that each row (and column) of the parameter
+  // matrices corresponds to.  The entries should be unique.
+  //                      Na Cl
+  // epsilon_{ij} = Na (  1  0.5 )
+  //                CL ( 0.5  1  )
+  // speciesMap(0 => Na, 1 => Cl)
   typedef SimplePairPotentialData::SpeciesList SpeciesList;
   typedef SimplePairPotentialData DataType;
 

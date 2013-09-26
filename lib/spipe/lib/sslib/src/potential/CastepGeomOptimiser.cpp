@@ -33,60 +33,47 @@ CastepGeomOptimiseSettings::CastepGeomOptimiseSettings()
   keepIntermediateFiles = false;
 }
 
-CastepGeomOptimiser::CastepGeomOptimiser(
-  const ::std::string & castepExe,
-  const ::std::string & castepSeed
-):
-myCastepExe(castepExe),
-myCastepSeed(castepSeed),
-myCellReaderWriter(),
-myCastepReader()
-{}
+CastepGeomOptimiser::CastepGeomOptimiser(const ::std::string & castepExe,
+    const ::std::string & castepSeed) :
+    myCastepSeed(castepSeed), myCellReaderWriter(), myCastepReader(), myCastepExe(
+        castepExe)
+{
+}
 
-CastepGeomOptimiser::CastepGeomOptimiser(
-  const ::std::string & castepExe,
-  const ::std::string & castepSeed,
-  const Settings & settings
-):
-myCastepExe(castepExe),
-myCastepSeed(castepSeed),
-mySettings(settings),
-myCellReaderWriter(),
-myCastepReader()
-{}
+CastepGeomOptimiser::CastepGeomOptimiser(const ::std::string & castepExe,
+    const ::std::string & castepSeed, const Settings & settings) :
+    mySettings(settings), myCastepSeed(castepSeed), myCellReaderWriter(), myCastepReader(), myCastepExe(
+        castepExe)
+{
+}
 
-OptimisationOutcome CastepGeomOptimiser::optimise(
-  common::Structure & structure,
-  const OptimisationSettings & options) const
+OptimisationOutcome
+CastepGeomOptimiser::optimise(common::Structure & structure,
+    const OptimisationSettings & options) const
 {
   OptimisationData optimisationData;
   return optimise(structure, optimisationData, options);
 }
 
-OptimisationOutcome CastepGeomOptimiser::optimise(
-	common::Structure & structure,
-  OptimisationData & optimisationData,
-  const OptimisationSettings & options) const
+OptimisationOutcome
+CastepGeomOptimiser::optimise(common::Structure & structure,
+    OptimisationData & optimisationData,
+    const OptimisationSettings & options) const
 {
   const ::std::string outSeedName(structure.getName());
 
-  detail::CastepGeomOptRun geomOpt(
-    options,
-    myCastepSeed,
-    outSeedName,
-    myCellReaderWriter,
-    myCastepReader,
-    mySettings
-  );
+  detail::CastepGeomOptRun geomOpt(options, myCastepSeed, outSeedName,
+      myCellReaderWriter, myCastepReader, mySettings);
 
-  const OptimisationOutcome outcome =
-    geomOpt.runFullRelax(structure, optimisationData, myCastepExe, mySpeciesDb);
+  const OptimisationOutcome outcome = geomOpt.runFullRelax(structure,
+      optimisationData, myCastepExe);
   optimisationData.saveToStructure(structure);
-  
+
   return outcome;
 }
 
-void CastepGeomOptimiser::applySettings(const Settings & settings)
+void
+CastepGeomOptimiser::applySettings(const Settings & settings)
 {
   mySettings = settings;
 }
@@ -98,21 +85,17 @@ const int CastepGeomOptRun::MAX_RELAX_ATTEMPTS = 20;
 namespace properties = common::structure_properties;
 
 CastepGeomOptRun::CastepGeomOptRun(
-  const OptimisationSettings & optimisationSettings,
-  const ::std::string & originalSeed,
-  const ::std::string & newSeed,
-  const io::CellReaderWriter & cellReaderWriter,
-  const io::CastepReader & castepReader,
-  const CastepGeomOptimiseSettings & settings
-):
-myOrigCellFile(originalSeed + ".cell"),
-myOrigParamFile(originalSeed + ".param"),
-myCastepRun(newSeed, cellReaderWriter, castepReader),
-myCellReaderWriter(cellReaderWriter),
-myCastepReader(castepReader),
-myOptimisationSettings(optimisationSettings),
-mySettings(settings)
-{}
+    const OptimisationSettings & optimisationSettings,
+    const ::std::string & originalSeed, const ::std::string & newSeed,
+    const io::CellReaderWriter & cellReaderWriter,
+    const io::CastepReader & castepReader,
+    const CastepGeomOptimiseSettings & settings) :
+    myCastepRun(newSeed, cellReaderWriter, castepReader), mySettings(settings), myOrigCellFile(
+        originalSeed + ".cell"), myOrigParamFile(originalSeed + ".param"), myCellReaderWriter(
+        cellReaderWriter), myCastepReader(castepReader), myOptimisationSettings(
+        optimisationSettings)
+{
+}
 
 CastepGeomOptRun::~CastepGeomOptRun()
 {
@@ -120,36 +103,38 @@ CastepGeomOptRun::~CastepGeomOptRun()
     myCastepRun.deleteAllFiles();
 }
 
-OptimisationOutcome CastepGeomOptRun::runFullRelax(
-  common::Structure & structure,
-  OptimisationData & data,
-  const ::std::string & castepExeAndArgs,
-  const common::AtomSpeciesDatabase & speciesDb
-)
+OptimisationOutcome
+CastepGeomOptRun::runFullRelax(common::Structure & structure,
+    OptimisationData & data, const ::std::string & castepExeAndArgs
+  )
 {
   if(!fs::exists(myOrigParamFile))
   {
     ::std::stringstream ss;
     ss << "Castep input file " << myOrigParamFile << " not found.";
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+        ss.str());
   }
 
   if(!copyParamFile())
   {
     ::std::stringstream ss;
-    ss << "Failed to copy " << myOrigParamFile << " to " << myCastepRun.getParamFile() << ".";
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    ss << "Failed to copy " << myOrigParamFile << " to "
+        << myCastepRun.getParamFile() << ".";
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+        ss.str());
   }
- 
-  doPreRelaxation(structure, data, speciesDb, castepExeAndArgs);
+
+  doPreRelaxation(structure, data, castepExeAndArgs);
 
   OptimisationOutcome outcome;
   int successfulRelaxations = 0;
   int i;
-  for(i = 0; successfulRelaxations < mySettings.numConsistentRelaxations &&
-    i < MAX_RELAX_ATTEMPTS; ++i)
+  for(i = 0;
+      successfulRelaxations < mySettings.numConsistentRelaxations
+          && i < MAX_RELAX_ATTEMPTS; ++i)
   {
-    outcome = doRelaxation(structure, data, speciesDb, castepExeAndArgs);
+    outcome = doRelaxation(structure, data, castepExeAndArgs);
     if(!outcome.isSuccess())
       return outcome;
 
@@ -164,44 +149,49 @@ OptimisationOutcome CastepGeomOptRun::runFullRelax(
   return OptimisationOutcome::success();
 }
 
-OptimisationOutcome CastepGeomOptRun::updateStructure(
-  common::Structure & structure,
-  OptimisationData & data,
-  const common::AtomSpeciesDatabase & speciesDb
-)
+OptimisationOutcome
+CastepGeomOptRun::updateStructure(common::Structure & structure,
+    OptimisationData & data)
 {
-  const CastepRunResult::Value updateResult = myCastepRun.updateStructureFromOutput(structure, speciesDb);
+  const CastepRunResult::Value updateResult =
+      myCastepRun.updateStructureFromOutput(structure);
   if(updateResult != CastepRunResult::SUCCESS)
   {
     if(updateResult == CastepRunResult::OUTPUT_NOT_FOUND)
     {
       ::std::stringstream ss;
-      ss << "Castep output: " << myCastepRun.getCastepFile().string() << " not found.";
-      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+      ss << "Castep output: " << myCastepRun.getCastepFile().string()
+          << " not found.";
+      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+          ss.str());
     }
     else if(updateResult == CastepRunResult::FAILED_TO_READ_STRUCTURE)
     {
       ::std::stringstream ss;
-      ss << "Failed to read structure from " << myCastepRun.getCastepFile().string() << ".";
-      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+      ss << "Failed to read structure from "
+          << myCastepRun.getCastepFile().string() << ".";
+      return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+          ss.str());
     }
     else
       return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR);
   }
-  parseOptimisationInfo(structure, data, speciesDb);
+  parseOptimisationInfo(structure, data);
   data.saveToStructure(structure);
 
   return OptimisationOutcome::success();
 }
 
-bool CastepGeomOptRun::copyParamFile() const
+bool
+CastepGeomOptRun::copyParamFile() const
 {
   SSLIB_ASSERT(fs::exists(myOrigParamFile));
 
   // Copy over the .param file to the new seed name
   try
   {
-    fs::copy_file(myOrigParamFile, myCastepRun.getParamFile(),  fs::copy_option::overwrite_if_exists);
+    fs::copy_file(myOrigParamFile, myCastepRun.getParamFile(),
+        fs::copy_option::overwrite_if_exists);
   }
   catch(const fs::filesystem_error & /*e*/)
   {
@@ -210,16 +200,16 @@ bool CastepGeomOptRun::copyParamFile() const
   return true;
 }
 
-OptimisationOutcome CastepGeomOptRun::makeCellCopy(
-  common::Structure & structure,
-  const common::AtomSpeciesDatabase & speciesDb
-)
+OptimisationOutcome
+CastepGeomOptRun::makeCellCopy(common::Structure & structure)
 {
   fs::ofstream * newCellFileStream;
-  if(myCastepRun.openNewCellFile(&newCellFileStream) == CastepRunResult::SUCCESS)
+  if(myCastepRun.openNewCellFile(&newCellFileStream)
+      == CastepRunResult::SUCCESS)
   {
     if(myOptimisationSettings.pressure)
-      structure.setProperty(common::structure_properties::general::PRESSURE_INTERNAL,
+      structure.setProperty(
+          common::structure_properties::general::PRESSURE_INTERNAL,
           ::arma::trace(*myOptimisationSettings.pressure) / 3.0);
 
     myCellReaderWriter.writeStructure(*newCellFileStream, structure);
@@ -230,7 +220,8 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
       fs::ifstream origCellStream(myOrigCellFile);
       if(origCellStream.is_open())
       {
-        *newCellFileStream << ::std::endl << "#==ORIGINAL CONTENTS==" << ::std::endl;
+        *newCellFileStream << ::std::endl << "#==ORIGINAL CONTENTS=="
+            << ::std::endl;
         *newCellFileStream << origCellStream.rdbuf();
         origCellStream.close();
       }
@@ -238,7 +229,8 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
       {
         ::std::stringstream ss;
         ss << "Failed to open " << myOrigCellFile << " for reading.";
-        return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+        return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+            ss.str());
       }
     }
   }
@@ -246,47 +238,47 @@ OptimisationOutcome CastepGeomOptRun::makeCellCopy(
   {
     ::std::stringstream ss;
     ss << "Failed to open " << myCastepRun.getCellFile() << " for writing.";
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+        ss.str());
   }
   return OptimisationOutcome::success();
 }
 
-OptimisationOutcome CastepGeomOptRun::doPreRelaxation(
-  common::Structure & structure,
-  OptimisationData & optimisationData,
-  const common::AtomSpeciesDatabase & speciesDb,
-  const ::std::string & castepExeAndArgs
-)
+OptimisationOutcome
+CastepGeomOptRun::doPreRelaxation(common::Structure & structure,
+    OptimisationData & optimisationData,
+    const ::std::string & castepExeAndArgs)
 {
   if(mySettings.numRoughSteps <= 0)
     return OptimisationOutcome::success();
 
   const fs::path origParamFile(myCastepRun.getParamFile().string() + ".orig");
-  fs::copy_file(myCastepRun.getParamFile(), origParamFile, fs::copy_option::overwrite_if_exists);
+  fs::copy_file(myCastepRun.getParamFile(), origParamFile,
+      fs::copy_option::overwrite_if_exists);
 
   CastepRun::ParamsMap paramsMap;
   paramsMap["geom_max_iter"] = "2";
   myCastepRun.insertParams(paramsMap);
 
   // Do short relaxations
-  for(int i = 0;  i < mySettings.numRoughSteps;  ++i)
-    doRelaxation(structure, optimisationData, speciesDb, castepExeAndArgs);
+  for(int i = 0; i < mySettings.numRoughSteps; ++i)
+    doRelaxation(structure, optimisationData, castepExeAndArgs);
 
   // Copy the original back
-  fs::copy_file(origParamFile, myCastepRun.getParamFile(), fs::copy_option::overwrite_if_exists);
+  fs::copy_file(origParamFile, myCastepRun.getParamFile(),
+      fs::copy_option::overwrite_if_exists);
   fs::remove_all(origParamFile);
 
   return OptimisationOutcome::success();
 }
 
-OptimisationOutcome CastepGeomOptRun::doRelaxation(
-  common::Structure & structure,
-  OptimisationData & optimistaionData,
-  const common::AtomSpeciesDatabase & speciesDb,
-  const ::std::string & castepExeAndArgs)
+OptimisationOutcome
+CastepGeomOptRun::doRelaxation(common::Structure & structure,
+    OptimisationData & optimistaionData,
+    const ::std::string & castepExeAndArgs)
 {
   // 1. Write the .cell file from the current structure
-  OptimisationOutcome outcome = makeCellCopy(structure, speciesDb);
+  OptimisationOutcome outcome = makeCellCopy(structure);
   if(!outcome.isSuccess())
     return outcome;
 
@@ -294,18 +286,22 @@ OptimisationOutcome CastepGeomOptRun::doRelaxation(
   if(myCastepRun.runCastep(castepExeAndArgs) != CastepRunResult::SUCCESS)
   {
     ::std::stringstream ss;
-    ss << "Failed to run castep with: " << castepExeAndArgs << " " << io::stemString(myCastepRun.getParamFile());
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, ss.str());
+    ss << "Failed to run castep with: " << castepExeAndArgs << " "
+        << io::stemString(myCastepRun.getParamFile());
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+        ss.str());
   }
 
   if(!myCastepRun.finishedSuccessfully())
-    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR, "Castep did not finish correctly.");
+    return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR,
+        "Castep did not finish correctly.");
 
   // 3. Read in results from -out.cell and update structure
-  return updateStructure(structure, optimistaionData, speciesDb);
+  return updateStructure(structure, optimistaionData);
 }
 
-bool CastepGeomOptRun::optimisationSucceeded()
+bool
+CastepGeomOptRun::optimisationSucceeded()
 {
   fs::ifstream * castepFileStream;
   myCastepRun.openCastepFile(&castepFileStream);
@@ -321,12 +317,9 @@ bool CastepGeomOptRun::optimisationSucceeded()
   return succeeded;
 }
 
-
-bool CastepGeomOptRun::parseOptimisationInfo(
-  common::Structure & structure,
-  OptimisationData & data,
-  const common::AtomSpeciesDatabase & speciesDb
-)
+bool
+CastepGeomOptRun::parseOptimisationInfo(common::Structure & structure,
+    OptimisationData & data)
 {
   static const ::std::string FORCES("* Forces *");
 

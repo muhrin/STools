@@ -33,8 +33,8 @@ const bool WriteStructures::WRITE_MULTI_DEFAULT = true;
 const ::std::string WriteStructures::FORMAT_DEFAULT = "res";
 
 WriteStructures::WriteStructures() :
-    Block("Write structures"), myWriteMultiStructure(WRITE_MULTI_DEFAULT), myState(
-        State::DISABLED)
+    Block("Write structures"), myState(State::DISABLED),
+    myWriteMultiStructure(WRITE_MULTI_DEFAULT)
 {
 }
 

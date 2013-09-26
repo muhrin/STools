@@ -51,9 +51,7 @@ public:
   virtual IFragmentGeneratorPtr clone() const = 0;
 };
 
-/**
-/*  Support for boost ptr_container copy construction.
-/**/
+// Support for boost ptr_container copy construction.
 inline IFragmentGenerator * new_clone(const IFragmentGenerator & toClone)
 {
   return toClone.clone().release();

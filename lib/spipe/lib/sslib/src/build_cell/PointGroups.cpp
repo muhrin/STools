@@ -21,10 +21,9 @@
 namespace spl {
 namespace build_cell {
 
-void generatePointGroup(
-  SymmetryGroup & groupOut,
-  const PointGroupFamily::Value family,
-  const unsigned int n)
+void
+generatePointGroup(SymmetryGroup & groupOut,
+    const PointGroupFamily::Value family, const unsigned int n)
 {
   groupOut.reset();
 
@@ -43,169 +42,169 @@ void generatePointGroup(
   {
   // Axial groups
   case PointGroupFamily::C:
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      break;
-    }
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    break;
   case PointGroupFamily::Cv: // Vertical mirror plane
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, Y);
-      const size_t numOps = groupOut.numOps();
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, Y);
+    const size_t numOps = groupOut.numOps();
 
-      // Now combine rotations and reflections
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    // Now combine rotations and reflections
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
 
-      break;
-    }
+    break;
+  }
+
   case PointGroupFamily::Ch: // Horizontal mirror plane
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, Z);
-      const size_t numOps = groupOut.numOps();      
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
 
-      // Now combine rotations and reflections
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, Z);
+    const size_t numOps = groupOut.numOps();
 
-      //SymmetryGroupBuilder builder;
-      //SymmetryGroupBuilder::Generator generator;
+    // Now combine rotations and reflections
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
 
-      //if(n > 1)
-      //{
-      //  symmetry::makeZRotation(generator, common::constants::TWO_PI / static_cast<double>(n));
-      //  builder.addGenerator(generator);
-      //}
+    //SymmetryGroupBuilder builder;
+    //SymmetryGroupBuilder::Generator generator;
 
-      //symmetry::makeReflection(generator, Z);
-      //builder.addGenerator(generator);
+    //if(n > 1)
+    //{
+    //  symmetry::makeZRotation(generator, common::constants::TWO_PI / static_cast<double>(n));
+    //  builder.addGenerator(generator);
+    //}
 
-      //builder.build(groupOut);
+    //symmetry::makeReflection(generator, Z);
+    //builder.addGenerator(generator);
 
-      break;
-    }
+    //builder.build(groupOut);
+
+    break;
+  }
+
   case PointGroupFamily::S:
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
 
-      symmetry::makeZRotation(op, common::constants::TWO_PI / static_cast<double>(n));
-      op(2,2) = -1.0; // Make it a rotation-reflection
+    symmetry::makeZRotation(op,
+        common::constants::TWO_PI / static_cast< double>(n));
+    op(2, 2) = -1.0; // Make it a rotation-reflection
 
-      groupOut.addOp(op);
-      for(size_t i = 1; i < n; ++i)
-        groupOut.addOp(groupOut.getOp(i - 1) * op);
+    groupOut.addOp(op);
+    for(size_t i = 1; i < n; ++i)
+      groupOut.addOp(groupOut.getOp(i - 1) * op);
 
-      break;
-    }
-  case PointGroupFamily::Ci:
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, X + Y + Z);
-      const size_t numOps = groupOut.numOps();
+    break;
+    case PointGroupFamily::Ci:
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, X + Y + Z);
+    const size_t numOps = groupOut.numOps();
 
-      // Now combine rotations and reflections
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    // Now combine rotations and reflections
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
+  }
+  break;
 
-      break;
-    }
   case PointGroupFamily::Cs:
-    {
-      symmetry::addReflection(groupOut, Z);
-      break;
-    }
+    symmetry::addReflection(groupOut, Z);
+    break;
+
   case PointGroupFamily::D: // 2-fold (X/Y) mirror planes
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, X + Y);
-      const size_t numOps = groupOut.numOps();
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, X + Y);
+    const size_t numOps = groupOut.numOps();
 
-      // Now combine rotations and reflections
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    // Now combine rotations and reflections
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
+  }
+  break;
 
-      break;
-    };
   case PointGroupFamily::Dh: // 2-fold (X/Y) mirror planes and horizontal mirror plane
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, X + Y);
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, X + Y);
 
-      // Now combine rotations and reflections
-      size_t numOps = groupOut.numOps();
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    // Now combine rotations and reflections
+    size_t numOps = groupOut.numOps();
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
 
-      symmetry::addReflection(groupOut, Z);
-      // Now combine everything with this last reflection
-      numOps = groupOut.numOps();
-      const ::arma::mat44 hReflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * hReflection);
+    symmetry::addReflection(groupOut, Z);
+    // Now combine everything with this last reflection
+    numOps = groupOut.numOps();
+    const ::arma::mat44 hReflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * hReflection);
+  }
+  break;
 
-      break;
-    };
   case PointGroupFamily::Dd:
-    {
-      SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
-      if(n > 1)
-        symmetry::addZRotations(groupOut, n);
-      symmetry::addReflection(groupOut, X + Z);
+  {
+    SSLIB_ASSERT_MSG(n > 0, "Axial group must have rotations");
+    if(n > 1)
+      symmetry::addZRotations(groupOut, n);
+    symmetry::addReflection(groupOut, X + Z);
 
-      // Now combine rotations and reflections
-      size_t numOps = groupOut.numOps();
-      const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * reflection);
+    // Now combine rotations and reflections
+    size_t numOps = groupOut.numOps();
+    const ::arma::mat44 reflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * reflection);
 
-      ::arma::mat44 rotZ, sigmaV;
-      symmetry::makeZRotation(rotZ, common::constants::PI / static_cast<double>(n));
-      symmetry::makeReflection(sigmaV, X);
-      op = sigmaV * rotZ;
-      groupOut.addOp(op);
-      // Now combine everything with this last reflection
-      numOps = groupOut.numOps();
-      const ::arma::mat44 vReflection(groupOut.getOp(numOps - 1));
-      for(size_t i = 1; i < numOps - 1; ++i)
-        groupOut.addOp(groupOut.getOp(i) * vReflection);
+    ::arma::mat44 rotZ, sigmaV;
+    symmetry::makeZRotation(rotZ,
+        common::constants::PI / static_cast< double>(n));
+    symmetry::makeReflection(sigmaV, X);
+    op = sigmaV * rotZ;
+    groupOut.addOp(op);
+    // Now combine everything with this last reflection
+    numOps = groupOut.numOps();
+    const ::arma::mat44 vReflection(groupOut.getOp(numOps - 1));
+    for(size_t i = 1; i < numOps - 1; ++i)
+      groupOut.addOp(groupOut.getOp(i) * vReflection);
+  }
+  break;
 
-      break;
-    };
-  // Polyhedral groups
+    // Polyhedral groups
   case PointGroupFamily::T:
-    {
+    break;
 
-      break;
-    };
-
-
+  default:
+    break;
   };
   // Finally generate the eigenvectors and multiplicities
   groupOut.generateEigenvectors();
 }
 
-bool getPointGroup(PointGroup & groupOut, const ::std::string & groupString)
+bool
+getPointGroup(PointGroup & groupOut, const ::std::string & groupString)
 {
   static const boost::regex pgExpression("([CSDTOI])([[:digit:]]*)([hvids]*)");
-  
+
   if(groupString.empty())
     return false;
 
@@ -228,7 +227,7 @@ bool getPointGroup(PointGroup & groupOut, const ::std::string & groupString)
   {
     try
     {
-      nFold = ::boost::lexical_cast<unsigned int>(nFoldStr);
+      nFold = ::boost::lexical_cast< unsigned int>(nFoldStr);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
     {
@@ -239,70 +238,68 @@ bool getPointGroup(PointGroup & groupOut, const ::std::string & groupString)
   switch(familyChar)
   {
   case 'C':
-    {
-      if(mirror.empty())
-        groupOut.first = PointGroupFamily::C;
-      else if(mirror == "i")
-        groupOut.first = PointGroupFamily::Ci;
-      else if(mirror == "s")
-        groupOut.first = PointGroupFamily::Cs;
-      else if(mirror == "h")
-        groupOut.first = PointGroupFamily::Ch;
-      else if(mirror == "v")
-        groupOut.first = PointGroupFamily::Cv;
-      else
-        return false;
-
-      groupOut.second = nFold;
-      
-      break;
-    };
-  case 'S':
-    {
-      groupOut.first = PointGroupFamily::S;
-      groupOut.second = nFold;
-      break;
-    };
-  case 'D':
-    {
-      if(mirror.empty())
-        groupOut.first = PointGroupFamily::D;
-      else if(mirror == "d")
-        groupOut.first = PointGroupFamily::Dd;
-      else if(mirror == "h")
-        groupOut.first = PointGroupFamily::Dh;
-      else
-        return false;
-      groupOut.second = nFold;
-    }
-  default:
-    {
+    if(mirror.empty())
+      groupOut.first = PointGroupFamily::C;
+    else if(mirror == "i")
+      groupOut.first = PointGroupFamily::Ci;
+    else if(mirror == "s")
+      groupOut.first = PointGroupFamily::Cs;
+    else if(mirror == "h")
+      groupOut.first = PointGroupFamily::Ch;
+    else if(mirror == "v")
+      groupOut.first = PointGroupFamily::Cv;
+    else
       return false;
-    }
-  };
 
+    groupOut.second = nFold;
+
+    break;
+
+  case 'S':
+    groupOut.first = PointGroupFamily::S;
+    groupOut.second = nFold;
+    break;
+
+  case 'D':
+    if(mirror.empty())
+      groupOut.first = PointGroupFamily::D;
+    else if(mirror == "d")
+      groupOut.first = PointGroupFamily::Dd;
+    else if(mirror == "h")
+      groupOut.first = PointGroupFamily::Dh;
+    else
+      return false;
+    groupOut.second = nFold;
+
+    break;
+
+  default:
+    return false;
+
+  };
 
   return true;
 }
 
-::boost::optional< ::std::pair<PointGroupFamily::Value, unsigned int> >
+::boost::optional< ::std::pair< PointGroupFamily::Value, unsigned int> >
 getRandomPointGroup(const unsigned int numOps)
 {
-  ::boost::optional< ::std::pair<PointGroupFamily::Value, unsigned int> > group;
+  ::boost::optional< ::std::pair< PointGroupFamily::Value, unsigned int> > group;
 
-  const ::std::vector< ::std::pair<PointGroupFamily::Value, unsigned int> >
-    possibleGroups(getPossiblePointGroups(numOps));
+  const ::std::vector< ::std::pair< PointGroupFamily::Value, unsigned int> > possibleGroups(
+      getPossiblePointGroups(numOps));
 
   if(!possibleGroups.empty())
-    group.reset(possibleGroups[math::randu<size_t>(0, possibleGroups.size() - 1)]);
+    group.reset(
+        possibleGroups[math::randu< size_t>(0, possibleGroups.size() - 1)]);
 
   return group;
 }
 
-::std::vector< ::std::pair<PointGroupFamily::Value, unsigned int> >
+::std::vector< ::std::pair< PointGroupFamily::Value, unsigned int> >
 getPossiblePointGroups(const unsigned int numOps)
 {
-  ::std::vector< ::std::pair<PointGroupFamily::Value, unsigned int> > possibleGroups;
+  ::std::vector< ::std::pair< PointGroupFamily::Value, unsigned int> > possibleGroups;
   if(numOps == 0)
     return possibleGroups;
 
@@ -310,23 +307,26 @@ getPossiblePointGroups(const unsigned int numOps)
   possibleGroups.push_back(::std::make_pair(PointGroupFamily::C, numOps));
   if(numOps % 2 == 0) // Even
   {
-    possibleGroups.push_back(::std::make_pair(PointGroupFamily::Ch, numOps / 2));
-    possibleGroups.push_back(::std::make_pair(PointGroupFamily::Cv, numOps / 2));
+    possibleGroups.push_back(
+        ::std::make_pair(PointGroupFamily::Ch, numOps / 2));
+    possibleGroups.push_back(
+        ::std::make_pair(PointGroupFamily::Cv, numOps / 2));
     possibleGroups.push_back(::std::make_pair(PointGroupFamily::D, numOps / 2));
     if(numOps >= 4)
     {
-      possibleGroups.push_back(::std::make_pair(PointGroupFamily::Dh, numOps / 4));
-      possibleGroups.push_back(::std::make_pair(PointGroupFamily::Dd, numOps / 4));
+      possibleGroups.push_back(
+          ::std::make_pair(PointGroupFamily::Dh, numOps / 4));
+      possibleGroups.push_back(
+          ::std::make_pair(PointGroupFamily::Dd, numOps / 4));
     }
   }
   else // Odd
   {
-    
+
   }
 
   return possibleGroups;
 }
-
 
 }
 }

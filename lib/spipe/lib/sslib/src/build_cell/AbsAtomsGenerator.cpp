@@ -5,7 +5,6 @@
  *      Author: Martin Uhrin
  */
 
-
 // INCLUDES /////////////////
 #include "spl/build_cell/AbsAtomsGenerator.h"
 
@@ -28,63 +27,72 @@
 namespace spl {
 namespace build_cell {
 
-AbsAtomsGenerator::AbsAtomsGenerator(const AbsAtomsGenerator & toCopy):
-myAtoms(toCopy.myAtoms),
-myGenShape(toCopy.myGenShape->clone())
-{}
+AbsAtomsGenerator::AbsAtomsGenerator(const AbsAtomsGenerator & toCopy) :
+    myAtoms(toCopy.myAtoms), myGenShape(toCopy.myGenShape->clone()),
+    myLastTicketId(0)
+{
+}
 
-void AbsAtomsGenerator::insertAtoms(const AtomsDescription & atoms)
+void
+AbsAtomsGenerator::insertAtoms(const AtomsDescription & atoms)
 {
   myAtoms.push_back(atoms);
   // Invalidate all tickets
   myTickets.clear();
 }
 
-size_t AbsAtomsGenerator::numAtoms() const
+size_t
+AbsAtomsGenerator::numAtoms() const
 {
   return myAtoms.size();
 }
 
-AbsAtomsGenerator::const_iterator AbsAtomsGenerator::beginAtoms() const
+AbsAtomsGenerator::const_iterator
+AbsAtomsGenerator::beginAtoms() const
 {
   return myAtoms.begin();
 }
 
-AbsAtomsGenerator::const_iterator AbsAtomsGenerator::endAtoms() const
+AbsAtomsGenerator::const_iterator
+AbsAtomsGenerator::endAtoms() const
 {
   return myAtoms.end();
 }
 
-const IGeneratorShape * AbsAtomsGenerator::getGeneratorShape() const
+const IGeneratorShape *
+AbsAtomsGenerator::getGeneratorShape() const
 {
   return myGenShape.get();
 }
 
-void AbsAtomsGenerator::setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape)
+void
+AbsAtomsGenerator::setGeneratorShape(UniquePtr< IGeneratorShape>::Type genShape)
 {
   myGenShape = genShape;
 }
 
-void AbsAtomsGenerator::addSpeciesPairDistance(const SpeciesPair & pair, const double distance)
+void
+AbsAtomsGenerator::addSpeciesPairDistance(const SpeciesPair & pair,
+    const double distance)
 {
   mySpeciesPairDistances[pair] = distance;
 }
 
 GenerationOutcome
-AbsAtomsGenerator::generateFragment(
-  StructureBuild & build,
-  const GenerationTicket ticket,
-  const common::AtomSpeciesDatabase & speciesDb
-) const
+AbsAtomsGenerator::generateFragment(StructureBuild & build,
+    const GenerationTicket ticket,
+    const common::AtomSpeciesDatabase & speciesDb) const
 {
-  typedef ::std::vector<unsigned int> Multiplicities;
+  typedef ::std::vector< unsigned int> Multiplicities;
 
   // Push our current set of species pair distances onto the distances stack
-  StructureBuild::SpeciesDistancesPusher distsPusher(build, mySpeciesPairDistances);
+  StructureBuild::SpeciesDistancesPusher distsPusher(build,
+      mySpeciesPairDistances);
 
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
-  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with ticket we don't recognise.");
+  SSLIB_ASSERT_MSG(it != myTickets.end(),
+      "Asked to build structure with ticket we don't recognise.");
   const AtomCounts & counts = it->second.atomCounts;
   if(counts.empty())
     return GenerationOutcome::success();
@@ -119,11 +127,13 @@ AbsAtomsGenerator::generateFragment(
       multiplicities.insert(multiplicities.begin(), atomsDesc.second, 1);
     }
     else
-      multiplicities = symmetry::generateMultiplicities(atomsDesc.second, possibleMultiplicities);
+      multiplicities = symmetry::generateMultiplicities(atomsDesc.second,
+          possibleMultiplicities);
 
     if(multiplicities.empty())
     {
-      outcome.setFailure("Couldn't factor atom multiplicities into number of sym ops.");
+      outcome.setFailure(
+          "Couldn't factor atom multiplicities into number of sym ops.");
       return outcome;
     }
 
@@ -134,7 +144,8 @@ AbsAtomsGenerator::generateFragment(
       BuildAtomInfo & info = build.createAtomInfo(atom);
       info.setMultiplicity(multiplicity);
 
-      position = generatePosition(info, *atomsDesc.first, build, multiplicity, transform);
+      position = generatePosition(info, *atomsDesc.first, build, multiplicity,
+          transform);
       atom.setPosition(position.first);
       info.setFixed(position.second);
 
@@ -147,12 +158,14 @@ AbsAtomsGenerator::generateFragment(
   if(build.extrudeAtoms())
     outcome.setSuccess();
   else
-    outcome.setFailure("Failed to extrude atoms, maybe the volume is too small.");
+    outcome.setFailure(
+        "Failed to extrude atoms, maybe the volume is too small.");
 
   return outcome;
 }
 
-AbsAtomsGenerator::GenerationTicket AbsAtomsGenerator::getTicket()
+AbsAtomsGenerator::GenerationTicket
+AbsAtomsGenerator::getTicket()
 {
   GenerationTicket::IdType ticketId = ++myLastTicketId;
 
@@ -174,29 +187,30 @@ AbsAtomsGenerator::GenerationTicket AbsAtomsGenerator::getTicket()
   return GenerationTicket(ticketId);
 }
 
-StructureContents AbsAtomsGenerator::getGenerationContents(
-  const GenerationTicket ticket,
-  const common::AtomSpeciesDatabase & speciesDb
-) const
+StructureContents
+AbsAtomsGenerator::getGenerationContents(const GenerationTicket ticket,
+    const common::AtomSpeciesDatabase & speciesDb) const
 {
   StructureContents contents;
 
   // Get the ticket
   TicketsMap::const_iterator it = myTickets.find(ticket.getId());
-  SSLIB_ASSERT_MSG(it != myTickets.end(), "Asked to build structure with unrecognised ticket.  Probably changed generator after the ticket was requested.");
+  SSLIB_ASSERT_MSG(it != myTickets.end(),
+      "Asked to build structure with unrecognised ticket.  Probably changed generator after the ticket was requested.");
   const AtomCounts & counts = it->second.atomCounts;
 
   double radius;
   BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
     radius = getRadius(*atomsDesc.first, speciesDb);
-    contents.addAtoms(static_cast<size_t>(atomsDesc.second), radius);
+    contents.addAtoms(static_cast< size_t>(atomsDesc.second), radius);
   }
 
   return contents;
 }
 
-void AbsAtomsGenerator::handleReleased(const GenerationTicketId & id)
+void
+AbsAtomsGenerator::handleReleased(const GenerationTicketId & id)
 {
   // Get the ticket
   TicketsMap::iterator it = myTickets.find(id);
@@ -206,24 +220,19 @@ void AbsAtomsGenerator::handleReleased(const GenerationTicketId & id)
   myTickets.erase(it);
 }
 
-IFragmentGeneratorPtr AbsAtomsGenerator::clone() const
+IFragmentGeneratorPtr
+AbsAtomsGenerator::clone() const
 {
   return IFragmentGeneratorPtr(new AbsAtomsGenerator(*this));
 }
 
 AbsAtomsGenerator::AtomPosition
-AbsAtomsGenerator::generatePosition(
-  BuildAtomInfo & atomInfo,
-  const AtomsDescription & atom,
-  const StructureBuild & build,
-  const unsigned int multiplicity,
-  const ::arma::mat44 & transformation
-) const
+AbsAtomsGenerator::generatePosition(BuildAtomInfo & atomInfo,
+    const AtomsDescription & atom, const StructureBuild & build,
+    const unsigned int multiplicity, const ::arma::mat44 & transformation) const
 {
-  SSLIB_ASSERT_MSG(
-    !(multiplicity > 1 && !build.getSymmetryGroup()),
-    "If we have a multiplicity of more than one then there must be a symmetry group"
-  );
+  SSLIB_ASSERT_MSG( !(multiplicity > 1 && !build.getSymmetryGroup()),
+      "If we have a multiplicity of more than one then there must be a symmetry group");
 
   const bool usingSymmetry = build.getSymmetryGroup() != NULL;
 
@@ -250,16 +259,18 @@ AbsAtomsGenerator::generatePosition(
       if(multiplicity == build.getSymmetryGroup()->numOps())
       {
         // Apply all operators (true for entire op mask)
-        atomInfo.setOperatorsMask(::std::vector<bool>(build.getSymmetryGroup()->numOps(), true));
+        atomInfo.setOperatorsMask(
+            ::std::vector< bool>(build.getSymmetryGroup()->numOps(), true));
       }
       else // Special position
       {
         const SymmetryGroup::EigenspacesAndMasks * const spaces =
-          build.getSymmetryGroup()->getEigenspacesAndMasks(multiplicity);
+            build.getSymmetryGroup()->getEigenspacesAndMasks(multiplicity);
 
         ::arma::vec3 newPos;
         SymmetryGroup::OpMask opMask;
-        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build), transformation))
+        if(!generateSpecialPosition(newPos, opMask, *spaces, getGenShape(build),
+            transformation))
         {
           // TODO: return error
           return position;
@@ -276,15 +287,14 @@ AbsAtomsGenerator::generatePosition(
   return position;
 }
 
-bool AbsAtomsGenerator::generateSpecialPosition(
-  ::arma::vec3 & posOut,
-  SymmetryGroup::OpMask & opMaskOut,
-  const SymmetryGroup::EigenspacesAndMasks & spaces,
-  const IGeneratorShape & genShape,
-  const ::arma::mat44 & transformation
-) const
+bool
+AbsAtomsGenerator::generateSpecialPosition(::arma::vec3 & posOut,
+    SymmetryGroup::OpMask & opMaskOut,
+    const SymmetryGroup::EigenspacesAndMasks & spaces,
+    const IGeneratorShape & genShape,
+    const ::arma::mat44 & transformation) const
 {
-  typedef ::std::vector<size_t> Indices;
+  typedef ::std::vector< size_t> Indices;
   // Generate a list of the indices
   Indices indices;
   for(size_t i = 0; i < spaces.size(); ++i)
@@ -295,7 +305,7 @@ bool AbsAtomsGenerator::generateSpecialPosition(
   while(!indices.empty())
   {
     // Get a random one in the list
-    it = indices.begin() + math::randu<size_t>(indices.size() - 1);
+    it = indices.begin() + math::randu< size_t>(indices.size() - 1);
     pos = generateSpeciesPosition(spaces[*it].first, genShape, transformation);
     if(pos)
     {
@@ -309,27 +319,26 @@ bool AbsAtomsGenerator::generateSpecialPosition(
   return false; // Couldn't find one
 }
 
-OptionalArmaVec3 AbsAtomsGenerator::generateSpeciesPosition(
-  const SymmetryGroup::Eigenspace & space,
-  const IGeneratorShape & genShape,
-  const ::arma::mat44 & transformation
-) const
+OptionalArmaVec3
+AbsAtomsGenerator::generateSpeciesPosition(
+    const SymmetryGroup::Eigenspace & space, const IGeneratorShape & genShape,
+    const ::arma::mat44 & transformation) const
 {
   // Select the correct function depending on the number of eigenvectors
   if(space.n_cols == 1)
     return genShape.randomPointOnAxis(space, &transformation);
   else if(space.n_cols == 2)
-    return genShape.randomPointInPlane(space.col(0), space.col(1), &transformation);
+    return genShape.randomPointInPlane(space.col(0), space.col(1),
+        &transformation);
   return OptionalArmaVec3(::arma::zeros< ::arma::vec>(3));
 }
 
-double AbsAtomsGenerator::getRadius(
-  const AtomsDescription & atom,
-  const common::AtomSpeciesDatabase & speciesDb
-) const
+double
+AbsAtomsGenerator::getRadius(const AtomsDescription & atom,
+    const common::AtomSpeciesDatabase & speciesDb) const
 {
-  double radius;
-  ::boost::optional<double> optionalRadius;
+  double radius = 0.0;
+  ::boost::optional< double> optionalRadius;
 
   // Try getting it from the atom
   optionalRadius = atom.getRadius();
@@ -341,14 +350,13 @@ double AbsAtomsGenerator::getRadius(
     optionalRadius = speciesDb.getRadius(atom.getSpecies());
     if(optionalRadius)
       radius = *optionalRadius;
-    else
-      radius = 0.0;
   }
 
   return radius;
 }
 
-const IGeneratorShape & AbsAtomsGenerator::getGenShape(const StructureBuild & build) const
+const IGeneratorShape &
+AbsAtomsGenerator::getGenShape(const StructureBuild & build) const
 {
   if(myGenShape.get())
     return *myGenShape;
@@ -356,12 +364,14 @@ const IGeneratorShape & AbsAtomsGenerator::getGenShape(const StructureBuild & bu
     return build.getGenShape();
 }
 
-::arma::mat44 AbsAtomsGenerator::generateTransform(const StructureBuild & build) const
+::arma::mat44
+AbsAtomsGenerator::generateTransform(const StructureBuild & build) const
 {
   return ::arma::eye(4, 4);
 }
 
-void AbsAtomsGenerator::invalidateTickets()
+void
+AbsAtomsGenerator::invalidateTickets()
 {
   myTickets.clear();
 }

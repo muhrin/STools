@@ -661,6 +661,7 @@ const double (&
         const double beta, const double gamma)
     {
       using namespace utility::cell_params_enum;
+      using ::std::abs;
 
       // Sanity checks on parameters
       SSLIB_ASSERT_MSG(alpha+beta+gamma <= 360.0,

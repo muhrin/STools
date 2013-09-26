@@ -23,10 +23,10 @@ PipeEngineFactory::createEngine(const HeteroMap & settings) const
   const HeteroMap * const multithreadedSettings = settings.find(BOOST_THREAD);
   if(serialSettings)
     return EnginePtr(createSerialEngine(*serialSettings).release());
-#ifdef SP_ENABLE_THREAD_AWARE
+#ifdef PIPELIB_USE_BOOST_THREAD
   else if(multithreadedSettings)
     return EnginePtr(createBoostThreadEngine(*multithreadedSettings).release());
-#endif SP_ENABLE_THREAD_AWARE
+#endif
 
   return EnginePtr();
 }
@@ -37,7 +37,7 @@ PipeEngineFactory::createSerialEngine(const HeteroMap & settings) const
   return UniquePtr<SerialEngine>::Type(new SerialEngine);
 }
 
-#ifdef SP_ENABLE_THREAD_AWARE
+#ifdef PIPELIB_USE_BOOST_THREAD
 UniquePtr<BoostThreadEngine>::Type
 PipeEngineFactory::createBoostThreadEngine(const HeteroMap & settings) const
 {

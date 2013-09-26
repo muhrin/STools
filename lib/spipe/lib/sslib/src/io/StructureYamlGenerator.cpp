@@ -83,8 +83,6 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
 
   common::types::StructurePtr structure(new common::Structure());
 
-  bool valid = true;
-
   if(node[kw::STRUCTURE__NAME])
     structure->setName(node[kw::STRUCTURE__NAME].as< ::std::string>());
 

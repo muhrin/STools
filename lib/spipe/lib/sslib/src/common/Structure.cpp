@@ -305,7 +305,7 @@ Structure::setVisibleProperty(VisibleProperty & property,
 bool
 Structure::makePrimitive()
 {
-  const int numAtoms = myAtoms.size();
+  const size_t numAtoms = myAtoms.size();
   if(!getUnitCell() || numAtoms == 0)
     return false;
 
