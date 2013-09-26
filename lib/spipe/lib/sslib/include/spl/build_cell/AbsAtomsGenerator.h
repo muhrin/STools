@@ -40,7 +40,6 @@ public:
   typedef Atoms::const_iterator iterator;
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
 
-
   void insertAtoms(const AtomsDescription & atoms);
   size_t numAtoms() const;
   const_iterator beginAtoms() const;
@@ -70,7 +69,7 @@ public:
   // End from IFragmentGenerator
 
 protected:
-  AbsAtomsGenerator() {};
+  AbsAtomsGenerator(): myLastTicketId(0) {}
   AbsAtomsGenerator(const AbsAtomsGenerator & toCopy);
 
   virtual ::arma::mat44 generateTransform(const StructureBuild & build) const;
