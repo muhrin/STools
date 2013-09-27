@@ -87,6 +87,8 @@ struct Search : PipeSettings
 
     addEntry("buildStructures", spf::BUILD_STRUCTURES,
         new spf::blocks::BuildStructures());
+    addEntry("loadStructures", spf::LOAD_STRUCTURES,
+        new spf::blocks::LoadStructures());
     addEntry("preGeomOptimise", spf::PRE_GEOM_OPTIMISE,
         new spf::blocks::GeomOptimise());
     addEntry("findSymmetryGroup", spf::FIND_SYMMETRY_GROUP,

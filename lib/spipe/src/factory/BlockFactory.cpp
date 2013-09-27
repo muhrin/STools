@@ -17,6 +17,7 @@
 #include "blocks/FindSymmetryGroup.h"
 #include "blocks/KeepTopN.h"
 #include "blocks/KeepWithinXPercent.h"
+#include "blocks/LoadSeedStructures.h"
 #include "blocks/NiggliReduce.h"
 #include "blocks/GeomOptimise.h"
 #include "blocks/ParamGeomOptimise.h"
@@ -93,6 +94,14 @@ BlockFactory::createKeepWithinXPercentBlock(BlockHandle * const blockOut,
   }
 
   return false;
+}
+
+bool
+BlockFactory::createLoadStructuresBlock(BlockHandle * const blockOut,
+    const ::std::string & toLoad) const
+{
+  blockOut->reset(new blocks::LoadSeedStructures(toLoad));
+  return true;
 }
 
 bool

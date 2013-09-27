@@ -66,6 +66,10 @@ struct KeepWithinXPercent : HeteroMap
   }
 };
 
+struct LoadStructures : spl::yaml_schema::SchemaScalar< ::std::string>
+{
+};
+
 struct NiggliReduce : HeteroMap
 {
   NiggliReduce()

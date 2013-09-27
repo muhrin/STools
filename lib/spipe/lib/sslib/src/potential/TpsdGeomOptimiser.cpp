@@ -67,7 +67,7 @@ const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
 const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_POS_FACTOR = 0.5;
 const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.2;
-static const double INITIAL_STEPSIZE = 0.02;
+static const double INITIAL_STEPSIZE = 0.001;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
@@ -376,7 +376,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
       gg += accu(deltaS % deltaS);
     }
 
-    if(fabs(xg) > 0.0)
+    if(::std::fabs(xg) > 0.0)
       step = ::std::fabs(xg / gg);
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
@@ -424,7 +424,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
     dH = h - h0;
 
-    residualStress = ::arma::abs(data.stressMtx + *settings.pressure);
+    residualStress = ::arma::abs(data.stressMtx + pressureMtx);
     converged = hasConverged(dH / dNumAtoms, fSqNorm.max(),
         residualStress.max(), settings);
 
