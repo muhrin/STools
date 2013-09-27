@@ -19,6 +19,7 @@ utility::NamedKey<double>             PRESSURE_INTERNAL("pressure");
 utility::NamedKey<double>             ENERGY_INTERNAL("internalEnergy");
 utility::NamedKey<double>             ENTHALPY("enthalpy");
 utility::NamedKey<double>             FORMATION_ENTHALPY("formationEnthalpy");
+utility::NamedKey<double>             HULL_DISTANCE("hullDistance");
 utility::Key< ::arma::mat33>          STRESS_TENSOR;
 
 } // namespace general

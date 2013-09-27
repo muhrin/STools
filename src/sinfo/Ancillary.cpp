@@ -23,7 +23,6 @@
 
 // stools_common includes
 #include <utility/CustomTokens.h>
-#include <utility/InfoToken.h>
 #include <utility/StringParsing.h>
 #include <utility/TerminalFunctions.h>
 
@@ -260,6 +259,9 @@ generateTokens(TokensMap & map)
   addToken(map,
       utility::makeStructurePropertyToken("Hf", "hf",
           structure_properties::general::FORMATION_ENTHALPY, "%.4f"));
+  addToken(map,
+      utility::makeStructurePropertyToken("Hull dist", "hd",
+          structure_properties::general::HULL_DISTANCE, "%.4f"));
   addToken(map,
       utility::makeStructurePropertyToken("P", "p",
           structure_properties::general::PRESSURE_INTERNAL, "%.4f"));

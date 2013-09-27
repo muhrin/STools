@@ -24,12 +24,7 @@
 
 #include <CGAL/Origin.h>
 #include <CGAL/Convex_hull_d.h>
-#include <CGAL/Fraction_traits.h>
-//#if CGAL_USE_GMP && CGAL_USE_MPFR
-//#  include <CGAL/Gmpfr.h>
-//#else
-#  include <CGAL/CORE_Expr.h>
-//#endif
+#include <CGAL/CORE_Expr.h>
 
 #include "spl/OptionalTypes.h"
 #include "spl/analysis/AbsConvexHullGenerator.h"
@@ -40,26 +35,18 @@
 
 // DEFINITION ///////////////////////
 
-namespace spl
-{
+namespace spl {
 
 // FORWARD DECLARATIONS ///////
 
-namespace analysis
-{
+namespace analysis {
 
 class HullEntry;
 
 class ConvexHull : public AbsConvexHullGenerator, ::boost::noncopyable
 {
 public:
-//#ifdef CGAL_USE_GMP
-//  typedef CGAL::Quotient<CGAL::Gmpfr> RT;
-//#else
-  typedef CORE::Expr NT; // Number type
-  typedef CGAL::Quotient< NT> RT; // Ring type
-//#endif
-  //typedef CGAL::Cartesian_d<RT> HullTraits;
+  typedef CORE::Expr RT; // Ring type
   typedef CgalCustomKernel< RT> HullTraits;
 public:
 
@@ -73,7 +60,6 @@ public:
 
   typedef Endpoints::const_iterator EndpointsConstIterator;
 
-  static const NT NT_ZERO;
   static const HullTraits::FT FT_ZERO;
   static const HullTraits::RT RT_ZERO;
 
@@ -189,8 +175,8 @@ private:
   ::boost::optional<HullTraits::RT>
   distanceToHull(const PointD & p) const;
   bool isEndpoint(const PointD & p) const;
-
   bool isTopFacet(Hull::Facet_const_iterator facet) const;
+  bool containsOnlyEndpoints() const;
 
   void printPoint(const PointD & p) const;
 
@@ -208,9 +194,12 @@ template< typename InputIterator>
   ConvexHull::EndpointLabels
   ConvexHull::generateEndpoints(InputIterator first, InputIterator last)
   {
+    EndpointLabels endpoints;
+    if(first == last)
+      return endpoints;
+
     ::std::set< ::std::string> speciesSet;
     ::std::vector< ::std::string> species;
-    EndpointLabels endpoints;
     for(InputIterator it = first; it != last; ++it)
     {
       it->getAtomSpecies(species);

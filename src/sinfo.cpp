@@ -10,7 +10,6 @@
 #ifdef SSLIB_USE_CGAL
 #  include <spl/analysis/ConvexHullStructures.h>
 #endif
-#include <spl/common/StructureProperties.h>
 #include <spl/common/Types.h>
 #include <spl/common/UnitCell.h>
 #include <spl/io/ResourceLocator.h>
@@ -63,6 +62,12 @@ main(const int argc, char * argv[])
   if(autoTokens)
     in.infoString = DEFAULT_INFO_STRING;
   TokensInfo tokensInfo;
+
+  // Reprocess the tokens just in case any have been added
+  BOOST_FOREACH(const ::std::string & additionalToken, in.additionalTokens)
+  {
+    addToken(additionalToken, in);
+  }
   result = getRequiredTokens(tokensInfo, tokensMap, in);
   if(result != Result::SUCCESS)
     return result;
@@ -93,8 +98,13 @@ main(const int argc, char * argv[])
     }
   }
 
+  if(structures.empty())
+    return 1; // No structures found
+
 #ifdef SSLIB_USE_CGAL
-  if(in.stableCompositions || in.maxHullDist != MAX_HULL_DIST_IGNORE)
+  const bool useHullDist =
+      in.maxHullDist != MAX_HULL_DIST_IGNORE || tokensInfo.getToken("hd") != NULL;
+  if(in.stableCompositions || useHullDist)
   {
     // Generate the convex hull
     ssa::ConvexHullStructures hullStructures(
@@ -112,6 +122,9 @@ main(const int argc, char * argv[])
     hullStructures.populateFormationEnthalpies();
     if(autoTokens)
       addToken("hf", in);
+
+    if(useHullDist)
+      hullStructures.populateHullDistances();
 
     if(in.stableCompositions)
     {
@@ -132,8 +145,9 @@ main(const int argc, char * argv[])
       for(StructuresContainer::iterator it = structures.begin();
           it != structures.end(); /* increment in loop body */)
       {
-        ::spl::OptionalDouble dist = hullStructures.distanceToHull(*it);
-        if(!dist || *dist > in.maxHullDist)
+        const double * const hullDist =
+            it->getProperty(ssc::structure_properties::general::HULL_DISTANCE);
+        if(!hullDist || *hullDist > in.maxHullDist)
           it = structures.erase(it);
         else
           ++it;
@@ -198,10 +212,6 @@ main(const int argc, char * argv[])
     return 0;
 
   // Reprocess the tokens just in case any have been added
-  BOOST_FOREACH(const ::std::string & additionalToken, in.additionalTokens)
-  {
-    addToken(additionalToken, in);
-  }
   tokensInfo.formatStrings.clear();
   tokensInfo.tokens.clear();
   result = getRequiredTokens(tokensInfo, tokensMap, in);
