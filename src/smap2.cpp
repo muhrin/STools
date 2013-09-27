@@ -11,16 +11,34 @@
 #include <spl/SSLib.h>
 #ifdef SSLIB_USE_CGAL
 
+#include <fstream>
+#include <vector>
+
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
+// includes for defining the Voronoi diagram adaptor
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Voronoi_diagram_2.h>
+#include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
+#include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
 
 // FORWARD DECLARES //////////////////////////
 class DataRow;
 
-// MACROS ////////////////////////////////////
+// TYPEDEFS ////////////////////////////////////
+// typedefs for defining the adaptor
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Delaunay_triangulation_2< K> DT;
+typedef CGAL::Delaunay_triangulation_adaptation_traits_2< DT> AT;
+typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2< DT> AP;
+typedef CGAL::Voronoi_diagram_2< DT, AT, AP> VD;
 
+typedef AT::Site_2 Site_2;
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
@@ -31,9 +49,14 @@ struct InputOptions
   ::std::string inputFile;
 };
 
+struct PointData
+{
+  Site_2 site;
+  int label;
+};
 
 // TYPEDEFS /////////////////////////////////
-
+typedef ::std::vector< PointData> Points;
 
 // CONSTANTS /////////////////////////////////
 
@@ -63,7 +86,53 @@ main(const int argc, char * argv[])
     return 1;
   }
 
+  Points points;
+  ::std::ifstream inFile(in.inputFile.c_str());
+  if(inFile.is_open())
+  {
+    ::std::string line;
+    PointData p;
+    while(::std::getline(inFile, line))
+    {
+      if(!line.empty() && line[0] != '#')
+      {
+        Tok toker(line, tokSep);
+        Tok::iterator it = toker.begin();
 
+        double x, y;
+
+        bool foundAll = false;
+        try
+        {
+          if(it != toker.end())
+            x = lexical_cast< double>(*it);
+          ++it;
+          if(it != toker.end())
+            y = ::boost::lexical_cast< double>(*it);
+          ++it;
+          if(it != toker.end())
+            p.label = ::boost::lexical_cast< int>(*it);
+          foundAll = true;
+        }
+        catch(const ::boost::bad_lexical_cast & /*e*/)
+        {
+        }
+        if(foundAll)
+        {
+          p.site = Site_2(x, y);
+          points.push_back(p);
+        }
+      }
+    }
+
+    inFile.close();
+  }
+
+  VD voronoiDiagram;
+  BOOST_FOREACH(const PointData & p, points)
+  {
+    voronoiDiagram.insert(p.site);
+  }
 
   return 0;
 }
@@ -111,6 +180,5 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   // Everything went fine
   return 0;
 }
-
 
 #endif /* SSLIB_USE_CGAL */
