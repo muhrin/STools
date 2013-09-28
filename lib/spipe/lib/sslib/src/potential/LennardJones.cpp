@@ -20,8 +20,7 @@ namespace spl {
 namespace potential {
 
 // Using 2^(1/6) s is the equilibrium separation of the centres.
-const double LennardJones::EQUILIBRIUM_FACTOR = 0.5
-    * ::std::pow(2, 1.0 / 6.0);
+const double LennardJones::EQUILIBRIUM_FACTOR = ::std::pow(2, 1.0 / 6.0);
 const double LennardJones::MIN_SEPARATION_SQ = 1e-20;
 
 unsigned int
@@ -74,12 +73,15 @@ LennardJones::initCutoff()
 
   for(size_t i = 0; i < myNumSpecies; ++i)
   {
-    for(size_t j = 0; j < myNumSpecies; ++j)
+    for(size_t j = i; j < myNumSpecies; ++j)
     {
       eShift(i, j) = U(i, j, rCutoff(i, j));
       fShift(i, j) = F(i, j, rCutoff(i, j));
     }
   }
+  // Copy over upper triangular
+  eShift = ::arma::trimatu(eShift);
+  fShift = ::arma::trimatl(fShift);
 }
 
 void
@@ -209,7 +211,6 @@ LennardJones::evaluate(const common::Structure & structure,
       continue;
     else
       speciesI = static_cast< size_t>(data.species[i]);
-
     posI = data.pos.col(i);
 
     for(size_t j = i; j < data.numParticles; ++j)
@@ -218,10 +219,8 @@ LennardJones::evaluate(const common::Structure & structure,
         continue;
       else
         speciesJ = static_cast< size_t>(data.species[j]);
-
       posJ = data.pos.col(j);
 
-      // TODO: Buffer rSqs as getAllVectorsWithinCutoff needs to calculate it anyway!
       imageVectors.clear();
       if(!distCalc.getVecsBetween(posI, posJ, rCutoff(speciesI, speciesJ),
           imageVectors, MAX_INTERACTION_VECTORS, MAX_CELL_MULTIPLES))

@@ -20,20 +20,24 @@ class ClusterDistanceCalculator : public DistanceCalculator
 {
 public:
 
-  explicit ClusterDistanceCalculator(const Structure & structure):
-    DistanceCalculator(structure)
-    {}
+  explicit
+  ClusterDistanceCalculator(Structure & structure) :
+      DistanceCalculator(structure)
+  {
+  }
 
-  virtual inline ::arma::vec3 getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b, const unsigned int /* maxCellMultiples */ = DEFAULT_MAX_CELL_MULTIPLES) const
-  { return b - a; }
+  virtual inline ::arma::vec3
+  getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+      const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
+  {
+    return b - a;
+  }
 
-  virtual bool getDistsBetween(
-    const ::arma::vec3 & a,
-    const ::arma::vec3 & b,
-    const double cutoff,
-    ::std::vector<double> & outDistances,
-    const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
-    const unsigned int /* maxCellMultiples */ = DEFAULT_MAX_CELL_MULTIPLES) const
+  virtual bool
+  getDistsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
+      const double cutoff, ::std::vector< double> & outDistances,
+      const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
+      const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
   {
     const double cutoffSq = cutoff * cutoff;
     const ::arma::vec dr = b - a;
@@ -45,13 +49,11 @@ public:
     return true;
   }
 
-  virtual inline bool getVecsBetween(
-    const ::arma::vec3 & a,
-    const ::arma::vec3 & b,
-    const double cutoff,
-    ::std::vector< ::arma::vec3> & outVectors,
-    const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
-    const unsigned int /* maxCellMultiples */ = DEFAULT_MAX_CELL_MULTIPLES) const
+  virtual inline bool
+  getVecsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
+      const double cutoff, ::std::vector< ::arma::vec3> & outVectors,
+      const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
+      const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
   {
     const double cutoffSq = cutoff * cutoff;
     const ::arma::vec dr = b - a;
@@ -62,10 +64,16 @@ public:
     return true;
   }
 
-  virtual inline bool isValid() const
-  { return myStructure.getUnitCell() == NULL; }
+  virtual inline bool
+  isValid() const
+  {
+    return myStructure.getUnitCell() == NULL;
+  }
 
-  virtual void unitCellChanged() {}
+  virtual void
+  unitCellChanged()
+  {
+  }
 
 };
 

@@ -144,7 +144,7 @@ DataTable::writeToFile(const ::std::string & filename,
   {
     tableFile << colDelimiter << colInfo.getName();
   }
-  tableFile << ::std::endl;
+  tableFile << "\n";
 
   BOOST_FOREACH(const Rows::const_reference row, myRows)
   {
@@ -152,7 +152,7 @@ DataTable::writeToFile(const ::std::string & filename,
     {
       tableFile << colDelimiter << value;
     }
-    tableFile << ::std::endl;
+    tableFile << "\n";
   }
 
   tableFile.close();
