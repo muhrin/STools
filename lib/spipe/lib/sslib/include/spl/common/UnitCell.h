@@ -56,6 +56,8 @@ public:
     virtual void
     onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
         const double newVol) = 0;
+    virtual void
+    onUnitCellDestroyed() = 0;
   };
 
   UnitCell();
@@ -66,6 +68,7 @@ public:
   explicit
   UnitCell(const ::arma::mat33 & orthoMatrix);
   UnitCell(const UnitCell & toCopy);
+  ~UnitCell();
 
   UnitCellPtr
   clone() const;

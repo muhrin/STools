@@ -84,6 +84,8 @@ private:
   virtual void
   onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
       const double newVol);
+  virtual void
+  onUnitCellDestroyed();
 
   Cache myCache;
 };

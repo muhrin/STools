@@ -222,6 +222,11 @@ UniversalCrystalDistanceCalculator::onUnitCellVolumeChanged(UnitCell & unitCell,
 }
 
 void
+UniversalCrystalDistanceCalculator::onUnitCellDestroyed()
+{
+}
+
+void
 UniversalCrystalDistanceCalculator::Cache::update(const UnitCell & cell)
 {
   A = cell.getAVec();

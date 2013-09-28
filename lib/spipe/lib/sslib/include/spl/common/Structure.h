@@ -42,10 +42,9 @@ class AtomsFormula;
 class DistanceCalculator;
 class UnitCell;
 
-class Structure : public UnitCell::UnitCellListener
+class Structure : UnitCell::UnitCellListener
 {
 public:
-
   typedef utility::NamedProperty< utility::HeterogeneousMap> VisibleProperty;
 
   explicit
@@ -65,18 +64,16 @@ public:
   setName(const std::string & name);
 
   // UNIT CELL /////////////////////////////////////////
-
   UnitCell *
   getUnitCell();
   const UnitCell *
   getUnitCell() const;
 
-  /** Set the unit cell to be used by the structure. */
+  // Set the unit cell to be used by the structure.
   void
   setUnitCell(UnitCellPtr cell);
 
   // ATOMS ///////////////////////////////////////////////
-
   size_t
   getNumAtoms() const;
 
@@ -148,15 +145,16 @@ public:
   void
   print(::std::ostream & os) const;
 
+private:
+  typedef ::boost::ptr_vector< Atom> AtomsContainer;
+
   virtual void
   onUnitCellChanged(UnitCell & unitCell);
   virtual void
   onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
       const double newVol);
-
-private:
-
-  typedef ::boost::ptr_vector< Atom> AtomsContainer;
+  virtual void
+  onUnitCellDestroyed() {};
 
   void
   atomMoved(const Atom & atom) const;
