@@ -8,9 +8,6 @@
 // INCLUDES ///////////////
 #include "spl/common/DistanceCalculator.h"
 
-#include <boost/assert.hpp>
-
-
 namespace spl {
 namespace common {
 

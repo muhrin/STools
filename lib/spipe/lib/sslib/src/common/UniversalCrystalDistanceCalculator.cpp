@@ -21,6 +21,11 @@ UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(
   structure.getUnitCell()->addListener(*this);
 }
 
+UniversalCrystalDistanceCalculator::~UniversalCrystalDistanceCalculator()
+{
+  myStructure.getUnitCell()->removeListener(*this);
+}
+
 ::arma::vec3
 UniversalCrystalDistanceCalculator::getVecMinImg(const ::arma::vec3 & a,
     const ::arma::vec3 & b, const unsigned int maxCellMultiples) const

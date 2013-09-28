@@ -22,6 +22,7 @@ public:
 
   explicit
   UniversalCrystalDistanceCalculator(Structure & structure);
+  virtual ~UniversalCrystalDistanceCalculator();
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
