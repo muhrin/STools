@@ -187,7 +187,7 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
       return pot;
 
     pot.reset(
-        new potential::SimplePairPotential(myAtomSpeciesDb, *speciesVec,
+        new potential::LennardJones(myAtomSpeciesDb, *speciesVec,
             *epsilon, *sigma, *cutoff, *beta, (*pow)(0), (*pow)(1), *comb));
   }
 

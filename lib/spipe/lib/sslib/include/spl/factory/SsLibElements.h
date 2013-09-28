@@ -21,7 +21,7 @@
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/io/AtomFormatParser.h"
 #include "spl/factory/FactoryFwd.h"
-#include "spl/potential/SimplePairPotential.h"
+#include "spl/potential/LennardJones.h"
 #include "spl/utility/HeterogeneousMap.h"
 #include "spl/utility/Range.h"
 

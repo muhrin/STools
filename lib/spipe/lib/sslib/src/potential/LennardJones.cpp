@@ -1,12 +1,12 @@
 /*
- * SimplePairPotentialData.cpp
+ * LennardJones.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "spl/potential/SimplePairPotential.h"
+#include "spl/potential/LennardJones.h"
 
 #include <memory>
 
@@ -19,19 +19,18 @@
 namespace spl {
 namespace potential {
 
-// Using 0.5 prefactor as 2^(1/6) s is the equilibrium separation of the centres.
-// i.e. the diameter
-const double SimplePairPotential::RADIUS_FACTOR = 0.5
+// Using 2^(1/6) s is the equilibrium separation of the centres.
+const double LennardJones::EQUILIBRIUM_FACTOR = 0.5
     * ::std::pow(2, 1.0 / 6.0);
-const double SimplePairPotential::MIN_SEPARATION_SQ = 1e-20;
+const double LennardJones::MIN_SEPARATION_SQ = 1e-20;
 
 unsigned int
-SimplePairPotential::numParams(const unsigned int numSpecies)
+LennardJones::numParams(const unsigned int numSpecies)
 {
   return 0;
 }
 
-SimplePairPotential::SimplePairPotential(
+LennardJones::LennardJones(
     common::AtomSpeciesDatabase & atomSpeciesDb,
     const SpeciesList & speciesList, const ::arma::mat & epsilon,
     const ::arma::mat & sigma, const double cutoffFactor,
@@ -49,13 +48,20 @@ SimplePairPotential::SimplePairPotential(
   SSLIB_ASSERT(myNumSpecies == myBeta.n_rows);
   SSLIB_ASSERT(myBeta.is_square());
 
+  init();
+}
+
+void
+LennardJones::init()
+{
   applyCombiningRule();
-  initCutoff(myCutoffFactor);
+  initCutoff();
+  updateEquilibriumSeparations();
   updateSpeciesDb();
 }
 
 void
-SimplePairPotential::initCutoff(double cutoff)
+LennardJones::initCutoff()
 {
   // Initialise the cutoff matrices
   rCutoff.set_size(myNumSpecies, myNumSpecies);
@@ -63,39 +69,34 @@ SimplePairPotential::initCutoff(double cutoff)
   eShift.set_size(myNumSpecies, myNumSpecies);
   fShift.set_size(myNumSpecies, myNumSpecies);
 
-  rCutoff = cutoff * mySigma;
+  rCutoff = myCutoffFactor * mySigma;
   rCutoffSq = rCutoff % rCutoff;
 
-  double invRMaxN, invRMaxM;
   for(size_t i = 0; i < myNumSpecies; ++i)
   {
     for(size_t j = 0; j < myNumSpecies; ++j)
     {
-      invRMaxM = ::std::pow(1.0 / cutoff, myM);
-      invRMaxN = myBeta(i, j) * ::std::pow(1.0 / cutoff, myN);
-
-      eShift(i, j) = 4.0 * myEpsilon(i, j) * (invRMaxM - invRMaxN);
-      fShift(i, j) = 4.0 * myEpsilon(i, j) / rCutoff(i, j)
-          * (myM * invRMaxM - myN * invRMaxN);
+      eShift(i, j) = U(i, j, rCutoff(i, j));
+      fShift(i, j) = F(i, j, rCutoff(i, j));
     }
   }
 }
 
 void
-SimplePairPotential::applyCombiningRule()
+LennardJones::applyCombiningRule()
 {
   applyEnergyRule(myEpsilon, myCombiningRule);
   applySizeRule(mySigma, myCombiningRule);
 }
 
 const ::std::string &
-SimplePairPotential::getName() const
+LennardJones::getName() const
 {
   return myName;
 }
 
 size_t
-SimplePairPotential::getNumParams() const
+LennardJones::getNumParams() const
 {
   // epsilon: n(n + 1) / 2
   // sigma: n(n + 1) / 2
@@ -105,7 +106,7 @@ SimplePairPotential::getNumParams() const
 }
 
 IParameterisable::PotentialParams
-SimplePairPotential::getParams() const
+LennardJones::getParams() const
 {
   IParameterisable::PotentialParams params(getNumParams());
 
@@ -129,15 +130,15 @@ SimplePairPotential::getParams() const
     for(size_t j = i; j < myNumSpecies; ++j)
       params[idx++] = myBeta(i, j);
   }
-  // N-M
-  params[idx++] = myN;
+  // M-N
   params[idx++] = myM;
+  params[idx++] = myN;
 
   return params;
 }
 
 void
-SimplePairPotential::setParams(const IParameterisable::PotentialParams & params)
+LennardJones::setParams(const IParameterisable::PotentialParams & params)
 {
   SSLIB_ASSERT_MSG(params.size() == getNumParams(),
       "Called setParams with wrong number of parameters");
@@ -168,22 +169,15 @@ SimplePairPotential::setParams(const IParameterisable::PotentialParams & params)
   }
   myBeta = arma::symmatu(myBeta);
 
-  myN = params[idx++];
   myM = params[idx++];
+  myN = params[idx++];
 
-  applyCombiningRule();
-
-  // Initialise the cutoff matrices
-  initCutoff(myCutoffFactor);
-
-  // Reset the parameter string
-  myParamString.clear();
-  // Update the species database
-  updateSpeciesDb();
+  // Initialise everything with the new params
+  init();
 }
 
 bool
-SimplePairPotential::evaluate(const common::Structure & structure,
+LennardJones::evaluate(const common::Structure & structure,
     SimplePairPotentialData & data) const
 {
   using namespace utility::cart_coords_enum;
@@ -314,23 +308,18 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 }
 
 ::boost::optional< double>
-SimplePairPotential::getPotentialRadius(
+LennardJones::getPotentialRadius(
     const ::spl::common::AtomSpeciesId::Value id) const
 {
-  ::boost::optional< double> radius;
-  for(size_t i = 0; i < mySpeciesList.size(); ++i)
-  {
-    if(mySpeciesList[i] == id)
-    {
-      radius.reset(RADIUS_FACTOR * mySigma(i, i));
-      break;
-    }
-  }
+  ::boost::optional< double> radius = getSpeciesPairDistance(id, id);
+  if(radius)
+    *radius *= 0.5;
+
   return radius;
 }
 
 ::boost::optional< double>
-SimplePairPotential::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
+LennardJones::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
     common::AtomSpeciesId::Value s2) const
 {
   if(s1 < s2)
@@ -350,13 +339,13 @@ SimplePairPotential::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
   }
 
   if(idx1 != -1 && idx2 != -1)
-    dist.reset(::std::pow(2.0, 1.0 / 6.0) * mySigma(idx1, idx2));
+    dist.reset(myEquilibriumSeps(idx1, idx2));
 
   return dist;
 }
 
 ::boost::shared_ptr< IPotentialEvaluator>
-SimplePairPotential::createEvaluator(
+LennardJones::createEvaluator(
     const spl::common::Structure & structure) const
 {
   // Build the data from the structure
@@ -369,13 +358,13 @@ SimplePairPotential::createEvaluator(
 }
 
 IParameterisable *
-SimplePairPotential::getParameterisable()
+LennardJones::getParameterisable()
 {
   return this;
 }
 
 void
-SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
+LennardJones::resetAccumulators(SimplePairPotentialData & data) const
 {
   data.internalEnergy = 0.0;
   data.forces.zeros();
@@ -383,7 +372,7 @@ SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 }
 
 void
-SimplePairPotential::updateSpeciesDb()
+LennardJones::updateSpeciesDb()
 {
   for(int i = 0; i < static_cast< int>(myNumSpecies); ++i)
   {
@@ -395,6 +384,22 @@ SimplePairPotential::updateSpeciesDb()
           *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));
     }
   }
+}
+
+void
+LennardJones::updateEquilibriumSeparations()
+{
+  const size_t numSpecies = mySpeciesList.size();
+  myEquilibriumSeps.set_size(numSpecies, numSpecies);
+
+  for(size_t i = 0; i < numSpecies; ++i)
+  {
+    for(size_t j = i; j < numSpecies; ++j)
+      myEquilibriumSeps(i, j) = EQUILIBRIUM_FACTOR * mySigma(i, i);
+    // TODO: Use root finder to solve for the F(r) = 0 point
+  }
+  // Copy over upper triangular
+  myEquilibriumSeps = ::arma::symmatu(myEquilibriumSeps);
 }
 
 }

@@ -1,14 +1,12 @@
 /*
- * SimplePairPotentialData.cpp
+ * LennardJonesData.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "spl/potential/SimplePairPotentialData.h"
-
-
+#include "spl/potential/LennardJonesData.h"
 
 // NAMESPACES ////////////////////////////////
 

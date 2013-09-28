@@ -1,12 +1,12 @@
 /*
- * SimplePairPotential.h
+ * LennardJones.h
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef SIMPLE_PAIR_POTENTIAL_H
-#define SIMPLE_PAIR_POTENTIAL_H
+#ifndef LENNARD_JONES_H
+#define LENNARD_JONES_H
 
 // DEFINES ////////////////////////////////////////////////
 
@@ -29,14 +29,14 @@
 #include "spl/potential/GenericPotentialEvaluator.h"
 #include "spl/potential/IParameterisable.h"
 #include "spl/potential/IPotential.h"
-#include "spl/potential/SimplePairPotentialData.h"
+#include "spl/potential/LennardJonesData.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spl {
 namespace potential {
 
-class SimplePairPotential : public IPotential, public IParameterisable
+class LennardJones : public IPotential, public IParameterisable
 {
 public:
 
@@ -55,7 +55,7 @@ public:
   static unsigned int
   numParams(const unsigned int numSpecies);
 
-  SimplePairPotential(common::AtomSpeciesDatabase & atomSpeciesDb,
+  LennardJones(common::AtomSpeciesDatabase & atomSpeciesDb,
       const SpeciesList & speciesList, const ::arma::mat & epsilon,
       const ::arma::mat & sigma, const double cutoffFactor,
       const ::arma::mat & beta, const double m, const double n,
@@ -92,28 +92,44 @@ public:
       SimplePairPotentialData & data) const;
 
 private:
-  static const double RADIUS_FACTOR;
+  typedef GenericPotentialEvaluator< LennardJones> Evaluator;
+
+  static const double EQUILIBRIUM_FACTOR;
   static const double MIN_SEPARATION_SQ;
 
-  typedef GenericPotentialEvaluator< SimplePairPotential> Evaluator;
-
   void
-  initCutoff(const double cutoff);
-
+  init();
+  void
+  initCutoff();
   void
   applyCombiningRule();
-
   void
   resetAccumulators(SimplePairPotentialData & data) const;
-
   void
   updateSpeciesDb();
+  void
+  updateEquilibriumSeparations();
+
+  // Calculate energy
+  inline double
+  U(const size_t i, const size_t j, const double r) const
+  {
+    return 4.0 * myEpsilon(i, j)
+        * (::std::pow(mySigma(i, j) / r, myM)
+            - myBeta(i, j) * ::std::pow(mySigma(i, j) / r, myN));
+  }
+  // Calculate force
+  inline double
+  F(const size_t i, const size_t j, const double r) const
+  {
+    return 4.0 * myEpsilon(i, j) / r
+        * (myM * ::std::pow(mySigma(i, j) / r, myM)
+            - myBeta(i, j) * myN * ::std::pow(mySigma(i, j) / r, myN));
+  }
 
   common::AtomSpeciesDatabase & myAtomSpeciesDb;
 
   const ::std::string myName;
-
-  mutable ::std::string myParamString;
 
   /** Potential parameters */
   size_t myNumSpecies;
@@ -132,10 +148,11 @@ private:
   ::arma::mat rCutoffSq;
   ::arma::mat eShift;
   ::arma::mat fShift;
+  ::arma::mat myEquilibriumSeps;
 };
 
 }
 }
 
-#endif /* SIMPLE_PAIR_POTENTIAL_H */
+#endif /* LENNARD_JONES_H */
 

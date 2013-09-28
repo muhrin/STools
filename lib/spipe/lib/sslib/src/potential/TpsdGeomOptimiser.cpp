@@ -66,7 +66,7 @@ const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
 const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_POS_FACTOR = 0.5;
-const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.2;
+const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.1;
 static const double INITIAL_STEPSIZE = 0.001;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
@@ -316,9 +316,9 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
   // Initialisation of variables
   double dH = std::numeric_limits< double>::max(); // Change in enthalpy between steps
-  double h = 1.0; // Enthalpy = U + pV
+  double h = 0.0; // Enthalpy = U + pV
   double h0;
-  s.ones();
+  s.zeros();
 
   const double dNumAtoms = static_cast< double>(data.numParticles);
 
@@ -519,7 +519,7 @@ TpsdGeomOptimiser::hasConverged(const double deltaEnergyPerIon,
     return false;
 
   if(*options.optimisationType & OptimisationSettings::Optimise::ATOMS)
-    converged &= deltaEnergyPerIon < myEnergyTolerance
+    converged &= ::std::abs(deltaEnergyPerIon) < myEnergyTolerance
         && maxForceSq < myForceTolerance * myForceTolerance;
 
   return converged;

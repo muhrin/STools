@@ -1,16 +1,15 @@
 /*
- * SimplePairPotentialData.h
+ * LennardJonesData.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef SIMPLE_PAIR_POTENTIAL_DATA_H
-#define SIMPLE_PAIR_POTENTIAL_DATA_H
+#ifndef LENNARD_JONES_DATA_H
+#define LENNARD_JONES_DATA_H
 
 // INCLUDES /////////////////////////////////////////////
-
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/common/Structure.h"
 #include "spl/potential/PotentialData.h"
@@ -44,5 +43,5 @@ struct SimplePairPotentialData : public PotentialData
 }
 }
 
-#endif /* SIMPLE_PAIR_POTENTIAL_DATA_H */
+#endif /* LENNARD_JONES_DATA_H */
 

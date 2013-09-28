@@ -16,7 +16,7 @@
 #include <SingleThreadedPipeline.h>
 
  //
-#include <spl/potential/SimplePairPotential.h>
+#include <spl/potential/LennardJones.h>
 #include <spl/utility/SortedDistanceComparator.h>
 
 // My includes //
@@ -87,7 +87,7 @@ int main()
   sharedDat.potSweepStep.reset(step);
   sharedDat.potSweepNSteps.reset(steps);
 
-  spl::potential::SimplePairPotential<> pot(2, epsilon, sigma, 2.5, beta, 12, 6);
+  spl::potential::LennardJones<> pot(2, epsilon, sigma, 2.5, beta, 12, 6);
   LoadPotStructures loadStructures(pot, potFilePath, true);
 
 
