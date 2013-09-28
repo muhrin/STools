@@ -35,11 +35,11 @@ SimplePairPotential::SimplePairPotential(
     common::AtomSpeciesDatabase & atomSpeciesDb,
     const SpeciesList & speciesList, const ::arma::mat & epsilon,
     const ::arma::mat & sigma, const double cutoffFactor,
-    const ::arma::mat & beta, const double n, const double m,
+    const ::arma::mat & beta, const double m, const double n,
     const CombiningRule::Value combiningRule) :
     myAtomSpeciesDb(atomSpeciesDb), myName("Simple pair potential"), myNumSpecies(
         speciesList.size()), mySpeciesList(speciesList), myEpsilon(epsilon), mySigma(
-        sigma), myBeta(beta), myCutoffFactor(cutoffFactor), myN(n), myM(m), myCombiningRule(
+        sigma), myBeta(beta), myCutoffFactor(cutoffFactor), myM(m), myN(n), myCombiningRule(
         combiningRule)
 {
   SSLIB_ASSERT(myNumSpecies == myEpsilon.n_rows);
@@ -64,21 +64,19 @@ SimplePairPotential::initCutoff(double cutoff)
   fShift.set_size(myNumSpecies, myNumSpecies);
 
   rCutoff = cutoff * mySigma;
-  rCutoffSq = arma::pow(rCutoff, 2.0);
+  rCutoffSq = rCutoff % rCutoff;
 
   double invRMaxN, invRMaxM;
   for(size_t i = 0; i < myNumSpecies; ++i)
   {
     for(size_t j = 0; j < myNumSpecies; ++j)
     {
-      invRMaxN = pow(mySigma(i, j) / rCutoff(i, j), myN) * myBeta(i, j);
+      invRMaxM = ::std::pow(1.0 / cutoff, myM);
+      invRMaxN = myBeta(i, j) * ::std::pow(1.0 / cutoff, myN);
 
-      invRMaxM = pow(mySigma(i, j) / rCutoff(i, j), myM);
-
-      eShift(i, j) = 2.0 * myEpsilon(i, j) * (invRMaxM - invRMaxN);
-
-      fShift(i, j) = 2.0 * myEpsilon(i, j)
-          * (myM * invRMaxM / rCutoff(i, j) - myN * invRMaxN / rCutoff(i, j));
+      eShift(i, j) = 4.0 * myEpsilon(i, j) * (invRMaxM - invRMaxN);
+      fShift(i, j) = 4.0 * myEpsilon(i, j) / rCutoff(i, j)
+          * (myM * invRMaxM - myN * invRMaxN);
     }
   }
 }
@@ -190,10 +188,13 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 {
   using namespace utility::cart_coords_enum;
   using ::std::vector;
+  using ::std::pow;
+  using ::std::sqrt;
 
   double rSq;
+  double prefactor;
   double sigmaOModR, invRM, invRN;
-  double dE, modR, modF;
+  double dE, modR, modF, interaction;
   size_t speciesI, speciesJ; // Species indices
   ::arma::vec3 f; // Displacement and force vectors
   ::arma::vec3 posI, posJ; // Position vectors
@@ -213,7 +214,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
     if(data.species[i] == DataType::IGNORE_ATOM)
       continue;
     else
-      speciesI = static_cast<size_t>(data.species[i]);
+      speciesI = static_cast< size_t>(data.species[i]);
 
     posI = data.pos.col(i);
 
@@ -222,7 +223,7 @@ SimplePairPotential::evaluate(const common::Structure & structure,
       if(data.species[j] == DataType::IGNORE_ATOM)
         continue;
       else
-        speciesJ = static_cast<size_t>(data.species[j]);
+        speciesJ = static_cast< size_t>(data.species[j]);
 
       posJ = data.pos.col(j);
 
@@ -235,7 +236,11 @@ SimplePairPotential::evaluate(const common::Structure & structure,
         problemDuringCalculation = true;
       }
 
-      BOOST_FOREACH(const ::arma::vec3 & r, imageVectors)
+      // Used as a prefactor depending if the particles i and j are in fact the same
+      interaction = (i == j) ? 0.5 : 1.0;
+      prefactor = 4.0 * myEpsilon(speciesI, speciesJ);
+
+      BOOST_FOREACH(const ::arma::vec & r, imageVectors)
       {
         // Get the distance squared
         rSq = dot(r, r);
@@ -247,26 +252,22 @@ SimplePairPotential::evaluate(const common::Structure & structure,
 
           sigmaOModR = mySigma(speciesI, speciesJ) / modR;
 
-          invRN = pow(sigmaOModR, myN);
-          invRM = pow(sigmaOModR, myM) * myBeta(speciesI, speciesJ);
+          invRM = pow(sigmaOModR, myM);
+          invRN = myBeta(speciesI, speciesJ) * pow(sigmaOModR, myN);
 
           // Calculate the energy delta
-          dE = 4.0 * myEpsilon(speciesI, speciesJ) * (invRN - invRM)
-              - eShift(speciesI, speciesJ)
+          dE = prefactor * (invRM - invRN) - eShift(speciesI, speciesJ)
               + (modR - rCutoff(speciesI, speciesJ))
                   * fShift(speciesI, speciesJ);
 
           // Magnitude of the force
-          modF = 4.0 * myEpsilon(speciesI, speciesJ)
-              * (myN * invRN - myM * invRM) / modR - fShift(speciesI, speciesJ);
+          modF = prefactor * (myM * invRM - myN * invRN) / modR
+              - fShift(speciesI, speciesJ);
           f = modF / modR * r;
 
           // Make sure we get energy/force correct for self-interaction
-          if(i == j)
-          {
-            f *= 0.5;
-            dE *= 0.5;
-          }
+          f *= interaction;
+          dE *= interaction;
 
           // Update system values
           // energy
@@ -384,10 +385,11 @@ SimplePairPotential::resetAccumulators(SimplePairPotentialData & data) const
 void
 SimplePairPotential::updateSpeciesDb()
 {
-  for(int i = 0; i < static_cast<int>(myNumSpecies); ++i)
+  for(int i = 0; i < static_cast< int>(myNumSpecies); ++i)
   {
-    myAtomSpeciesDb.setRadius(mySpeciesList[i], *getPotentialRadius(mySpeciesList[i]));
-    for(int j = i; j < static_cast<int>(myNumSpecies); ++j)
+    myAtomSpeciesDb.setRadius(mySpeciesList[i],
+        *getPotentialRadius(mySpeciesList[i]));
+    for(int j = i; j < static_cast< int>(myNumSpecies); ++j)
     {
       myAtomSpeciesDb.setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
           *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));

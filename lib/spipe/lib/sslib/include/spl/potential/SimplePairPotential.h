@@ -58,7 +58,7 @@ public:
   SimplePairPotential(common::AtomSpeciesDatabase & atomSpeciesDb,
       const SpeciesList & speciesList, const ::arma::mat & epsilon,
       const ::arma::mat & sigma, const double cutoffFactor,
-      const ::arma::mat & beta, const double n, const double m,
+      const ::arma::mat & beta, const double m, const double n,
       const CombiningRule::Value combiningRule = CombiningRule::NONE);
 
   virtual const ::std::string &
@@ -124,7 +124,7 @@ private:
   const double myCutoffFactor;
 
   /** The powers of the sigma/r terms in the potential */
-  double myN, myM;
+  double myM, myN;
 
   CombiningRule::Value myCombiningRule;
 

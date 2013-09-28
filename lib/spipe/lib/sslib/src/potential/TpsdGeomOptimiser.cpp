@@ -59,8 +59,8 @@ private:
 // CONSTANTS ////////////////////////////////////////////////
 
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS = 10000;
-const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-12;
-const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-10;
+const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-10;
+const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-8;
 const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 1e-5;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
