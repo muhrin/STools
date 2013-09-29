@@ -67,14 +67,13 @@ Structure::Structure(const Structure & toCopy) :
 Structure &
 Structure::operator =(const Structure & rhs)
 {
+  PropertiesObject::operator =(rhs);
+
   myName = rhs.myName;
 
   // Copy over the unit cell (if exists)
   if(rhs.myCell.get())
     setUnitCell(rhs.myCell->clone());
-
-  // Copy over properties
-  myTypedProperties = rhs.myTypedProperties;
 
   // Copy over the atoms
   clearAtoms();
@@ -109,7 +108,7 @@ Structure::updateWith(const Structure & structure)
   }
 
   // Update the properties
-  myTypedProperties.insert(structure.myTypedProperties, true);
+  getProperties().insert(structure.getProperties(), true);
 }
 
 const std::string &
@@ -292,14 +291,14 @@ Structure::getDistanceCalculator() const
 ::boost::optional< ::std::string>
 Structure::getVisibleProperty(const VisibleProperty & property) const
 {
-  return property.getValue(myTypedProperties);
+  return property.getValue(getProperties());
 }
 
 void
 Structure::setVisibleProperty(VisibleProperty & property,
     const ::std::string & value)
 {
-  property.setValue(myTypedProperties, value);
+  property.setValue(getProperties(), value);
 }
 
 bool
