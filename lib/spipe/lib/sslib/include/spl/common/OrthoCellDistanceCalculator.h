@@ -27,36 +27,38 @@ public:
 
   static const double VALID_ANGLE_TOLERANCE;
 
-  explicit OrthoCellDistanceCalculator(const Structure & structure);
+  explicit
+  OrthoCellDistanceCalculator(Structure & structure);
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
 
-  virtual bool getDistsBetween(
-    const ::arma::vec3 & r1,
-    const ::arma::vec3 & r2,
-    const double cutoff,
-    ::std::vector<double> & outDistances,
-    const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
-    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
+  virtual bool
+  getDistsBetween(const ::arma::vec3 & r1, const ::arma::vec3 & r2,
+      const double cutoff, ::std::vector< double> & outDistances,
+      const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
+      const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
-  virtual ::arma::vec3 getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2, const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
+  virtual ::arma::vec3
+  getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2,
+      const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
-  virtual bool getVecsBetween(
-    const ::arma::vec3 & r1,
-    const ::arma::vec3 & r2,
-    const double cutoff,
-    ::std::vector< ::arma::vec3> & outVectors,
-    const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
-    const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
+  virtual bool
+  getVecsBetween(const ::arma::vec3 & r1, const ::arma::vec3 & r2,
+      const double cutoff, ::std::vector< ::arma::vec3> & outVectors,
+      const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
+      const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
-  virtual bool isValid() const;
+  virtual bool
+  isValid() const;
 
-  void unitCellChanged();
+  void
+  unitCellChanged();
 
 private:
 
-  void updateBufferedValues();
+  void
+  updateBufferedValues();
 
   ::arma::vec3 myA;
   ::arma::vec3 myB;

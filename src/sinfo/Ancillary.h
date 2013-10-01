@@ -17,10 +17,11 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/range/iterator_range.hpp>
 
-
 #include <spl/common/AtomsFormula.h>
 #include <spl/common/Structure.h>
 #include <spl/utility/TypedDataTable.h>
+
+#include <utility/InfoToken.h>
 
 // FORWARD DECLARES ////////////////////////////////
 namespace spl {
@@ -101,6 +102,19 @@ struct CustomisableTokens
 
 struct TokensInfo
 {
+  const utility::InfoToken * getToken(const ::std::string symbol) const
+  {
+    const utility::InfoToken * outToken = NULL;
+    BOOST_FOREACH(const utility::InfoToken * const token, tokens)
+    {
+      if(token->getSymbol() == symbol)
+      {
+        outToken = token;
+        break;
+      }
+    }
+    return outToken;
+  }
   ::std::vector<const utility::InfoToken *> tokens;
   const utility::InfoToken * sortToken;
   ::std::vector< ::std::string> formatStrings;

@@ -48,6 +48,14 @@ UnitCell::UnitCell(const UnitCell & toCopy) :
   memcpy(myLatticeParams, toCopy.myLatticeParams, sizeof(double) * 6);
 }
 
+UnitCell::~UnitCell()
+{
+  BOOST_FOREACH(UnitCellListener * const l, myListeners)
+  {
+    l->onUnitCellDestroyed();
+  }
+}
+
 UnitCellPtr
 UnitCell::clone() const
 {

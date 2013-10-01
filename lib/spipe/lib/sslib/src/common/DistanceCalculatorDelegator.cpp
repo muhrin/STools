@@ -16,20 +16,22 @@
 namespace spl {
 namespace common {
 
-DistanceCalculatorDelegator::DistanceCalculatorDelegator(const Structure & structure):
-DistanceCalculator(structure),
-myDelegate(new ClusterDistanceCalculator(structure)),
-myDelegateType(CalculatorType::CLUSTER)
+DistanceCalculatorDelegator::DistanceCalculatorDelegator(Structure & structure) :
+    DistanceCalculator(structure), myDelegate(
+        new ClusterDistanceCalculator(structure)), myDelegateType(
+        CalculatorType::CLUSTER)
 {
   // WARNING: Don't use structure here as it won't be initialised!!
 }
 
-void DistanceCalculatorDelegator::unitCellChanged()
+void
+DistanceCalculatorDelegator::unitCellChanged()
 {
   updateDelegate();
 }
 
-void DistanceCalculatorDelegator::updateDelegate()
+void
+DistanceCalculatorDelegator::updateDelegate()
 {
   const UnitCell * const unitCell = myStructure.getUnitCell();
 
@@ -40,10 +42,12 @@ void DistanceCalculatorDelegator::updateDelegate()
   }
   else
   {
-    const UnitCell::LatticeSystem::Value latticeSystem = unitCell->getLatticeSystem(OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE);
-    if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL ||
-      latticeSystem == UnitCell::LatticeSystem::CUBIC ||
-      latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
+    const UnitCell::LatticeSystem::Value latticeSystem =
+        unitCell->getLatticeSystem(
+            OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE);
+    if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL
+        || latticeSystem == UnitCell::LatticeSystem::CUBIC
+        || latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
     {
       delegateChanged = setDelegate(CalculatorType::ORTHO_CELL);
     }
@@ -57,7 +61,8 @@ void DistanceCalculatorDelegator::updateDelegate()
     myDelegate->unitCellChanged();
 }
 
-bool DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
+bool
+DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
 {
   bool delegateChanged = false;
   if(myDelegateType != calcType)

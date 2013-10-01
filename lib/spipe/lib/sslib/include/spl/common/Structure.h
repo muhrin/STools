@@ -26,7 +26,7 @@
 #include "spl/common/StructureProperties.h"
 #include "spl/common/Types.h"
 #include "spl/common/UnitCell.h"
-#include "spl/utility/HeterogeneousMap.h"
+#include "spl/utility/PropertiesObject.h"
 #include "spl/utility/NamedProperty.h"
 
 std::ostream &
@@ -42,10 +42,9 @@ class AtomsFormula;
 class DistanceCalculator;
 class UnitCell;
 
-class Structure : public UnitCell::UnitCellListener
+class Structure : public utility::PropertiesObject, UnitCell::UnitCellListener
 {
 public:
-
   typedef utility::NamedProperty< utility::HeterogeneousMap> VisibleProperty;
 
   explicit
@@ -65,18 +64,16 @@ public:
   setName(const std::string & name);
 
   // UNIT CELL /////////////////////////////////////////
-
   UnitCell *
   getUnitCell();
   const UnitCell *
   getUnitCell() const;
 
-  /** Set the unit cell to be used by the structure. */
+  // Set the unit cell to be used by the structure.
   void
   setUnitCell(UnitCellPtr cell);
 
   // ATOMS ///////////////////////////////////////////////
-
   size_t
   getNumAtoms() const;
 
@@ -111,26 +108,6 @@ public:
   const DistanceCalculator &
   getDistanceCalculator() const;
 
-  template< typename T>
-    T *
-    getProperty(const utility::Key< T> & key);
-
-  template< typename T>
-    const T *
-    getProperty(const utility::Key< T> & key) const;
-
-  template< typename T>
-    void
-    setProperty(utility::Key< T> & key, const T & value);
-
-  template< typename T>
-    void
-    setPropertyFromString(utility::Key< T> & key, const ::std::string & value);
-
-  template< typename T>
-    bool
-    eraseProperty(utility::Key< T> & key);
-
   ::boost::optional< ::std::string>
   getVisibleProperty(const VisibleProperty & property) const;
   void
@@ -148,15 +125,16 @@ public:
   void
   print(::std::ostream & os) const;
 
+private:
+  typedef ::boost::ptr_vector< Atom> AtomsContainer;
+
   virtual void
   onUnitCellChanged(UnitCell & unitCell);
   virtual void
   onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
       const double newVol);
-
-private:
-
-  typedef ::boost::ptr_vector< Atom> AtomsContainer;
+  virtual void
+  onUnitCellDestroyed() {};
 
   void
   atomMoved(const Atom & atom) const;
@@ -173,8 +151,6 @@ private:
   /** The atoms contained in this group */
   AtomsContainer myAtoms;
 
-  utility::HeterogeneousMap myTypedProperties;
-
   // Flag to indicate whether the structure has changed since
   // the last time that all atom positions were requested
   mutable bool myAtomPositionsCurrent;
@@ -184,42 +160,6 @@ private:
 
   friend class Atom;
 };
-
-template< typename T>
-  T *
-  Structure::getProperty(const utility::Key< T> & key)
-  {
-    return myTypedProperties.find(key);
-  }
-
-template< typename T>
-  const T *
-  Structure::getProperty(const utility::Key< T> & key) const
-  {
-    return myTypedProperties.find(key);
-  }
-
-template< typename T>
-  void
-  Structure::setProperty(utility::Key< T> & key, const T & value)
-  {
-    myTypedProperties[key] = value;
-  }
-
-template< typename T>
-  void
-  Structure::setPropertyFromString(utility::Key< T> & key,
-      const ::std::string & value)
-  {
-    setProperty(key, ::boost::lexical_cast< T>(value));
-  }
-
-template< typename T>
-  bool
-  Structure::eraseProperty(utility::Key< T> & key)
-  {
-    return myTypedProperties.erase(key) != 0;
-  }
 
 }
 }

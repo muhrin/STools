@@ -27,6 +27,7 @@ namespace factory {
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
+::spl::utility::Key< ::std::string> LOAD_STRUCTURES;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;

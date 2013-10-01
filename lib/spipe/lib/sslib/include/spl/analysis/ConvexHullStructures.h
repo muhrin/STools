@@ -77,6 +77,7 @@ public:
 
   double getFormationEnthalpy(const StructuresIterator structure) const;
   void populateFormationEnthalpies();
+  void populateHullDistances();
 
   OptionalDouble distanceToHull(const common::Structure & structure) const;
 private:

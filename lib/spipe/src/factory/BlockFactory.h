@@ -12,6 +12,8 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <string>
+
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/utility/HeterogeneousMap.h>
 
@@ -52,6 +54,9 @@ public:
   bool
   createKeepWithinXPercentBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
+  bool
+  createLoadStructuresBlock(BlockHandle * const blockOut,
+      const ::std::string & toLoad) const;
   bool
   createNiggliReduceBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;

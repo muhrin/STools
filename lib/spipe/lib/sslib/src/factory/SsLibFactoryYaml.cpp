@@ -187,7 +187,7 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
       return pot;
 
     pot.reset(
-        new potential::SimplePairPotential(myAtomSpeciesDb, *speciesVec,
+        new potential::LennardJones(myAtomSpeciesDb, *speciesVec,
             *epsilon, *sigma, *cutoff, *beta, (*pow)(0), (*pow)(1), *comb));
   }
 
@@ -216,9 +216,16 @@ SsLibFactoryYaml::createGeometryOptimiser(const OptionsMap & optimiserMap) const
     UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
         new potential::TpsdGeomOptimiser(potential));
 
-    const double * const tolerance = tpsdOptions->find(TOLERANCE);
-    if(tolerance)
-      tpsd->setEnergyTolerance(*tolerance);
+    {
+      const double * const energyTol = tpsdOptions->find(ENERGY_TOL);
+      if(energyTol)
+        tpsd->setEnergyTolerance(*energyTol);
+    }
+    {
+      const double * const forceTol = tpsdOptions->find(FORCE_TOL);
+      if(forceTol)
+        tpsd->setForceTolerance(*forceTol);
+    }
 
     opt = tpsd;
   }

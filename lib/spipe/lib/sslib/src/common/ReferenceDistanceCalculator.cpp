@@ -14,8 +14,7 @@
 namespace spl {
 namespace common {
 
-ReferenceDistanceCalculator::ReferenceDistanceCalculator(
-    const Structure & structure) :
+ReferenceDistanceCalculator::ReferenceDistanceCalculator(Structure & structure) :
     DistanceCalculator(structure)
 {
 }

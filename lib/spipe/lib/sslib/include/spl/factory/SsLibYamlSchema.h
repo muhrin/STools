@@ -86,8 +86,6 @@ struct Tpsd : OptimisationSettings
 {
   Tpsd()
   {
-    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
     addScalarEntry("maxIter", MAX_ITER)->element()->defaultValue(
         potential::TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS);
     addScalarEntry("energyTol", ENERGY_TOL)->element()->defaultValue(

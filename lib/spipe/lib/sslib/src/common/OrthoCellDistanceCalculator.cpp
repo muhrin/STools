@@ -24,21 +24,19 @@ namespace common {
 
 const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-10;
 
-OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(const spl::common::Structure &structure):
-DistanceCalculator(structure)
+OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(Structure & structure) :
+    DistanceCalculator(structure)
 {
   updateBufferedValues();
 }
 
-bool OrthoCellDistanceCalculator::getDistsBetween(
-  const arma::vec3 & r1,
-  const arma::vec3 & r2,
-  double cutoff,
-  std::vector<double> &outDistances,
-  const size_t maxDistances,
-  const unsigned int maxCellMultiples
-) const
+bool
+OrthoCellDistanceCalculator::getDistsBetween(const arma::vec3 & r1,
+    const arma::vec3 & r2, double cutoff, std::vector< double> &outDistances,
+    const size_t maxDistances, const unsigned int maxCellMultiples) const
 {
+  using ::std::floor;
+
   // The cutoff has to be positive
   cutoff = ::std::abs(cutoff);
   const double cutoffSq = cutoff * cutoff;
@@ -52,17 +50,17 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
 
-  const double rDotA =  ::arma::dot(r12, myANorm);
+  const double rDotA = ::arma::dot(r12, myANorm);
   const double rDotB = ::arma::dot(r12, myBNorm);
   const double rDotC = ::arma::dot(r12, myCNorm);
 
   // Maximum multiples of cell vectors we need to go to
-  int A_min = -static_cast<int>(floor((cutoff + rDotA) * myARecip));
-  int A_max = static_cast<int>(floor((cutoff - rDotA) * myARecip));
-  int B_min = -static_cast<int>(floor((cutoff + rDotB) * myBRecip));
-  int B_max = static_cast<int>(floor((cutoff - rDotB) * myBRecip));
-  int C_min = -static_cast<int>(floor((cutoff + rDotC) * myCRecip));
-  int C_max = static_cast<int>(floor((cutoff - rDotC) * myCRecip));
+  int A_min = -static_cast< int>(floor((cutoff + rDotA) * myARecip));
+  int A_max = static_cast< int>(floor((cutoff - rDotA) * myARecip));
+  int B_min = -static_cast< int>(floor((cutoff + rDotB) * myBRecip));
+  int B_max = static_cast< int>(floor((cutoff - rDotB) * myBRecip));
+  int C_min = -static_cast< int>(floor((cutoff + rDotC) * myCRecip));
+  int C_max = static_cast< int>(floor((cutoff - rDotC) * myCRecip));
 
   // Check if there are any vectors that will be within the cutoff
   if(A_min > A_max || B_min > B_max || C_min > C_max)
@@ -77,7 +75,6 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   size_t numDistances = 0;
   ::arma::vec3 nA, nAPlusNB, dRImg;
   double r_x, r_y, r_z, aSq, bSq, testDistSq;
-
 
   for(int a = A_min; a <= A_max; ++a)
   {
@@ -98,7 +95,7 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
           ::arma::vec3 testVec = a * A + b * B + c * C + r12;
           const double vecLengthSq = ::arma::dot(testVec, testVec);
           if(vecLengthSq != testDistSq)
-            ::std::cout << "Error: Distance vectors do not match\n";
+          ::std::cout << "Error: Distance vectors do not match\n";
 #endif
 
           if(testDistSq < cutoffSq)
@@ -115,7 +112,9 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   return !problemDuringCalculation;
 }
 
-::arma::vec3 OrthoCellDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1, const ::arma::vec3 & r2, const unsigned int /*maxCellMultiples*/) const
+::arma::vec3
+OrthoCellDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1,
+    const ::arma::vec3 & r2, const unsigned int /*maxCellMultiples*/) const
 {
   const UnitCell & cell = *myStructure.getUnitCell();
 
@@ -133,13 +132,11 @@ bool OrthoCellDistanceCalculator::getDistsBetween(
   return r12;
 }
 
-bool OrthoCellDistanceCalculator::getVecsBetween(
-  const ::arma::vec3 & r1,
-  const ::arma::vec3 & r2,
-  double cutoff,
-  ::std::vector< ::arma::vec3> & outVectors,
-  const size_t maxValues,
-  const unsigned int maxCellMultiples) const
+bool
+OrthoCellDistanceCalculator::getVecsBetween(const ::arma::vec3 & r1,
+    const ::arma::vec3 & r2, double cutoff,
+    ::std::vector< ::arma::vec3> & outVectors, const size_t maxValues,
+    const unsigned int maxCellMultiples) const
 {
   // The cutoff has to be positive
   cutoff = ::std::abs(cutoff);
@@ -150,17 +147,17 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
 
-  const double rDotA =  ::arma::dot(r12, myANorm);
+  const double rDotA = ::arma::dot(r12, myANorm);
   const double rDotB = ::arma::dot(r12, myBNorm);
   const double rDotC = ::arma::dot(r12, myCNorm);
 
   // Maximum multiples of cell vectors we need to go to
-  int A_min = -static_cast<int>(floor((cutoff + rDotA) * myARecip));
-  int A_max = static_cast<int>(floor((cutoff - rDotA) * myARecip));
-  int B_min = -static_cast<int>(floor((cutoff + rDotB) * myBRecip));
-  int B_max = static_cast<int>(floor((cutoff - rDotB) * myBRecip));
-  int C_min = -static_cast<int>(floor((cutoff + rDotC) * myCRecip));
-  int C_max = static_cast<int>(floor((cutoff - rDotC) * myCRecip));
+  int A_min = -static_cast< int>(floor((cutoff + rDotA) * myARecip));
+  int A_max = static_cast< int>(floor((cutoff - rDotA) * myARecip));
+  int B_min = -static_cast< int>(floor((cutoff + rDotB) * myBRecip));
+  int B_max = static_cast< int>(floor((cutoff - rDotB) * myBRecip));
+  int C_min = -static_cast< int>(floor((cutoff + rDotC) * myCRecip));
+  int C_max = static_cast< int>(floor((cutoff - rDotC) * myCRecip));
 
   // Check if there are any vectors that will be within the cutoff
   if(A_min > A_max || B_min > B_max || C_min > C_max)
@@ -207,7 +204,8 @@ bool OrthoCellDistanceCalculator::getVecsBetween(
   return !problemDuringCalculation;
 }
 
-bool OrthoCellDistanceCalculator::isValid() const
+bool
+OrthoCellDistanceCalculator::isValid() const
 {
   using namespace utility::cell_params_enum;
 
@@ -217,18 +215,19 @@ bool OrthoCellDistanceCalculator::isValid() const
   const double (&params)[6] = myStructure.getUnitCell()->getLatticeParams();
 
   // All angles equal 90
-  return
-    utility::stable::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::stable::eq(params[BETA], 90.0, VALID_ANGLE_TOLERANCE) &&
-    utility::stable::eq(params[GAMMA], 90.0, VALID_ANGLE_TOLERANCE);
+  return utility::stable::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE)
+      && utility::stable::eq(params[BETA], 90.0, VALID_ANGLE_TOLERANCE)
+      && utility::stable::eq(params[GAMMA], 90.0, VALID_ANGLE_TOLERANCE);
 }
 
-void OrthoCellDistanceCalculator::unitCellChanged()
+void
+OrthoCellDistanceCalculator::unitCellChanged()
 {
   updateBufferedValues();
 }
 
-void OrthoCellDistanceCalculator::updateBufferedValues()
+void
+OrthoCellDistanceCalculator::updateBufferedValues()
 {
   using namespace utility::cell_params_enum;
 
@@ -247,7 +246,6 @@ void OrthoCellDistanceCalculator::updateBufferedValues()
   myBRecip = 1.0 / params[B];
   myCRecip = 1.0 / params[C];
 }
-
 
 }
 }

@@ -67,11 +67,22 @@ Factory::BlockHandle
 Factory::createSearchPipe(const OptionsMap & options) const
 {
   const OptionsMap * const buildStructuresOptions = options.find(spf::BUILD_STRUCTURES);
-  if(!buildStructuresOptions)
+  const ::std::string * const loadStructures = options.find(spf::LOAD_STRUCTURES);
+  if(!buildStructuresOptions && !loadStructures)
     return NULL_HANDLE;
 
   BlockHandle startBlock;
-  if(!myBlockFactory.createBuildStructuresBlock(&startBlock, *buildStructuresOptions))
+  if(buildStructuresOptions)
+  {
+    if(!myBlockFactory.createBuildStructuresBlock(&startBlock, *buildStructuresOptions))
+      return NULL_HANDLE;
+  }
+  else if(loadStructures)
+  {
+    if(!myBlockFactory.createLoadStructuresBlock(&startBlock, *loadStructures))
+      return NULL_HANDLE;
+  }
+  else
     return NULL_HANDLE;
 
   // Keep track of the last block so we can connect everything up

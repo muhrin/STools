@@ -10,16 +10,19 @@
 
 // INCLUDES ///////////////////////////////////
 #include "spl/common/DistanceCalculator.h"
+#include "spl/common/UnitCell.h"
 
 namespace spl {
 namespace common {
 
-class UniversalCrystalDistanceCalculator : public DistanceCalculator
+class UniversalCrystalDistanceCalculator : public DistanceCalculator,
+    UnitCell::UnitCellListener
 {
 public:
 
   explicit
-  UniversalCrystalDistanceCalculator(const Structure & structure);
+  UniversalCrystalDistanceCalculator(Structure & structure);
+  virtual ~UniversalCrystalDistanceCalculator();
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
@@ -44,11 +47,47 @@ public:
   isValid() const;
 
 private:
+  struct Cache
+  {
+    void
+    update(const UnitCell & cell);
+
+    ::arma::vec3 A;
+    ::arma::vec3 B;
+    ::arma::vec3 C;
+
+    ::arma::vec3 aCrossB;
+    ::arma::vec3 bCrossC;
+    ::arma::vec3 aCrossC;
+
+    double aCrossBLen;
+    double bCrossCLen;
+    double aCrossCLen;
+
+    ::arma::vec3 aCrossBHat;
+    ::arma::vec3 bCrossCHat;
+    ::arma::vec3 aCrossCHat;
+  };
 
   double
   getNumPlaneRepetitionsToBoundSphere(const ::arma::vec3 & planeVec1,
       const ::arma::vec3 & planeVec2, const double radius) const;
+  inline double
+  getNumPlaneRepetitionsToBoundSphere(const double radius, const double volume,
+      const double crossLen) const
+  {
+    return radius / volume * crossLen;
+  }
 
+  virtual void
+  onUnitCellChanged(UnitCell & unitCell);
+  virtual void
+  onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+      const double newVol);
+  virtual void
+  onUnitCellDestroyed();
+
+  Cache myCache;
 };
 
 }

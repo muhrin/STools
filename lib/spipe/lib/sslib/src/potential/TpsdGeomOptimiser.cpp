@@ -15,12 +15,17 @@
 #include "spl/potential/OptimisationSettings.h"
 
 #define TPSD_GEOM_OPTIMISER_DEBUG (SSLIB_DEBUG & 0)
+//#define TPSD_GEOM_OPTIMISER_TIMING
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
 #  include <sstream>
 #  include "spl/common/AtomSpeciesDatabase.h"
 #  include "spl/io/ResourceLocator.h"
 #  include "spl/io/ResReaderWriter.h"
+#endif
+
+#ifdef TPSD_GEOM_OPTIMISER_TIMING
+#  include <ctime>
 #endif
 
 // NAMESPACES ////////////////////////////////
@@ -59,15 +64,15 @@ private:
 // CONSTANTS ////////////////////////////////////////////////
 
 const unsigned int TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS = 10000;
-const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-12;
-const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-10;
+const double TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE = 1e-10;
+const double TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE = 1e-8;
 const double TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE = 1e-5;
 const unsigned int TpsdGeomOptimiser::CHECK_CELL_EVERY_N_STEPS = 20;
 const double TpsdGeomOptimiser::CELL_MIN_NORM_VOLUME = 0.02;
 const double TpsdGeomOptimiser::CELL_MAX_ANGLE_SUM = 360.0;
 const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_POS_FACTOR = 0.5;
-const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.2;
-static const double INITIAL_STEPSIZE = 0.02;
+const double TpsdGeomOptimiser::DEFAULT_MAX_DELTA_LATTICE_FACTOR = 0.1;
+static const double INITIAL_STEPSIZE = 0.001;
 
 // IMPLEMENTATION //////////////////////////////////////////////////////////
 
@@ -170,6 +175,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     const OptimisationSettings & settings) const
 {
   SSLIB_ASSERT(settings.maxIter.is_initialized());
+
+#ifdef TPSD_GEOM_OPTIMISER_TIMING
+  const clock_t t0 = ::std::clock();
+#endif
 
   // Get data about the structure to be optimised
   PotentialData & data = evaluator.getData();
@@ -274,6 +283,12 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     populateOptimistaionData(optimisationData, structure, data);
     optimisationData.numIters.reset(iter - 1);
   }
+
+#ifdef TPSD_GEOM_OPTIMISER_TIMING
+  const clock_t t = ::std::clock() - t0;
+  ::std::cout << "Optimisation took: " << static_cast<float>(t) / CLOCKS_PER_SEC << ::std::endl;
+#endif
+
   return outcome;
 }
 
@@ -285,6 +300,10 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 {
   SSLIB_ASSERT(settings.maxIter.is_initialized());
   SSLIB_ASSERT(settings.pressure.is_initialized());
+
+#ifdef TPSD_GEOM_OPTIMISER_TIMING
+  const clock_t t0 = ::std::clock();
+#endif
 
 #if TPSD_GEOM_OPTIMISER_DEBUG
   TpsdGeomOptimiserDebugger debugger;
@@ -309,16 +328,16 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
   double volume, pressure;
   double xg, gg;
 
-  data.forces.ones();
+  data.forces.zeros();
   deltaPos.zeros();
   deltaLatticeCar.zeros();
   latticeCar = unitCell.getOrthoMtx();
 
   // Initialisation of variables
   double dH = std::numeric_limits< double>::max(); // Change in enthalpy between steps
-  double h = 1.0; // Enthalpy = U + pV
+  double h = 0.0; // Enthalpy = U + pV
   double h0;
-  s.ones();
+  s.zeros();
 
   const double dNumAtoms = static_cast< double>(data.numParticles);
 
@@ -376,13 +395,15 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
       gg += accu(deltaS % deltaS);
     }
 
-    if(fabs(xg) > 0.0)
+    if(::std::fabs(xg) > 0.0)
       step = ::std::fabs(xg / gg);
+
+    residualStress = data.stressMtx + pressureMtx;
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
       deltaPos = step * data.forces;
     if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
-      deltaLatticeCar = -step * (data.stressMtx + pressureMtx) * latticeCar;
+      deltaLatticeCar = -step * residualStress * latticeCar;
 
     // Check if the stepsize needs to be capped
     if(capStepsize(structure, &deltaPos, &deltaLatticeCar, settings, &step))
@@ -391,7 +412,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
       if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
         deltaPos = step * data.forces;
       if(*settings.optimisationType & OptimisationSettings::Optimise::LATTICE)
-        deltaLatticeCar = -step * (data.stressMtx + pressureMtx) * latticeCar;
+        deltaLatticeCar = -step * residualStress * latticeCar;
     }
 
     if(*settings.optimisationType & OptimisationSettings::Optimise::ATOMS)
@@ -424,7 +445,7 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
 
     dH = h - h0;
 
-    residualStress = ::arma::abs(data.stressMtx + *settings.pressure);
+    residualStress = ::arma::abs(residualStress);
     converged = hasConverged(dH / dNumAtoms, fSqNorm.max(),
         residualStress.max(), settings);
 
@@ -468,6 +489,11 @@ TpsdGeomOptimiser::optimise(common::Structure & structure,
     populateOptimistaionData(optimisationData, structure, data);
     optimisationData.numIters.reset(iter - 1);
   }
+
+#ifdef TPSD_GEOM_OPTIMISER_TIMING
+  const clock_t t = ::std::clock() - t0;
+  ::std::cout << "Optimisation took: " << static_cast<float>(t) / CLOCKS_PER_SEC << ::std::endl;
+#endif
 
   return outcome;
 }
@@ -519,7 +545,7 @@ TpsdGeomOptimiser::hasConverged(const double deltaEnergyPerIon,
     return false;
 
   if(*options.optimisationType & OptimisationSettings::Optimise::ATOMS)
-    converged &= deltaEnergyPerIon < myEnergyTolerance
+    converged &= ::std::abs(deltaEnergyPerIon) < myEnergyTolerance
         && maxForceSq < myForceTolerance * myForceTolerance;
 
   return converged;

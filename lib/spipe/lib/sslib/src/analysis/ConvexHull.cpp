@@ -22,7 +22,6 @@
 namespace spl {
 namespace analysis {
 
-const ConvexHull::NT ConvexHull::NT_ZERO(0);
 const ConvexHull::HullTraits::FT ConvexHull::FT_ZERO(0);
 const ConvexHull::HullTraits::RT ConvexHull::RT_ZERO(0);
 
@@ -287,7 +286,7 @@ ConvexHull::generateEntry(const common::Structure & structure)
   myEntries.insert(myEntries.end(), HullEntry(structure.getComposition(), *value, id, isEndpoint));
   if(isEndpoint)
     updateChemicalPotential(endpoint,
-        HullTraits::FT(*value, endpointFormulaUnits));
+        HullTraits::FT(*value) / HullTraits::FT(endpointFormulaUnits));
 
   return id;
 }
@@ -326,7 +325,7 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
   // Need chemical potentials for all endpoints
   SSLIB_ASSERT(canGenerate());
 
-  HullTraits::FT totalMuNAtoms = NT_ZERO;
+  HullTraits::FT totalMuNAtoms = FT_ZERO;
   HullTraits::FT totalAtoms, numAtoms;
   BOOST_FOREACH(Endpoints::const_reference endpoint, myEndpoints)
   {
@@ -544,7 +543,9 @@ ConvexHull::distanceToHull(const PointD & p) const
 #endif
 
   // Endpoints are anchored to 0 so the distances is just the convex value of this point
-  if(isEndpoint(p))
+  // also if the hull only contains endpoints then it will be a plane (line) at 0 in the
+  // convex dimensions so the convex value is just the height above the plane
+  if(isEndpoint(p) || containsOnlyEndpoints())
     return p[myHullDims - 1];
 
   // Create the line to test against
@@ -574,7 +575,7 @@ ConvexHull::distanceToHull(const PointD & p) const
     {
       const PointD interPoint = PointD(myHullDims, intersectionPoint->cartesian_begin(),
           intersectionPoint->cartesian_end());
-      // TODO: Ask on mailing list why it has to be points_begin() + 1
+      // Have to start at points_begin() + 1 because this is the way simplices represent facets.
       if(containedInSimplex(it->points_begin() + 1, it->points_begin() + myHull->current_dimension() + 1, interPoint))
       {
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
@@ -586,7 +587,7 @@ ConvexHull::distanceToHull(const PointD & p) const
     }
   }
 
-  return ::boost::optional<ConvexHull::HullTraits::RT>(); // Point was not in the space of the hull
+  return ::boost::optional<RT>(); // Point was not in the space of the hull
 }
 
 bool ConvexHull::isTopFacet(Hull::Facet_const_iterator facet) const
@@ -607,6 +608,17 @@ bool ConvexHull::isEndpoint(const PointD & p) const
       return true;
   }
   return false;
+}
+
+bool ConvexHull::containsOnlyEndpoints() const
+{
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+  // Conveniences for debugging
+  const size_t numVertices = getHull()->number_of_vertices();
+  const size_t numEndpoints = myEndpoints.size();
+#endif
+
+  return getHull()->number_of_vertices() == myEndpoints.size();
 }
 
 void ConvexHull::printPoint(const PointD & p) const

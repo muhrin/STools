@@ -34,6 +34,7 @@ extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
+extern ::spl::utility::Key< ::std::string> LOAD_STRUCTURES;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;

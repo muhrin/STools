@@ -48,7 +48,7 @@ public:
   // - path to folder containing structures
   // - wildcard path to structures or folders containig structures
   // - a list containing a mixture of any of the above
-  LoadSeedStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = true);
+  LoadSeedStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = false);
 
   // From StartBlock ///
   virtual void

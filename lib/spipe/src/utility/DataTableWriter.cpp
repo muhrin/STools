@@ -56,7 +56,11 @@ DataTableWriter::write()
   myDataSinceWrite = 0;
 
   if(!myOutStream.is_open())
+  {
     myOutStream.open(myOutputPath, ios_base::out | ios_base::in);
+    // Save the write marker
+    myWriteMarker = myOutStream.tellp();
+  }
 
   if(myOutStream.good())
   {
@@ -88,12 +92,10 @@ DataTableWriter::write()
       }
       myOutStream << "\n";
     }
+    ::std::flush(myOutStream);
   }
   else
     return false;
-
-  if(myOutStream.is_open())
-    myOutStream.close();
 
   return true;
 }
@@ -133,8 +135,6 @@ DataTableWriter::initialise()
   myOutStream.open(myOutputPath, openMode);
   // Save the write marker
   myWriteMarker = myOutStream.tellp();
-  // Clean up
-  myOutStream.close();
 
   // Listen for changes to the table
   myTable.addDataTableChangeListener(*this);

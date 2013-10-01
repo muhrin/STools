@@ -74,6 +74,7 @@ set(sslib_Header_Files__common
   include/spl/common/OrthoCellDistanceCalculator.h
   include/spl/common/ReferenceDistanceCalculator.h
   include/spl/common/Structure.h
+  include/spl/common/StructureListener.h
   include/spl/common/StructureProperties.h
   include/spl/common/Types.h
   include/spl/common/UnitCell.h
@@ -168,11 +169,11 @@ set(sslib_Header_Files__potential
   include/spl/potential/IParameterisable.h
   include/spl/potential/IPotential.h
   include/spl/potential/IPotentialEvaluator.h
+  include/spl/potential/LennardJones.h
+  include/spl/potential/LennardJonesData.h
   include/spl/potential/OptimisationConstraint.h
   include/spl/potential/OptimisationSettings.h
   include/spl/potential/PotentialData.h
-  include/spl/potential/SimplePairPotential.h
-  include/spl/potential/SimplePairPotentialData.h
   include/spl/potential/StructureProperties.h
   include/spl/potential/TersoffPotential.h
   include/spl/potential/TersoffPotentialData.h
@@ -206,6 +207,7 @@ set(sslib_Header_Files__utility
   include/spl/utility/Outcome.h
   include/spl/utility/PermutationRange.h
   include/spl/utility/PromotableType.h
+  include/spl/utility/PropertiesObject.h
   include/spl/utility/Range.h
   include/spl/utility/SharedHandle.h
   include/spl/utility/SortedDistanceComparator.h

@@ -139,6 +139,17 @@ void ConvexHullStructures::populateFormationEnthalpies()
   }
 }
 
+void ConvexHullStructures::populateHullDistances()
+{
+  OptionalDouble dist;
+  BOOST_FOREACH(Structures::reference s, myStructures)
+  {
+    dist = myConvexHull.distanceToHull(s.second);
+    if(dist)
+      s.first->setProperty(common::structure_properties::general::HULL_DISTANCE, *dist);
+  }
+}
+
 OptionalDouble ConvexHullStructures::distanceToHull(const common::Structure & structure) const
 {
   const Structures::const_iterator it = myStructures.find(const_cast<common::Structure *>(&structure));
