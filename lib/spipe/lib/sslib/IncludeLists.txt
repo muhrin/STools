@@ -17,6 +17,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
   include/spl/analysis/VoronoiMap.h
+  include/spl/analysis/VoronoiEdgeTracer.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 
@@ -24,6 +25,7 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 
 set(sslib_Header_Files__analysis__detail
   include/spl/analysis/detail/ConvexHullStructures.h
+  include/spl/analysis/detail/VoronoiEdgeTracer.h
 )
 source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analysis__detail})
 
