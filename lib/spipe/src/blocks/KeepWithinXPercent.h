@@ -54,7 +54,7 @@ public:
   // End from Barrier //////////////
 
 private:
-  typedef ::std::map< double, StructureDataType *> Structures;
+  typedef ::std::multimap< double, StructureDataType *> Structures;
 
   void
   keep(StructureDataType * const structure, const double energy);

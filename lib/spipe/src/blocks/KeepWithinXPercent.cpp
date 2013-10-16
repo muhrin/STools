@@ -12,6 +12,7 @@
 
 #include <pipelib/pipelib.h>
 
+#include "common/Assert.h"
 #include "common/StructureData.h"
 
 // NAMESPACES ////////////////////////////////
@@ -86,20 +87,28 @@ KeepWithinXPercent::hasData() const
 void
 KeepWithinXPercent::keep(StructureDataType * const structure, const double energy)
 {
+  using ::std::make_pair;
+
 #ifdef SP_ENABLE_THREAD_AWARE
   boost::lock_guard<boost::mutex> guard(myMutex);
 #endif
 
   // Check if we have any structures yet
+  bool kept = true;
   if(myStructures.empty())
-    myStructures[energy] = structure;
+    myStructures.insert(make_pair(energy, structure));
   else
   {
     if(energy < myStructures.begin()->first)
       newLowest(structure, energy);
     else if(energy < getCutoff())
-      myStructures[energy] = structure;
+      myStructures.insert(make_pair(energy, structure));
+    else
+      kept = false;
   }
+
+  if(!kept)
+    drop(structure);
 }
 
 void
@@ -108,8 +117,9 @@ KeepWithinXPercent::newLowest(StructureDataType * const structure, const double 
   // WARNING: This must be called from keep(...) or another method that locks a mutex
   // to make sure the operations in this method remain thread safe as it doesn't
   // use a lock itself
+  SPIPE_ASSERT(energy < myStructures.begin()->first);
 
-  myStructures[energy] = structure;
+  myStructures.insert(myStructures.begin(), ::std::make_pair(energy, structure));
   const double cutoff = getCutoff();
 
   // Go from the end erasing all entries greater than the new cutoff
