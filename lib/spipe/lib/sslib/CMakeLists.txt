@@ -147,12 +147,6 @@ if(SSLIB_USE_YAML)
   )
 endif(SSLIB_USE_YAML)
 
-#if(SSLIB_USE_LAPACK)
-#  target_link_libraries(sslib
-#    ${LAPACK_LIBRARIES}
-#  )
-#endif(SSLIB_USE_LAPACK)
-
 if(SSLIB_USE_CGAL)
   target_link_libraries(sslib
     ${CGAL_LIBRARY}

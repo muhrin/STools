@@ -321,13 +321,11 @@ set(stools_targets
   slock
 )
 
-###############################
-## smap: Structure phase map ##
-###############################
-if(SSLIB_USE_CGAL)
 
-# Need CGAL ImageIO component for this to work
-find_package(CGAL COMPONENTS ImageIO)
+################################
+## smap: Structure phase map ##
+################################
+if(SSLIB_USE_CGAL)
 
 add_executable(smap
   smap.cpp
@@ -338,35 +336,11 @@ add_dependencies(smap stools_common)
 # Libraries we need to link to
 target_link_libraries(smap
   stools_common
-  ${CGAL_ImageIO_LIBRARY}
 )
 
 set(stools_targets
   ${stools_targets}
   smap
-)
-
-endif(SSLIB_USE_CGAL)
-
-################################
-## smap2: Structure phase map ##
-################################
-if(SSLIB_USE_CGAL)
-
-add_executable(smap2
-  smap2.cpp
-)
-
-add_dependencies(smap2 stools_common)
-
-# Libraries we need to link to
-target_link_libraries(smap2
-  stools_common
-)
-
-set(stools_targets
-  ${stools_targets}
-  smap2
 )
 
 endif(SSLIB_USE_CGAL)

@@ -16,14 +16,20 @@
 #include <map>
 #include <set>
 
-#include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
-#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Arr_extended_dcel.h>
+#include <CGAL/Arr_segment_traits_2.h>
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Voronoi_diagram_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
+
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Voronoi_diagram_2.h>
+
+#include "spl/utility/Range.h"
 
 // FORWARD DECLARATIONS ///////
 
@@ -31,30 +37,61 @@
 
 namespace spl {
 namespace analysis {
+namespace arrangement_data {
+template< typename LabelType>
+  struct Vertex
+  {
+    double maxDisplacement;
+  };
 
 template< typename LabelType>
+  struct Halfedge
+  {
+    LabelType label;
+  };
+
+template< typename LabelType>
+  struct Face
+  {
+    LabelType label;
+  };
+} // namespace arrangement_data
+
+template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
+    LabelType>, class HalfedgeDataType = arrangement_data::Halfedge< LabelType>,
+    class FaceDataType = arrangement_data::Face< LabelType> >
   class VoronoiEdgeTracer
   {
     typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 
     // Arrangements stuff
     typedef CGAL::Arr_segment_traits_2< K> ArrTraits;
-    typedef CGAL::Arrangement_2< ArrTraits> Arrangement;
-    typedef ArrTraits::Segment_2 ArrSegment;
+    typedef CGAL::Arr_extended_dcel< ArrTraits, VertexDataType,
+        HalfedgeDataType, FaceDataType> Dcel;
 
     // typedefs for defining the adaptor
     typedef CGAL::Triangulation_vertex_base_with_info_2< LabelType, K> Vb;
     typedef CGAL::Triangulation_data_structure_2< Vb> Tds;
+
+  public:
+    typedef K::Point_2 Point;
+    typedef CGAL::Arrangement_2< ArrTraits, Dcel> Arrangement;
     typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
+
+  private:
+    typedef ArrTraits::Segment_2 ArrSegment;
+
     typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
     typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
         Delaunay> AP;
+
+  public:
     typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
+  private:
     typedef ::std::map< typename Voronoi::Vertex_handle,
         typename Arrangement::Vertex_handle> VertexMap;
     typedef ::std::set< typename Voronoi::Delaunay_edge> DelaunayEdgeSet;
-    typedef ::std::map< const Arrangement::Halfedge *, LabelType> HalfedgeInfo;
 
     struct TracingData
     {
@@ -70,14 +107,81 @@ template< typename LabelType>
     };
 
   public:
-    VoronoiEdgeTracer(const Voronoi & voronoi);
+    VoronoiEdgeTracer(const Voronoi & voronoi, const bool splitSharedVertices =
+        true);
+
+    Arrangement &
+    getArrangement();
 
     const Arrangement &
     getArrangement() const;
-    LabelType
-    getInfo(const Arrangement::Halfedge_const_handle halfedge) const;
 
   private:
+    class VertexSplitter
+    {
+    public:
+      typedef ::spl::utility::MinMax< size_t> Edge;
+    private:
+      typedef ::std::map< Edge, LabelType> Edges;
+    public:
+      typedef typename Edges::const_iterator EdgeIterator;
+
+      VertexSplitter(const size_t degree);
+      void
+      addEdge(const size_t i, const size_t j, const LabelType & label);
+
+      EdgeIterator
+      edgesBegin() const;
+      EdgeIterator
+      edgesEnd() const;
+
+      bool
+      noEdges() const;
+      size_t
+      numEdges() const;
+      void
+      resolveCollisions();
+
+    private:
+      const size_t degree_;
+      Edges edges_;
+    };
+
+    class SplitVertex
+    {
+      typedef ::std::vector<
+          typename Arrangement::Halfedge_around_vertex_circulator> Halfedges;
+      typedef ::std::vector< typename Arrangement::Vertex_handle> Neighbours;
+    public:
+      typedef typename Neighbours::const_iterator NeighbourIterator;
+      typedef typename Halfedges::const_iterator HalfedgeIterator;
+
+      SplitVertex();
+
+      void
+      addHalfedge(
+          const typename Arrangement::Halfedge_around_vertex_circulator & halfedge);
+
+      size_t
+      numNeighbours() const;
+      NeighbourIterator
+      neighboursBegin() const;
+      NeighbourIterator
+      neighboursEnd() const;
+
+      HalfedgeIterator
+      halfedgesBegin() const;
+      HalfedgeIterator
+      halfedgesEnd() const;
+
+      K::Vector_2
+      meanPos() const;
+    private:
+      Halfedges halfedges_;
+      Neighbours neighbours_;
+      K::Vector_2 newPos_;
+    };
+
     void
     initArrangement(TracingData & tracingData);
     void
@@ -90,11 +194,12 @@ template< typename LabelType>
     bool
     isBoundaryEdge(const typename Delaunay::Edge & edge) const;
     void
+    splitSharedVertices();
+    void
     splitEdges();
 
     Arrangement arrangement_;
     VertexMap vertexMap_;
-    HalfedgeInfo halfedgeInfo_;
   };
 
 }
