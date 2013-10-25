@@ -20,7 +20,6 @@ project(STools)
 ## Configuration options ###############################
 
 # Custom paths to libraries #########
-set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
 set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
 
 ## End configuration options ###########################
@@ -35,7 +34,7 @@ configure_file(
 
 ## FIND PACKAGES ########################################
 # First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH "${BOOST_ROOT}" "${ARMADILLO_ROOT}")
+set(CMAKE_PREFIX_PATH "${ARMADILLO_ROOT}")
 
 # Boost #
 # Tell Windows builds to look for static boost libraries

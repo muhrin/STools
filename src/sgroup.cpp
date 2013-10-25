@@ -6,7 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-
 #include <list>
 #include <string>
 
@@ -16,7 +15,7 @@
 
 // From Pipelib //
 
- //
+//
 #include <spl/analysis/SpaceGroup.h>
 #include <spl/common/Structure.h>
 #include <spl/common/Types.h>
@@ -43,7 +42,8 @@ struct InputOptions
   bool printSgNumber;
 };
 
-int main(const int argc, char * argv[])
+int
+main(const int argc, char * argv[])
 {
   const ::std::string exeName(argv[0]);
 
@@ -52,19 +52,24 @@ int main(const int argc, char * argv[])
 
   try
   {
-    po::options_description desc("Usage: " + exeName + " [options] files...\nOptions:");
-    desc.add_options()
-      ("help", "Show help message")
-      ("prec,p", po::value<double>(&in.precision)->default_value(ssa::space_group::DEFAULT_PRECISION), "Set space group identifier precision")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
-      ("num,n", po::value<bool>(&in.printSgNumber)->default_value(false)->zero_tokens(), "print space group number")
-    ;
+    po::options_description desc(
+        "Usage: " + exeName + " [options] files...\nOptions:");
+    desc.add_options()("help", "Show help message")("prec,p",
+        po::value< double>(&in.precision)->default_value(
+            ssa::space_group::DEFAULT_PRECISION),
+        "Set space group identifier precision")("input-file",
+        po::value< ::std::vector< ::std::string> >(&in.inputFiles),
+        "input file(s)")("num,n",
+        po::value< bool>(&in.printSgNumber)->default_value(false)->zero_tokens(),
+        "print space group number");
 
     po::positional_options_description p;
     p.add("input-file", -1);
 
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(desc).positional(p).run(),
+        vm);
 
     // Deal with help first, otherwise missing required parameters will cause exception
     if(vm.count("help"))
@@ -92,12 +97,14 @@ int main(const int argc, char * argv[])
   {
     if(!structureLocator.set(inputFile))
     {
-      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping." << ::std::endl;
+      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping."
+          << ::std::endl;
       continue;
     }
     if(!fs::exists(structureLocator.path()))
     {
-      ::std::cerr << "File " << inputFile << " does not exist.  Skipping." << ::std::endl;
+      ::std::cerr << "File " << inputFile << " does not exist.  Skipping."
+          << ::std::endl;
       continue;
     }
 
@@ -116,6 +123,5 @@ int main(const int argc, char * argv[])
       loadedStructures.clear();
     }
   }
-
 
 }

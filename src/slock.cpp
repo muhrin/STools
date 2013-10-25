@@ -88,7 +88,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   try
   {
     po::options_description general(
-        "slock\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+        "slock\nUsage: " + exeName + " file_to_lock...\nOptions");
     general.add_options()
         ("help", "Show help message")
         ("try,t", po::value< bool>(&in.tryLock)->default_value(false),
