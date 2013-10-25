@@ -52,9 +52,9 @@ set(CMAKE_PREFIX_PATH
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
 if(SSLIB_ENABLE_THREAD_AWARE)
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem thread)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex thread)
 else()
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem regex)
 endif(SSLIB_ENABLE_THREAD_AWARE)
 
 #

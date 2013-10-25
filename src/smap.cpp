@@ -262,11 +262,15 @@ main(const int argc, char * argv[])
         anchor = edge1->target()->data().anchor;
         n2 = edge2->target()->data().anchor;
         r1 = pos.col(n2->idx()) - pos.col(n1->idx());
-        len1 = ::std::sqrt(::arma::dot(r1, r1));
-        // This gives a vector pointing OUT of the face
-        r1Perp(0) = r1(1) / len1;
-        r1Perp(1) = -r1(0) / len1;
-        forces.col(anchor->idx()) -= in.areaForceStrength * areaDiff * r1Perp;
+        lenSq = ::std::sqrt(::arma::dot(r1, r1));
+        if(lenSq > 0)
+        {
+          len1 = ::std::sqrt(::arma::dot(r1, r1));
+          // This gives a vector pointing OUT of the face
+          r1Perp(0) = r1(1) / len1;
+          r1Perp(1) = -r1(0) / len1;
+          forces.col(anchor->idx()) -= in.areaForceStrength * areaDiff * r1Perp;
+        }
 
         edge1 = edge2;
       } while(edge1 != first);
