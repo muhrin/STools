@@ -6,7 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "StructurePipe.h"
 #include "utility/DataTable.h"
 
 #include <fstream>

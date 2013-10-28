@@ -10,6 +10,7 @@
 #define DATA_TABLE_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "StructurePipe.h"
 
 #include <map>
 #include <string>
@@ -20,8 +21,6 @@
 #endif
 
 #include <pipelib/event/EventSupport.h>
-
-#include "StructurePipe.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
