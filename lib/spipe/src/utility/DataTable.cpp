@@ -56,6 +56,12 @@ DataTable::DataTable():
     myColumns(1, Column("[key]"))
 {}
 
+size_t
+DataTable::numRows() const
+{
+  return myRows.size();
+}
+
 DataTable::RowIterator
 DataTable::rowsBegin() const
 {
@@ -66,6 +72,12 @@ DataTable::RowIterator
 DataTable::rowsEnd() const
 {
   return myRows.end();
+}
+
+size_t
+DataTable::numColumns() const
+{
+  return myColumns.size();
 }
 
 DataTable::ColumnInfoIterator DataTable::columnInfoBegin() const

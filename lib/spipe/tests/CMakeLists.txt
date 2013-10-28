@@ -24,6 +24,12 @@ set(tests_Source_Files__blocks
 )
 source_group("Source Files\\blocks" FILES ${tests_Source_Files__blocks})
 
+set(tests_Source_Files__utility
+  utility/DataTableTest.cpp
+)
+source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})
+
+
 ## tests/
 
 set(tests_Header_Files__
@@ -42,6 +48,7 @@ set(tests_Header_Files
 
 set(tests_Source_Files
   ${tests_Source_Files__blocks}
+  ${tests_Source_Files__utility}
   ${tests_Source_Files__}
 )
 

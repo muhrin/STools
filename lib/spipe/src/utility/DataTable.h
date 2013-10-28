@@ -74,9 +74,11 @@ public:
 
   DataTable();
 
+  size_t numRows() const;
   RowIterator rowsBegin() const;
   RowIterator rowsEnd() const;
 
+  size_t numColumns() const;
   ColumnInfoIterator columnInfoBegin() const;
   ColumnInfoIterator columnInfoEnd() const;
 
