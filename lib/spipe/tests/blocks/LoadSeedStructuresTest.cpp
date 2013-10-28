@@ -19,7 +19,7 @@
 #include <StructurePipe.h>
 #include <common/SharedData.h>
 #include <common/StructureData.h>
-#include <blocks/LoadSeedStructures.h>
+#include <blocks/LoadStructures.h>
 
 namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(LoadSeedStructuresTest)
 
   StructureSink sink;
 
-  spipe::BlockHandle load(new blocks::LoadSeedStructures("structures/*.res"));
+  spipe::BlockHandle load(new blocks::LoadStructures("structures/*.res"));
 
   Engine engine;
   engine.setFinishedDataSink(&sink);

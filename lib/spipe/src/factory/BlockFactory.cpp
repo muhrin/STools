@@ -17,7 +17,7 @@
 #include "blocks/FindSymmetryGroup.h"
 #include "blocks/KeepTopN.h"
 #include "blocks/KeepWithinXPercent.h"
-#include "blocks/LoadSeedStructures.h"
+#include "blocks/LoadStructures.h"
 #include "blocks/NiggliReduce.h"
 #include "blocks/GeomOptimise.h"
 #include "blocks/ParamGeomOptimise.h"
@@ -100,7 +100,7 @@ bool
 BlockFactory::createLoadStructuresBlock(BlockHandle * const blockOut,
     const ::std::string & toLoad) const
 {
-  blockOut->reset(new blocks::LoadSeedStructures(toLoad));
+  blockOut->reset(new blocks::LoadStructures(toLoad));
   return true;
 }
 

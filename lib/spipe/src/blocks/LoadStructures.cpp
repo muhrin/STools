@@ -1,12 +1,12 @@
 /*
- * RandomStructure.cpp
+ * LoadStructures.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "blocks/LoadSeedStructures.h"
+#include "blocks/LoadStructures.h"
 
 #include <sstream>
 #include <vector>
@@ -37,19 +37,20 @@ namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
 namespace ssu = ::spl::utility;
 
-const double LoadSeedStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
+const double LoadStructures::ATOMIC_VOLUME_MULTIPLIER = 2.0;
 
-LoadSeedStructures::LoadSeedStructures(const ::std::string & seedStructures,
+LoadStructures::LoadStructures(const ::std::string & seedStructures,
     const bool tryToScaleVolumes) :
-    Block("Load seed structures"), mySeedStructuresString(seedStructures), myTryToScaleVolumes(
+    Block("Load structures"), mySeedStructuresString(seedStructures), myTryToScaleVolumes(
         tryToScaleVolumes)
 {
 }
 
 void
-LoadSeedStructures::pipelineInitialising()
+LoadStructures::pipelineInitialising()
 {
-  myStructures.clear();
+  std::queue< ::spl::io::ResourceLocator> empty;
+  std::swap(myStructureLocations, empty);
 
   // First of all split the string up
   ::std::string entry;
@@ -59,37 +60,48 @@ LoadSeedStructures::pipelineInitialising()
 }
 
 void
-LoadSeedStructures::start()
+LoadStructures::start()
 {
   using ::spipe::common::StructureData;
 
   double oldVolume, newVolume;
   const ssc::UnitCell * unitCell;
-  BOOST_FOREACH(const ssc::Structure & str, myStructures)
+
+  while(!myStructureLocations.empty())
   {
-    StructureData * const data = getEngine()->createData();
-    // Make a clone of our structure
-    ssc::Structure & structure = data->setStructure(str.clone());
+    const ssio::ResourceLocator & loc = myStructureLocations.back();
 
-    // Set up the structure name if needed
-    if(structure.getName().empty())
-      structure.setName(common::generateStructureName(getEngine()->globalData()));
+    // Load the structures
+    ssio::StructuresContainer structures;
+    getEngine()->globalData().getStructureIo().readStructures(structures, loc);
 
-    unitCell = structure.getUnitCell();
-    if(myTryToScaleVolumes && unitCell)
+    while(!structures.empty())
     {
-      oldVolume = unitCell->getVolume();
-      newVolume = ATOMIC_VOLUME_MULTIPLIER * getTotalAtomicVolume(str);
-      structure.scale(newVolume / oldVolume);
+      StructureData * const data = getEngine()->createData();
+      ssc::Structure & structure = data->setStructure(structures.pop_back());
+
+      // Set up the structure name if needed
+      if(structure.getName().empty())
+        structure.setName(common::generateStructureName(getEngine()->globalData()));
+
+      unitCell = structure.getUnitCell();
+      if(myTryToScaleVolumes && unitCell)
+      {
+        oldVolume = unitCell->getVolume();
+        newVolume = ATOMIC_VOLUME_MULTIPLIER * getTotalAtomicVolume(structure);
+        structure.scale(newVolume / oldVolume);
+      }
+
+      // Send it on its way
+      out(data);
     }
 
-    // Send it on its way
-    out(data);
+    myStructureLocations.pop(); // Pop off the queue of structures to load
   }
 }
 
 int
-LoadSeedStructures::processEntry(const ::std::string & entry)
+LoadStructures::processEntry(const ::std::string & entry)
 {
   const EntryType type = entryType(entry);
 
@@ -97,7 +109,7 @@ LoadSeedStructures::processEntry(const ::std::string & entry)
   {
     ssio::ResourceLocator loc;
     loc.set(entry);
-    return processFileOrFolder(loc);
+    myStructureLocations.push(loc);
   }
   else if(type == WILDCARD_PATH)
     return processWildcardEntry(entry);
@@ -106,7 +118,7 @@ LoadSeedStructures::processEntry(const ::std::string & entry)
 }
 
 int
-LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
+LoadStructures::processWildcardEntry(const ::std::string & entry)
 {
   ::std::vector< fs::path> entryPaths;
 
@@ -114,30 +126,19 @@ LoadSeedStructures::processWildcardEntry(const ::std::string & entry)
     return -1;
 
   int numOut = 0;
-
   BOOST_FOREACH(const fs::path & entryPath, entryPaths)
   {
     if(fs::is_regular_file(entryPath))
-      numOut += processFileOrFolder(entryPath);
+    {
+      myStructureLocations.push(ssio::ResourceLocator(entryPath));
+      ++numOut;
+    }
   }
-
   return numOut;
 }
 
-int
-LoadSeedStructures::processFileOrFolder(const ::spl::io::ResourceLocator & loc)
-{
-  // Try loading the file
-  const size_t numLoaded = getEngine()->globalData().getStructureIo().readStructures(myStructures,
-      loc);
-  if(numLoaded == 0)
-    return -1;
-
-  return static_cast< int>(numLoaded);
-}
-
-LoadSeedStructures::EntryType
-LoadSeedStructures::entryType(const ::std::string & entry) const
+LoadStructures::EntryType
+LoadStructures::entryType(const ::std::string & entry) const
 {
   if(entry.find('*') != ::std::string::npos)
     return WILDCARD_PATH;
@@ -158,7 +159,7 @@ LoadSeedStructures::entryType(const ::std::string & entry) const
 }
 
 double
-LoadSeedStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure) const
+LoadStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure) const
 {
   typedef ::boost::optional< double> OptionalDouble;
 

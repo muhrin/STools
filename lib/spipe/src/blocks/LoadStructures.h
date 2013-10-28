@@ -1,17 +1,18 @@
 /*
- * LoadSeedStructures.h
+ * LoadStructures.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef LOAD_SEED_STRUCTURES_H
-#define LOAD_SEED_STRUCTURES_H
+#ifndef LOAD_STRUCTURES_H
+#define LOAD_STRUCTURES_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <queue>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -38,7 +39,7 @@ class ResourceLocator;
 namespace spipe {
 namespace blocks {
 
-class LoadSeedStructures : public StartBlock, ::boost::noncopyable
+class LoadStructures : public StartBlock, ::boost::noncopyable
 {
 public:
   static const double ATOMIC_VOLUME_MULTIPLIER;
@@ -48,7 +49,7 @@ public:
   // - path to folder containing structures
   // - wildcard path to structures or folders containig structures
   // - a list containing a mixture of any of the above
-  LoadSeedStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = false);
+  LoadStructures(const ::std::string & seedStructures, const bool tryToScaleVolumes = false);
 
   // From StartBlock ///
   virtual void
@@ -70,8 +71,6 @@ private:
   processEntry(const ::std::string & entry);
   int
   processWildcardEntry(const ::std::string & entry);
-  int
-  processFileOrFolder(const ::spl::io::ResourceLocator & loc);
   EntryType
   entryType(const ::std::string & entry) const;
 
@@ -79,7 +78,7 @@ private:
   getTotalAtomicVolume(const ::spl::common::Structure & structure) const;
 
   const ::std::string mySeedStructuresString;
-  StructuresContainer myStructures;
+  ::std::queue< ::spl::io::ResourceLocator> myStructureLocations;
   const bool myTryToScaleVolumes;
 };
 

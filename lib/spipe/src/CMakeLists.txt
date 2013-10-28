@@ -8,7 +8,7 @@ set(spipe_Header_Files__blocks
   blocks/GeomOptimise.h
   blocks/KeepTopN.h
   blocks/KeepWithinXPercent.h
-  blocks/LoadSeedStructures.h
+  blocks/LoadStructures.h
   blocks/NiggliReduce.h
   blocks/ParamGeomOptimise.h
   blocks/RemoveDuplicates.h
@@ -25,7 +25,7 @@ set(spipe_Source_Files__blocks
   blocks/GeomOptimise.cpp
   blocks/KeepTopN.cpp
   blocks/KeepWithinXPercent.cpp
-  blocks/LoadSeedStructures.cpp
+  blocks/LoadStructures.cpp
   blocks/NiggliReduce.cpp
   blocks/ParamGeomOptimise.cpp
   blocks/RemoveDuplicates.cpp
