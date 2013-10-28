@@ -646,7 +646,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     class FaceDataType>
   typename VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType,
-      FaceDataType>::K::Vector_2
+      FaceDataType>::SplitVertex::Vector_2
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::SplitVertex::meanPos() const
   {
     return newPos_ / neighbours_.size();

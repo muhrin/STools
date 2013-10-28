@@ -152,6 +152,7 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
       typedef ::std::vector<
           typename Arrangement::Halfedge_around_vertex_circulator> Halfedges;
       typedef ::std::vector< typename Arrangement::Vertex_handle> Neighbours;
+      typedef typename K::Vector_2 Vector_2;
     public:
       typedef typename Neighbours::const_iterator NeighbourIterator;
       typedef typename Halfedges::const_iterator HalfedgeIterator;
@@ -174,7 +175,7 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
       HalfedgeIterator
       halfedgesEnd() const;
 
-      K::Vector_2
+      Vector_2
       meanPos() const;
     private:
       Halfedges halfedges_;
