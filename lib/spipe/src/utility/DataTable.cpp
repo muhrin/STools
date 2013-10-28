@@ -12,6 +12,9 @@
 #include <fstream>
 
 #include <boost/foreach.hpp>
+#ifdef SP_ENABLE_THREAD_AWARE
+#  include <boost/thread/lock_guard.hpp>
+#endif
 
 #include "utility/DataTableValueChanged.h"
 #include "utility/IDataTableChangeListener.h"
