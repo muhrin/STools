@@ -92,7 +92,8 @@ endif(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
 set(SSLIB_LOCAL_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}/include  # So that we find SSLibConfig.h
   ${PROJECT_SOURCE_DIR}/include
-  CACHE INTERNAL FORCE
+  CACHE INTERNAL "Internal variable used to set the local include directories used by SSLib"
+  FORCE
 )
 
 # Include directories with header files
@@ -118,7 +119,8 @@ endif(SSLIB_USE_CGAL)
 get_property(SSLIB_INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 set(SSLIB_INCLUDE_DIRS
   ${SSLIB_INCLUDE_DIRS}
-  CACHE INTERNAL FORCE
+  CACHE INTERNAL "Internal variable used to store all the include directories used by SSLib (including external libraries)"
+  FORCE
 )
 
 # Process header and source files
