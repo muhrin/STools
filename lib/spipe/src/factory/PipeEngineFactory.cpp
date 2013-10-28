@@ -45,7 +45,7 @@ PipeEngineFactory::createBoostThreadEngine(const HeteroMap & settings) const
   if(numThreads)
     return UniquePtr<BoostThreadEngine>::Type(new BoostThreadEngine(*numThreads));
   else
-    return UniquePtr<BoostThreadEngine>::Type(new BoostThreadEngine(1));
+    return UniquePtr<BoostThreadEngine>::Type(new BoostThreadEngine());
 }
 #endif
 

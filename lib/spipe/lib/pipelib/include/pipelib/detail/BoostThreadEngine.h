@@ -19,10 +19,22 @@
 namespace pipelib {
 
 template< typename Pipe, typename Shared, typename Global>
+  BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine() :
+      myRoot(this), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(
+          ::boost::thread::hardware_concurrency() != 0 ?
+              ::boost::thread::hardware_concurrency() : 1)
+  {
+    PIPELIB_ASSERT(myNumThreads != 0);
+    init();
+  }
+
+template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine(
       const size_t numThreads) :
-      myRoot(this), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(numThreads)
+      myRoot(this), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(
+          numThreads)
   {
+    PIPELIB_ASSERT(myNumThreads != 0);
     init();
   }
 
@@ -32,6 +44,7 @@ template< typename Pipe, typename Shared, typename Global>
       myRoot(this), myNumThreads(numThreads), myMaxReleases(
           DEFAULT_MAX_RELEASES)
   {
+    PIPELIB_ASSERT(myNumThreads != 0);
     init();
     attach(startBlock);
   }
@@ -182,10 +195,11 @@ template< typename Pipe, typename Shared, typename Global>
   {
     const BlockHandleType & inBlock = outBlock.getOutput(channel);
     if(inBlock.get())
-      postTask(::boost::bind(&Self::outTask, this, data, inBlock->asPipeBlock()));
+      postTask(
+          ::boost::bind(&Self::outTask, this, data, inBlock->asPipeBlock()));
     else
     {
-      boost::lock_guard<boost::mutex> guard(myDataStoreMutex);
+      boost::lock_guard< boost::mutex> guard(myDataStoreMutex);
 
       // So this data is finished, check if we have a sink, otherwise delete
       typename DataStore::iterator it = findData(data);
@@ -205,7 +219,7 @@ template< typename Pipe, typename Shared, typename Global>
   Pipe *
   BoostThreadEngine< Pipe, Shared, Global>::createData()
   {
-    boost::lock_guard<boost::mutex> guard(myDataStoreMutex);
+    boost::lock_guard< boost::mutex> guard(myDataStoreMutex);
 
     myDataStore.push_back(new Pipe());
     return &myDataStore.back();
@@ -215,7 +229,7 @@ template< typename Pipe, typename Shared, typename Global>
   void
   BoostThreadEngine< Pipe, Shared, Global>::dropData(Pipe * data)
   {
-    boost::lock_guard<boost::mutex> guard(myDataStoreMutex);
+    boost::lock_guard< boost::mutex> guard(myDataStoreMutex);
 
     // So this data is finished, check if we have a sink, otherwise delete
     typename DataStore::iterator it = findData(data);
@@ -233,7 +247,7 @@ template< typename Pipe, typename Shared, typename Global>
   Pipe *
   BoostThreadEngine< Pipe, Shared, Global>::registerData(PipePtr data)
   {
-    boost::lock_guard<boost::mutex> guard(myDataStoreMutex);
+    boost::lock_guard< boost::mutex> guard(myDataStoreMutex);
 
     myDataStore.push_back(data.release());
     return &myDataStore.back();
@@ -275,8 +289,7 @@ template< typename Pipe, typename Shared, typename Global>
 
 template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine(Self * root) :
-      myRoot(root), myMaxReleases(DEFAULT_MAX_RELEASES),
-      myNumThreads(0) // Only root has threads
+      myRoot(root), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(0) // Only root has threads
   {
     init();
   }
@@ -284,8 +297,7 @@ template< typename Pipe, typename Shared, typename Global>
 template< typename Pipe, typename Shared, typename Global>
   BoostThreadEngine< Pipe, Shared, Global>::BoostThreadEngine(Self * root,
       BlockHandleType & pipe) :
-      myRoot(root), myMaxReleases(DEFAULT_MAX_RELEASES),
-      myNumThreads(0) // Only root has threads
+      myRoot(root), myMaxReleases(DEFAULT_MAX_RELEASES), myNumThreads(0) // Only root has threads
   {
     init();
     attach(pipe);
@@ -315,7 +327,8 @@ template< typename Pipe, typename Shared, typename Global>
             ::boost::bind(&asio::io_service::run, &myThreading->threadService));
     }
 
-    postTask(::boost::bind(&Self::startTask, this, myStartBlock->asStartBlock()));
+    postTask(
+        ::boost::bind(&Self::startTask, this, myStartBlock->asStartBlock()));
 
     runTillFinished();
 
@@ -343,7 +356,7 @@ template< typename Pipe, typename Shared, typename Global>
       const PipelineState::Value newState)
   {
     const PipelineState::Value oldState = myState;
-    switch (newState)
+    switch(newState)
     {
     case PipelineState::INITIALISED:
 
@@ -485,39 +498,39 @@ template< typename Pipe, typename Shared, typename Global>
   }
 
 template< typename Pipe, typename Shared, typename Global>
-void
-BoostThreadEngine < Pipe, Shared, Global>::incrementNumRunning()
-{
-  ::boost::lock_guard< ::boost::mutex> guard(myNumRunningMutex);
-  ++myNumRunning;
-}
+  void
+  BoostThreadEngine< Pipe, Shared, Global>::incrementNumRunning()
+  {
+    ::boost::lock_guard< ::boost::mutex> guard(myNumRunningMutex);
+    ++myNumRunning;
+  }
 
 template< typename Pipe, typename Shared, typename Global>
-void
-BoostThreadEngine < Pipe, Shared, Global>::decrementNumRunning()
-{
-  ::boost::lock_guard< ::boost::mutex> guard(myNumRunningMutex);
-  --myNumRunning;
-}
+  void
+  BoostThreadEngine< Pipe, Shared, Global>::decrementNumRunning()
+  {
+    ::boost::lock_guard< ::boost::mutex> guard(myNumRunningMutex);
+    --myNumRunning;
+  }
 
 template< typename Pipe, typename Shared, typename Global>
-size_t
-BoostThreadEngine < Pipe, Shared, Global>::getNumRunning()
-{
-  myNumRunningMutex.lock();
-  const size_t numRunning = myNumRunning;
-  myNumRunningMutex.unlock();
-  return numRunning;
-}
+  size_t
+  BoostThreadEngine< Pipe, Shared, Global>::getNumRunning()
+  {
+    myNumRunningMutex.lock();
+    const size_t numRunning = myNumRunning;
+    myNumRunningMutex.unlock();
+    return numRunning;
+  }
 
 template< typename Pipe, typename Shared, typename Global>
-template<typename Task>
-void
-BoostThreadEngine < Pipe, Shared, Global>::postTask(Task task)
-{
-  incrementNumRunning();
-  myRoot->myThreading->threadService.post(task);
-}
+  template< typename Task>
+    void
+    BoostThreadEngine< Pipe, Shared, Global>::postTask(Task task)
+    {
+      incrementNumRunning();
+      myRoot->myThreading->threadService.post(task);
+    }
 
 template< typename Pipe, typename Shared, typename Global>
   void

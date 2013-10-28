@@ -33,7 +33,7 @@ struct BoostThreadEngine : HeteroMap
 {
   BoostThreadEngine()
   {
-    addScalarEntry("nThreads", NUM_THREADS)->element()->defaultValue(1);
+    addScalarEntry("nThreads", NUM_THREADS);
   }
 };
 

@@ -51,6 +51,7 @@ template< typename Pipe, typename Shared, typename Global>
     // Event
     typedef typename EngineAccessType::ListenerType ListenerType;
 
+    BoostThreadEngine();
     BoostThreadEngine(const size_t numThreads);
     BoostThreadEngine(const size_t numThreads, BlockHandleType & startBlock);
     virtual ~BoostThreadEngine();
