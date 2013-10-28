@@ -60,8 +60,8 @@ public:
 private:
   typedef ::std::vector< Column> ColumnInfo;
   typedef ::std::vector< Value> ColumnData;
-  /* Maps a row key to column data */
-  typedef ::std::map< Key, ColumnData *> RowMap;
+  // Maps a row key to column data
+  typedef ::std::map< Key, size_t> RowMap;
   typedef ::std::vector<ColumnData> Rows;
   typedef ::std::vector< ::std::string> NotesContainer;
 

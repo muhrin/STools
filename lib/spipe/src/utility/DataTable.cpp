@@ -195,10 +195,10 @@ DataTable::insertValue(const Key & key, const size_t col, const Value & value)
   if(it == myRowMap.end())
   {
     myRows.push_back(ColumnData(1, key));
-    it = myRowMap.insert(::std::make_pair(key, &myRows.back())).first;
+    it = myRowMap.insert(::std::make_pair(key, myRows.size() - 1)).first;
   }
 
-  ColumnData & colData = *it->second;
+  ColumnData & colData = myRows[it->second];
 
   Value oldValue = "";
   // Make sure it's big enough to store the value
