@@ -111,10 +111,7 @@ GeomOptimise::updateTable(const ssc::Structure & structure,
       structure_properties::general::ENERGY_INTERNAL);
   if(internalEnergy)
   {
-    {
-      const ::std::string energy = common::getString(*internalEnergy);
-      table.insert(strName, "energy", energy);
-    }
+    table.insert(strName, "energy", common::getString(*internalEnergy));
     table.insert(strName, "energy/atom",
         common::getString(
             *internalEnergy / static_cast< double>(structure.getNumAtoms())));
