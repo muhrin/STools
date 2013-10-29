@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #ifdef SP_ENABLE_THREAD_AWARE
@@ -31,42 +32,25 @@ class IDataTableChangeListener;
 
 class DataTable
 {
+  static const ::std::string KEY_COLUMN_NAME;
+  static const ::std::vector< ::std::string> DEFAULT_COLUMN_NAMES;
 public:
   typedef ::std::string Key;
   typedef ::std::string Value;
 
-  class Column
-  {
-  public:
-
-    Column();
-    Column(const ::std::string & name);
-    Column(const char * const name);
-    Column(const Column & toCopy);
-
-    bool
-    operator ==(const Column & rhs) const;
-
-    const ::std::string &
-    getName() const;
-
-  private:
-    ::std::string myName;
-
-    friend class DataTable;
-  };
-
 private:
-  typedef ::std::vector< Column> ColumnInfo;
-  typedef ::std::vector< Value> ColumnData;
+  typedef ::std::vector< Value> Row;
   // Maps a row key to column data
   typedef ::std::map< Key, size_t> RowMap;
-  typedef ::std::vector<ColumnData> Rows;
+  typedef ::std::vector< ::std::string> ColumnNames;
+  typedef ::std::map< ::std::string, size_t> ColumnMap;
+  typedef ::std::vector<Row> Rows;
   typedef ::std::vector< ::std::string> NotesContainer;
 
 public:
+  typedef ::std::pair<size_t, size_t> Coords;
   typedef Rows::const_iterator RowIterator;
-  typedef ColumnInfo::const_iterator ColumnInfoIterator;
+  typedef ColumnNames::const_iterator ColumnNameIterator;
   typedef NotesContainer::const_iterator NotesIterator;
 
   static const int COL_UNDEFINED = -1;
@@ -78,23 +62,25 @@ public:
   RowIterator rowsEnd() const;
 
   size_t numColumns() const;
-  ColumnInfoIterator columnInfoBegin() const;
-  ColumnInfoIterator columnInfoEnd() const;
+  ColumnNameIterator columnNamesBegin() const;
+  ColumnNameIterator columnNamesEnd() const;
 
+  bool hasNotes() const;
   NotesIterator notesBegin() const;
   NotesIterator notesEnd() const;
 
-  //void insert(const Key & key, const size_t col, const Value & value);
-  size_t
-  insert(const Key & key, const Column & col, const Value & value);
+  Coords
+  insert(const Key & key, const ::std::string & colName, const Value & value);
 
   void
   addTableNote(const ::std::string & note);
 
   void
   writeToFile(const ::std::string & filename,
-      const ::std::string & colDelimiter = "\t") const;
+      const ::std::string & colDelimiter = " ") const;
 
+  bool
+  empty() const;
   void
   clear();
 
@@ -107,14 +93,19 @@ public:
 private:
   typedef ::pipelib::event::EventSupport< IDataTableChangeListener> ChangeListenerSupport;
 
-  void
-  insertColumn(const Column & colInfo, const size_t col);
   Value
-  insertValue(const Key & key, const size_t col, const Value & value);
+  insertValue(const Coords & coords, const Value & value);
+  size_t
+  row(const Key & key);
+  size_t
+  col(const ::std::string & colName);
+  Coords
+  coords(const Key & key, const ::std::string & colName);
 
-  ColumnInfo myColumns;
   Rows myRows;
   RowMap myRowMap;
+  ColumnNames myColumnNames;
+  ColumnMap myColumnMap;
   NotesContainer myTableNotes;
 
   ChangeListenerSupport myChangeListenerSupport;
@@ -123,7 +114,6 @@ private:
   ::boost::mutex myTableMutex;
   ::boost::mutex myNotesMutex;
 #endif
-
 };
 
 }

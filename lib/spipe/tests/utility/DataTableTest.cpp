@@ -21,7 +21,7 @@
 
 BOOST_AUTO_TEST_CASE(DataTableTest)
 {
-  static const size_t NUM_COLUMNS = 10;
+  static const size_t NUM_COLUMNS = 6;
   static const size_t NUM_ROWS = 1000;
   static const size_t NUM_RAND_CHARS = 5;
   static const char START_COL = 'a';
@@ -47,14 +47,16 @@ BOOST_AUTO_TEST_CASE(DataTableTest)
   BOOST_REQUIRE(table.numRows() == NUM_ROWS);
 
   size_t col = 0;
-  spipe::utility::DataTable::ColumnInfoIterator it = table.columnInfoBegin();
+  spipe::utility::DataTable::ColumnNameIterator it = table.columnNamesBegin();
   ++it; // Skip key column
-  for(spipe::utility::DataTable::ColumnInfoIterator end = table.columnInfoEnd();
+  for(const spipe::utility::DataTable::ColumnNameIterator end = table.columnNamesEnd();
       it != end; ++it)
   {
     colChar = START_COL + col;
-    BOOST_REQUIRE(::std::string(&colChar, &colChar + 1) == it->getName());
+    BOOST_REQUIRE(::std::string(&colChar, &colChar + 1) == *it);
     ++col;
   }
+
+  table.writeToFile("table2.dat");
 }
 

@@ -11,23 +11,25 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
-namespace spipe
-{
-namespace utility
-{
+namespace spipe {
+namespace utility {
 
 class DataTableValueChanged;
 
 class IDataTableChangeListener
 {
 public:
-  virtual void notify(const DataTableValueChanged & evt) = 0;
+  virtual
+  ~IDataTableChangeListener()
+  {
+  }
+  virtual void
+  notify(const DataTableValueChanged & evt) = 0;
 };
 
-}}
+}
+}
 
 #endif /* I_DATA_TABLE_CHANGE_LISTENER_H */

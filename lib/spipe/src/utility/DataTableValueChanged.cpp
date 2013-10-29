@@ -13,24 +13,16 @@
 namespace spipe {
 namespace utility {
 
-DataTableValueChanged::DataTableValueChanged(const spipe::utility::DataTable::Key & key,
-    const spipe::utility::DataTable::Column &column,
-    const spipe::utility::DataTable::Value oldValue,
-    const spipe::utility::DataTable::Value & newValue) :
-    myKey(key), myColumn(column), myOldValue(oldValue), myNewValue(newValue)
+DataTableValueChanged::DataTableValueChanged(const DataTable::Coords & coords,
+    const DataTable::Value oldValue, const DataTable::Value & newValue):
+    myCoords(coords), myOldValue(oldValue), myNewValue(newValue)
 {
 }
 
-const ::spipe::utility::DataTable::Key &
-DataTableValueChanged::getKey() const
+const ::spipe::utility::DataTable::Coords &
+DataTableValueChanged::getCoords() const
 {
-  return myKey;
-}
-
-const ::spipe::utility::DataTable::Column &
-DataTableValueChanged::getColumn() const
-{
-  return myColumn;
+  return myCoords;
 }
 
 const ::spipe::utility::DataTable::Value &

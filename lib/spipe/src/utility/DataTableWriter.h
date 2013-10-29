@@ -18,29 +18,28 @@
 #include <spl/io/BoostFilesystem.h>
 
 // Local includes
+#include "utility/DataTable.h"
 #include "utility/IDataTableChangeListener.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spipe {
 namespace utility {
-
-class DataTable;
 class DataTableValueChanged;
 
 class DataTableWriter : public IDataTableChangeListener
 {
 public:
-
   static const int DEFAULT_WRITE_DEALY = 50;
 
-  DataTableWriter(DataTable & table, const ::std::string & filename, const bool append = true,
-      const size_t writeDelay = DEFAULT_WRITE_DEALY);
+  DataTableWriter(DataTable & table, const ::std::string & filename,
+      const bool append = true, const size_t writeDelay = DEFAULT_WRITE_DEALY);
 
-  DataTableWriter(DataTable & table, const ::boost::filesystem::path & filepath, const bool append =
-      true, const size_t writeDelay = DEFAULT_WRITE_DEALY);
+  DataTableWriter(DataTable & table, const ::boost::filesystem::path & filepath,
+      const bool append = true, const size_t writeDelay = DEFAULT_WRITE_DEALY);
 
-  virtual ~DataTableWriter();
+  virtual
+  ~DataTableWriter();
 
   bool
   write();
@@ -51,9 +50,10 @@ public:
   // End from IDataTableChagneListener ///////////
 
 private:
-
   void
   initialise();
+  void
+  writeFrom(const DataTable::Coords & coords);
 
   size_t
   diff(const ::std::string & v1, const ::std::string & v2) const;
@@ -66,7 +66,8 @@ private:
   size_t myDataSinceWrite;
   ::boost::filesystem::ofstream myOutStream;
   ::std::streampos myWriteMarker;
-
+  DataTable::Coords myLastWriteCoords;
+  bool myFullWriteRequired;
 };
 
 }

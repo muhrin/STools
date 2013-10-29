@@ -22,24 +22,29 @@ namespace utility {
 class DataTableValueChanged
 {
 public:
-  DataTableValueChanged(const DataTable::Key & key, const DataTable::Column & column,
+  DataTableValueChanged(const DataTable::Coords & coords,
       const DataTable::Value oldValue, const DataTable::Value & newValue);
 
-  const DataTable::Key &
-  getKey() const;
-  const DataTable::Column &
-  getColumn() const;
+  const DataTable::Coords &
+  getCoords() const;
   const DataTable::Value &
   getOldValue() const;
   const DataTable::Value &
   getNewValue() const;
 
 private:
-  const DataTable::Key & myKey;
-  const DataTable::Column & myColumn;
+  const DataTable::Coords myCoords;
   const DataTable::Value myOldValue;
-  const DataTable::Value & myNewValue;
+  const DataTable::Value myNewValue;
+};
 
+class ColumnChanged
+{
+public:
+  ColumnChanged()
+  {
+
+  }
 };
 
 }
