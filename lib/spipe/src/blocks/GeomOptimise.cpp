@@ -31,15 +31,17 @@ namespace ssc = ::spl::common;
 namespace ssp = ::spl::potential;
 namespace structure_properties = ssc::structure_properties;
 
-GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser) :
-    Block("Geometry optimise"), myWriteOutput(true), myOptimisationParams(), myOptimiser(
+GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
+    const bool writeSummary) :
+    Block("Geometry optimise"), myWriteSummary(writeSummary), myOptimisationParams(), myOptimiser(
         optimiser)
 {
 }
 
 GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
-    const ::spl::potential::OptimisationSettings & optimisationParams) :
-    Block("Potential geometry optimisation"), myWriteOutput(true), myOptimisationParams(
+    const ::spl::potential::OptimisationSettings & optimisationParams,
+    const bool writeSummary) :
+    Block("Potential geometry optimisation"), myWriteSummary(writeSummary), myOptimisationParams(
         optimisationParams), myOptimiser(optimiser)
 {
 }
@@ -47,11 +49,13 @@ GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
 void
 GeomOptimise::pipelineInitialising()
 {
-  if(myWriteOutput)
+  if(myWriteSummary)
+  {
     myTableSupport.setFilename(
         common::getOutputFileStem(getEngine()->sharedData(),
             getEngine()->globalData()) + ".geomopt");
-  myTableSupport.registerEngine(getEngine());
+    myTableSupport.registerEngine(getEngine());
+  }
 }
 
 void
@@ -64,7 +68,8 @@ GeomOptimise::in(common::StructureData * const data)
   if(outcome.isSuccess())
   {
     // Update our data table with the structure data
-    updateTable(*structure, optData);
+    if(myWriteSummary)
+      updateTable(*structure, optData);
     out(data);
   }
   else
@@ -74,18 +79,6 @@ GeomOptimise::in(common::StructureData * const data)
     // The structure failed to geometry optimise properly so drop it
     drop(data);
   }
-}
-
-bool
-GeomOptimise::getWriteOutput() const
-{
-  return myWriteOutput;
-}
-
-void
-GeomOptimise::setWriteOutput(const bool write)
-{
-  myWriteOutput = write;
 }
 
 ssp::IGeomOptimiser &

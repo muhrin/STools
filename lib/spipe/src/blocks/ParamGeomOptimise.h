@@ -40,11 +40,12 @@ namespace blocks {
 class ParamGeomOptimise : public GeomOptimise
 {
 public:
-  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput = true);
+  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
+      const bool writeSummary = false);
 
   ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
-      const ::spl::potential::OptimisationSettings & optimisationParams, const bool writeOutput =
-          true);
+      const ::spl::potential::OptimisationSettings & optimisationParams,
+      const bool writeSummary = false);
 
   // From Block /////////////////////////
   virtual void

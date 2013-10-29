@@ -14,8 +14,6 @@
 
 #include <spl/SSLibAssert.h>
 
-#include "utility/DataTableValueChanged.h"
-
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
@@ -50,11 +48,22 @@ DataTableWriter::~DataTableWriter()
   }
 
   // Tell the table to stop sending us messages
-  myTable.removeDataTableChangeListener(*this);
+  myTable.removeDataTableChangeListener(this);
 }
 
 bool
 DataTableWriter::write()
+{
+  // Do we need to write the full table?
+  if(myFullWriteRequired)
+    return writeFull();
+  else
+    writeFrom(myLastWriteCoords);
+  return true;
+}
+
+bool
+DataTableWriter::writeFull()
 {
   using ::std::ios_base;
 
@@ -108,21 +117,27 @@ DataTableWriter::write()
 }
 
 void
-DataTableWriter::notify(const DataTableValueChanged & evt)
+DataTableWriter::onDataTableValueChanged(const DataTable::Coords & coords,
+    const ::std::string & oldValue, const ::std::string & newValue)
 {
-  myDataSinceWrite += diff(evt.getOldValue(), evt.getNewValue());
+  myDataSinceWrite += diff(oldValue, newValue);
 
-  if(!myFullWriteRequired && evt.getCoords() < myLastWriteCoords)
+  if(!myFullWriteRequired && coords < myLastWriteCoords)
     myFullWriteRequired = true;
 
   if(myDataSinceWrite > myWriteDelay)
-  {
-    // Do we need to write the full table?
-    if(myFullWriteRequired)
-      write();
-    else
-      writeFrom(myLastWriteCoords);
-  }
+    write();
+}
+
+void
+DataTableWriter::onDataTableColumnChanged(const size_t index, const ::std::string & oldValue,
+    const ::std::string & newValue)
+{
+  myDataSinceWrite += diff(oldValue, newValue);
+  myFullWriteRequired = true;
+
+  if(myDataSinceWrite > myWriteDelay)
+    write();
 }
 
 void
@@ -154,7 +169,7 @@ DataTableWriter::initialise()
   myWriteMarker = myOutStream.tellp();
 
   // Listen for changes to the table
-  myTable.addDataTableChangeListener(*this);
+  myTable.addDataTableChangeListener(this);
 }
 
 void

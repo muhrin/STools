@@ -88,7 +88,6 @@ set(spipe_Header_Files__utility
   utility/DataTable.h
   utility/DataTableInserters.h
   utility/DataTableSupport.h
-  utility/DataTableValueChanged.h
   utility/DataTableWriter.h
   utility/IDataTableChangeListener.h
 )
@@ -99,7 +98,6 @@ set(spipe_Source_Files__utility
   utility/DataTable.cpp
   utility/DataTableInserters.cpp
   utility/DataTableSupport.cpp
-  utility/DataTableValueChanged.cpp
   utility/DataTableWriter.cpp
 )
 source_group("Source Files\\utility" FILES ${spipe_Source_Files__utility})

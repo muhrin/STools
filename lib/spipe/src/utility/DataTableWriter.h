@@ -43,10 +43,16 @@ public:
 
   bool
   write();
+  bool
+  writeFull();
 
   // From IDataTableChangeListener //////////////
   virtual void
-  notify(const DataTableValueChanged & evt);
+  onDataTableValueChanged(const DataTable::Coords & coords,
+      const ::std::string & oldValue, const ::std::string & newValue);
+  virtual void
+  onDataTableColumnChanged(const size_t index, const ::std::string & oldValue,
+      const ::std::string & newValue);
   // End from IDataTableChagneListener ///////////
 
 private:

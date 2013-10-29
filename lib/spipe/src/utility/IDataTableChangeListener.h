@@ -26,7 +26,15 @@ public:
   {
   }
   virtual void
-  notify(const DataTableValueChanged & evt) = 0;
+  onDataTableValueChanged(const DataTable::Coords & coords,
+      const ::std::string & oldValue, const ::std::string & newValue)
+  {
+  }
+  virtual void
+  onDataTableColumnChanged(const size_t index, const ::std::string & oldValue,
+      const ::std::string & newValue)
+  {
+  }
 };
 
 }

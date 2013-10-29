@@ -21,8 +21,6 @@
 #  include <boost/thread/mutex.hpp>
 #endif
 
-#include <pipelib/event/EventSupport.h>
-
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spipe {
@@ -86,13 +84,11 @@ public:
 
   // Event //////////////////////////////////////
   void
-  addDataTableChangeListener(IDataTableChangeListener & listener);
+  addDataTableChangeListener(IDataTableChangeListener * const listener);
   bool
-  removeDataTableChangeListener(IDataTableChangeListener & listener);
+  removeDataTableChangeListener(IDataTableChangeListener * const listener);
 
 private:
-  typedef ::pipelib::event::EventSupport< IDataTableChangeListener> ChangeListenerSupport;
-
   Value
   insertValue(const Coords & coords, const Value & value);
   size_t
@@ -108,7 +104,7 @@ private:
   ColumnMap myColumnMap;
   NotesContainer myTableNotes;
 
-  ChangeListenerSupport myChangeListenerSupport;
+  ::std::set<IDataTableChangeListener *> myListeners;
 
 #ifdef SP_ENABLE_THREAD_AWARE
   ::boost::mutex myTableMutex;

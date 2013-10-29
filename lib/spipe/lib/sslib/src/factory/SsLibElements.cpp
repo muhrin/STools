@@ -26,6 +26,7 @@ utility::Key<int> NUM;
 
 // OPTIMISERS //////////////////////////////////////////////
 utility::Key<utility::HeterogeneousMap> OPTIMISER;
+utility::Key<bool> WRITE_SUMMARY;
 utility::Key<utility::HeterogeneousMap> TPSD;
 utility::Key<utility::HeterogeneousMap> CASTEP;
 utility::Key< ::std::string> CASTEP_EXE;

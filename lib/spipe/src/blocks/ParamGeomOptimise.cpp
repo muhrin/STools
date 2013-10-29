@@ -35,21 +35,20 @@ namespace common = ::spipe::common;
 namespace utility = ::spipe::utility;
 
 ParamGeomOptimise::ParamGeomOptimise(
-    ::spl::potential::IGeomOptimiserPtr optimiser, const bool writeOutput) :
-    Block("Parameterised geometry optimise"), GeomOptimise(optimiser)
+    ::spl::potential::IGeomOptimiserPtr optimiser, const bool writeSummary) :
+    Block("Parameterised geometry optimise"), GeomOptimise(optimiser,
+        writeSummary)
 {
-  setWriteOutput(writeOutput);
   init();
 }
 
 ParamGeomOptimise::ParamGeomOptimise(
     ::spl::potential::IGeomOptimiserPtr optimiser,
     const ::spl::potential::OptimisationSettings & optimisationParams,
-    const bool writeOutput) :
+    const bool writeSummary) :
     Block("Parameterised potential geometry optimisation"), GeomOptimise(
-        optimiser, optimisationParams)
+        optimiser, optimisationParams, writeSummary)
 {
-  setWriteOutput(writeOutput);
   init();
 }
 
@@ -60,8 +59,8 @@ ParamGeomOptimise::pipelineStarting()
   GeomOptimise::pipelineStarting();
 
   // The pipeline is starting so try and get the potential parameters
-  PotentialParams * const params =
-      getEngine()->sharedData().objectsStore.find(common::GlobalKeys::POTENTIAL_PARAMS);
+  PotentialParams * const params = getEngine()->sharedData().objectsStore.find(
+      common::GlobalKeys::POTENTIAL_PARAMS);
 
   if(params)
   {
@@ -78,7 +77,8 @@ ParamGeomOptimise::pipelineStarting()
         ss << " " << myCurrentParams[i];
       }
       // Add a note to the table with the current parameter string
-      getTableSupport().getTable().addTableNote(ss.str());
+      if(myWriteSummary)
+        getTableSupport().getTable().addTableNote(ss.str());
     }
   }
 }

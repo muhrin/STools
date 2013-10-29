@@ -131,10 +131,17 @@ BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
   const ssp::OptimisationSettings settings =
       mySplFactory.createOptimisationSettings(options);
 
+  bool writeSummary = false;
+  {
+    const bool * const writeSummaryOpt = options.find(ssf::WRITE_SUMMARY);
+    if(writeSummaryOpt)
+      writeSummary = *writeSummaryOpt;
+  }
+
   if(potentialIsParameterisable)
-    blockOut->reset(new blocks::ParamGeomOptimise(optimiser, settings));
+    blockOut->reset(new blocks::ParamGeomOptimise(optimiser, settings, writeSummary));
   else
-    blockOut->reset(new blocks::GeomOptimise(optimiser, settings));
+    blockOut->reset(new blocks::GeomOptimise(optimiser, settings, writeSummary));
 
   return true;
 }

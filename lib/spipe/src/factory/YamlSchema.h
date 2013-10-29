@@ -84,6 +84,8 @@ struct GeomOptimise : ::spl::factory::OptimisationSettings
   {
     addEntry("optimiser", ::spl::factory::OPTIMISER,
         new ::spl::factory::Optimiser());
+    addScalarEntry("writeSummary", ::spl::factory::WRITE_SUMMARY)->element()->defaultValue(
+        false);
   }
 };
 

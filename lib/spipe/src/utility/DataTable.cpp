@@ -15,10 +15,10 @@
 #ifdef SP_ENABLE_THREAD_AWARE
 #  include <boost/thread/lock_guard.hpp>
 #endif
+#include <boost/range/iterator_range.hpp>
 
 #include <spl/SSLibAssert.h>
 
-#include "utility/DataTableValueChanged.h"
 #include "utility/IDataTableChangeListener.h"
 
 // NAMESPACES ////////////////////////////////
@@ -102,8 +102,10 @@ DataTable::insert(const DataTable::Key & key, const ::std::string & colName,
   const Value oldValue = insertValue(coords, value);
 
   // Send out message that a value has been inserted
-  myChangeListenerSupport.notify(
-      DataTableValueChanged(coords, oldValue, value));
+  BOOST_FOREACH(IDataTableChangeListener * l, myListeners)
+  {
+    l->onDataTableValueChanged(coords, oldValue, value);
+  }
 
   return coords;
 }
@@ -166,15 +168,15 @@ DataTable::clear()
 }
 
 void
-DataTable::addDataTableChangeListener(IDataTableChangeListener & listener)
+DataTable::addDataTableChangeListener(IDataTableChangeListener * const listener)
 {
-  myChangeListenerSupport.insert(listener);
+  myListeners.insert(listener);
 }
 
 bool
-DataTable::removeDataTableChangeListener(IDataTableChangeListener & listener)
+DataTable::removeDataTableChangeListener(IDataTableChangeListener * const listener)
 {
-  return myChangeListenerSupport.remove(listener);
+  return myListeners.erase(listener);
 }
 
 DataTable::Value
@@ -223,6 +225,11 @@ DataTable::col(const ::std::string & name)
     myColumnNames.push_back(name);
     it =
         myColumnMap.insert(::std::make_pair(name, myColumnNames.size() - 1)).first;
+    // Send out message that column has been added
+    BOOST_FOREACH(IDataTableChangeListener * l, myListeners)
+    {
+      l->onDataTableColumnChanged(it->second, "", name);
+    }
   }
 
   return it->second;

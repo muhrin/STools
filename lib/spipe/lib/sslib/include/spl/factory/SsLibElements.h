@@ -49,6 +49,7 @@ extern utility::Key<int> NUM;
 
 // OPTIMISERS //////////////////////////////////////////////
 extern utility::Key<utility::HeterogeneousMap> OPTIMISER;
+extern utility::Key<bool> WRITE_SUMMARY;
 extern utility::Key<utility::HeterogeneousMap> TPSD;
 extern utility::Key<utility::HeterogeneousMap> CASTEP;
 extern utility::Key< ::std::string> CASTEP_EXE;

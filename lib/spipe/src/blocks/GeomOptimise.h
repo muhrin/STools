@@ -43,9 +43,11 @@ namespace blocks {
 class GeomOptimise : public PipeBlock, ::boost::noncopyable
 {
 public:
-  GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser);
   GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
-      const ::spl::potential::OptimisationSettings & optimisationParams);
+      const bool writeSummary = false);
+  GeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
+      const ::spl::potential::OptimisationSettings & optimisationParams,
+      const bool writeSummary = false);
 
   // From Block ///////////////////////////////
   virtual void
@@ -56,11 +58,6 @@ public:
   virtual void
   in(common::StructureData * const data);
   // End from PipeBlock ///////////////////////
-
-  bool
-  getWriteOutput() const;
-  void
-  setWriteOutput(const bool write);
 
 protected:
   ::spl::potential::IGeomOptimiser &
@@ -74,7 +71,7 @@ protected:
 
   // Should we write information about structures being optimised
   // to file.
-  bool myWriteOutput;
+  bool myWriteSummary;
 
   const ::spl::potential::OptimisationSettings myOptimisationParams;
 

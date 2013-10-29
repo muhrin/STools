@@ -20,7 +20,6 @@ template< class Listener>
   class EventSupport
   {
   public:
-
     void
     insert(Listener & listener);
     bool
