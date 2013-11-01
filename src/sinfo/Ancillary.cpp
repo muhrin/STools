@@ -191,7 +191,6 @@ addToken(TokensMap & map, TokenPtr token)
 CustomisableTokens
 generateTokens(TokensMap & map)
 {
-  typedef ::std::auto_ptr< utility::EnergyToken> EnergyTokenPtr;
   typedef utility::RelativeValueToken< double> RelativeValue;
   typedef ::std::auto_ptr< RelativeValue> RelativeValueTokenPtr;
 
@@ -317,7 +316,6 @@ addFormatString(TokensInfo & tokensInfo, const ::std::string & formatString,
 Result::Value
 getRequiredTokens(TokensInfo & tokensInfo, const TokensMap & tokensMap, const InputOptions & in)
 {
-  typedef ::boost::find_iterator< ::std::string::iterator> StringFindIterator;
   typedef ::boost::tokenizer< ::boost::char_separator< char> > Tok;
   const ::boost::char_separator< char> sep(VAR_BRACKET.c_str(), "", ::boost::keep_empty_tokens);
 

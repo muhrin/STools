@@ -131,8 +131,6 @@ double SortedDistanceComparatorEx::compareStructures(
 		const SortedDistanceComparisonDataEx & dist1,
 		const SortedDistanceComparisonDataEx & dist2) const
 {
-  typedef ::std::vector<double> DistancesVec;
-
   const size_t numSpecies = dist1.species.size();
 
   if(numSpecies != dist1.species.size())

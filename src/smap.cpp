@@ -18,6 +18,7 @@
 #include <vector>
 #include <utility>
 
+#include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -38,17 +39,22 @@ class DataRow;
 
 // TYPEDEFS ////////////////////////////////////
 typedef unsigned int InfoType;
-typedef ::spl::analysis::AnchorPointArrangement<InfoType> AnchorPointArrangement;
+typedef ::spl::analysis::AnchorPointArrangement< InfoType> AnchorPointArrangement;
 typedef AnchorPointArrangement::Arrangement Arrangement;
 typedef AnchorPointArrangement::EdgeTracer EdgeTracer;
 typedef EdgeTracer::Point Point;
 typedef ::std::vector< ::std::pair< Point, InfoType> > Points;
+
+typedef AnchorPointArrangement::Arrangement::Face Face;
+typedef ::std::map< const Face *, double> FaceAreas;
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 
 // CONSTANTS ////////////////////////////////
 static const double PI = ::std::acos(-1.0);
+static const double INITIAL_STEPSIZE = 1e-6;
+static const size_t TPSD_FORCE_HISTORY_LENGTH = 5;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -62,7 +68,6 @@ struct InputOptions
   double areaForceStrength;
 };
 
-
 // CONSTANTS /////////////////////////////////
 static const double FORCE_TOL_DEFAULT = 1e-3;
 
@@ -74,6 +79,13 @@ template< typename T>
     return (T(0) < val) - (val < T(0));
   }
 
+void
+evaluateForces(const InputOptions & in, AnchorPointArrangement & arr,
+    const ::arma::mat & pos, FaceAreas * const faces, ::arma::mat * const forces);
+
+double
+maxDeviation(const ::boost::circular_buffer<double> & values);
+
 int
 processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
@@ -84,6 +96,9 @@ main(const int argc, char * argv[])
 
   using ::boost::lexical_cast;
   using ::spl::analysis::AnchorPoint;
+  using ::std::abs;
+  using ::std::fabs;
+  using ::std::pow;
 
   static const boost::char_separator< char> tokSep(" \t");
 
@@ -98,7 +113,7 @@ main(const int argc, char * argv[])
 
   if(!fs::exists(fs::path(in.inputFile)))
   {
-    ::std::cerr << "Input file " << in.inputFile << " does not exist.";
+    ::std::cerr << "Input file " << in.inputFile << " does not exist.\n";
     return 1;
   }
 
@@ -152,156 +167,80 @@ main(const int argc, char * argv[])
 
   AnchorPointArrangement arr(tracer);
 
-  typedef AnchorPointArrangement::Arrangement::Face Face;
-  typedef ::std::map<const Face *, double> FaceAreas;
-
-  const AnchorPointArrangement::Arrangement & arrangement = tracer.getArrangement();
+  const AnchorPointArrangement::Arrangement & arrangement =
+      tracer.getArrangement();
   FaceAreas faces;
   BOOST_FOREACH(const Face & face,
       ::boost::make_iterator_range(arrangement.faces_begin(), arrangement.faces_end()))
   {
-    const ::boost::optional<double> area = arr.getFaceAnchorArea(face);
+    const ::boost::optional< double> area = arr.getFaceAnchorArea(face);
     if(area)
       faces[&face] = *area;
   }
 
-  ::arma::mat forces(2, arr.numPoints()), forcesDot(2, arr.numPoints()),
-      pos = arr.getPointPositions();
-  ::arma::rowvec forcesSq(arr.numPoints());
-  ::arma::vec2 r1, r2, r1Perp, r2Perp, f1, f2;
-  AnchorPoint * n1, *n2;
-  double len1, len2, lenSq, theta, torque, forceSqMax;
-  const double stepsize = 1e-4;
-  int iter;
-  const int maxIter = in.numSteps == -1 ? ::std::numeric_limits<int>::max() : in.numSteps;
-  for(iter = 0; iter < maxIter; ++iter)
+  ::arma::mat forces(2, arr.numPoints()), pos(2, arr.numPoints());
+  ::arma::mat f0(2, arr.numPoints());
+  ::arma::mat deltaForce(2, arr.numPoints()), deltaPos(2, arr.numPoints());
+
+  // Set up initial conditions
+  pos = arr.getPointPositions();
+  deltaPos.zeros();
+
+  evaluateForces(in, arr, pos, &faces, &forces);
+  f0 = forces;
+
+  ::boost::circular_buffer<double> forceSqHistory(TPSD_FORCE_HISTORY_LENGTH);
+
+  double forceSq;
+  double xg, gg, stepsize = INITIAL_STEPSIZE;
+  bool usingTpsd = true;
+  const int maxIter =
+      in.numSteps == -1 ? ::std::numeric_limits< int>::max() : in.numSteps;
+  size_t numSteepestIters = 0;
+  for(int iter = 0; iter < maxIter; ++iter)
   {
-    forces.zeros();
-    BOOST_FOREACH(AnchorPoint & point,
-        ::boost::make_iterator_range(arr.beginPoints(), arr.endPoints()))
+    deltaPos = stepsize * forces;
+    pos += deltaPos;
+    arr.setPointPositions(pos);
+
+    // Find forces for new positions
+    f0 = forces;
+    evaluateForces(in, arr, pos, &faces, &forces);
+
+    // Check termination criterion
+    forceSq = ::arma::accu(forces % forces);
+    if(forceSq < in.forceTolerance)
+      break;
+
+    if(usingTpsd)
     {
-      if(point.numNeighbours() > 2)
+      forceSqHistory.push_back(forceSq);
+
+      // Check if we should switch away from tpsd
+      if(forceSqHistory.size() == TPSD_FORCE_HISTORY_LENGTH
+          && maxDeviation(forceSqHistory) < 1e-4)
       {
-        // Move the connecting vertex to the midpoint of the vertices
-        // that connect to it
-        r1.zeros();
-        // Loop over neighbours
-        for(AnchorPoint::NeighbourIterator n1It = point.neighboursBegin(), end =
-            point.neighboursEnd(); n1It != end; ++n1It)
-        {
-          r1 += pos.col((*n1It)->idx());
-        }
-        f1 = r1 / static_cast<float>(point.numNeighbours()) - pos.col(point.idx());
-        forces.col(point.idx()) += in.vertexForceStrength * f1;
+        stepsize = INITIAL_STEPSIZE;
+        usingTpsd = false;
       }
       else
       {
+        deltaForce = forces - f0;
 
-        // Loop over neighbours pairs
-        for(AnchorPoint::NeighbourIterator n1It = point.neighboursBegin(), end =
-            point.neighboursEnd(); n1It != end; ++n1It)
-        {
-          n1 = *n1It;
-          r1 = pos.col(n1->idx()) - pos.col(point.idx());
-          len1 = ::std::sqrt(::arma::dot(r1, r1));
-          r1Perp(0) = r1(1) / len1;
-          r1Perp(1) = -r1(0) / len1;
+        xg = ::arma::accu(deltaPos % deltaForce);
+        gg = ::arma::accu(deltaForce % deltaForce);
 
-          for(AnchorPoint::NeighbourIterator n2It =
-              ++AnchorPoint::NeighbourIterator(n1It); n2It != end; ++n2It)
-          {
-
-            n2 = *n2It;
-            r2 = pos.col(n2->idx()) - pos.col(point.idx());
-            len2 = ::std::sqrt(::arma::dot(r2, r2));
-            r2Perp(0) = r2(1) / len2;
-            r2Perp(1) = -r2(0) / len2;
-
-            // Have to do this check so acos doesn't get a number that is ever
-            // so slightly out of the allowed range [-1:1]
-            double dp = ::arma::dot(r1, r2) / (len1 * len2);
-            dp = ::std::min(dp, 1.0);
-            dp = ::std::max(dp, -1.0);
-
-            // Use the sign from the cross product
-            const double k = sgn(r1(0) * r2(1) - (r1(1) * (r2(0))));
-
-            theta = ::std::acos(dp);
-            torque = -in.kappa * (theta - PI);
-
-            f1.zeros();
-            f2.zeros();
-
-            f1 = k * (torque / len1) * r1Perp;
-            f2 = k * (torque / len2) * r2Perp;
-
-            forces.col(n1->idx()) += f1;
-            forces.col(n2->idx()) -= f2;
-
-            forces.col(point.idx()) += f2 - f1;
-          }
-        }
+        // Set the new stepsize
+        if(fabs(xg) > 0.0)
+          stepsize = fabs(xg / gg);
       }
     }
-
-    BOOST_FOREACH(FaceAreas::reference face, faces)
+    else if(++numSteepestIters > 100)
     {
-      const double areaDiff = (*arr.getFaceAnchorArea(*face.first) - face.second) / face.second;
-      //const double areaDiff = *arr.getFaceAnchorArea(*face.first) / face.second - 1.0;
-
-      const Arrangement::Ccb_halfedge_const_circulator first = face.first->outer_ccb();
-      Arrangement::Ccb_halfedge_const_circulator edge1 = first, edge2 = first;
-      const AnchorPoint * anchor;
-      do
-      {
-        ++edge2;
-
-        // The halfedges supplied go around the boundary in the counterclockwise
-        // direction
-        n1 = edge1->source()->data().anchor;
-        anchor = edge1->target()->data().anchor;
-        n2 = edge2->target()->data().anchor;
-        r1 = pos.col(n2->idx()) - pos.col(n1->idx());
-        lenSq = ::std::sqrt(::arma::dot(r1, r1));
-        if(lenSq > 0)
-        {
-          len1 = ::std::sqrt(::arma::dot(r1, r1));
-          // This gives a vector pointing OUT of the face
-          r1Perp(0) = r1(1) / len1;
-          r1Perp(1) = -r1(0) / len1;
-          forces.col(anchor->idx()) -= in.areaForceStrength * areaDiff * r1Perp;
-        }
-
-        edge1 = edge2;
-      } while(edge1 != first);
+      // Switch TPSD back on
+      numSteepestIters = 0;
+      usingTpsd = true;
     }
-
-    pos += stepsize * forces;
-
-    // Add forces to keep the points no further than the maximum displacement
-    // distance away from the anchor position and calculate the force required to
-    // do so
-    BOOST_FOREACH(AnchorPoint & point,
-        ::boost::make_iterator_range(arr.beginPoints(), arr.endPoints()))
-    {
-      r1 = pos.col(point.idx()) - point.getAnchorPos();
-      lenSq = ::arma::dot(r1, r1);
-      if(lenSq > 0.0 && lenSq > (point.getMaxDisplacement() * point.getMaxDisplacement()))
-      {
-        len1 = ::std::sqrt(lenSq);
-        const ::arma::vec2 dr = r1 * (point.getMaxDisplacement() / len1) - r1;
-        pos.col(point.idx()) += dr;
-        forces.col(point.idx()) += dr / stepsize;
-      }
-    }
-
-    forcesDot = forces % forces;
-    forcesSq = ::arma::sum(forcesDot);
-    forceSqMax = forcesSq.max();
-    if(forceSqMax < in.forceTolerance)
-      break;
-
-    arr.setPointPositions(pos);
   }
   arr.setPointPositions(pos);
 
@@ -322,6 +261,152 @@ main(const int argc, char * argv[])
   return 0;
 }
 
+double
+maxDeviation(const ::boost::circular_buffer<double> & values)
+{
+  if(values.empty())
+    return ::std::numeric_limits<double>::max();
+
+  double mean = 0.0;
+  BOOST_FOREACH(const double val, values)
+    mean += val;
+  mean /= static_cast<double>(values.size());
+
+  double maxDev = 0.0;
+  BOOST_FOREACH(const double val, values)
+    maxDev = ::std::max(maxDev, ::std::abs(mean - val));
+
+  return maxDev;
+}
+
+void
+evaluateForces(const InputOptions & in, AnchorPointArrangement & arr,
+    const ::arma::mat & pos, FaceAreas * const faces, ::arma::mat * const forces)
+{
+  using ::spl::analysis::AnchorPoint;
+
+  ::arma::vec2 r1, r2, r1Perp, r2Perp, f1, f2;
+  AnchorPoint * n1, *n2;
+  double len1, len2, lenSq, theta, torque;
+
+  forces->zeros();
+
+  BOOST_FOREACH(AnchorPoint & point,
+      ::boost::make_iterator_range(arr.beginPoints(), arr.endPoints()))
+  {
+      r1 = pos.col(point.idx()) - point.getAnchorPos();
+      lenSq = ::arma::dot(r1, r1);
+      const double cutoff = 0.8 * 0.8 * point.getMaxDisplacement() * point.getMaxDisplacement();
+      const double repulsionDistSq = lenSq - cutoff;
+
+      if(repulsionDistSq > 0.0)
+      {
+        len1 = ::std::sqrt(repulsionDistSq);
+        r1 /= ::std::sqrt(lenSq);
+        forces->col(point.idx()) -= 100000.0 * len1 * r1;
+      }
+
+    if(point.numNeighbours() > 2)
+    {
+      // Move the connecting vertex to the midpoint of the vertices
+      // that connect to it
+      r1.zeros();
+      // Loop over neighbours
+      for(AnchorPoint::NeighbourIterator n1It = point.neighboursBegin(), end =
+          point.neighboursEnd(); n1It != end; ++n1It)
+      {
+        r1 += pos.col((*n1It)->idx());
+      }
+      f1 = r1 / static_cast< float>(point.numNeighbours())
+          - pos.col(point.idx());
+      forces->col(point.idx()) += in.vertexForceStrength * f1;
+    }
+    else
+    {
+      // Loop over neighbours pairs
+      for(AnchorPoint::NeighbourIterator n1It = point.neighboursBegin(), end =
+          point.neighboursEnd(); n1It != end; ++n1It)
+      {
+        n1 = *n1It;
+        r1 = pos.col(n1->idx()) - pos.col(point.idx());
+        len1 = ::std::sqrt(::arma::dot(r1, r1));
+        r1Perp(0) = r1(1) / len1;
+        r1Perp(1) = -r1(0) / len1;
+
+        for(AnchorPoint::NeighbourIterator n2It =
+            ++AnchorPoint::NeighbourIterator(n1It); n2It != end; ++n2It)
+        {
+
+          n2 = *n2It;
+          r2 = pos.col(n2->idx()) - pos.col(point.idx());
+          len2 = ::std::sqrt(::arma::dot(r2, r2));
+          r2Perp(0) = r2(1) / len2;
+          r2Perp(1) = -r2(0) / len2;
+
+          // Have to do this check so acos doesn't get a number that is ever
+          // so slightly out of the allowed range [-1:1]
+          double dp = ::arma::dot(r1, r2) / (len1 * len2);
+          dp = ::std::min(dp, 1.0);
+          dp = ::std::max(dp, -1.0);
+
+          // Use the sign from the cross product
+          const double k = sgn(r1(0) * r2(1) - (r1(1) * (r2(0))));
+
+          theta = ::std::acos(dp);
+          torque = -in.kappa * (theta - PI);
+
+          f1 = k * (torque / len1) * r1Perp;
+          f2 = k * (torque / len2) * r2Perp;
+
+          forces->col(n1->idx()) += f1;
+          forces->col(n2->idx()) -= f2;
+
+          forces->col(point.idx()) += f2 - f1;
+        }
+      }
+    }
+  } // end foreach point
+
+  if(in.areaForceStrength != 0.0)
+  {
+    BOOST_FOREACH(FaceAreas::reference face, *faces)
+    {
+      const double areaDiff = (*arr.getFaceAnchorArea(*face.first)
+          - face.second) / face.second;
+      //const double areaDiff = *arr.getFaceAnchorArea(*face.first) / face.second - 1.0;
+
+      const Arrangement::Ccb_halfedge_const_circulator first =
+          face.first->outer_ccb();
+      Arrangement::Ccb_halfedge_const_circulator edge1 = first, edge2 = first;
+      const AnchorPoint * anchor;
+      do
+      {
+        ++edge2;
+
+        // The halfedges supplied go around the boundary in the counterclockwise
+        // direction
+        n1 = edge1->source()->data().anchor;
+        anchor = edge1->target()->data().anchor;
+        n2 = edge2->target()->data().anchor;
+        r1 = pos.col(n2->idx()) - pos.col(n1->idx());
+        lenSq = ::arma::dot(r1, r1);
+        if(lenSq > 0)
+        {
+          len1 = ::std::sqrt(lenSq);
+          // This gives a vector pointing OUT of the face
+          r1Perp(0) = r1(1) / len1;
+          r1Perp(1) = -r1(0) / len1;
+          forces->col(anchor->idx()) -= in.areaForceStrength * areaDiff
+              * r1Perp;
+        }
+
+        edge1 = edge2;
+      }
+      while(edge1 != first);
+    }
+  }
+}
+
 int
 processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
@@ -333,15 +418,23 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   {
     po::options_description general(
         "smap\nUsage: " + exeName + " [options] input_file...\nOptions");
-    general.add_options()
-        ("help", "Show help message")
-        ("input-file", po::value< ::std::string>(&in.inputFile), "input file")
-        ("steps,n", po::value< int>(&in.numSteps)->default_value(-1), "number of smoothing steps (-1 = until tolerance is satisfied)")
-        ("force-tol,f", po::value< double>(&in.forceTolerance)->default_value(FORCE_TOL_DEFAULT), "force tolerance used as stopping criterion")
-        ("no-split-shared,s", po::value<bool>(&in.dontSplitSharedVertices)->default_value(false)->zero_tokens(), "do not split shared vertices")
-        ("kappa,k", po::value<double>(&in.kappa)->default_value(1.0), "torque spring force strength, used to smooth edges")
-        ("area-force,a", po::value<double>(&in.areaForceStrength)->default_value(100.0), "area force strength, used to keep maintain the area of plot regions")
-        ("vertex-force,v", po::value<double>(&in.vertexForceStrength)->default_value(400.0), "vertex force strength, used to keep vertices joining 3 or more edges centered");
+    general.add_options()("help", "Show help message")("input-file",
+        po::value< ::std::string>(&in.inputFile), "input file")("steps,n",
+        po::value< int>(&in.numSteps)->default_value(10000),
+        "number of smoothing steps (-1 = until tolerance is satisfied)")(
+        "force-tol,f",
+        po::value< double>(&in.forceTolerance)->default_value(
+            FORCE_TOL_DEFAULT), "force tolerance used as stopping criterion")(
+        "no-split-shared,s",
+        po::value< bool>(&in.dontSplitSharedVertices)->default_value(false)->zero_tokens(),
+        "do not split shared vertices")("kappa,k",
+        po::value< double>(&in.kappa)->default_value(1.0),
+        "torque spring force strength, used to smooth edges")("area-force,a",
+        po::value< double>(&in.areaForceStrength)->default_value(100.0),
+        "area force strength, used to keep maintain the area of plot regions")(
+        "vertex-force,v",
+        po::value< double>(&in.vertexForceStrength)->default_value(400.0),
+        "vertex force strength, used to keep vertices joining 3 or more edges centered");
 
     po::positional_options_description p;
     p.add("input-file", 1);

@@ -55,8 +55,6 @@ struct InputOptions
 
 int main(const int argc, char * argv[])
 {
-  typedef ssa::ConvexHull::Hull ConvexHull;
-
   const ::std::string exeName(argv[0]);
 
   // Input options

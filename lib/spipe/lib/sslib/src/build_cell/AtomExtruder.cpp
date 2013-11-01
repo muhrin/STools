@@ -127,9 +127,6 @@ AtomExtruder::extrude(const common::DistanceCalculator & distanceCalc,
     ::std::vector< common::Atom *> & atoms, const FixedList & fixedList,
     const ::arma::mat & sepSqMtx) const
 {
-  typedef ::boost::multi_array< ::arma::vec, 2> array_type;
-  typedef array_type::index index;
-
   using ::std::sqrt;
 
   const int numAtoms = static_cast< int>(atoms.size());
@@ -138,9 +135,6 @@ AtomExtruder::extrude(const common::DistanceCalculator & distanceCalc,
 
   const double toleranceSq = myTolerance * myTolerance;
   double sep, sepDiff;
-
-  //array_type sepVectors(::boost::extents[numAtoms][numAtoms]);
-  //::arma::mat sepSqDistances(numAtoms, numAtoms);
 
   double maxOverlapFractionSq;
 

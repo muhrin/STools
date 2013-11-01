@@ -90,11 +90,10 @@ AnchorPointArrangement< LabelType>::getFaceAnchorArea(
 {
   typedef typename Arrangement::Geometry_traits_2::Kernel Kernel;
 
-  double area = 0.0;
-  typename ::CGAL::Polygon_2<Kernel> poly;
-
   if(face.is_unbounded() || face.is_fictitious())
     return ::boost::optional<double>();
+
+  typename ::CGAL::Polygon_2<Kernel> poly;
 
   const typename Arrangement::Ccb_halfedge_const_circulator first = face.outer_ccb();
   typename Arrangement::Ccb_halfedge_const_circulator cl = first;
@@ -102,7 +101,8 @@ AnchorPointArrangement< LabelType>::getFaceAnchorArea(
   do
   {
     anchor = cl->source()->data().anchor;
-    poly.push_back(typename Kernel::Point_2(anchor->getPos()(0), anchor->getPos()(1)));
+    const ::arma::vec2 & anchorPos = anchor->getPos();
+    poly.push_back(typename Kernel::Point_2(anchorPos(0), anchorPos(1)));
     ++cl;
   } while(cl != first);
 

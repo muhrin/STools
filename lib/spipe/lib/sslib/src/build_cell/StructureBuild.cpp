@@ -249,7 +249,6 @@ StructureBuild::popSpeciesPairDistances()
 const StructureBuild::SpeciesPairDistances &
 StructureBuild::getSpeciesPairDistances() const
 {
-  typedef ::std::set< ::std::string> SpeciesSet;
 
   if(!mySpeciesPairDistancesCurrent)
   {

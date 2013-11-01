@@ -182,7 +182,6 @@ SortedDistanceComparator::compareStructures(
     const SortedDistanceComparisonData & dist1,
     const SortedDistanceComparisonData & dist2) const
 {
-  typedef ::std::vector< double> DistancesVec;
   typedef StridedIndexAdapter< size_t> IndexAdapter;
 
   const size_t numSpecies = dist1.species.size();

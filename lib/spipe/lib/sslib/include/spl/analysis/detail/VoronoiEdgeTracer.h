@@ -385,7 +385,6 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
         // WARNING: Don't use old vertex (vIt) or old halfedges (zones) beyond this point
 
-        bool doneFirst = false;
         BOOST_FOREACH(const SplitVertex & splitVertex, vertices)
         {
           const K::Point_2 newVertexPos = oldPos
@@ -417,8 +416,6 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   void
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::splitEdges()
   {
-    typedef LabelType Label;
-
     ::std::vector< typename Arrangement::Halfedge_handle> toSplit;
     for(typename Arrangement::Edge_iterator it = arrangement_.edges_begin(),
         end = arrangement_.edges_end(); it != end; ++it)
@@ -439,9 +436,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
       e2Data = twin->data();
 
       source = edge->source();
-      source->data().maxDisplacement *= 0.5;
       target = edge->target();
-      target->data().maxDisplacement *= 0.5;
 
       p1 = source->point();
       p2 = target->point();

@@ -12,7 +12,6 @@ main()
   using namespace pipelib;
   using std::string;
 
-  typedef pipelib::Block< string, const void *, const void *> BlockType;
   typedef pipelib::BlockHandle< string, const void *, const void *>::Type BlockHandle;
   typedef pipelib::SimpleBarrier< string, const void *, const void *> Barrier;
 

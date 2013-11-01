@@ -39,13 +39,15 @@ struct Result
 {
   Result():
   numWrong(0),
+  failureRate(0.0),
   max(::std::numeric_limits<double>::min()),
-  total(0.0)
+  total(0.0),
+  mean(0.0)
   {}
 
   void calcStats(const double numComparisons)
   {
-    failureRate = (double)numWrong / numComparisons;
+    failureRate = static_cast<double>(numWrong) / numComparisons;
     mean = total / numComparisons;
   }
 
@@ -67,7 +69,6 @@ static const fs::path REFERENCE_STRUCTURES_PATH("similarStructures");
 
 BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 {
-  typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
   typedef ::boost::ptr_vector<ssu::IStructureComparator> Comparators;
   typedef ::boost::shared_ptr<ssu::IBufferedComparator> BufferedComparatorPtr;
   typedef ::std::vector<BufferedComparatorPtr> BufferedComparators;
@@ -183,7 +184,6 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 
 BOOST_AUTO_TEST_CASE(SupercellTest)
 {
-  typedef ::boost::shared_ptr<ssc::Structure> SharedStructurePtr;
   typedef ::boost::ptr_vector<ssu::IStructureComparator> Comparators;
   typedef ::boost::shared_ptr<ssu::IBufferedComparator> BufferedComparatorPtr;
   typedef ::std::vector<BufferedComparatorPtr> BufferedComparators;
