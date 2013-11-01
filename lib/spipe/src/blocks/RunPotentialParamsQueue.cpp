@@ -20,7 +20,7 @@
 
 #include <spl/io/BoostFilesystem.h>
 #include <spl/os/Process.h>
-#include <spl/utility/UtilFunctions.h>
+#include <spl/utility/Armadillo.h>
 
 // Local includes
 #include "common/PipeFunctions.h"
@@ -52,7 +52,7 @@ static const posix_time::time_duration DEFAULT_TARGET_CHUNK_TIME =
 
 RunPotentialParamsQueue::RunPotentialParamsQueue(BlockHandle & sweepPipeline) :
     Block("Run potential params queue"), mySweepPipeline(sweepPipeline), mySubpipeEngine(
-        NULL), myQueueFile(DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
+    NULL), myQueueFile(DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
         DEFAULT_PARAMS_DONE_FILE), myTargetChunkTime(DEFAULT_TARGET_CHUNK_TIME)
 {
   myNumWorkItemsChunk = INITIAL_NUM_WORK_ITEMS;
@@ -62,8 +62,9 @@ RunPotentialParamsQueue::RunPotentialParamsQueue(
     const ::std::string * const queueFile, const ::std::string * const doneFile,
     BlockHandle & sweepPipeline) :
     Block("Run potential params queue"), mySweepPipeline(sweepPipeline), mySubpipeEngine(
-        NULL), myQueueFile(queueFile ? *queueFile : DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
-        doneFile ? *doneFile : DEFAULT_PARAMS_DONE_FILE), myTargetChunkTime(DEFAULT_TARGET_CHUNK_TIME)
+    NULL), myQueueFile(queueFile ? *queueFile : DEFAULT_PARAMS_QUEUE_FILE), myDoneFile(
+        doneFile ? *doneFile : DEFAULT_PARAMS_DONE_FILE), myTargetChunkTime(
+        DEFAULT_TARGET_CHUNK_TIME)
 {
   myNumWorkItemsChunk = INITIAL_NUM_WORK_ITEMS;
 }
@@ -125,7 +126,7 @@ RunPotentialParamsQueue::start()
 
       // Set a directory for this set of parameters
       mySubpipeEngine->sharedData().appendToOutputDirName(
-          splu::generateUniqueName());
+          generateParamDirName(myCurrentParams));
 
       // Get the relative path to where the pipeline write the structures to
       // Need to store this now as the shared data is not guaranteed to be
@@ -276,11 +277,22 @@ RunPotentialParamsQueue::updateWorkChunkSize()
   }
 
   // Can't divide two times so keep multiplying up until we get the duration we want
-  int i = meanDuration * myNumWorkItemsChunk > myTargetChunkTime ? 1 : myNumWorkItemsChunk + 1;
+  int i =
+      meanDuration * myNumWorkItemsChunk > myTargetChunkTime ?
+          1 : myNumWorkItemsChunk + 1;
   for(; meanDuration * i < myTargetChunkTime; ++i)
   { // Nothing to do
   }
   myNumWorkItemsChunk = i;
+}
+
+::std::string
+RunPotentialParamsQueue::generateParamDirName(const ::arma::vec & params) const
+{
+  ::boost::hash< ::arma::vec> vecHasher;
+  std::stringstream stream;
+  stream << std::hex << vecHasher(params);
+  return stream.str();
 }
 
 void

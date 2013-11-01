@@ -189,6 +189,7 @@ source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 ## utility
 
 set(sslib_Header_Files__utility
+  include/spl/utility/Armadillo.h
   include/spl/utility/DistanceMatrixComparator.h
   include/spl/utility/EdgeMap.h
   include/spl/utility/Enum.h

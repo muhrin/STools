@@ -75,6 +75,8 @@ private:
   updateDoneParams();
   void
   updateWorkChunkSize();
+  ::std::string
+  generateParamDirName(const ::arma::vec & params) const;
 
   void
   releaseBufferedStructures(
