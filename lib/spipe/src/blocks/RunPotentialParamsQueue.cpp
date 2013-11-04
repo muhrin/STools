@@ -289,7 +289,7 @@ RunPotentialParamsQueue::updateWorkChunkSize()
 ::std::string
 RunPotentialParamsQueue::generateParamDirName(const ::arma::vec & params) const
 {
-  static const ::boost::hash< ::arma::vec> VEC_HASHER;
+  static const ::boost::hash< ::arma::vec> VEC_HASHER = ::boost::hash< ::arma::vec>();
 
   std::stringstream stream;
   stream << getEngine()->globalData().getSeedName() << "-" << std::hex
