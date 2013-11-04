@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include <vector>
 
+#include <boost/functional/hash.hpp>
 #include <boost/program_options.hpp>
 
 #include <armadillo>

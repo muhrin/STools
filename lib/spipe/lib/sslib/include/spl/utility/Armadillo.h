@@ -10,7 +10,7 @@
 #define ARMADILLO_H
 
 // INCLUDES /////////////////////////////////////////////
-#include <boost/functional/hash.hpp>
+#include <boost/functional/hash_fwd.hpp>
 
 #include <armadillo>
 

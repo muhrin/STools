@@ -122,6 +122,7 @@ main(const int argc, char * argv[])
   if(inFile.is_open())
   {
     ::std::string line;
+    ::std::set<Point> pointSet;
     while(::std::getline(inFile, line))
     {
       if(!line.empty() && line[0] != '#')
@@ -152,7 +153,13 @@ main(const int argc, char * argv[])
         {
         }
         if(foundAll)
-          points.push_back(::std::make_pair(Point(x, y), label));
+        {
+          const Point pt(x, y);
+          if(pointSet.insert(pt).second)
+            points.push_back(::std::make_pair(pt, label));
+          else
+            ::std::cerr << "Point (" << x << ", " << y << ") found more than once, ignoring.\n";
+        }
       }
     }
 
@@ -330,6 +337,10 @@ evaluateForces(const InputOptions & in, AnchorPointArrangement & arr,
         n1 = *n1It;
         r1 = pos.col(n1->idx()) - pos.col(point.idx());
         len1 = ::std::sqrt(::arma::dot(r1, r1));
+
+        if(len1 == 0.0)
+          continue;
+
         r1Perp(0) = r1(1) / len1;
         r1Perp(1) = -r1(0) / len1;
 

@@ -1,0 +1,68 @@
+#!/bin/bash
+
+
+# Debugging
+#set -x
+
+declare -r RE_NUM="([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)"
+declare -r RE_RANGE="$RE_NUM(\+$RE_NUM(\*$RE_NUM)?)?"
+
+declare -a input_params=("$@")
+declare -r nparams=${#input_params[*]}
+
+declare -a froms
+declare -a deltas
+declare -a nums
+
+for (( i=0; i < $nparams; i++ ))
+do
+  param=${input_params[i]}
+
+#  echo $param | sed -r "s/${RE_RANGE}/1:\1 2:\2 3:\3 4:\4 5:\5 6:\6 7:\7/"
+
+  from=`echo $param | sed -r "s/${RE_RANGE}/\1/"`
+  delta=`echo $param | sed -r "s/${RE_RANGE}/\4/"`
+  num=`echo $param | sed -r "s/${RE_RANGE}/\7/"`
+
+  if [ -z "$from" ]
+  then
+    continue
+  fi
+
+  if [ -z "$delta" ]
+  then
+    delta=0
+  fi
+
+  if [ -z "$num" ]
+  then
+    num=0
+  fi
+  froms[i]=$from
+  deltas[i]=$delta
+  nums[i]=$num
+
+done
+
+echo "froms: ${froms[*]}"
+echo "deltas: ${deltas[*]}"
+echo "nums: ${nums[*]}"
+
+
+echo ${froms[*]} > work
+for (( i=0; i < $nparams; i++ ))
+do
+  echo -n "" > .buffer
+  for (( num=1; num <= ${nums[i]}; ++num ))
+  do
+    while read line
+    do
+      params=($line)
+      params[i]=`echo "${params[i]} + (${deltas[i]} * $num)" | bc -l`
+      echo ${params[*]} >> .buffer
+    done < work
+  done
+  cat .buffer >> work
+done
+
+rm .buffer

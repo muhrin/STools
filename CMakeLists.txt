@@ -8,14 +8,15 @@ add_subdirectory(lib/spipe)	# StructurePipe
 
 # Begin STools ########################################
 
+project(STools)
+set_property(TARGET PROPERTY PROJECT_LABEL "STools")
+
 set(STOOLS_VERSION_MAJOR 0)
 set(STOOLS_VERSION_MINOR 4)
 set(STOOLS_VERSION_PATCH 0)
 set(STOOLS_VERSION "${STOOLS_VERSION_MAJOR}.${STOOLS_VERSION_MINOR}.${STOOLS_VERSION_PATCH}")
 
 message(STATUS "Configuring STools ${STOOLS_VERSION}")
-
-project(STools)
 
 ## Configuration options ###############################
 
@@ -91,4 +92,15 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
-set_property(TARGET PROPERTY PROJECT_LABEL "STools")
+## SCRIPTS TO BE INSTALLED #################################
+if(UNIX)
+  set(STOOLS_SCRIPTS
+    scripts/sgen_work
+    scripts/potparams2queue
+    scripts/srefine
+  )
+
+  INSTALL(PROGRAMS ${STOOLS_SCRIPTS}
+    DESTINATION "bin"
+  )
+endif(UNIX)

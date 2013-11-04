@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#set -x
+
+declare -r potparams=$1
+
+num_params=`grep -o p_ $potparams | wc -l`
+
+grep -v '#' $potparams | cut -d' ' -f2-$(($num_params+1))
+

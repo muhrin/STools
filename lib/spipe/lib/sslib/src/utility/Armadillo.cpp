@@ -8,6 +8,8 @@
 // INCLUDES /////////////////////////////////////
 #include "spl/utility/Armadillo.h"
 
+#include <boost/functional/hash.hpp>
+
 namespace spl {
 namespace utility {
 

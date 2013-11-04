@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Debugging switch
+#set -x
+
+declare -r search_seed=$1
+declare -r prefix=`echo $search_seed | sed -r 's/\..+//'`
+
+declare -r old_folder="pre_refine"
+declare -r queue_file="params_queue"
+declare -r queue_done="params_done"
+
+if [ ! -d "best" ]
+then
+  mkdir best
+fi
+
+if [ ! -d "$old_folder" ]
+then
+  mkdir $old_folder
+fi
+
+if [ -e "$queue_file" ]
+then
+  mv $queue_file $old_folder
+fi
+
+if [ -e "$queue_done" ]
+then
+  mv $queue_done $old_folder
+fi
+
+# Create symbolic links to the best structures in each param folder
+declare -i best_col
+for i in `ls ${prefix}*.potparams`
+do
+  best_col=`cat $i | sed 's/lowest_path.*//' | head -n 1 | wc -w`
+
+  if [ "$best_col" -ne "0" ]
+  then
+    for best in `cat $i | grep -v '\#' | awk '{print $'$best_col'}'`
+    do
+      base=`basename $best`
+      if [ -e "$best" ]
+      then
+        ln -s ../$best best/$base
+      fi
+    done
+
+    potparams2queue $i >> params_queue
+
+    mv $i $old_folder
+  fi
+done
+
+# Save a copy of the original search seed file
+cp $search_seed $old_folder
+
+start_build=`grep -n buildStructures: $search_seed | sed 's/:.*//'`
+
+if [ "$start_build" != "" ]
+then
+  build_body=$((start_build+1))
+  end_build=`sed -n "$build_body,\$ p" $search_seed | grep -m 1 -nE '^[[:alpha:]]' | sed 's/:.*//'`
+ 
+  if [ "$end_build" != "" ]
+  then
+    end_build=$((start_build+end_build-1))
+    sed -i -e "$start_build,${end_build}d" $search_seed
+  fi
+fi
+
+echo "" >> $search_seed
+echo "loadStructures:" >> $search_seed
+echo "  "`pwd`"/best/" >> $search_seed
+
+echo "" -n > $queue_done
+
