@@ -126,6 +126,9 @@ template< typename LabelType>
     AnchorPoint *
     getAnchorPoint(const typename Arrangement::Vertex_const_handle & vertex);
 
+    const Arrangement &
+    getCgalArrangement() const;
+
     ::boost::optional<double>
     getFaceAnchorArea(const typename Arrangement::Face & face) const;
 

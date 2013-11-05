@@ -84,6 +84,13 @@ template< typename LabelType>
   }
 
 template< typename LabelType>
+const typename AnchorPointArrangement< LabelType>::Arrangement &
+AnchorPointArrangement< LabelType>::getCgalArrangement() const
+{
+  return tracer_.getArrangement();
+}
+
+template< typename LabelType>
 ::boost::optional<double>
 AnchorPointArrangement< LabelType>::getFaceAnchorArea(
     const typename Arrangement::Face & face) const

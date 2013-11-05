@@ -74,5 +74,5 @@ echo "" >> $search_seed
 echo "loadStructures:" >> $search_seed
 echo "  "`pwd`"/best/" >> $search_seed
 
-echo "" -n > $queue_done
+echo -n "" > $queue_done
 

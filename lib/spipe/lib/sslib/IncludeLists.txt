@@ -4,6 +4,7 @@
 set(sslib_Header_Files__analysis
   include/spl/analysis/AbsConvexHullGenerator.h
   include/spl/analysis/AnchorPointArrangement.h
+  include/spl/analysis/ArrangementSmoothing.h
   include/spl/analysis/CgalCustomKernel.h
   include/spl/analysis/CgalPointDWithId.h
   include/spl/analysis/ConvexHull.h
@@ -26,6 +27,7 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 
 set(sslib_Header_Files__analysis__detail
   include/spl/analysis/detail/AnchorPointArrangement.h
+  include/spl/analysis/detail/ArrangementSmoothing.h
   include/spl/analysis/detail/ConvexHullStructures.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
 )
