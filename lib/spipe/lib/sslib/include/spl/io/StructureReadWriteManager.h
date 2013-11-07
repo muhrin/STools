@@ -14,6 +14,10 @@
 
 #include <map>
 
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+#  include <boost/thread/mutex.hpp>
+#endif
+
 #include <boost/filesystem.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -105,7 +109,6 @@ public:
   const IStructureWriter * getDefaultWriter() const;
 
 private:
-
   typedef ::boost::ptr_vector<IStructureWriter> WritersStore;
   typedef ::boost::ptr_vector<IStructureReader> ReadersStore;
 
@@ -128,6 +131,13 @@ private:
   WritersStore myWritersStore;
   ReadersStore myReadersStore;
 
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  // TODO: Check if ::std::vector is thread safe, otherwise need mutexes for
+  // inserting/removing readers and writers
+  // TODO: Currently we lock for all read and writes but we should be locking
+  // only for read and writes to the same file
+  mutable ::boost::mutex myRwMutex;
+#endif
 };
 
 }

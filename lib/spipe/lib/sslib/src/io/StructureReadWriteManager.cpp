@@ -13,6 +13,9 @@
 #include "spl/io/ResourceLocator.h"
 
 #include <boost/foreach.hpp>
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+#  include <boost/thread/lock_guard.hpp>
+#endif
 
 // NAMESPACES ////////////////////////////////
 
@@ -173,7 +176,6 @@ StructureReadWriteManager::writeStructure(::spl::common::Structure & str,
 {
   // TODO: Add status return value to this method
   ::std::string ext;
-
   if(!getExtension(ext, locator))
   {
     // No extension: try default writer
@@ -202,6 +204,10 @@ StructureReadWriteManager::writeStructure(common::Structure & str,
   if(!it->second->multiStructureSupport())
     locator.clearId();
 
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+#endif
+
   // Finally pass it on the the correct writer
   it->second->writeStructure(str, locator);
 
@@ -227,6 +233,10 @@ StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
   if(it == myReaders.end())
     return structure; /*unknown extension*/
 
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+  ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+#endif
+
   // Finally pass it on the the correct reader
   structure = it->second->readStructure(locator);
 
@@ -244,8 +254,6 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
   if(!fs::exists(locator.path()))
     return 0;
 
-  const size_t originalSize = outStructures.size();
-
   if(fs::is_regular_file(locator.path()))
   {
     ::std::string ext;
@@ -257,14 +265,20 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
     if(it == myReaders.end())
       return 0; /*unknown extension*/
 
+#ifdef SSLIB_ENABLE_THREAD_AWARE
+    ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+#endif
+
     // Finally pass it on the the correct reader
-    const size_t numRead = it->second->readStructures(outStructures, locator);
+    StructuresContainer structures;
+    const size_t numRead = it->second->readStructures(structures, locator);
+    SSLIB_ASSERT(numRead == structures.size());
 
     // Set the path to where it was read from
-    for(size_t i = originalSize; i < originalSize + numRead; ++i)
-    {
-      postRead(outStructures[i], locator);
-    }
+    BOOST_FOREACH(common::Structure & structure, structures)
+      postRead(structure, locator);
+
+    outStructures.transfer(outStructures.end(), structures);
 
     return numRead;
   }

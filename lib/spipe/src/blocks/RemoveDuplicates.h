@@ -9,6 +9,8 @@
 #define REMOVE_DUPLICATES_H
 
 // INCLUDES /////////////////////////////////////////////
+#include "StructurePipe.h"
+
 #include <map>
 
 #include <boost/noncopyable.hpp>

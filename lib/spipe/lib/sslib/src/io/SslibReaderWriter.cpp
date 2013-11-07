@@ -39,9 +39,7 @@
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
-
 
 namespace spl {
 namespace io {
@@ -51,9 +49,11 @@ namespace properties = common::structure_properties;
 namespace kw = factory::sslib_yaml_keywords;
 
 const unsigned int SslibReaderWriter::DIGITS_AFTER_DECIMAL = 8;
-const ::std::string SslibReaderWriter::DEFAULT_EXTENSION("sslib");
+const ::std::string SslibReaderWriter::DEFAULT_EXTENSION = "spl";
 
-void SslibReaderWriter::writeStructure(common::Structure & str,	const ResourceLocator & locator) const
+void
+SslibReaderWriter::writeStructure(common::Structure & str,
+    const ResourceLocator & locator) const
 {
   const fs::path filepath(locator.path());
   if(!filepath.has_filename())
@@ -62,10 +62,10 @@ void SslibReaderWriter::writeStructure(common::Structure & str,	const ResourceLo
   const io::StructureYamlGenerator generator;
 
   const fs::path dir = filepath.parent_path();
-	if(!dir.empty() && !exists(dir))
-	{
-		create_directories(dir);
-	}
+  if(!dir.empty() && !exists(dir))
+  {
+    create_directories(dir);
+  }
 
   // First open and parse the file to get the current contents (if any)
   YAML::Node doc;
@@ -114,7 +114,8 @@ void SslibReaderWriter::writeStructure(common::Structure & str,	const ResourceLo
   }
 }
 
-common::types::StructurePtr SslibReaderWriter::readStructure(const ResourceLocator & locator) const
+common::types::StructurePtr
+SslibReaderWriter::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const io::StructureYamlGenerator generator;
@@ -152,21 +153,18 @@ common::types::StructurePtr SslibReaderWriter::readStructure(const ResourceLocat
 
   if(structure.get())
   {
-    structure->setProperty(
-      properties::io::LAST_ABS_FILE_PATH,
-      ResourceLocator(io::absolute(filepath), locatorId)
-    );
+    structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
+        ResourceLocator(io::absolute(filepath), locatorId));
   }
 
   return structure;
 }
 
-size_t SslibReaderWriter::readStructures(
-  StructuresContainer & outStructures,
-  const ResourceLocator & locator) const
+size_t
+SslibReaderWriter::readStructures(StructuresContainer & outStructures,
+    const ResourceLocator & locator) const
 {
   size_t numLoaded = 0;
-
   if(locator.id().empty())
   {
     const io::StructureYamlGenerator generator;
@@ -193,10 +191,8 @@ size_t SslibReaderWriter::readStructures(
 
       if(structure.get())
       {
-        structure->setProperty(
-          properties::io::LAST_ABS_FILE_PATH,
-          ResourceLocator(io::absolute(filepath), structureId)
-        );
+        structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
+            ResourceLocator(io::absolute(filepath), structureId));
         outStructures.push_back(structure.release());
         ++numLoaded;
       }
@@ -204,18 +200,16 @@ size_t SslibReaderWriter::readStructures(
 
     if(doc[kw::STRUCTURES] && doc[kw::STRUCTURES].IsMap())
     {
-      for(YAML::const_iterator it = doc[kw::STRUCTURES].begin(), end = doc[kw::STRUCTURES].end();
-        it != end; ++it)
+      for(YAML::const_iterator it = doc[kw::STRUCTURES].begin(), end =
+          doc[kw::STRUCTURES].end(); it != end; ++it)
       {
         structureId = it->first.as< ::std::string>();
         structure = generator.generateStructure(it->second);
 
         if(structure.get())
         {
-          structure->setProperty(
-            properties::io::LAST_ABS_FILE_PATH,
-            ResourceLocator(io::absolute(filepath), structureId)
-          );
+          structure->setProperty(properties::io::LAST_ABS_FILE_PATH,
+              ResourceLocator(io::absolute(filepath), structureId));
           outStructures.push_back(structure.release());
           ++numLoaded;
         }
@@ -226,27 +220,30 @@ size_t SslibReaderWriter::readStructures(
   {
     // The user has specified a particular id so they only want one structure
     common::types::StructurePtr structure = readStructure(locator);
-
     if(structure.get())
+    {
       outStructures.push_back(structure.release());
-    ++numLoaded;
+      ++numLoaded;
+    }
   }
 
   return numLoaded;
 }
 
-::std::vector<std::string> SslibReaderWriter::getSupportedFileExtensions() const
+::std::vector< std::string>
+SslibReaderWriter::getSupportedFileExtensions() const
 {
   ::std::vector< ::std::string> exts;
+  exts.push_back("spl");
   exts.push_back("sslib");
   return exts;
 }
 
-bool SslibReaderWriter::multiStructureSupport() const
+bool
+SslibReaderWriter::multiStructureSupport() const
 {
   return true;
 }
-
 
 }
 }

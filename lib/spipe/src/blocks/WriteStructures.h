@@ -60,7 +60,6 @@ public:
   // End from PipeBlock ////
 
 private:
-
   struct State
   {
     enum Value
@@ -77,6 +76,7 @@ private:
 
   State::Value myState;
   bool myWriteMultiStructure;
+  const bool myMultiStructureFromPath;
   ::std::string myFileType;
 };
 

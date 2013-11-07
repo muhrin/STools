@@ -34,7 +34,7 @@ const ::std::string WriteStructures::FORMAT_DEFAULT = "res";
 
 WriteStructures::WriteStructures() :
     Block("Write structures"), myState(State::DISABLED),
-    myWriteMultiStructure(WRITE_MULTI_DEFAULT)
+    myWriteMultiStructure(WRITE_MULTI_DEFAULT), myMultiStructureFromPath(false)
 {
 }
 
@@ -96,7 +96,7 @@ WriteStructures::in(common::StructureData * const data)
 
     if(writer)
     {
-      const ssio::ResourceLocator saveLocation(generateLocator(*structure, *writer));
+      const ssio::ResourceLocator saveLocation = generateLocator(*structure, *writer);
 
       bool writeSuccessful;
       if(myState == State::USE_CUSTOM_WRITER)
@@ -104,7 +104,7 @@ WriteStructures::in(common::StructureData * const data)
       else
         writeSuccessful = rwMan.writeStructure(*data->getStructure(), saveLocation);
 
-      if(writeSuccessful)
+      if(!writeSuccessful)
       {
         // TODO: Produce error
       }
@@ -128,9 +128,12 @@ WriteStructures::generateLocator(ssc::Structure & structure,
   // Create the path to store the structure
   fs::path p(getEngine()->sharedData().getOutputPath());
 
-  // Should all the structures be stored in one file or seaprate files?
+  // Should all the structures be stored in one file or separate files?
   if(useMultiStructure(writer))
-    p /= common::getOutputFileStem(getEngine()->sharedData(), getEngine()->globalData());
+  {
+    if(!myMultiStructureFromPath)
+      p /= common::getOutputFileStem(getEngine()->sharedData(), getEngine()->globalData());
+  }
   else
     p /= fs::path(structure.getName());
 
