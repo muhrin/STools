@@ -19,24 +19,26 @@
 #include <boost/tokenizer.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include <spl/analysis/AnchorPointArrangement.h>
+#include <spl/analysis/AnchorArrangement.h>
 #include <spl/analysis/ArrangementSmoothing.h>
+#include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
+#include <spl/analysis/VectorAnchorArrangementOutputter.h>
 #include <spl/analysis/VoronoiEdgeTracer.h>
 
 // FORWARD DECLARES //////////////////////////
 class DataRow;
 
-// TYPEDEFS ////////////////////////////////////
-typedef unsigned int InfoType;
-typedef ::spl::analysis::AnchorPointArrangement< InfoType> AnchorPointArrangement;
-typedef AnchorPointArrangement::EdgeTracer EdgeTracer;
-typedef EdgeTracer::Point Point;
-typedef ::std::vector< ::std::pair< Point, InfoType> > Points;
-
-
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace spla = ::spl::analysis;
+
+// TYPEDEFS ////////////////////////////////////
+typedef unsigned int LabelType;
+typedef ::spl::analysis::AnchorArrangement< LabelType> AnchorArrangement;
+typedef AnchorArrangement::EdgeTracer EdgeTracer;
+typedef EdgeTracer::Point Point;
+typedef ::std::vector< ::std::pair< Point, LabelType> > Points;
+typedef ::spl::UniquePtr< spla::AnchorArrangementOutputter< LabelType> >::Type ArrangementOutputterPtr;
 
 // CONSTANTS ////////////////////////////////
 
@@ -50,6 +52,7 @@ struct InputOptions
   double kappa;
   double vertexForceStrength;
   double areaForceStrength;
+  ::std::string outputter;
 };
 
 // CONSTANTS /////////////////////////////////
@@ -57,6 +60,12 @@ struct InputOptions
 // FUNCTIONS ////////////////////////////////
 int
 processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
+
+void
+smoothArrangement(const InputOptions & in, AnchorArrangement & arrangement);
+
+ArrangementOutputterPtr
+generateOutputter(const InputOptions & in);
 
 int
 main(const int argc, char * argv[])
@@ -71,9 +80,9 @@ main(const int argc, char * argv[])
 
   static const boost::char_separator< char> tokSep(" \t");
 
-  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+//  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
-  // Program options
+// Program options
   InputOptions in;
 
   int result = processCommandLineArgs(in, argc, argv);
@@ -102,7 +111,7 @@ main(const int argc, char * argv[])
           continue;
 
         double x, y;
-        unsigned int label;
+        LabelType label;
 
         bool foundAll = false;
         try
@@ -115,7 +124,7 @@ main(const int argc, char * argv[])
           if(++it == toker.end())
             continue;
 
-          label = ::boost::lexical_cast< int>(*it);
+          label = ::boost::lexical_cast< LabelType>(*it);
           foundAll = true;
         }
         catch(const ::boost::bad_lexical_cast & /*e*/)
@@ -140,31 +149,13 @@ main(const int argc, char * argv[])
   tempDelaunay.insert(points.begin(), points.end());
   EdgeTracer::Voronoi voronoi(tempDelaunay, true);
 
-  EdgeTracer tracer(voronoi);
+  EdgeTracer tracer(voronoi, !in.dontSplitSharedVertices);
 
-  AnchorPointArrangement arr(tracer);
+  AnchorArrangement arr(tracer);
+  smoothArrangement(in, arr);
 
-  ::spl::analysis::SmoothingOptions smoothingOptions;
-  smoothingOptions.smoothingForceStrength = in.kappa;
-  smoothingOptions.areaForceStrength = in.areaForceStrength;
-  smoothingOptions.vertexForceStrength = in.vertexForceStrength;
-  smoothingOptions.maxSteps = in.numSteps;
-  smoothingOptions.forceTol = in.forceTolerance;
-  ::spl::analysis::smoothArrangement(smoothingOptions, &arr);
-
-  ::arma::vec2 vR, vDr;
-  for(AnchorPointArrangement::PointsIterator it = arr.beginPoints(), end =
-      arr.endPoints(); it != end; ++it)
-  {
-    vR = it->getPos();
-    for(AnchorPoint::NeighbourIterator nIt = it->neighboursBegin(), nEnd =
-        it->neighboursEnd(); nIt != nEnd; ++nIt)
-    {
-      vDr = (*nIt)->getPos() - vR;
-      ::std::cout << vR(0) << " " << vR(1) << " " << vDr(0) << " " << vDr(1)
-          << "\n";
-    }
-  }
+  ArrangementOutputterPtr outputter = generateOutputter(in);
+  outputter->outputArrangement(arr);
 
   return 0;
 }
@@ -200,7 +191,10 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
         "vertex-force,v",
         po::value< double>(&in.vertexForceStrength)->default_value(
             spla::SmoothingOptions::VERTEX_FORCE_DEFAULT),
-        "vertex force strength, used to keep vertices joining 3 or more edges centered");
+        "vertex force strength, used to keep vertices joining 3 or more edges centered")(
+        "outputter,O",
+        po::value< ::std::string>(&in.outputter)->default_value("gnuplot"),
+        "The method of outputting the final map.  Possible options: gnuplot, vector");
 
     po::positional_options_description p;
     p.add("input-file", 1);
@@ -230,6 +224,36 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 
   // Everything went fine
   return 0;
+}
+
+void
+smoothArrangement(const InputOptions & in, AnchorArrangement & arrangement)
+{
+  ::spl::analysis::SmoothingOptions smoothingOptions;
+  smoothingOptions.smoothingForceStrength = in.kappa;
+  smoothingOptions.areaForceStrength = in.areaForceStrength;
+  smoothingOptions.vertexForceStrength = in.vertexForceStrength;
+  smoothingOptions.maxSteps = in.numSteps;
+  smoothingOptions.forceTol = in.forceTolerance;
+  ::spl::analysis::smoothArrangement(smoothingOptions, &arrangement);
+}
+
+ArrangementOutputterPtr
+generateOutputter(const InputOptions & in)
+{
+  ArrangementOutputterPtr outputter;
+
+  if(in.outputter == "vector")
+    outputter.reset(new spla::VectorAnchorArrangementOutputter< LabelType>());
+  else if(in.outputter == "gnuplot")
+  {
+    outputter.reset(new spla::GnuplotAnchorArrangementPlotter<LabelType>("map"));
+  }
+  else
+    ::std::cerr << "Error: unrecognised outputter - " << in.outputter
+        << ::std::endl;
+
+  return outputter;
 }
 
 #endif /* SSLIB_USE_CGAL */

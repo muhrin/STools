@@ -17,6 +17,8 @@
 #include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
 
+#include <CGAL/Object.h>
+
 #include "spl/SSLibAssert.h"
 
 // FORWARD DECLARATIONS ///////
@@ -32,6 +34,8 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
       const Voronoi & voronoi, const bool _splitSharedVertices)
   {
     TracingData tracingData(voronoi);
+
+    //createBoundary(&tracingData);
     initArrangement(tracingData);
 
     tracingData.toVisit = tracingData.boundaryEdges;
@@ -44,7 +48,10 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
     if(_splitSharedVertices)
       splitSharedVertices();
-    //splitEdges();
+
+    splitEdges();
+    populateFaceLabels();
+
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -82,13 +89,18 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     const Voronoi & voronoi = tracingData.voronoi;
     const typename Voronoi::Delaunay_graph & delaunay = voronoi.dual();
 
+    const typename Voronoi::Adaptation_policy::Edge_rejector & edge_rejector =
+        voronoi.adaptation_policy().edge_rejector_object();
+
     for(typename Delaunay::Edge_iterator it = delaunay.edges_begin(), end =
         delaunay.edges_end(); it != end; ++it)
     {
-      if(isBoundaryEdge(*it) && !voronoi.edge_rejector()(delaunay, *it))
+      if(isBoundaryEdge(*it) && !edge_rejector(delaunay, *it))
       {
-        tracingData.boundaryEdges.insert(*it);
         const typename Voronoi::Halfedge_handle he = voronoi.dual(*it);
+
+        // Save this Delaunay edge as it corresponds to a boundary
+        tracingData.boundaryEdges.insert(*it);
 
         // Populate the map arrangement with vertices if necessary
         if(he->has_source())
@@ -101,9 +113,10 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
           {
             ret.first->second = arrangement_.insert_in_face_interior(
                 he->source()->point(), unboundedFace);
-            ret.first->second->data().maxDisplacement = ::std::sqrt(
-                ::CGAL::squared_distance(ret.first->second->point(),
-                    it->first->vertex((it->second + 1) % 3)->point()));
+            ret.first->second->data().maxDisplacement = ::CGAL::to_double(
+                ::CGAL::sqrt(
+                    ::CGAL::squared_distance(ret.first->second->point(),
+                        it->first->vertex((it->second + 1) % 3)->point())));
           }
         }
         if(he->has_target())
@@ -116,13 +129,73 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
           {
             ret.first->second = arrangement_.insert_in_face_interior(
                 he->target()->point(), unboundedFace);
-            ret.first->second->data().maxDisplacement = ::std::sqrt(
-                ::CGAL::squared_distance(ret.first->second->point(),
-                    it->first->vertex((it->second + 1) % 3)->point()));
+            ret.first->second->data().maxDisplacement = ::CGAL::to_double(
+                ::CGAL::sqrt(
+                    ::CGAL::squared_distance(ret.first->second->point(),
+                        it->first->vertex((it->second + 1) % 3)->point())));
           }
         }
+//        // If it's a boundary, create a vertex for the Voronoi edge to connect to that is
+//        // at the midpoint of the dual Delaunay edge
+//        if(he->is_unbounded())
+//        {
+//          const typename Arrangement::Vertex_handle vtx = arrangement_.insert_in_face_interior(
+//              midpoint(*it), unboundedFace);
+//          vtx->data().maxDisplacement = ::std::sqrt(
+//              ::CGAL::squared_distance(vtx->point(),
+//                  it->first->vertex((it->second + 1) % 3)->point()));
+//          vtx->data().isOuterBoundary = true;
+//
+////          vtx->data().maxDisplacement = 0.0;
+//          tracingData.boundaryVertices[he] = vtx;
+//        }
+
       }
     }
+
+//    //size_t i = 0;
+//    typename Delaunay::Edge_circulator cl = delaunay.incident_edges(
+//        delaunay.incident_vertices(delaunay.infinite_vertex()));
+//    typename Delaunay::Edge_circulator first = cl;
+//    do
+//    {
+//      if(delaunay.is_infinite(cl->first->vertex(cl->second)) &&
+//          voronoi.dual(*cl)->is_unbounded())
+//      {
+//        //::std::cout << "Found initial edge.\n";
+//        break;
+//      }
+//      // Move on to the next one
+//      ++cl;
+//    } while(cl != first);
+//
+//    first = cl;
+//    Point r1, r2;
+//    K::Vector_2 dr;
+//    do
+//    {
+//      r1 = cl->first->vertex(delaunay.cw(cl->second))->point();
+//      r2 = cl->first->vertex(delaunay.ccw(cl->second))->point();
+//      dr = r2 - r1;
+//
+//      if(isBoundaryEdge(*cl))
+//        ::std::cout << r1 << " " << dr.x() << " " << dr.y() << " 1\n";
+//      else
+//        ::std::cout << r1 << " " << dr.x() << " " << dr.y() << " 0\n";
+//
+//      const typename Delaunay::Edge_circulator starting = cl;
+//      do
+//      {
+//        ++cl;
+//        if(cl != starting && voronoi.dual(*cl)->is_unbounded())
+//        {
+//          cl = delaunay.incident_edges(cl->first->vertex(delaunay.ccw(cl->second)));
+//          //::std::cout << "Found next edge\n";
+//          break;
+//        }
+//      } while(true/*cl != starting*/);
+//
+//    } while(cl != first);
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -137,6 +210,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     typename Voronoi::Delaunay_edge edge = *edgeIt;
     const typename Voronoi::Halfedge_handle halfEdge = tracingData.voronoi.dual(
         edge);
+
     if(halfEdge->is_unbounded())
     {
       tracingData.toVisit.erase(edgeIt);
@@ -144,8 +218,9 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     }
 
     const typename VertexMap::const_iterator source =
-        tracingData.vertexMap.find(halfEdge->source());
-    SSLIB_ASSERT(source != tracingData.vertexMap.end());
+        halfEdge->has_source() ?
+            tracingData.vertexMap.find(halfEdge->source()) :
+            tracingData.vertexMap.end();
 
     traceEdge(tracingData, halfEdge, source);
   }
@@ -158,10 +233,10 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
       const typename Voronoi::Halfedge_handle & halfEdge,
       const typename VertexMap::const_iterator source)
   {
-    if(halfEdge->is_unbounded())
-      return; // One or both ends are at infinity
-
     typename Voronoi::Delaunay_edge delaunayEdge = halfEdge->dual();
+
+    if(halfEdge->is_unbounded())
+      return;
 
     if(!isBoundaryEdge(delaunayEdge))
       return; // Not boundary
@@ -171,15 +246,38 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     if(it == tracingData.toVisit.end())
       return; // Already visited
 
-    const typename VertexMap::const_iterator target =
-        tracingData.vertexMap.find(halfEdge->target());
-    SSLIB_ASSERT(target != tracingData.vertexMap.end());
+    typename VertexMap::const_iterator target = tracingData.vertexMap.end();
+    typename Arrangement::Vertex_handle v1, v2;
+    if(halfEdge->is_unbounded())
+    {
+      v1 = tracingData.boundaryVertices.find(halfEdge)->second;
+      if(source == tracingData.vertexMap.end())
+      {
+        // The source must be the infinite vertex, so target should be a valid
+        // Voronoi vertex
+        target = tracingData.vertexMap.find(halfEdge->target());
+        SSLIB_ASSERT(target != tracingData.vertexMap.end());
 
-    // Insert the segment corresponding to the edge info the arrangement
-    const ArrSegment segment(source->second->point(), target->second->point());
+        v2 = target->second;
+      }
+      else
+        v2 = source->second;
+    }
+    else
+    {
+      SSLIB_ASSERT(source != tracingData.vertexMap.end());
+
+      target = tracingData.vertexMap.find(halfEdge->target());
+      SSLIB_ASSERT(target != tracingData.vertexMap.end());
+
+      v1 = source->second;
+      v2 = target->second;
+    }
+
+    // Insert the segment corresponding to the edge into the arrangement
+    const ArrSegment segment(v1->point(), v2->point());
     const typename Arrangement::Halfedge_handle heHandle =
-        arrangement_.insert_at_vertices(segment, source->second,
-            target->second);
+        arrangement_.insert_at_vertices(segment, v1, v2);
 
     // Save the label either side of the halfedge
     heHandle->data().label = halfEdge->face()->dual()->info();
@@ -189,8 +287,10 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     tracingData.toVisit.erase(it);
 
     // Do the neighbouring edges
-    traceEdge(tracingData, halfEdge->next(), target);
-    traceEdge(tracingData, halfEdge->opposite()->next(), source);
+    if(target != tracingData.vertexMap.end())
+      traceEdge(tracingData, halfEdge->next(), target);
+    if(source != tracingData.vertexMap.end())
+      traceEdge(tracingData, halfEdge->opposite()->next(), source);
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -201,6 +301,46 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   {
     return edge.first->vertex((edge.second + 1) % 3)->info()
         != edge.first->vertex((edge.second + 2) % 3)->info();
+  }
+
+template< typename LabelType, class VertexDataType, class HalfedgeDataType,
+    class FaceDataType>
+  void
+  VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::createBoundary(
+      TracingData * const tracingData) const
+  {
+    typedef typename K::Ray_2 Ray;
+    typedef typename K::Segment_2 Segment;
+
+    const Delaunay & dg = tracingData->voronoi.dual();
+    typename Delaunay::Edge_circulator cl = dg.incident_edges(
+        dg.infinite_vertex());
+    const typename Delaunay::Edge_circulator first = cl;
+    typename Delaunay::Vertex_handle v1, v2;
+    typename Delaunay::Face_handle face;
+    do
+    {
+      face = cl->first;
+      v1 = face->vertex(face->ccw(cl->second));
+      v2 = face->vertex(face->cw(cl->second));
+
+      tracingData->boundary.push_back(v1->point());
+
+      ::CGAL::Object dual = dg.dual(*cl);
+      if(const Ray * const ray = ::CGAL::object_cast< Ray>(&dual))
+      {
+        const Segment boundary(v1->point(), v2->point());
+        const ::CGAL::Object intersection = ::CGAL::intersection(boundary,
+            *ray);
+        if(const Point * const point = ::CGAL::object_cast< Point>(
+            &intersection))
+        {
+          tracingData->boundary.push_back(*point);
+        }
+      }
+      ++cl;
+    }
+    while(cl != first);
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -224,7 +364,6 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
       ++vNext;
 
       typename Arrangement::Vertex & vertex = *vIt;
-
       const size_t degree = vertex.degree();
 
       // Can't split vertices with less than 4 zones
@@ -382,8 +521,9 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
         // Remove the old vertex
         arrangement_.remove_isolated_vertex(vIt);
-
         // WARNING: Don't use old vertex (vIt) or old halfedges (zones) beyond this point
+        vIt = typename Arrangement::Vertex_iterator();
+        zones.clear();
 
         BOOST_FOREACH(const SplitVertex & splitVertex, vertices)
         {
@@ -396,6 +536,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
           newArrVertex->set_data(vertexData); // Copy the data over
 
           // Create the new halfedges
+          size_t edgeIdx = 0;
           BOOST_FOREACH(typename Arrangement::Vertex_handle neighbour,
               ::boost::make_iterator_range(splitVertex.neighboursBegin(), splitVertex.neighboursEnd()))
           {
@@ -404,6 +545,13 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
             const typename Arrangement::Halfedge_handle heHandle =
                 arrangement_.insert_at_vertices(segment, newArrVertex,
                     neighbour);
+
+            const typename SplitVertex::HalfedgeData & heData =
+                splitVertex.getHalfedgeData(edgeIdx);
+            heHandle->set_data(heData.second);
+            heHandle->twin()->set_data(heData.first);
+
+            ++edgeIdx;
           }
 
         }
@@ -463,6 +611,33 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
       toSplit.pop_back();
     }
+  }
+
+template< typename LabelType, class VertexDataType, class HalfedgeDataType,
+    class FaceDataType>
+  void
+  VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::populateFaceLabels()
+  {
+    BOOST_FOREACH(typename Arrangement::Face & face,
+        ::boost::make_iterator_range(arrangement_.faces_begin(),
+            arrangement_.faces_end()))
+    {
+      // Get the label from one of the halfedges
+      if(!face.is_unbounded() && !face.is_fictitious())
+        face.data().label = face.outer_ccb()->data().label;
+    }
+
+  }
+
+template< typename LabelType, class VertexDataType, class HalfedgeDataType,
+    class FaceDataType>
+  typename VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType,
+      FaceDataType>::Point
+  VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::midpoint(
+      const typename Delaunay::Edge & edge) const
+  {
+    return ::CGAL::midpoint(edge.first->vertex((edge.second + 1) % 3)->point(),
+        edge.first->vertex((edge.second + 2) % 3)->point());
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -589,6 +764,8 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   {
     halfedges_.push_back(halfedge);
     neighbours_.push_back(halfedge->source());
+    halfedgeData_.push_back(
+        HalfedgeData(halfedge->data(), halfedge->twin()->data()));
     const K::Vector_2 dr = halfedge->source()->point()
         - halfedge->target()->point();
     newPos_ = newPos_ + dr / ::CGAL::sqrt(dr.squared_length());
@@ -636,6 +813,16 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::SplitVertex::halfedgesEnd() const
   {
     return halfedges_.end();
+  }
+
+template< typename LabelType, class VertexDataType, class HalfedgeDataType,
+    class FaceDataType>
+  const typename VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType,
+      FaceDataType>::SplitVertex::HalfedgeData &
+  VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::SplitVertex::getHalfedgeData(
+      const size_t idx) const
+  {
+    return halfedgeData_[idx];
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,

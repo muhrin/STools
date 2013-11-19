@@ -51,7 +51,8 @@ struct InputOptions
   ::std::string distanceStructure;
 };
 
-::spl::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in);
+::spl::UniquePtr<ssa::ConvexHullOutputter>::Type
+generateOutputter(const InputOptions & in);
 
 int main(const int argc, char * argv[])
 {
@@ -188,7 +189,7 @@ int main(const int argc, char * argv[])
       for(size_t i = 0; i < structureIds.size(); ++i)
         infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
 
-      ::spl::UniquePtr<ssa::IConvexHullOutputter>::Type outputter = generateOutputter(in);
+      ::spl::UniquePtr<ssa::ConvexHullOutputter>::Type outputter = generateOutputter(in);
       if(outputter.get())
         outputter->outputHull(hullGenerator, &infoSupplier);
     }
@@ -198,9 +199,10 @@ int main(const int argc, char * argv[])
 }
 
 
-::spl::UniquePtr<ssa::IConvexHullOutputter>::Type generateOutputter(const InputOptions & in)
+::spl::UniquePtr<ssa::ConvexHullOutputter>::Type
+generateOutputter(const InputOptions & in)
 {
-  ::spl::UniquePtr<ssa::IConvexHullOutputter>::Type outputter;
+  ::spl::UniquePtr<ssa::ConvexHullOutputter>::Type outputter;
 
   if(in.outputter == "gnuplot")
   {

@@ -14,39 +14,44 @@
 #ifdef SSLIB_USE_CGAL
 
 #include "spl/analysis/ConvexHull.h"
-#include "spl/analysis/IConvexHullOutputter.h"
+#include "spl/analysis/ConvexHullOutputter.h"
 
 // DEFINITION ///////////////////////
 
-namespace spl
-{
+namespace spl {
 
 // FORWARD DECLARATIONS ///////
 
-namespace analysis
-{
+namespace analysis {
 
-class GnuplotConvexHullPlotter : public IConvexHullOutputter
+class GnuplotConvexHullPlotter : public ConvexHullOutputter
 {
 public:
-
   GnuplotConvexHullPlotter();
 
-  virtual bool outputHull(const ConvexHull & convexHull) const;
-  virtual bool outputHull(const ConvexHull & convexHull, const IConvexHullInfoSupplier * const infoSupplier) const;
+  virtual bool
+  outputHull(const ConvexHull & convexHull) const;
+  virtual bool
+  outputHull(const ConvexHull & convexHull,
+      const ConvexHullInfoSupplier * const infoSupplier) const;
 
-  bool getDrawTieLines() const;
-  void setDrawTieLines(const bool draw);
+  bool
+  getDrawTieLines() const;
+  void
+  setDrawTieLines(const bool draw);
 
-  bool getSupressEnergyDimension() const;
-  void setSupressEnergyDimension(const bool supress);
+  bool
+  getSupressEnergyDimension() const;
+  void
+  setSupressEnergyDimension(const bool supress);
 
-  void setDrawHullLabels(const bool label);
+  void
+  setDrawHullLabels(const bool label);
 
-  void setDrawOffHullPoints(const bool draw);
+  void
+  setDrawOffHullPoints(const bool draw);
 
 private:
-
   static const double LABEL_MARGIN;
   static const int BOUNDARY_LINE_STYLE;
   static const int HULL_POINT_LINE_STYLE;
@@ -56,28 +61,44 @@ private:
   {
   public:
     Plot();
-    ::std::string drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1);
-    ::std::string drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1, const int lineStyle);
-    ::std::string drawLabel(const ::std::string label, const ConvexHull::PointD & x) const;
-    ::std::string printPoint(const ConvexHull::PointD & point) const;
+    ::std::string
+    drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1);
+    ::std::string
+    drawLine(const ConvexHull::PointD & x0, const ConvexHull::PointD & x1,
+        const int lineStyle);
+    ::std::string
+    drawLabel(const ::std::string label, const ConvexHull::PointD & x) const;
+    ::std::string
+    printPoint(const ConvexHull::PointD & point) const;
 
   private:
     int myArrowCounter;
     int myLabelCounter;
   };
 
-  ::std::string printPoint(const ConvexHull::PointD & point) const;
+  ::std::string
+  printPoint(const ConvexHull::PointD & point) const;
 
-  void setStyles(::std::ostream & os, const ConvexHull & convexHull) const;
-  void drawBoundary(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const;
-  void drawTieLines(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const;
-  void drawEndpointLabels(::std::ostream & os, const ConvexHull & convexHull, Plot & plot) const;
+  void
+  setStyles(::std::ostream & os, const ConvexHull & convexHull) const;
+  void
+  drawBoundary(::std::ostream & os, const ConvexHull & convexHull,
+      Plot & plot) const;
+  void
+  drawTieLines(::std::ostream & os, const ConvexHull & convexHull,
+      Plot & plot) const;
+  void
+  drawEndpointLabels(::std::ostream & os, const ConvexHull & convexHull,
+      Plot & plot) const;
 
-  int plotDims(const ConvexHull & convexHull) const;
+  int
+  plotDims(const ConvexHull & convexHull) const;
 
-  ConvexHull::PointD prepPoint(const ConvexHull::PointD & point) const;
+  ConvexHull::PointD
+  prepPoint(const ConvexHull::PointD & point) const;
 
-  ::std::string generateHullFileStem(const ConvexHull & convexHull) const;
+  ::std::string
+  generateHullFileStem(const ConvexHull & convexHull) const;
 
   bool myDrawBoundary;
   bool myDrawTieLines;
@@ -90,4 +111,4 @@ private:
 }
 
 #endif // SSLIB_USE_CGAL
-#endif /* GNUPLOT_CONVEX_HULL_PLOTTER_H */
+#endif // GNUPLOT_CONVEX_HULL_PLOTTER_H

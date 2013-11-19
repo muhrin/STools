@@ -5,8 +5,8 @@
  *      Author: Martin Uhrin
  */
 
-#ifndef I_CONVEX_HULL_INFO_SUPPLIER_H
-#define I_CONVEX_HULL_INFO_SUPPLIER_H
+#ifndef CONVEX_HULL_INFO_SUPPLIER_H
+#define CONVEX_HULL_INFO_SUPPLIER_H
 
 // INCLUDES ////////////
 #include "spl/SSLib.h"
@@ -17,19 +17,16 @@
 
 // DEFINITION ///////////////////////
 
-namespace spl
-{
-
+namespace spl {
 // FORWARD DECLARATIONS ///////
 
-namespace analysis
-{
+namespace analysis {
 
-class IConvexHullInfoSupplier
+class ConvexHullInfoSupplier
 {
 public:
   virtual
-  ~IConvexHullInfoSupplier()
+  ~ConvexHullInfoSupplier()
   {
   }
 
@@ -42,4 +39,4 @@ public:
 }
 
 #endif // SSLIB_USE_CGAL
-#endif /* I_CONVEX_HULL_INFO_SUPPLIER_H */
+#endif /* CONVEX_HULL_INFO_SUPPLIER_H */

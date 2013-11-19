@@ -1,12 +1,12 @@
 /*
- * AnchorPointArrangement.h
+ * AnchorArrangement.h
  *
  *  Created on: Oct 15, 2013
  *      Author: Martin Uhrin
  */
 
-#ifndef ANCHOR_POINT_ARRANGEMENT_H
-#define ANCHOR_POINT_ARRANGEMENT_H
+#ifndef ANCHOR_ARRANGEMENT_H
+#define ANCHOR_ARRANGEMENT_H
 
 // INCLUDES ////////////
 #include "spl/SSLib.h"
@@ -32,14 +32,11 @@ namespace spl {
 namespace analysis {
 
 template< typename LabelType>
-  class AnchorPointArrangement;
+  class AnchorArrangement;
 
 class AnchorPoint
 {
-  typedef ::std::set< AnchorPoint *> Neighbours;
 public:
-  typedef Neighbours::const_iterator NeighbourIterator;
-
   AnchorPoint(const size_t idx, const ::arma::vec2 & pos,
       const double maxDisplacement);
 
@@ -50,41 +47,21 @@ public:
   void
   setPos(const ::arma::vec2 & newPos);
 
-  NeighbourIterator
-  neighboursBegin() const;
-  NeighbourIterator
-  neighboursEnd() const;
-
   double
   getMaxDisplacement() const;
 
   size_t
   idx() const;
 
-  size_t
-  numNeighbours() const;
-
-  void
-  addNeighbour(AnchorPoint * const neighbour);
-
-  bool
-  hasNeighbour(AnchorPoint * const neighbour) const;
-
-  void
-  swapNeighbours(AnchorPoint * const old, AnchorPoint * const newNeighbour);
-  void
-  clearNeighbours();
-
 private:
   const size_t idx_;
   const ::arma::vec2 anchorPos_;
   ::arma::vec2 pos_;
   const double maxDisplacement_;
-  Neighbours neighbours_;
 };
 
 template< typename LabelType>
-  class AnchorPointArrangement
+  class AnchorArrangement
   {
     struct VertexData : public arrangement_data::Vertex< LabelType>
     {
@@ -106,8 +83,11 @@ template< typename LabelType>
 
   public:
     typedef typename Points::iterator PointsIterator;
+    typedef typename Arrangement::Geometry_traits_2::Kernel CgalKernel;
+    typedef typename ::CGAL::Point_2<CgalKernel> CgalPoint;
+    typedef typename ::CGAL::Polygon_2< CgalKernel> FacePolygon;
 
-    AnchorPointArrangement(EdgeTracer & edgeTracer);
+    AnchorArrangement(EdgeTracer & edgeTracer);
 
     PointsIterator
     beginPoints();
@@ -129,13 +109,13 @@ template< typename LabelType>
     const Arrangement &
     getCgalArrangement() const;
 
-    ::boost::optional<double>
+    ::boost::optional< double>
     getFaceAnchorArea(const typename Arrangement::Face & face) const;
 
+    FacePolygon
+    getFacePolygon(const typename Arrangement::Face & face) const;
+
   private:
-    AnchorPoint *
-    getNeighbouringAnchor(AnchorPoint * const anchor,
-        const typename Arrangement::Vertex_const_handle & neighbourVertex);
     void
     init();
     void
@@ -150,7 +130,7 @@ template< typename LabelType>
 }
 }
 
-#include "spl/analysis/detail/AnchorPointArrangement.h"
+#include "spl/analysis/detail/AnchorArrangement.h"
 
 #endif /* SSLIB_USE_CGAL */
-#endif /* ANCHOR_POINT_ARRANGEMENT_H */
+#endif /* ANCHOR_ARRANGEMENT_H */

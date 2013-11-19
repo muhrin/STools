@@ -1,7 +1,7 @@
 /*
  * ConvexHullOutputter.h
  *
- *  Created on: Jul 8, 2013
+ *  Created on: Jul 17, 2013
  *      Author: Martin Uhrin
  */
 
@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-
+#ifdef SSLIB_USE_CGAL
 
 // DEFINITION ///////////////////////
 
@@ -20,16 +20,26 @@ namespace spl {
 // FORWARD DECLARATIONS ///////
 
 namespace analysis {
+class ConvexHull;
+class ConvexHullInfoSupplier;
 
 class ConvexHullOutputter
 {
 public:
-  virtual ~ConvexHullOutputter() {}
+  virtual
+  ~ConvexHullOutputter()
+  {
+  }
 
-
+  virtual bool
+  outputHull(const ConvexHull & convexHull) const = 0;
+  virtual bool
+  outputHull(const ConvexHull & convexHull,
+      const ConvexHullInfoSupplier * const infoSupplier) const = 0;
 };
 
 }
 }
 
+#endif // SSLIB_USE_CGAL
 #endif /* CONVEX_HULL_OUTPUTTER_H */

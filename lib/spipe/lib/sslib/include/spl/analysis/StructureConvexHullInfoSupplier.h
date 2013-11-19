@@ -16,7 +16,7 @@
 #include <map>
 
 #include "spl/analysis/ConvexHull.h"
-#include "spl/analysis/IConvexHullInfoSupplier.h"
+#include "spl/analysis/ConvexHullInfoSupplier.h"
 
 // DEFINITION ///////////////////////
 
@@ -29,16 +29,18 @@ class Structure;
 
 namespace analysis {
 
-
-class StructureConvexHullInfoSupplier : public IConvexHullInfoSupplier
+class StructureConvexHullInfoSupplier : public ConvexHullInfoSupplier
 {
 public:
-
-  void addStructure(const common::Structure & structure, const ConvexHull::PointId id);
-  virtual ::std::string getLabel(const ConvexHull & convexHull, const ConvexHull::PointId pointId) const;
+  void
+  addStructure(const common::Structure & structure,
+      const ConvexHull::PointId id);
+  virtual ::std::string
+  getLabel(const ConvexHull & convexHull,
+      const ConvexHull::PointId pointId) const;
 
 private:
-  typedef ::std::map<ConvexHull::PointId, const common::Structure *> Structures;
+  typedef ::std::map< ConvexHull::PointId, const common::Structure *> Structures;
 
   Structures myStructures;
 };

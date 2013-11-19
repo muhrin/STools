@@ -3,21 +3,23 @@
 
 set(sslib_Header_Files__analysis
   include/spl/analysis/AbsConvexHullGenerator.h
-  include/spl/analysis/AnchorPointArrangement.h
+  include/spl/analysis/AnchorArrangement.h
+  include/spl/analysis/AnchorArrangementOutputter.h
   include/spl/analysis/ArrangementSmoothing.h
   include/spl/analysis/CgalCustomKernel.h
   include/spl/analysis/CgalPointDWithId.h
   include/spl/analysis/ConvexHull.h
+  include/spl/analysis/ConvexHullInfoSupplier.h
   include/spl/analysis/ConvexHullOutputter.h
   include/spl/analysis/ConvexHullStructures.h
   include/spl/analysis/DynamicConvexHullGenerator.h
+  include/spl/analysis/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/GnuplotConvexHullPlotter.h
   include/spl/analysis/Histogram.h
-  include/spl/analysis/IConvexHullInfoSupplier.h
-  include/spl/analysis/IConvexHullOutputter.h
   include/spl/analysis/SpaceGroup.h
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
+  include/spl/analysis/VectorAnchorArrangementOutputter.h
   include/spl/analysis/VoronoiMap.h
   include/spl/analysis/VoronoiEdgeTracer.h
 )
@@ -26,9 +28,11 @@ source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 ## analysis/detail
 
 set(sslib_Header_Files__analysis__detail
-  include/spl/analysis/detail/AnchorPointArrangement.h
+  include/spl/analysis/detail/AnchorArrangement.h
   include/spl/analysis/detail/ArrangementSmoothing.h
   include/spl/analysis/detail/ConvexHullStructures.h
+  include/spl/analysis/detail/GnuplotAnchorArrangementPlotter.h
+  include/spl/analysis/detail/VectorAnchorArrangementOutputter.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
 )
 source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analysis__detail})

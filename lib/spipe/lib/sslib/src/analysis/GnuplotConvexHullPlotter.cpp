@@ -18,7 +18,7 @@
 
 #include <CGAL/Regular_complex_d.h>
 
-#include "spl/analysis/IConvexHullInfoSupplier.h"
+#include "spl/analysis/ConvexHullInfoSupplier.h"
 #include "spl/utility/TransformFunctions.h"
 
 namespace spl {
@@ -41,7 +41,7 @@ GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
 
 bool
 GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
-    const IConvexHullInfoSupplier * const infoSupplier) const
+    const ConvexHullInfoSupplier * const infoSupplier) const
 {
   const ConvexHull::Hull * const hull = convexHull.getHull();
   if(!hull)
@@ -196,7 +196,7 @@ GnuplotConvexHullPlotter::Plot::drawLine(const ConvexHull::PointD & x0,
 {
   ::std::stringstream ss;
   ss << "set arrow " << ++myArrowCounter << " from " << printPoint(x0) << " to "
-      << printPoint(x1) << " nohead linestyle " << lineStyle << ::std::endl;
+      << printPoint(x1) << " nohead linestyle " << lineStyle << "\n";
   return ss.str();
 }
 
@@ -205,8 +205,7 @@ GnuplotConvexHullPlotter::Plot::drawLabel(const ::std::string label,
     const ConvexHull::PointD & x) const
 {
   ::std::stringstream ss;
-  ss << "set label \"" << label << "\" at " << printPoint(x) << " centre"
-      << ::std::endl;
+  ss << "set label \"" << label << "\" at " << printPoint(x) << " centre\n";
   return ss.str();
 }
 
@@ -259,25 +258,25 @@ void
 GnuplotConvexHullPlotter::setStyles(::std::ostream & os,
     const ConvexHull & convexHull) const
 {
-  os << "set xtics nomirror" << ::std::endl;
-  os << "set ytics nomirror" << ::std::endl;
+  os << "set xtics nomirror\n";
+  os << "set ytics nomirror\n";
 
   os << "set style line " << BOUNDARY_LINE_STYLE
-      << " ps 1.5 pt 7 lc rgb '#000000'" << ::std::endl;
+      << " ps 1.5 pt 7 lc rgb '#000000'\n";
   os << "set style line " << HULL_POINT_LINE_STYLE
-      << " ps 1.5 pt 7 lc rgb '#dd181f'" << ::std::endl;
+      << " ps 1.5 pt 7 lc rgb '#dd181f'\n";
   os << "set style line " << OFF_HULL_LINE_STYLE
-      << " ps 0.6 pt 7 lc rgb '#0060ad'" << ::std::endl;
+      << " ps 0.6 pt 7 lc rgb '#0060ad'\n";
 
   if(convexHull.dims() > 2)
   {
-    os << "unset border" << ::std::endl;
-    os << "unset ytics" << ::std::endl;
-    os << "set yrange[0:1]" << ::std::endl;
+    os << "unset border\n";
+    os << "unset ytics\n";
+    os << "set yrange[0:1]\n";
     if(convexHull.dims() > 3)
     {
-      os << "unset ztics" << ::std::endl;
-      os << "set zrange[0:1]" << ::std::endl;
+      os << "unset ztics\n";
+      os << "set zrange[0:1]\n";
     }
   }
 
@@ -285,9 +284,9 @@ GnuplotConvexHullPlotter::setStyles(::std::ostream & os,
   if(!mySupressEnergyDimension && convexHull.dims() != 4)
   {
     if(plotDims(convexHull) == 2)
-      os << "set ylabel \"Formation enthalpy\"" << ::std::endl;
+      os << "set ylabel \"Formation enthalpy\"\n";
     else
-      os << "set zlabel \"Formation enthalpy\" rotate by 90" << ::std::endl;
+      os << "set zlabel \"Formation enthalpy\" rotate by 90\n";
   }
 }
 

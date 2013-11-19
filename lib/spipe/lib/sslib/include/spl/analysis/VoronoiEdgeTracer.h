@@ -16,10 +16,12 @@
 #include <map>
 #include <set>
 
+#include <CGAL/CORE_Expr.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arr_extended_dcel.h>
 #include <CGAL/Arr_segment_traits_2.h>
 
+#include <CGAL/Exact_predicates_exact_constructions_kernel_with_sqrt.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Voronoi_diagram_2.h>
@@ -41,13 +43,25 @@ namespace arrangement_data {
 template< typename LabelType>
   struct Vertex
   {
+    Vertex():
+      maxDisplacement(0),
+      isOuterBoundary(false)
+    {
+    }
     double maxDisplacement;
+    bool isOuterBoundary;
   };
 
 template< typename LabelType>
   struct Halfedge
   {
+    Halfedge():
+      label(),
+      isOuterBoundary(false)
+    {
+    }
     LabelType label;
+    bool isOuterBoundary;
   };
 
 template< typename LabelType>
@@ -63,6 +77,7 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
   class VoronoiEdgeTracer
   {
     typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+    //typedef CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt K;
 
     // Arrangements stuff
     typedef CGAL::Arr_segment_traits_2< K> ArrTraits;
@@ -92,6 +107,8 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
     typedef ::std::map< typename Voronoi::Vertex_handle,
         typename Arrangement::Vertex_handle> VertexMap;
     typedef ::std::set< typename Voronoi::Delaunay_edge> DelaunayEdgeSet;
+    typedef ::std::map< typename Voronoi::Halfedge_handle,
+        typename Arrangement::Vertex_handle> BoundaryVertexMap;
 
     struct TracingData
     {
@@ -102,8 +119,10 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
 
       const Voronoi & voronoi;
       VertexMap vertexMap;
+      BoundaryVertexMap boundaryVertices;
       DelaunayEdgeSet toVisit;
       DelaunayEdgeSet boundaryEdges;
+      ::CGAL::Polygon_2<K> boundary;
     };
 
   public:
@@ -149,9 +168,15 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
 
     class SplitVertex
     {
+    public:
+      // Halfedge data: first - the halfedge in the ccw direction,
+      // second - the twin halfedge i.e. on the cw side of the edge
+      typedef ::std::pair<HalfedgeDataType, HalfedgeDataType> HalfedgeData;
+    private:
       typedef ::std::vector<
           typename Arrangement::Halfedge_around_vertex_circulator> Halfedges;
       typedef ::std::vector< typename Arrangement::Vertex_handle> Neighbours;
+      typedef ::std::vector< HalfedgeData> HalfedgesData;
       typedef typename K::Vector_2 Vector_2;
     public:
       typedef typename Neighbours::const_iterator NeighbourIterator;
@@ -175,11 +200,15 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
       HalfedgeIterator
       halfedgesEnd() const;
 
+      const HalfedgeData &
+      getHalfedgeData(const size_t idx) const;
+
       Vector_2
       meanPos() const;
     private:
       Halfedges halfedges_;
       Neighbours neighbours_;
+      HalfedgesData halfedgeData_;
       K::Vector_2 newPos_;
     };
 
@@ -195,12 +224,17 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
     bool
     isBoundaryEdge(const typename Delaunay::Edge & edge) const;
     void
+    createBoundary(TracingData * const tracingData) const;
+    void
     splitSharedVertices();
     void
     splitEdges();
+    void
+    populateFaceLabels();
+    Point
+    midpoint(const typename Delaunay::Edge & edge) const;
 
     Arrangement arrangement_;
-    VertexMap vertexMap_;
   };
 
 }

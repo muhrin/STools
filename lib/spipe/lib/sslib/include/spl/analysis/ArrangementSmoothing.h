@@ -22,7 +22,7 @@ namespace spl {
 namespace analysis {
 
 template< typename LabelType>
-  class AnchorPointArrangement;
+  class AnchorArrangement;
 
 struct SmoothingOptions
 {
@@ -49,7 +49,7 @@ struct SmoothingOptions
 
 template < typename LabelType>
 void
-smoothArrangement(const SmoothingOptions & options, AnchorPointArrangement<LabelType> * const arr);
+smoothArrangement(const SmoothingOptions & options, AnchorArrangement<LabelType> * const arr);
 
 }
 }
