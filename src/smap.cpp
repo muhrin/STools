@@ -80,7 +80,7 @@ main(const int argc, char * argv[])
 
   static const boost::char_separator< char> tokSep(" \t");
 
-//  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
 // Program options
   InputOptions in;
@@ -110,21 +110,21 @@ main(const int argc, char * argv[])
         if(it == toker.end())
           continue;
 
-        double x, y;
+        Point::R::FT x, y;
         LabelType label;
 
         bool foundAll = false;
         try
         {
-          x = lexical_cast< double>(*it);
+          x = lexical_cast< Point::R::FT>(*it);
           if(++it == toker.end())
             continue;
 
-          y = ::boost::lexical_cast< double>(*it);
+          y = lexical_cast< Point::R::FT>(*it);
           if(++it == toker.end())
             continue;
 
-          label = ::boost::lexical_cast< LabelType>(*it);
+          label = lexical_cast< LabelType>(*it);
           foundAll = true;
         }
         catch(const ::boost::bad_lexical_cast & /*e*/)
