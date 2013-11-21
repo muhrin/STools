@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include <spl/build_cell/AtomsDescription.h>
 #include <spl/utility/HeterogeneousMapKey.h>
 
 // DEFINES //////////////////////////////////////////////
@@ -25,8 +26,8 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 
 // GENERAL
-extern ::spl::utility::Key<int> NUM;
-extern ::spl::utility::Key<double> PERCENT;
+extern ::spl::utility::Key< int> NUM;
+extern ::spl::utility::Key< double> PERCENT;
 extern ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
@@ -39,20 +40,21 @@ extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> NIGGLI_REDUCE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> GEOM_OPTIMISE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> REMOVE_DUPLICATES;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> RUN_POTENTIAL_PARAMS_QUEUE;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SEARCH_STOICHIOMETRIES;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
+extern ::spl::utility::Key<
+    ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
+
 extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
-extern ::spl::utility::Key<bool> MULTI_WRITE;
+extern ::spl::utility::Key< bool> MULTI_WRITE;
 extern ::spl::utility::Key< ::std::string> FORMAT;
 
 extern ::spl::utility::Key< ::std::string> QUEUE_FILE;
 extern ::spl::utility::Key< ::std::string> DONE_FILE;
 
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> PRE_GEOM_OPTIMISE;
-
-
-
 
 }
 }

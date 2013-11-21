@@ -12,12 +12,7 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <spl/build_cell/AtomsDescription.h>
-#include <spl/build_cell/AtomsGroup.h>
-#include <spl/build_cell/BuildCellFwd.h>
-#include <spl/build_cell/IFragmentGenerator.h>
-#include <spl/build_cell/IStructureGenerator.h>
-#include <spl/build_cell/StructureBuilder.h>
+#include <spl/build_cell/GenerationSettings.h>
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 #include <spl/io/BoostFilesystem.h>
@@ -25,6 +20,7 @@
 #include <spl/utility/MultiIdx.h>
 
 // Local includes
+#include "common/CommonData.h"
 #include "common/PipeFunctions.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
@@ -43,25 +39,11 @@ namespace ssio = ::spl::io;
 namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
-SearchStoichiometries::SearchStoichiometries(
-    const ::spl::common::AtomSpeciesId::Value species1,
-    const ::spl::common::AtomSpeciesId::Value species2, const size_t maxAtoms,
-    BlockHandle & subpipe, StructureBuilderPtr structureBuilder) :
-    Block("Sweep stoichiometry"), mySubpipe(subpipe), myMaxAtoms(maxAtoms), myStructureGenerator(
-        structureBuilder)
-{
-  mySpeciesParameters.push_back(SpeciesParameter(species1, maxAtoms));
-  mySpeciesParameters.push_back(SpeciesParameter(species2, maxAtoms));
-}
-
-SearchStoichiometries::SearchStoichiometries(
-    const SpeciesParameters & speciesParameters, const size_t maxAtoms,
-    const double atomsRadius, BlockHandle & sweepPipe,
-    StructureBuilderPtr structureBuilder) :
-    Block("Sweep stoichiometry"), mySubpipe(sweepPipe),
-    myTableSupport(fs::path("stoich.dat")), myMaxAtoms(maxAtoms),
-    mySpeciesParameters(speciesParameters),
-    myStructureGenerator(structureBuilder)
+SearchStoichiometries::SearchStoichiometries(const AtomRanges & atomRanges,
+    const size_t maxAtoms, BlockHandle & subpipe) :
+    Block("Search stoichiometries"), myAtomRanges(atomRanges), myMaxAtoms(
+        maxAtoms), mySubpipe(subpipe), mySubpipeEngine(
+    NULL)
 {
 }
 
@@ -94,7 +76,7 @@ SearchStoichiometries::start()
   size_t totalAtoms = 0;
   ::std::string sweepPipeOutputPath;
 
-  const ssu::MultiIdxRange< unsigned int> stoichRange = getStoichRange();
+  const ssu::MultiIdxRange< unsigned int> & stoichRange = getStoichRange();
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
   {
     // Need to get the shared data each time as it may have been reset after each
@@ -105,44 +87,40 @@ SearchStoichiometries::start()
     if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
       continue;
 
-    // Create a new structure description
-    StructureBuilderPtr builder = newStructureGenerator();
+    ssbc::GenerationSettings generationSettings;
 
     // Insert all the atoms
     ::std::stringstream stoichStringStream;
     size_t numAtomsOfSpecies;
     ssc::AtomSpeciesId::Value species;
-    for(size_t i = 0; i < currentIdx.dims(); ++i)
+    size_t i = 0;
+    BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
     {
-      species = mySpeciesParameters[i].id;
       numAtomsOfSpecies = currentIdx[i];
-
-      if(numAtomsOfSpecies > 0)
+      if(!range.first.empty() && numAtomsOfSpecies > 0)
       {
-        ::spl::UniquePtr< ssbc::AtomsGroup>::Type group(new ssbc::AtomsGroup());
-        group->insertAtoms(
-            ssbc::AtomsDescription(mySpeciesParameters[i].id,
-                numAtomsOfSpecies));
-        builder->addGenerator(group);
+        generationSettings.atomsSettings[range.first].num = numAtomsOfSpecies;
+
+        stoichStringStream << numAtomsOfSpecies;
+
+        // Append the species symbol
+        if(!range.first.empty())
+          stoichStringStream << range.first;
+
+        // Add delimiter apart from for last species
+        if(i + 1 < currentIdx.dims())
+          stoichStringStream << "-";
       }
-
-      stoichStringStream << numAtomsOfSpecies;
-
-      // Append the species symbol
-      if(!species.empty())
-        stoichStringStream << species;
-
-      // Add delimiter apart from for last species
-      if(i + 1 < currentIdx.dims())
-        stoichStringStream << "-";
-
+      ++i;
     } // End loop over atoms
 
-    // Transfer ownership to the pipeline
-    sweepPipeData.setStructureGenerator(builder);
+    // Set the stoichiometry in shared data
+    sweepPipeData.objectsStore[common::GlobalKeys::GENERATION_SETTINGS] =
+        generationSettings;
 
     // Append the species ratios to the output directory name
-    sweepPipeData.appendToOutputDirName(stoichStringStream.str());
+    sweepPipeData.setOutputDir(getEngine()->sharedData().getOutputPath() /=
+        stoichStringStream.str());
 
     // Find out the pipeline relative path to where all the structures are going to be saved
     sweepPipeOutputPath = sweepPipeData.getOutputPath().string();
@@ -242,18 +220,20 @@ SearchStoichiometries::engineDetached()
 ssu::MultiIdxRange< unsigned int>
 SearchStoichiometries::getStoichRange()
 {
-  const size_t numSpecies = mySpeciesParameters.size();
+  const size_t numSpecies = myAtomRanges.size();
 
-  ssu::MultiIdx< unsigned int> maxSpecies(numSpecies);
+  ssu::MultiIdx< unsigned int> lower(numSpecies), upper(numSpecies);
 
-  for(size_t i = 0; i < numSpecies; ++i)
+  size_t i = 0;
+  BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
   {
+    lower[i] = range.second.lower();
     // Need to add one as the extents is a half-open interval i.e. [x0, x1)
-    maxSpecies[i] = mySpeciesParameters[i].maxNum + 1;
+    upper[i] = range.second.upper() + 1;
+    ++i;
   }
 
-  return ssu::MultiIdxRange< unsigned int>(
-      ssu::MultiIdx< unsigned int>(numSpecies), maxSpecies);
+  return ssu::MultiIdxRange< unsigned int>(lower, upper);
 }
 
 void
@@ -269,30 +249,20 @@ SearchStoichiometries::updateTable(const utility::DataTable::Key & key,
   ssc::AtomSpeciesId::Value species;
   string speciesTableColumn;
   size_t numAtomsOfSpecies;
-  for(size_t i = 0; i < currentIdx.dims(); ++i)
+  size_t i = 0;
+  BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
   {
-    species = mySpeciesParameters[i].id;
     numAtomsOfSpecies = currentIdx[i];
 
-    if(!species.empty())
-      speciesTableColumn = species;
+    if(!range.first.empty())
+      speciesTableColumn = range.first;
     else
       speciesTableColumn = lexical_cast< string>(i);
 
     table.insert(key, speciesTableColumn,
         lexical_cast< string>(numAtomsOfSpecies));
-
+    ++i;
   } // End loop over atoms
-}
-
-SearchStoichiometries::StructureBuilderPtr
-SearchStoichiometries::newStructureGenerator() const
-{
-  if(myStructureGenerator.get())
-    return StructureBuilderPtr(
-        new ssbc::StructureBuilder(*myStructureGenerator));
-  else
-    return StructureBuilderPtr(new ssbc::StructureBuilder());
 }
 
 }

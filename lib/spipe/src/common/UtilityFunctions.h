@@ -10,8 +10,9 @@
 #define UTILITY_FUNCTIONS_H
 
 // INCLUDES /////////////////////////////////////////////
-
 #include <string>
+
+#include <armadillo>
 
 // FORWARD DECLARES ////////////////////////////////
 namespace spipe {
@@ -28,14 +29,16 @@ class StructureData;
 namespace spipe {
 namespace common {
 
-void parseParamString(
-  const std::string & str,
-  double &            from,
-  double &            step,
-  unsigned int &      nSteps
-);
+void
+parseParamString(const std::string & str, double & from, double & step,
+    unsigned int & nSteps);
 
-::std::string getString(const double in, unsigned int digitsAfterDecimal = 5);
+::std::string
+getString(const double in, unsigned int digitsAfterDecimal = 5);
+
+::std::string
+generateParamDirName(const ::arma::vec & params,
+    const ::std::string & seedName);
 
 }
 }

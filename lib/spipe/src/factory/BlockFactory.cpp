@@ -23,6 +23,7 @@
 #include "blocks/ParamGeomOptimise.h"
 #include "blocks/RemoveDuplicates.h"
 #include "blocks/RunPotentialParamsQueue.h"
+#include "blocks/SearchStoichiometries.h"
 #include "blocks/SweepPotentialParams.h"
 #include "blocks/WriteStructures.h"
 #include "common/CommonData.h"
@@ -216,6 +217,25 @@ BlockFactory::createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
   const ::std::string * const doneFile = options.find(DONE_FILE);
 
   blockOut->reset(new blocks::RunPotentialParamsQueue(queueFile, doneFile, subpipe));
+  return true;
+}
+
+bool
+BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
+    const OptionsMap & options, BlockHandle subpipe) const
+{
+  typedef ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange>
+    AtomRanges;
+
+  if(!subpipe)
+    return false;
+
+  const AtomRanges * const atomRanges = options.find(ATOM_RANGES);
+  if(!atomRanges)
+    return false;
+
+  blockOut->reset(new blocks::SearchStoichiometries(*atomRanges, 1000, subpipe));
+
   return true;
 }
 

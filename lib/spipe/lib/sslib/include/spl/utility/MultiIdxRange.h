@@ -30,138 +30,139 @@
 namespace spl {
 namespace utility {
 
-template <typename Integer>
-class MultiIdxRange;
+template< typename Integer>
+  class MultiIdxRange;
 
 namespace utility_detail {
 
-template <typename Integer>
-class ConstMultiIdxIterator : public ::boost::iterator_facade<
-  ConstMultiIdxIterator<Integer>,
-  const MultiIdx<Integer>,
-  ::boost::random_access_traversal_tag,
-  const MultiIdx<Integer> &,
-  MultiIdx<Integer>
->
-{
-  typedef ::boost::iterator_facade<
-    ConstMultiIdxIterator<Integer>,
-    const MultiIdx<Integer>,
-    ::boost::random_access_traversal_tag,
-    const MultiIdx<Integer> &,
-    MultiIdx<Integer>
-  > base_t;
-
-public:
-  typedef typename base_t::value_type value_type;
-  typedef typename base_t::difference_type difference_type;
-  typedef typename base_t::reference reference;
-
-  ConstMultiIdxIterator(value_type x, const MultiIdxRange<Integer> & range) : myValue(x), myRange(range) {}
-
-private:
-
-  void increment()
+template< typename Integer>
+  class ConstMultiIdxIterator : public ::boost::iterator_facade<
+      ConstMultiIdxIterator< Integer>, const MultiIdx< Integer>,
+      ::boost::random_access_traversal_tag, const MultiIdx< Integer> &,
+      MultiIdx< Integer> >
   {
-	  bool increment = true;
-	  for(size_t i = 0; increment && i < myRange.dims(); ++i)
-	  {
-		  // Increment the position vector and check it does not exceed
-		  // the max number for that index position
-		  if(++myValue[i] >= myRange.myEnd[i])
-			  myValue[i] = myRange.myBegin[i];
-		  else
-			  // Successfully moved one position on in index space
-			  increment = false;
-	  }
+    typedef ::boost::iterator_facade< ConstMultiIdxIterator< Integer>,
+        const MultiIdx< Integer>, ::boost::random_access_traversal_tag,
+        const MultiIdx< Integer> &, MultiIdx< Integer> > base_t;
 
-    // Do we still need to increment even though we have covered all digits?
-    if(increment)
-      // Then we have reached the end
-      myValue = myRange.myEnd;
-  }
+  public:
+    typedef typename base_t::value_type value_type;
+    typedef typename base_t::difference_type difference_type;
+    typedef typename base_t::reference reference;
 
-  void decrement()
-  {
-    // TODO: Work on this more.  Need to deal with situation where it == end
-	  bool decrement = true;
-	  for(size_t i = 0; decrement && i > myRange.dims(); ++i)
-	  {
-		  // Decrement the position vector and check it does not go below
-		  // the minimum number for that index position
-		  if(--myValue[i] < myRange.myBegin[i])
-			  myValue[i] = myRange.myEnd[i] - 1; // have to do -1 as the range is closed
-		  else
-			  // Successfully moved one position on in index space
-			  decrement = false;
-	  }
-  }
+    ConstMultiIdxIterator(value_type x, const MultiIdxRange< Integer> & range) :
+        myValue(x), myRange(range)
+    {
+    }
 
-  void advance(difference_type & offset)
-  {
-    myValue += offset;
-  }
+  private:
 
-  difference_type distance_to(const ConstMultiIdxIterator<Integer> & other) const
-  {
-    return other.myValue - myValue;
-  }
+    void
+    increment()
+    {
+      bool increment = true;
+      for(size_t i = 0; increment && i < myRange.dims(); ++i)
+      {
+        // Increment the position vector and check it does not exceed
+        // the max number for that index position
+        if(++myValue[i] >= myRange.myEnd[i])
+          myValue[i] = myRange.myBegin[i];
+        else
+          // Successfully moved one position on in index space
+          increment = false;
+      }
 
-  bool equal(const ConstMultiIdxIterator & other) const
-  {
-    return myValue == other.myValue;
-  }
+      // Do we still need to increment even though we have covered all digits?
+      if(increment)
+        // Then we have reached the end
+        myValue = myRange.myEnd;
+    }
 
-  reference dereference() const
-  {
-    return myValue;
-  }
+    void
+    decrement()
+    {
+      // TODO: Work on this more.  Need to deal with situation where it == end
+      bool decrement = true;
+      for(size_t i = 0; decrement && i > myRange.dims(); ++i)
+      {
+        // Decrement the position vector and check it does not go below
+        // the minimum number for that index position
+        if(--myValue[i] < myRange.myBegin[i])
+          myValue[i] = myRange.myEnd[i] - 1; // have to do -1 as the range is closed
+        else
+          // Successfully moved one position on in index space
+          decrement = false;
+      }
+    }
 
-  value_type                      myValue;
-  const MultiIdxRange<Integer> &  myRange;
+    void
+    advance(difference_type & offset)
+    {
+      myValue += offset;
+    }
 
+    difference_type
+    distance_to(const ConstMultiIdxIterator< Integer> & other) const
+    {
+      return other.myValue - myValue;
+    }
 
-  friend class ::boost::iterator_core_access;
-};
+    bool
+    equal(const ConstMultiIdxIterator & other) const
+    {
+      return myValue == other.myValue;
+    }
+
+    reference
+    dereference() const
+    {
+      return myValue;
+    }
+
+    value_type myValue;
+    const MultiIdxRange< Integer> & myRange;
+
+    friend class ::boost::iterator_core_access;
+  };
 
 } // namespace utility_details
 
-template <typename Integer>
-class MultiIdxRange : public ::boost::iterator_range<utility_detail::ConstMultiIdxIterator<Integer> >
-{
-  typedef utility_detail::ConstMultiIdxIterator<Integer> iterator_t;
-  typedef ::boost::iterator_range<iterator_t> base_t;
-
-public:
-  MultiIdxRange(const MultiIdx<Integer> & first, const MultiIdx<Integer> & last):
-    base_t(iterator_t(first, *this), iterator_t(last, *this)),
-    myBegin(first),
-    myEnd(last)
+template< typename Integer>
+  class MultiIdxRange : public ::boost::iterator_range<
+      utility_detail::ConstMultiIdxIterator< Integer> >
   {
-    SSLIB_ASSERT(myBegin != myEnd);
-  }
+    typedef utility_detail::ConstMultiIdxIterator< Integer> iterator_t;
+    typedef ::boost::iterator_range< iterator_t> base_t;
 
-  size_t dims() const
-  {
-    return myBegin.dims();
-  }
+  public:
+    MultiIdxRange(const MultiIdx< Integer> & first,
+        const MultiIdx< Integer> & last) :
+        base_t(iterator_t(first, *this), iterator_t(last, *this)), myBegin(
+            first), myEnd(last)
+    {
+      SSLIB_ASSERT(myBegin != myEnd);
+    }
 
-private:
+    size_t
+    dims() const
+    {
+      return myBegin.dims();
+    }
 
+  private:
 
-  const MultiIdx<Integer> myBegin;
-  const MultiIdx<Integer> myEnd;
+    const MultiIdx< Integer> myBegin;
+    const MultiIdx< Integer> myEnd;
 
 #if SSLIB_USE_CPP11
-  friend class iterator_t;
+    friend class iterator_t;
 #else
-  // Sadly can't use iterator_t typedef here as this behaviour is not supported
-  // until C++11.
-  // See e.g.: http://stackoverflow.com/questions/392120/why-cant-i-declare-a-friend-through-a-typedef
-  friend class utility_detail::ConstMultiIdxIterator<Integer>;
+    // Sadly can't use iterator_t typedef here as this behaviour is not supported
+    // until C++11.
+    // See e.g.: http://stackoverflow.com/questions/392120/why-cant-i-declare-a-friend-through-a-typedef
+    friend class utility_detail::ConstMultiIdxIterator< Integer>;
 #endif
-};
-
+  };
 
 } // namespace utility
 } // namespace spl

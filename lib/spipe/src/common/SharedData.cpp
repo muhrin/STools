@@ -10,8 +10,7 @@
 
 #include <pipelib/pipelib.h>
 
-
-#include <spl/build_cell/IStructureGenerator.h>
+#include <spl/build_cell/StructureGenerator.h>
 #include <spl/utility/UtilFunctions.h>
 
 #include "common/GlobalData.h"
@@ -33,6 +32,12 @@ SharedData::SharedData():
 myInstanceName(ssu::generateUniqueName())
 {}
 
+void
+SharedData::setOutputDir(const ::boost::filesystem::path & path)
+{
+  myOutputDir = path;
+}
+
 bool SharedData::appendToOutputDirName(const std::string & toAppend)
 {
   if(toAppend.empty())
@@ -42,6 +47,7 @@ bool SharedData::appendToOutputDirName(const std::string & toAppend)
     myOutputDir = myOutputDir.string() + DIR_SUBSTRING_DELIMITER;
 
   myOutputDir = myOutputDir.string() + toAppend;
+  //myOutputDir += toAppend;
 
   return true;
 }
@@ -56,20 +62,9 @@ const ::std::string & SharedData::getInstanceName() const
   return myInstanceName;
 }
 
-ssbc::IStructureGenerator * SharedData::getStructureGenerator()
-{
-  return myStructureGenerator.get();
-}
-
-const ssbc::IStructureGenerator * SharedData::getStructureGenerator() const
-{
-  return myStructureGenerator.get();
-}
-
 void SharedData::reset()
 {
   // Reset everything
-  myStructureGenerator.reset();
   objectsStore.clear();
   myOutputDir.clear();
   myInstanceName = ssu::generateUniqueName();

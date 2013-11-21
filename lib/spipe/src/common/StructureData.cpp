@@ -68,11 +68,8 @@ StructureData::getRelativeSavePath(const ::boost::filesystem::path & relativeTo)
     relativeLocator = *lastSaved;
     fs::path relativePath = lastSaved->path();
     // Make the path relative if necessary
-    if(ssio::isAbsolute(relativePath))
-    {
-      relativePath = ssio::make_relative(relativeTo, relativePath);
-      relativeLocator.setPath(relativePath);
-    }
+    relativePath = ssio::make_relative(relativeTo, relativePath);
+    relativeLocator.setPath(relativePath);
   }
 
   return relativeLocator;

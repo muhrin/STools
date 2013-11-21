@@ -14,6 +14,7 @@ namespace spl {
 namespace factory {
 
 // GENERAL /////////////////////////////////////////////////
+utility::Key< ::std::string> LABEL;
 utility::Key< ::arma::vec3> POSITION;
 utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
 utility::Key<double> RADIUS;

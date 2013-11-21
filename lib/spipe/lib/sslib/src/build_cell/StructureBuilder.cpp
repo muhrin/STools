@@ -53,18 +53,18 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
 {
   GenerationOutcome outcome;
 
-  typedef ::std::pair< const IFragmentGenerator *,
-      IFragmentGenerator::GenerationTicket> GeneratorAndTicket;
+  typedef ::std::pair< const FragmentGenerator *,
+      FragmentGenerator::GenerationTicket> GeneratorAndTicket;
   ::std::vector< GeneratorAndTicket> generationInfo;
   generationInfo.reserve(myGenerators.size());
 
   // First find out what the generators want to put in the structure
-  IFragmentGenerator::GenerationTicket structureTicket = getTicket();
+  FragmentGenerator::GenerationTicket structureTicket = getTicket();
   StructureContents contents = getGenerationContents(structureTicket,
       speciesDb);
-  BOOST_FOREACH(IFragmentGenerator & generator, myGenerators)
+  BOOST_FOREACH(FragmentGenerator & generator, myGenerators)
   {
-    const IFragmentGenerator::GenerationTicket ticket = generator.getTicket();
+    const FragmentGenerator::GenerationTicket ticket = generator.getTicket();
     generationInfo.push_back(GeneratorAndTicket(&generator, ticket));
     contents += generator.getGenerationContents(ticket, speciesDb);
   }
@@ -113,6 +113,32 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
 
   outcome.setSuccess();
   return outcome;
+}
+
+GenerationOutcome StructureBuilder::generateStructure(
+  common::StructurePtr & structureOut,
+  const common::AtomSpeciesDatabase & speciesDb,
+  const GenerationSettings & info
+)
+{
+  setGenerationSettings(info);
+  BOOST_FOREACH(FragmentGenerator & builder, myGenerators)
+  {
+    builder.setGenerationSettings(info);
+  }
+  const GenerationOutcome outcome = generateStructure(structureOut, speciesDb);
+  clearGenerationSettings();
+  return outcome;
+}
+
+void
+StructureBuilder::setGenerationSettings(const GenerationSettings & settings)
+{
+  AbsAtomsGenerator::setGenerationSettings(settings);
+  BOOST_FOREACH(FragmentGenerator & builder, myGenerators)
+  {
+    builder.setGenerationSettings(settings);
+  }
 }
 
 void

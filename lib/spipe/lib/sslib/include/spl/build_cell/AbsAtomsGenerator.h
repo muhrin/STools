@@ -30,56 +30,73 @@ class BuildAtomInfo;
 struct AtomsGeneratorConstructionInfo;
 class StructureBuild;
 
-class AbsAtomsGenerator : public IFragmentGenerator
+class AbsAtomsGenerator : public FragmentGenerator
 {
-  typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
-  typedef ::std::vector<AtomsDescription> Atoms;
+  typedef FragmentGenerator::GenerationTicketId GenerationTicketId;
+  typedef ::std::vector< AtomsDescription> Atoms;
 public:
-  typedef IFragmentGenerator::GenerationTicket GenerationTicket;
+  typedef FragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::const_iterator const_iterator;
   typedef Atoms::const_iterator iterator;
-  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
+  typedef UniquePtr< IGeneratorShape>::Type GenShapePtr;
 
-  void insertAtoms(const AtomsDescription & atoms);
-  size_t numAtoms() const;
-  const_iterator beginAtoms() const;
-  const_iterator endAtoms() const;
+  void
+  insertAtoms(const AtomsDescription & atoms);
+  size_t
+  numAtoms() const;
+  const_iterator
+  atomsBegin() const;
+  const_iterator
+  atomsEnd() const;
 
-  const IGeneratorShape * getGeneratorShape() const;
-  void setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape);
+  const IGeneratorShape *
+  getGeneratorShape() const;
+  void
+  setGeneratorShape(UniquePtr< IGeneratorShape>::Type genShape);
 
-  void addSpeciesPairDistance(const SpeciesPair & pair, const double distance);
+  void
+  addSpeciesPairDistance(const SpeciesPair & pair, const double distance);
 
   // From IFragmentGenerator ////////
-  virtual GenerationOutcome generateFragment(
-    StructureBuild & build,
-    const GenerationTicket ticket,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) const;
+  virtual GenerationOutcome
+  generateFragment(StructureBuild & build, const GenerationTicket ticket,
+      const common::AtomSpeciesDatabase & speciesDb) const;
 
-  virtual GenerationTicket getTicket();
-  virtual StructureContents getGenerationContents(
-    const GenerationTicket ticket,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) const;
+  virtual GenerationTicket
+  getTicket();
+  virtual StructureContents
+  getGenerationContents(const GenerationTicket ticket,
+      const common::AtomSpeciesDatabase & speciesDb) const;
 
-  virtual void handleReleased(const GenerationTicketId & id);
+  virtual void
+  setGenerationSettings(const GenerationSettings & settings);
+  virtual void
+  clearGenerationSettings();
 
-  virtual IFragmentGeneratorPtr clone() const;
+  virtual void
+  handleReleased(const GenerationTicketId & id);
+
+  virtual IFragmentGeneratorPtr
+  clone() const;
   // End from IFragmentGenerator
 
 protected:
-  AbsAtomsGenerator(): myLastTicketId(0) {}
+  AbsAtomsGenerator() :
+      myLastTicketId(0)
+  {
+  }
   AbsAtomsGenerator(const AbsAtomsGenerator & toCopy);
 
-  virtual ::arma::mat44 generateTransform(const StructureBuild & build) const;
+  virtual ::arma::mat44
+  generateTransform(const StructureBuild & build) const;
 
-  void invalidateTickets();
+  void
+  invalidateTickets();
 
 private:
   typedef ::std::pair< ::arma::vec3, bool> AtomPosition;
-  typedef ::std::map<const AtomsDescription *, int> AtomCounts;
-  typedef ::std::map<SpeciesPair, double> SpeciesPairDistances;
+  typedef ::std::map< const AtomsDescription *, int> AtomCounts;
+  typedef ::std::map< SpeciesPair, double> SpeciesPairDistances;
 
   struct GenerationInfo
   {
@@ -87,38 +104,36 @@ private:
     ::arma::mat44 shapeTransform;
   };
 
-  typedef ::std::map<GenerationTicket::IdType, GenerationInfo> TicketsMap;
+  typedef ::std::map< GenerationTicket::IdType, GenerationInfo> TicketsMap;
 
-  AtomPosition generatePosition(
-    BuildAtomInfo & atomInfo,
-    const AtomsDescription & atom,
-    const StructureBuild & build,
-    const unsigned int multiplicity,
-    const ::arma::mat44 & transformation
-  ) const;
-  bool generateSpecialPosition(
-    ::arma::vec3 & posOut,
-    SymmetryGroup::OpMask & opMaskOut,
-    const SymmetryGroup::EigenspacesAndMasks & spaces,
-    const IGeneratorShape & genShape,
-    const ::arma::mat44 & transformation
-  ) const;
-  OptionalArmaVec3 generateSpeciesPosition(
-    const SymmetryGroup::Eigenspace & eigenspace,
-    const IGeneratorShape & genShape,
-    const ::arma::mat44 & transformation
-  ) const;
-  double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
+  AtomPosition
+  generatePosition(BuildAtomInfo & atomInfo, const AtomsDescription & atom,
+      const StructureBuild & build, const unsigned int multiplicity,
+      const ::arma::mat44 & transformation) const;
+  bool
+  generateSpecialPosition(::arma::vec3 & posOut,
+      SymmetryGroup::OpMask & opMaskOut,
+      const SymmetryGroup::EigenspacesAndMasks & spaces,
+      const IGeneratorShape & genShape,
+      const ::arma::mat44 & transformation) const;
+  OptionalArmaVec3
+  generateSpeciesPosition(const SymmetryGroup::Eigenspace & eigenspace,
+      const IGeneratorShape & genShape,
+      const ::arma::mat44 & transformation) const;
+  double
+  getRadius(const AtomsDescription & atom,
+      const common::AtomSpeciesDatabase & speciesDb) const;
 
-  const IGeneratorShape & getGenShape(const StructureBuild & build) const;
+  const IGeneratorShape &
+  getGenShape(const StructureBuild & build) const;
 
   Atoms myAtoms;
-  UniquePtr<IGeneratorShape>::Type myGenShape;
+  UniquePtr< IGeneratorShape>::Type myGenShape;
   TicketsMap myTickets;
   GenerationTicket::IdType myLastTicketId;
   SpeciesPairDistances mySpeciesPairDistances;
+  ::boost::optional< GenerationSettings> myGenerationSettings;
 };
-
 
 }
 }

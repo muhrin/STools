@@ -18,8 +18,8 @@
 
 #include <armadillo>
 
-#include <spl/build_cell/IStructureGenerator.h>
 #include <spl/build_cell/BuildCellFwd.h>
+#include <spl/build_cell/GenerationSettings.h>
 #include <spl/io/BoostFilesystem.h>
 #include <spl/utility/HeterogeneousMap.h>
 
@@ -36,33 +36,19 @@ namespace common {
 class SharedData
 {
 public:
-  typedef ::spl::build_cell::IStructureGeneratorPtr IStructureGeneratorPtr;
-
   static const char DIR_SUBSTRING_DELIMITER[];
 
   SharedData();
 
+  void
+  setOutputDir(const ::boost::filesystem::path & path);
   bool
   appendToOutputDirName(const ::std::string & toAppend);
-
   ::boost::filesystem::path
   getOutputPath() const;
 
-  // Get the output path for the pipeline that owns this shared data relative to
-  // the parent pipeline (or global data output path if there is no parent).
-  const ::boost::filesystem::path &
-  getPipeRelativeOutputPath() const;
-
   const ::std::string &
   getInstanceName() const;
-
-  ::spl::build_cell::IStructureGenerator *
-  getStructureGenerator();
-  const ::spl::build_cell::IStructureGenerator *
-  getStructureGenerator() const;
-  template< class T>
-    void
-    setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator);
 
   ::spl::utility::HeterogeneousMap objectsStore;
 
@@ -70,17 +56,11 @@ private:
   void
   reset();
 
-  IStructureGeneratorPtr myStructureGenerator;
   ::boost::filesystem::path myOutputDir;
   ::std::string myInstanceName;
 };
 
-template< class T>
-  void
-  SharedData::setStructureGenerator(SSLIB_UNIQUE_PTR(T) generator)
-  {
-    myStructureGenerator = generator;
-  }
+
 
 }
 }

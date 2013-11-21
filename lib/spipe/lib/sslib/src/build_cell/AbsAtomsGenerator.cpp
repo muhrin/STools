@@ -48,13 +48,13 @@ AbsAtomsGenerator::numAtoms() const
 }
 
 AbsAtomsGenerator::const_iterator
-AbsAtomsGenerator::beginAtoms() const
+AbsAtomsGenerator::atomsBegin() const
 {
   return myAtoms.begin();
 }
 
 AbsAtomsGenerator::const_iterator
-AbsAtomsGenerator::endAtoms() const
+AbsAtomsGenerator::atomsEnd() const
 {
   return myAtoms.end();
 }
@@ -119,7 +119,7 @@ AbsAtomsGenerator::generateFragment(StructureBuild & build,
 
   BOOST_FOREACH(AtomCounts::const_reference atomsDesc, counts)
   {
-    if(atomsDesc.first->getPosition())
+    if(atomsDesc.first->position)
     {
       // If the atom has a fixed position then we should not apply symmetry
       // and the multiplicity should be 1
@@ -140,7 +140,7 @@ AbsAtomsGenerator::generateFragment(StructureBuild & build,
     // Go over the multiplicities inserting the atoms
     BOOST_FOREACH(const unsigned int multiplicity, multiplicities)
     {
-      common::Atom & atom = structure.newAtom(atomsDesc.first->getSpecies());
+      common::Atom & atom = structure.newAtom(atomsDesc.first->species);
       BuildAtomInfo & info = build.createAtomInfo(atom);
       info.setMultiplicity(multiplicity);
 
@@ -170,18 +170,36 @@ AbsAtomsGenerator::getTicket()
   GenerationTicket::IdType ticketId = ++myLastTicketId;
 
   // Generate a random number of atoms
-  AtomsDescription::CountRange range;
   int count;
+  bool countSet;
   AtomCounts counts;
-  BOOST_FOREACH(const AtomsDescription & atomsDesc, myAtoms)
+  BOOST_FOREACH(const AtomsDescription & atom, myAtoms)
   {
-    range = atomsDesc.getCount();
-    if(range.nullSpan())
-      count = range.lower();
-    else
-      count = math::randu(range.lower(), range.upper());
+    countSet = false;
+
+    // First check if we have any generation settings that should override
+    // the settings for this atom
+    if(!atom.label.empty() && !myGenerationSettings->atomsSettings.empty())
+    {
+      const GenerationSettings::AtomsSettings::const_iterator atomsSettings =
+          myGenerationSettings->atomsSettings.find(atom.label);
+      if(atomsSettings != myGenerationSettings->atomsSettings.end())
+      {
+        count = atomsSettings->second.num;
+        countSet = true;
+      }
+    }
+
+    if(!countSet)
+    {
+      if(atom.count.nullSpan())
+        count = atom.count.lower();
+      else
+        count = math::randu(atom.count.lower(), atom.count.upper());
+    }
+
     if(count != 0)
-      counts[&atomsDesc] = count;
+      counts[&atom] = count;
   }
   myTickets[ticketId].atomCounts = counts;
   return GenerationTicket(ticketId);
@@ -207,6 +225,23 @@ AbsAtomsGenerator::getGenerationContents(const GenerationTicket ticket,
   }
 
   return contents;
+}
+
+void
+AbsAtomsGenerator::setGenerationSettings(const GenerationSettings & settings)
+{
+  myGenerationSettings = settings;
+  invalidateTickets();
+}
+
+void
+AbsAtomsGenerator::clearGenerationSettings()
+{
+  if(!myGenerationSettings)
+    return;
+
+  myGenerationSettings.reset();
+  invalidateTickets();
 }
 
 void
@@ -240,13 +275,10 @@ AbsAtomsGenerator::generatePosition(BuildAtomInfo & atomInfo,
   // Default is not fixed
   position.second = false;
 
-  OptionalArmaVec3 optionalPosition;
-
-  optionalPosition = atom.getPosition();
-  if(optionalPosition)
+  if(atom.position)
   {
     // Position is fixed
-    position.first = math::transformCopy(*optionalPosition, transformation);
+    position.first = math::transformCopy(*atom.position, transformation);
     position.second = true;
   }
   else
@@ -341,13 +373,12 @@ AbsAtomsGenerator::getRadius(const AtomsDescription & atom,
   ::boost::optional< double> optionalRadius;
 
   // Try getting it from the atom
-  optionalRadius = atom.getRadius();
-  if(optionalRadius)
-    radius = *optionalRadius;
+  if(atom.radius)
+    radius = *atom.radius;
   else
   {
     // Then try from the database
-    optionalRadius = speciesDb.getRadius(atom.getSpecies());
+    optionalRadius = speciesDb.getRadius(atom.species);
     if(optionalRadius)
       radius = *optionalRadius;
   }

@@ -6,8 +6,7 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "factory/StFactory.h"
-
+#include "factory/PipeFactory.h"
 
 #include <spl/factory/SsLibElements.h>
 #include <spl/math/Random.h>
@@ -19,7 +18,6 @@
 
 // Local includes
 #include "factory/MapEntries.h"
-
 
 // NAMESPACES ////////////////////////////////
 
@@ -35,17 +33,19 @@ namespace ssm = ::spl::math;
 namespace ssf = ::spl::factory;
 namespace ssp = ::spl::potential;
 
-const Factory::BlockHandle Factory::NULL_HANDLE;
+const PipeFactory::BlockHandle PipeFactory::NULL_HANDLE;
 
-Factory::BlockHandle
-Factory::createBuildPipe(const OptionsMap & options) const
+PipeFactory::BlockHandle
+PipeFactory::createBuildPipe(const OptionsMap & options) const
 {
-  const OptionsMap * const buildStructuresOptions = options.find(spf::BUILD_STRUCTURES);
+  const OptionsMap * const buildStructuresOptions = options.find(
+      spf::BUILD_STRUCTURES);
   if(!buildStructuresOptions)
     return NULL_HANDLE;
 
   BlockHandle startBlock;
-  if(!myBlockFactory.createBuildStructuresBlock(&startBlock, *buildStructuresOptions))
+  if(!myBlockFactory.createBuildStructuresBlock(&startBlock,
+      *buildStructuresOptions))
     return NULL_HANDLE;
 
   // Keep track of the last block so we can connect everything up
@@ -63,18 +63,21 @@ Factory::createBuildPipe(const OptionsMap & options) const
   return startBlock;
 }
 
-Factory::BlockHandle
-Factory::createSearchPipe(const OptionsMap & options) const
+PipeFactory::BlockHandle
+PipeFactory::createSearchPipe(const OptionsMap & options) const
 {
-  const OptionsMap * const buildStructuresOptions = options.find(spf::BUILD_STRUCTURES);
-  const ::std::string * const loadStructures = options.find(spf::LOAD_STRUCTURES);
+  const OptionsMap * const buildStructuresOptions = options.find(
+      spf::BUILD_STRUCTURES);
+  const ::std::string * const loadStructures = options.find(
+      spf::LOAD_STRUCTURES);
   if(!buildStructuresOptions && !loadStructures)
     return NULL_HANDLE;
 
   BlockHandle startBlock;
   if(buildStructuresOptions)
   {
-    if(!myBlockFactory.createBuildStructuresBlock(&startBlock, *buildStructuresOptions))
+    if(!myBlockFactory.createBuildStructuresBlock(&startBlock,
+        *buildStructuresOptions))
       return NULL_HANDLE;
   }
   else if(loadStructures)
@@ -88,7 +91,8 @@ Factory::createSearchPipe(const OptionsMap & options) const
   // Keep track of the last block so we can connect everything up
   BlockHandle block, lastBlock = startBlock;
 
-  const OptionsMap * const preGeomOptimiseOptions = options.find(spf::PRE_GEOM_OPTIMISE);
+  const OptionsMap * const preGeomOptimiseOptions = options.find(
+      spf::PRE_GEOM_OPTIMISE);
   if(preGeomOptimiseOptions)
   {
     if(myBlockFactory.createGeomOptimiseBlock(&block, *preGeomOptimiseOptions))
@@ -97,7 +101,8 @@ Factory::createSearchPipe(const OptionsMap & options) const
       return NULL_HANDLE;
   }
 
-  const OptionsMap * const geomOptimiseOptions = options.find(spf::GEOM_OPTIMISE);
+  const OptionsMap * const geomOptimiseOptions = options.find(
+      spf::GEOM_OPTIMISE);
   if(geomOptimiseOptions)
   {
     if(myBlockFactory.createGeomOptimiseBlock(&block, *geomOptimiseOptions))
@@ -106,19 +111,23 @@ Factory::createSearchPipe(const OptionsMap & options) const
       return NULL_HANDLE;
   }
 
-  const OptionsMap * const removeDuplicatesOptions = options.find(spf::REMOVE_DUPLICATES);
+  const OptionsMap * const removeDuplicatesOptions = options.find(
+      spf::REMOVE_DUPLICATES);
   if(removeDuplicatesOptions)
   {
-    if(myBlockFactory.createRemoveDuplicatesBlock(&block, *removeDuplicatesOptions))
+    if(myBlockFactory.createRemoveDuplicatesBlock(&block,
+        *removeDuplicatesOptions))
       lastBlock = lastBlock->connect(block);
     else
       return NULL_HANDLE;
   }
 
-  const OptionsMap * const keepWithinXPercentOptions = options.find(spf::KEEP_WITHIN_X_PERCENT);
+  const OptionsMap * const keepWithinXPercentOptions = options.find(
+      spf::KEEP_WITHIN_X_PERCENT);
   if(keepWithinXPercentOptions)
   {
-    if(myBlockFactory.createKeepWithinXPercentBlock(&block, *keepWithinXPercentOptions))
+    if(myBlockFactory.createKeepWithinXPercentBlock(&block,
+        *keepWithinXPercentOptions))
       lastBlock = lastBlock->connect(block);
     else
       return NULL_HANDLE;
@@ -134,20 +143,24 @@ Factory::createSearchPipe(const OptionsMap & options) const
   }
 
   // Find out what the symmetry group is
-  const OptionsMap * const findSymmetryOptions = options.find(spf::FIND_SYMMETRY_GROUP);
+  const OptionsMap * const findSymmetryOptions = options.find(
+      spf::FIND_SYMMETRY_GROUP);
   if(findSymmetryOptions)
   {
-    if(myBlockFactory.createFindSymmetryGroupBlock(&block, *findSymmetryOptions))
+    if(myBlockFactory.createFindSymmetryGroupBlock(&block,
+        *findSymmetryOptions))
       lastBlock = lastBlock->connect(block);
     else
       return NULL_HANDLE;
   }
 
-  const OptionsMap * const writeStructuresOptions = options.find(spf::WRITE_STRUCTURES);
+  const OptionsMap * const writeStructuresOptions = options.find(
+      spf::WRITE_STRUCTURES);
   if(writeStructuresOptions)
   {
-    if(myBlockFactory.createWriteStructuresBlock(&block, *writeStructuresOptions))
-    lastBlock = lastBlock->connect(block);
+    if(myBlockFactory.createWriteStructuresBlock(&block,
+        *writeStructuresOptions))
+      lastBlock = lastBlock->connect(block);
   }
 
   // Finally tack on a lowest energy block to make sure that only one structure
@@ -157,30 +170,46 @@ Factory::createSearchPipe(const OptionsMap & options) const
   return startBlock;
 }
 
-Factory::BlockHandle
-Factory::createSearchPipeExtended(const OptionsMap & options) const
+PipeFactory::BlockHandle
+PipeFactory::createSearchPipeExtended(const OptionsMap & options) const
 {
   // Create a search pipe
   BlockHandle startBlock = createSearchPipe(options);
   if(!startBlock)
     return NULL_HANDLE;
 
+  // Are we doing a stoichiometry search?
+  const OptionsMap * const searchStoichiometries = options.find(
+      spf::SEARCH_STOICHIOMETRIES);
+  if(searchStoichiometries)
+  {
+    BlockHandle searchStoichsBlock;
+    if(!myBlockFactory.createSearchStoichiometriesBlock(&searchStoichsBlock,
+        *searchStoichiometries, startBlock))
+      return BlockHandle();
+    startBlock = searchStoichsBlock;
+  }
+
   // Are we doing a parameter sweep
-  const OptionsMap * const paramSweepOptions = options.find(spf::SWEEP_POTENTIAL_PARAMS);
+  const OptionsMap * const paramSweepOptions = options.find(
+      spf::SWEEP_POTENTIAL_PARAMS);
   if(paramSweepOptions)
   {
     BlockHandle sweepStartBlock;
-    if(!myBlockFactory.createSweepPotentialParamsBlock(&sweepStartBlock, *paramSweepOptions, startBlock))
+    if(!myBlockFactory.createSweepPotentialParamsBlock(&sweepStartBlock,
+        *paramSweepOptions, startBlock))
       return NULL_HANDLE;
 
     return sweepStartBlock;
   }
 
-  const OptionsMap * const runParamsQueueOptions = options.find(spf::RUN_POTENTIAL_PARAMS_QUEUE);
+  const OptionsMap * const runParamsQueueOptions = options.find(
+      spf::RUN_POTENTIAL_PARAMS_QUEUE);
   if(runParamsQueueOptions)
   {
     BlockHandle runQueueBlock;
-    if(!myBlockFactory.createRunPotentialParamsQueueBlock(&runQueueBlock, *runParamsQueueOptions, startBlock))
+    if(!myBlockFactory.createRunPotentialParamsQueueBlock(&runQueueBlock,
+        *runParamsQueueOptions, startBlock))
       return BlockHandle();
 
     return runQueueBlock;

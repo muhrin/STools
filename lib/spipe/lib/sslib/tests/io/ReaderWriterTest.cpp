@@ -41,8 +41,6 @@ BOOST_AUTO_TEST_CASE(ReaderWriterTest)
   rwMan.insert(::spl::makeUniquePtr(new ssio::ResReaderWriter()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::SslibReaderWriter()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::CellReaderWriter()));
-  BOOST_REQUIRE(rwMan.numReaders() == NUM_READER_WRITERS);
-  BOOST_REQUIRE(rwMan.numWriters() == NUM_READER_WRITERS);
 
   // Set up the structure to write
   ssc::Structure structure;

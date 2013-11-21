@@ -20,9 +20,9 @@
 #include <boost/utility.hpp>
 
 #include "spl/OptionalTypes.h"
-#include "spl/build_cell/IStructureGenerator.h"
-#include "spl/build_cell/StructureBuilder.h"
 #include "spl/build_cell/BuildCellFwd.h"
+#include "spl/build_cell/StructureBuilder.h"
+#include "spl/build_cell/StructureGenerator.h"
 #include "spl/factory/FactoryFwd.h"
 #include "spl/factory/GenShapeFactory.h"
 #include "spl/io/AtomFormatParser.h"

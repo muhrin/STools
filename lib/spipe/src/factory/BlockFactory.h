@@ -14,13 +14,13 @@
 
 #include <string>
 
+#include <spl/factory/SsLibFactoryYaml.h>
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/utility/HeterogeneousMap.h>
 
 // Local includes
 #include "StructurePipe.h"
 #include "SpTypes.h"
-#include "spl/factory/SsLibFactoryYaml.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace spl {
@@ -68,6 +68,9 @@ public:
       const OptionsMap & options) const;
   bool
   createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
+      const OptionsMap & options, BlockHandle subpipe) const;
+  bool
+  createSearchStoichiometriesBlock(BlockHandle * const blockOut,
       const OptionsMap & options, BlockHandle subpipe) const;
   bool
   createSweepPotentialParamsBlock(BlockHandle * const blockOut,

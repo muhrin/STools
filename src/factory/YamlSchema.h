@@ -102,6 +102,8 @@ struct Search : PipeSettings
         new spf::blocks::KeepWithinXPercent());
     addEntry("writeStructures", spf::WRITE_STRUCTURES,
         new spf::blocks::WriteStructures());
+    addEntry("searchStoichiometries", spf::SEARCH_STOICHIOMETRIES,
+        new spf::blocks::SearchStoichiometries());
     addEntry("sweepPotentialParams", spf::SWEEP_POTENTIAL_PARAMS,
         new spf::blocks::SweepPotentialParams());
     addEntry("runPotentialParamsQueue", spf::RUN_POTENTIAL_PARAMS_QUEUE,

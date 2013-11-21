@@ -110,7 +110,7 @@ bool ParamRange::parseParamString(const size_t idx, const ::std::string & paramS
 
 // Objects keys ////////////////
 ssu::Key< ::std::vector<double> > GlobalKeys::POTENTIAL_PARAMS;
-
+ssu::Key< ::spl::build_cell::GenerationSettings> GlobalKeys::GENERATION_SETTINGS;
 
 }
 }

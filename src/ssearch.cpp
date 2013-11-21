@@ -23,7 +23,7 @@
 
 // From StructurePipe
 #include <factory/PipeEngine.h>
-#include <factory/StFactory.h>
+#include <factory/PipeFactory.h>
 
 // Local
 #include "utility/PipeDataInitialisation.h"
@@ -38,14 +38,13 @@
 #endif
 
 // NAMESPACES ////////////////////////////////
+using namespace ::stools;
+
 namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
 namespace ssu   = ::spl::utility;
 namespace ssys  = ::spl::yaml_schema;
-
-namespace factory = ::stools::factory;
-namespace input = ::stools::input;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -109,7 +108,7 @@ int main(const int argc, char * argv[])
   }
 
   engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
-  ::stools::factory::Factory factory(engine->globalData().getSpeciesDatabase());
+  factory::PipeFactory factory(engine->globalData().getSpeciesDatabase());
 
   sp::BlockHandle pipe = factory.createSearchPipeExtended(schemaOptions);
   if(!pipe)

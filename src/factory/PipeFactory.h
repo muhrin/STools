@@ -1,13 +1,13 @@
 /*
- * Factory.h
+ * PipeFactory.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef STOOLS__FACTORY__FACTORY_H
-#define STOOLS__FACTORY__FACTORY_H
+#ifndef PIPE_FACTORY_H
+#define PIPE_FACTORY_H
 
 // INCLUDES /////////////////////////////////////////////
 #include "STools.h"
@@ -31,13 +31,13 @@ class AtomSpeciesDatabase;
 namespace stools {
 namespace factory {
 
-class Factory
+class PipeFactory
 {
 public:
   typedef ::spipe::BlockHandle BlockHandle;
   typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
-  Factory(::spl::common::AtomSpeciesDatabase & speciesDb):
+  PipeFactory(::spl::common::AtomSpeciesDatabase & speciesDb):
     myBlockFactory(speciesDb),
     mySsLibFactory(speciesDb)
   {}
@@ -58,5 +58,5 @@ private:
 }
 }
 
-#endif /* STOOLS__FACTORY__FACTORY_H */
+#endif /* PIPE_FACTORY_H */
 

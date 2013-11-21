@@ -19,12 +19,10 @@
 
 #include <pipelib/pipelib.h>
 
-#include <spl/build_cell/StructureBuilder.h>
-#include <spl/build_cell/RandomUnitCellGenerator.h>
-#include <spl/build_cell/BuildCellFwd.h>
 #include <spl/common/AtomSpeciesId.h>
 #include <spl/io/BoostFilesystem.h>
 #include <spl/utility/MultiIdxRange.h>
+#include <spl/utility/Range.h>
 
 // Local includes
 #include "SpTypes.h"
@@ -48,34 +46,16 @@ class DataTableWriter;
 
 namespace blocks {
 
-struct SpeciesParameter
-{
-  SpeciesParameter(const ::spl::common::AtomSpeciesId::Value _id,
-      const size_t _maxNum) :
-      id(_id), maxNum(_maxNum)
-  {
-  }
-
-  ::spl::common::AtomSpeciesId::Value id;
-  size_t maxNum;
-};
-
 class SearchStoichiometries : public StartBlock,
     public FinishedSink,
     ::boost::noncopyable
 {
 public:
-  typedef ::spl::build_cell::StructureBuilderPtr StructureBuilderPtr;
-  typedef ::std::vector< SpeciesParameter> SpeciesParameters;
+  typedef ::spl::utility::Range< int> CountRange;
+  typedef ::std::map< ::std::string, CountRange> AtomRanges;
 
-  SearchStoichiometries(const ::spl::common::AtomSpeciesId::Value species1,
-      const ::spl::common::AtomSpeciesId::Value species2, const size_t maxAtoms,
-      BlockHandle & subpipe, StructureBuilderPtr structureBuilder =
-          StructureBuilderPtr());
-
-  SearchStoichiometries(const SpeciesParameters & speciesParameters,
-      const size_t maxAtoms, const double atomsRadius, BlockHandle & subpipe,
-      StructureBuilderPtr structureBuilder = StructureBuilderPtr());
+  SearchStoichiometries(const AtomRanges & atomRanges, const size_t maxAtoms,
+      BlockHandle & subpipe);
 
   // From Block ////////
   virtual void
@@ -116,22 +96,19 @@ private:
       const ::spl::utility::MultiIdx< unsigned int> & currentIdx,
       const ::spl::common::AtomSpeciesDatabase & atomsDb);
 
-  StructureBuilderPtr
-  newStructureGenerator() const;
+  const AtomRanges myAtomRanges;
+  const size_t myMaxAtoms;
 
   BlockHandle mySubpipe;
   Engine * mySubpipeEngine;
 
   // Use this to write out our table data
   ::spipe::utility::DataTableSupport myTableSupport;
-  const size_t myMaxAtoms;
   ::boost::filesystem::path myOutputPath;
 
   /** Buffer to store structure that have finished their path through the sub pipeline. */
   ::std::vector< StructureDataTyp *> myBuffer;
 
-  SpeciesParameters mySpeciesParameters;
-  StructureBuilderPtr myStructureGenerator;
 };
 
 }

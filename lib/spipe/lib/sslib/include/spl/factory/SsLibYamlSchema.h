@@ -124,7 +124,7 @@ struct Optimiser : public yaml_schema::SchemaHeteroMap
 };
 
 // STRUCTURE //////////////////////////////////////
-struct AtomsDataMap : public yaml_schema::SchemaHeteroMap
+struct AtomsDataMap : public HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   AtomsDataMap()
@@ -149,7 +149,7 @@ struct Structure : public yaml_schema::SchemaHeteroMap
 
 namespace builder {
 
-struct GenSphere : public yaml_schema::SchemaHeteroMap
+struct GenSphere : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   GenSphere()
@@ -164,7 +164,7 @@ struct GenSphere : public yaml_schema::SchemaHeteroMap
   ;
 };
 
-struct GenBox : public yaml_schema::SchemaHeteroMap
+struct GenBox : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   GenBox()
@@ -181,7 +181,7 @@ struct GenBox : public yaml_schema::SchemaHeteroMap
   ;
 };
 
-struct MinMaxRatio : public yaml_schema::SchemaHeteroMap
+struct MinMaxRatio : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   MinMaxRatio()
@@ -209,7 +209,7 @@ struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
   }
 };
 
-struct SimpleAtomsDataMap : public yaml_schema::SchemaHeteroMap
+struct SimpleAtomsDataMap : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   SimpleAtomsDataMap()
@@ -217,6 +217,7 @@ struct SimpleAtomsDataMap : public yaml_schema::SchemaHeteroMap
     addScalarEntry("spec", SPECIES);
     addScalarEntry("radius", RADIUS);
     addScalarEntry("pos", POSITION);
+    addScalarEntry("label", LABEL);
   }
 };
 
@@ -226,7 +227,7 @@ typedef yaml_schema::SchemaListMap<
 
 typedef yaml_schema::SchemaList< SimpleAtomsListEntrySchema> SimpleAtomsListSchema;
 
-struct AtomsGroup : public yaml_schema::SchemaHeteroMap
+struct AtomsGroup : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
   AtomsGroup()
@@ -252,7 +253,7 @@ struct ExtendedAtomsDataMap : public SimpleAtomsDataMap
   }
 };
 
-struct Symmetry : public yaml_schema::SchemaHeteroMap
+struct Symmetry : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
 

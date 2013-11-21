@@ -19,7 +19,7 @@
 
 // From StructurePipe
 #include <factory/PipeEngine.h>
-#include <factory/StFactory.h>
+#include <factory/PipeFactory.h>
 
 // Local
 #include "factory/YamlSchema.h"
@@ -30,10 +30,11 @@
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
+using namespace ::stools;
+
 namespace sp = ::spipe;
 namespace splys = ::spl::yaml_schema;
 namespace splu = ::spl::utility;
-namespace factory = ::stools::factory;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
@@ -86,7 +87,7 @@ main(const int argc, char * argv[])
 
   engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
-  ::stools::factory::Factory factory(engine->globalData().getSpeciesDatabase());
+  factory::PipeFactory factory(engine->globalData().getSpeciesDatabase());
   sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
   if(!pipe)
   {

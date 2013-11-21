@@ -10,13 +10,13 @@ source_group("Header Files" FILES ${stools_Header_Files__})
 ## stools/factory
 set(stools_Header_Files__factory
   factory/PipeEngine.h
-  factory/StFactory.h
+  factory/PipeFactory.h
   factory/YamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${stools_Header_Files__factory})
 
 set(stools_Source_Files__factory
-  factory/StFactory.cpp
+  factory/PipeFactory.cpp
 )
 source_group("Source Files\\factory" FILES ${stools_Source_Files__factory})
 

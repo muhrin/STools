@@ -1,18 +1,19 @@
 /*
- * IFragmentGenerator.h
+ * FragmentGenerator.h
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef I_FRAGMENT_GENERATOR_H
-#define I_FRAGMENT_GENERATOR_H
+#ifndef FRAGMENT_GENERATOR_H
+#define FRAGMENT_GENERATOR_H
 
 // INCLUDES ////////////
 #include "spl/build_cell/BuildCellFwd.h"
-#include "spl/utility/SharedHandle.h"
 
+#include "spl/build_cell/GenerationSettings.h"
 #include "spl/build_cell/GenerationOutcome.h"
+#include "spl/utility/SharedHandle.h"
 
 // DEFINITION ///////////////////////
 
@@ -25,14 +26,14 @@ namespace build_cell {
 class StructureBuild;
 class StructureContents;
 
-class IFragmentGenerator
+class FragmentGenerator
 {
 protected:
   typedef ptrdiff_t GenerationTicketId;
 public:
-  typedef utility::SharedHandle<GenerationTicketId, IFragmentGenerator> GenerationTicket;
+  typedef utility::SharedHandle<GenerationTicketId, FragmentGenerator> GenerationTicket;
 
-  virtual ~IFragmentGenerator() {}
+  virtual ~FragmentGenerator() {}
 
   virtual GenerationOutcome generateFragment(
     StructureBuild & build,
@@ -48,11 +49,14 @@ public:
 
   virtual void handleReleased(const GenerationTicketId & id) = 0;
 
+  virtual void setGenerationSettings(const GenerationSettings & settings) = 0;
+  virtual void clearGenerationSettings() = 0;
+
   virtual IFragmentGeneratorPtr clone() const = 0;
 };
 
 // Support for boost ptr_container copy construction.
-inline IFragmentGenerator * new_clone(const IFragmentGenerator & toClone)
+inline FragmentGenerator * new_clone(const FragmentGenerator & toClone)
 {
   return toClone.clone().release();
 }
@@ -61,4 +65,4 @@ inline IFragmentGenerator * new_clone(const IFragmentGenerator & toClone)
 }
 
 
-#endif /* I_FRAGMENT_GENERATOR_H */
+#endif /* FRAGMENT_GENERATOR_H */

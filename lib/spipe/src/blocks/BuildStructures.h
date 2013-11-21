@@ -22,6 +22,7 @@
 #endif
 
 #include <spl/build_cell/BuildCellFwd.h>
+#include <spl/common/Types.h>
 
 #include <pipelib/pipelib.h>
 
@@ -41,11 +42,13 @@ public:
 
   static const int DEFAULT_MAX_ATTEMPTS;
 
+  template <typename GeneratorPtr>
   BuildStructures(const int numToGenerate,
-      IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr());
+      GeneratorPtr structureGenerator);
 
+  template <typename GeneratorPtr>
   BuildStructures(const float atomsMultiplierGenerate,
-      IStructureGeneratorPtr structureGenerator = IStructureGeneratorPtr());
+      GeneratorPtr structureGenerator);
 
   // From StartBlock ///
   virtual void
@@ -58,12 +61,12 @@ public:
   // End from PipeBlock
 
 private:
-  typedef ::boost::scoped_ptr< ::spl::build_cell::IStructureGenerator> StructureGeneratorPtr;
+  typedef ::boost::scoped_ptr< ::spl::build_cell::StructureGenerator> StructureGeneratorPtr;
 
-  ::spl::build_cell::IStructureGenerator *
-  getStructureGenerator();
   ::std::string
   generateStructureName(const size_t structureNum) const;
+  ::spl::common::StructurePtr
+  generateStructure() const;
 
   const IStructureGeneratorPtr myStructureGenerator;
   const bool myFixedNumGenerate;
@@ -74,6 +77,25 @@ private:
   ::boost::mutex myBuildStructuresMutex;
 #endif
 };
+
+template <typename GeneratorPtr>
+BuildStructures::BuildStructures(const int numToGenerate,
+    GeneratorPtr structureGenerator):
+    Block("Generate Random structures"), myStructureGenerator(
+        structureGenerator), myFixedNumGenerate(true), myNumToGenerate(
+        numToGenerate), myAtomsMultiplierGenerate(0.0), myMaxAttempts(
+        DEFAULT_MAX_ATTEMPTS)
+    {
+    }
+
+template <typename GeneratorPtr>
+BuildStructures::BuildStructures(const float atomsMultiplierGenerate,
+    GeneratorPtr structureGenerator) :
+    Block("Generate Random structures"), myStructureGenerator(
+        structureGenerator), myFixedNumGenerate(false), myNumToGenerate(0), myAtomsMultiplierGenerate(
+        atomsMultiplierGenerate), myMaxAttempts(DEFAULT_MAX_ATTEMPTS)
+    {
+    }
 
 }
 }

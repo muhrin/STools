@@ -24,6 +24,7 @@
 
 // Local includes
 #include "common/PipeFunctions.h"
+#include "common/UtilityFunctions.h"
 #include "utility/DataTableInserters.h"
 
 // NAMESPACES ////////////////////////////////
@@ -115,18 +116,22 @@ RunPotentialParamsQueue::start()
   {
     while(!myParamsQueue.empty())
     {
+      ::spipe::SharedDataType & sweepSharedData = mySubpipeEngine->sharedData();
+
       const posix_time::ptime startTime =
           posix_time::microsec_clock::universal_time();
 
       myCurrentParams = myParamsQueue.front();
 
       // Store the potential parameters in shared memory
-      mySubpipeEngine->sharedData().objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
+      sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
           myCurrentParams;
 
       // Set a directory for this set of parameters
-      mySubpipeEngine->sharedData().appendToOutputDirName(
-          generateParamDirName(myCurrentParams));
+      sweepSharedData.setOutputDir(
+          getEngine()->sharedData().getOutputPath()
+              /= common::generateParamDirName(myCurrentParams,
+                  getEngine()->globalData().getSeedName()));
 
       // Get the relative path to where the pipeline write the structures to
       // Need to store this now as the shared data is not guaranteed to be
@@ -284,17 +289,6 @@ RunPotentialParamsQueue::updateWorkChunkSize()
   { // Nothing to do
   }
   myNumWorkItemsChunk = i;
-}
-
-::std::string
-RunPotentialParamsQueue::generateParamDirName(const ::arma::vec & params) const
-{
-  static const ::boost::hash< ::arma::vec> VEC_HASHER = ::boost::hash< ::arma::vec>();
-
-  std::stringstream stream;
-  stream << getEngine()->globalData().getSeedName() << "-" << std::hex
-      << VEC_HASHER(params);
-  return stream.str();
 }
 
 void

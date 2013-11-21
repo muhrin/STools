@@ -36,12 +36,15 @@ class DataTableWriter;
 
 namespace blocks {
 
-class SweepPotentialParams : public StartBlock, public FinishedSink, ::boost::noncopyable
+class SweepPotentialParams : public StartBlock,
+    public FinishedSink,
+    ::boost::noncopyable
 {
 public:
   static const ::std::string POTPARAMS_FILE_EXTENSION;
 
-  SweepPotentialParams(const common::ParamRange & paramRange, BlockHandle & sweepPipeline);
+  SweepPotentialParams(const common::ParamRange & paramRange,
+      BlockHandle & sweepPipeline);
 
   // From Block /////////////////////////////////
   virtual void
@@ -68,9 +71,9 @@ private:
 
   void
   releaseBufferedStructures(const ::spipe::utility::DataTable::Key & key);
-
   void
-  updateTable(const utility::DataTable::Key & key, const StructureDataType & sweepStrData);
+  updateTable(const utility::DataTable::Key & key,
+      const StructureDataType & sweepStrData);
 
   size_t myNumParams;
   const common::ParamRange myParamRange;
@@ -80,7 +83,7 @@ private:
 
   BlockHandle mySweepPipeline;
 
-  /** Buffer to store structure that have finished their path through the sub pipeline. */
+  // Buffer to store structure that have finished their path through the sub pipeline.
   ::std::vector< StructureDataType *> myBuffer;
   Engine * mySubpipeEngine;
 

@@ -12,68 +12,39 @@
 
 #include <string>
 
-#include <boost/ptr_container/ptr_map.hpp>
-
 #include "spl/OptionalTypes.h"
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/utility/Range.h"
 
 // FORWARD DECLARES ///////////
-namespace spl
-{
-namespace build_cell
-{
-class AtomConstraintDescription;
-}
-}
 
-namespace spl
-{
-namespace build_cell
-{
+namespace spl {
+namespace build_cell {
 
-class AtomsDescription
+struct AtomsDescription
 {
-public:
   typedef utility::Range< int> CountRange;
 
-  AtomsDescription();
-  AtomsDescription(const common::AtomSpeciesId::Value species,
-      const size_t count = 1);
-  AtomsDescription(const common::AtomSpeciesId::Value species,
-      const CountRange count);
-  virtual
-  ~AtomsDescription()
+  AtomsDescription(const common::AtomSpeciesId::Value _species,
+      const size_t _count = 1):
+        species(_species),
+        count(_count),
+        label(_species)
+  {
+  }
+  AtomsDescription(const common::AtomSpeciesId::Value _species,
+      const CountRange _count):
+        species(_species),
+        count(_count),
+        label(_species)
   {
   }
 
-  const common::AtomSpeciesId::Value &
-  getSpecies() const;
-  void
-  setSpecies(const common::AtomSpeciesId::Value species);
-
-  CountRange
-  getCount() const;
-  void
-  setCount(const int count);
-  void
-  setCount(const CountRange count);
-
-  const OptionalDouble &
-  getRadius() const;
-  void
-  setRadius(const OptionalDouble radius);
-
-  const OptionalArmaVec3 &
-  getPosition() const;
-  void
-  setPosition(const OptionalArmaVec3 & pos);
-
-private:
-  common::AtomSpeciesId::Value mySpecies;
-  OptionalDouble myRadius;
-  OptionalArmaVec3 myPosition;
-  CountRange myCount;
+  common::AtomSpeciesId::Value species;
+  CountRange count;
+  ::std::string label;
+  OptionalDouble radius;
+  OptionalArmaVec3 position;
 };
 
 }

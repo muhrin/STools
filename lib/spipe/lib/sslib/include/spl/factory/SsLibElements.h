@@ -37,6 +37,7 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 
 // GENERAL /////////////////////////////////////////////////
+extern utility::Key< ::std::string> LABEL;
 extern utility::Key< ::arma::vec3> POSITION;
 extern utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
 extern utility::Key<double> RADIUS;

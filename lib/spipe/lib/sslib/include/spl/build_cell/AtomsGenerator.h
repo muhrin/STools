@@ -27,12 +27,12 @@ class AtomsDescription;
 class BuildAtomInfo;
 struct AtomsGeneratorConstructionInfo;
 
-class AtomsGenerator : public IFragmentGenerator, ::boost::noncopyable
+class AtomsGenerator : public FragmentGenerator, ::boost::noncopyable
 {
-  typedef IFragmentGenerator::GenerationTicketId GenerationTicketId;
+  typedef FragmentGenerator::GenerationTicketId GenerationTicketId;
   typedef ::std::vector<AtomsDescription> Atoms;
 public:
-  typedef IFragmentGenerator::GenerationTicket GenerationTicket;
+  typedef FragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::iterator iterator;
   typedef Atoms::const_iterator const_iterator;
   typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;

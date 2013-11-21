@@ -16,6 +16,8 @@
 
 #include <pipelib/pipelib.h>
 
+#include <spl/build_cell/AtomsDescription.h>
+#include <spl/build_cell/StructureBuilder.h>
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 
@@ -27,26 +29,26 @@
 #include <blocks/BuildStructures.h>
 #include <blocks/SearchStoichiometries.h>
 
+namespace splbc = ::spl::build_cell;
 namespace ssc = ::spl::common;
 namespace blocks = ::spipe::blocks;
 
-typedef ::spipe::blocks::SpeciesParameter SpeciesParameter;
-typedef ::spipe::blocks::SearchStoichiometries::SpeciesParameters SpeciesParameters;
+typedef ::spipe::blocks::SearchStoichiometries::CountRange Range;
+typedef ::spipe::blocks::SearchStoichiometries::AtomRanges AtomRanges;
 
 class StoichiometrySink : public ::spipe::FinishedSink
 {
   typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
   typedef ::std::set< size_t> CountSet;
-  typedef ::std::map< ssc::AtomSpeciesId::Value, CountSet> SpeciesCount;
+  typedef ::std::map< ::std::string, CountSet> AtomCounts;
 public:
-
-  StoichiometrySink(const SpeciesParameters & parameters)
+  StoichiometrySink(const AtomRanges & atomRanges)
   {
-    // Populate with the full count i.e. 0...maxNum
-    BOOST_FOREACH(SpeciesParameters::const_reference param, parameters)
+    // Populate with the individual counts e.g. 2, 3, 4, ..., 17
+    BOOST_FOREACH(AtomRanges::const_reference range, atomRanges)
     {
-      for(size_t i = 0; i < param.maxNum; ++i)
-        mySpeciesCount[param.id].insert(i);
+      for(int i = range.second.lower(); i < range.second.upper(); ++i)
+        myAtomCounts[range.first].insert(static_cast<size_t>(i));
     }
   }
 
@@ -62,14 +64,14 @@ public:
     Species species;
     structure->getAtomSpecies(species);
 
-    SpeciesCount::iterator it;
+    AtomCounts::iterator it;
     CountSet::iterator countIt;
     BOOST_FOREACH(const ssc::AtomSpeciesId::Value & s, species)
     {
-      it = mySpeciesCount.find(s);
+      it = myAtomCounts.find(s);
 
       // Check that we were expecting this species in the structure
-      BOOST_REQUIRE(it != mySpeciesCount.end());
+      BOOST_REQUIRE(it != myAtomCounts.end());
 
       countIt = it->second.find(structure->getNumAtomsOfSpecies(s));
       BOOST_REQUIRE(countIt != it->second.end());
@@ -80,15 +82,14 @@ public:
   void
   doFinishedCheck() const
   {
-    BOOST_FOREACH(SpeciesCount::const_reference speciesCount, mySpeciesCount)
+    BOOST_FOREACH(AtomCounts::const_reference count, myAtomCounts)
     {
-      BOOST_REQUIRE(speciesCount.second.empty());
+      BOOST_REQUIRE(count.second.empty());
     }
   }
 
 private:
-
-  SpeciesCount mySpeciesCount;
+  AtomCounts myAtomCounts;
 };
 
 BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
@@ -96,17 +97,21 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
   typedef spipe::SerialEngine Engine;
 
   // SETTINGS ////
-  SpeciesParameters speciesParams;
-  speciesParams.push_back(SpeciesParameter("Na", 7));
-  speciesParams.push_back(SpeciesParameter("Cl", 13));
+  AtomRanges atomRanges;
+  atomRanges["Na"] = Range(1, 7);
+  atomRanges["Cl"] = Range(4, 13);
 
-  spipe::BlockHandle buildStructures(new blocks::BuildStructures(1));
+  splbc::StructureBuilderPtr builder(new splbc::StructureBuilder);
+  builder->insertAtoms(splbc::AtomsDescription("Na"));
+  builder->insertAtoms(splbc::AtomsDescription("Cl"));
+
+  spipe::BlockHandle buildStructures(new blocks::BuildStructures(1, builder));
   spipe::BlockHandle searchStoichiometries(
-      new blocks::SearchStoichiometries(speciesParams, 1000, 0.5,
+      new blocks::SearchStoichiometries(atomRanges, 1000,
           buildStructures));
 
   Engine engine;
-  StoichiometrySink sink(speciesParams);
+  StoichiometrySink sink(atomRanges);
 
   engine.setFinishedDataSink(&sink);
   engine.run(searchStoichiometries);

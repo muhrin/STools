@@ -20,7 +20,11 @@
 #include <spl/utility/HeterogeneousMap.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-
+namespace spl {
+namespace build_cell {
+struct GenerationSettings;
+}
+}
 
 namespace spipe {
 namespace common {
@@ -36,8 +40,8 @@ public:
   ::std::vector<double> from;
   ::std::vector<double> step;
   ::std::vector<int> nSteps;
-private:
 
+private:
   bool parseParamString(const size_t idx, const ::std::string & paramString);
 };
 
@@ -45,8 +49,7 @@ struct GlobalKeys
 {
   // The current parameterised potential parameters
   static ::spl::utility::Key< ::std::vector<double> >  POTENTIAL_PARAMS;
-//static ::spl::utility::Key<ParamRange> POTENTIAL_SWEEP_RANGE;
-
+  static ::spl::utility::Key< ::spl::build_cell::GenerationSettings> GENERATION_SETTINGS;
 };
 
 }

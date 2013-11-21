@@ -1,12 +1,12 @@
 /*
- * IStructureGenerator.h
+ * StructureGenerator.h
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef I_STRUCTURE_GENERATOR_H
-#define I_STRUCTURE_GENERATOR_H
+#ifndef STRUCTURE_GENERATOR_H
+#define STRUCTURE_GENERATOR_H
 
 // INCLUDES /////////////////////////////////
 
@@ -23,20 +23,25 @@ class Structure;
 }
 
 namespace build_cell {
+class GenerationSettings;
 
-class IStructureGenerator
+class StructureGenerator
 {
 public:
-
-  virtual ~IStructureGenerator() {}
+  virtual ~StructureGenerator() {}
 
   virtual GenerationOutcome generateStructure(
     common::StructurePtr & structureOut,
     const common::AtomSpeciesDatabase & speciesDb
+  ) = 0;
+  virtual GenerationOutcome generateStructure(
+    common::StructurePtr & structureOut,
+    const common::AtomSpeciesDatabase & speciesDb,
+    const GenerationSettings & info
   ) = 0;
 };
 
 }
 }
 
-#endif /* I_STRUCTURE_GENERATOR_H */
+#endif /* STRUCTURE_GENERATOR_H */

@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 
 #include <spl/factory/SsLibYamlSchema.h>
+#include <spl/yaml_schema/YamlSchema.h>
 
 #include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/WriteStructures.h"
@@ -111,6 +112,18 @@ struct RunPotentialParamsQueue : HeteroMap
         spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE);
     addScalarEntry("doneFile", DONE_FILE)->element()->defaultValue(
         spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE);
+  }
+};
+
+struct SearchStoichiometries : HeteroMap
+{
+  typedef ::spl::yaml_schema::SchemaScalar<
+      ::spl::build_cell::AtomsDescription::CountRange> CountRange;
+  typedef ::spl::yaml_schema::SchemaHomoMap< CountRange> AtomRanges;
+
+  SearchStoichiometries()
+  {
+    addEntry("ranges", ATOM_RANGES, new AtomRanges());
   }
 };
 

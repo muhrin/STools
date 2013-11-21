@@ -49,9 +49,9 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/BuildCellFwd.h
   include/spl/build_cell/GenerationOutcome.h
   include/spl/build_cell/GenBox.h
+  include/spl/build_cell/GenerationSettings.h
   include/spl/build_cell/GenSphere.h
   include/spl/build_cell/IGeneratorShape.h
-  include/spl/build_cell/IStructureGenerator.h
   include/spl/build_cell/IFragmentGenerator.h
   include/spl/build_cell/IUnitCellGenerator.h
   include/spl/build_cell/PointGroups.h
@@ -61,6 +61,7 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/StructureBuild.h
   include/spl/build_cell/StructureBuilder.h
   include/spl/build_cell/StructureContents.h
+  include/spl/build_cell/StructureGenerator.h
   include/spl/build_cell/StructureGenerationOutcome.h
   include/spl/build_cell/SymmetryFunctions.h
   include/spl/build_cell/SymmetryGroup.h

@@ -13,6 +13,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <spl/io/IoFunctions.h>
+#include <spl/utility/Armadillo.h>
 
 // From local
 #include "common/StructureData.h"
@@ -101,6 +102,16 @@ void parseParamString(
   ::std::ostringstream ss;
   ss << ::std::setprecision(digits) << in;
   return ss.str();
+}
+
+::std::string
+generateParamDirName(const ::arma::vec & params, const ::std::string & seedName)
+{
+  static const ::boost::hash< ::arma::vec> VEC_HASHER = ::boost::hash< ::arma::vec>();
+
+  std::stringstream stream;
+  stream << seedName << "-" << std::hex << VEC_HASHER(params);
+  return stream.str();
 }
 
 }

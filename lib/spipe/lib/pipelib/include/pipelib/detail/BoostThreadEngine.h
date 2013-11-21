@@ -257,7 +257,7 @@ template< typename Pipe, typename Shared, typename Global>
   typename BoostThreadEngine< Pipe, Shared, Global>::Base *
   BoostThreadEngine< Pipe, Shared, Global>::createEngine()
   {
-    myChildren.push_back(new BoostThreadEngine(this));
+    myChildren.push_back(new BoostThreadEngine(myRoot));
     return &myChildren.back();
   }
 

@@ -37,8 +37,9 @@ const ::std::string SweepPotentialParams::POTPARAMS_FILE_EXTENSION = "potparams"
 
 SweepPotentialParams::SweepPotentialParams(
     const common::ParamRange & paramRange, BlockHandle & sweepPipeline) :
-    Block("Potential param sweep"), myParamRange(paramRange),
-    myStepExtents(paramRange.nSteps.size()), mySweepPipeline(sweepPipeline)
+    Block("Potential param sweep"), myParamRange(paramRange), myStepExtents(
+        paramRange.nSteps.size()), mySweepPipeline(sweepPipeline), mySubpipeEngine(
+    NULL)
 {
   SPIPE_ASSERT(myParamRange.from.size() == myParamRange.step.size());
   SPIPE_ASSERT(myParamRange.from.size() == myParamRange.nSteps.size());
@@ -70,8 +71,7 @@ SweepPotentialParams::start()
   PotentialParams params(myNumParams);
   BOOST_FOREACH(const ParamSpaceIdx & stepsIdx, stepsRange)
   {
-    ::spipe::SharedDataType & sweepPipeSharedData =
-        mySubpipeEngine->sharedData();
+    ::spipe::SharedDataType & sweepSharedData = mySubpipeEngine->sharedData();
 
     // Load the current potential parameters into the pipeline data
     for(size_t i = 0; i < myNumParams; ++i)
@@ -79,14 +79,16 @@ SweepPotentialParams::start()
           + static_cast< double>(stepsIdx[i]) * myParamRange.step[i];
 
     // Store the potential parameters in global memory
-    sweepPipeSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
-        params;
+    sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
     // Set a directory for this set of parameters
-    sweepPipeSharedData.appendToOutputDirName(ssu::generateUniqueName());
+    sweepSharedData.setOutputDir(
+        getEngine()->sharedData().getOutputPath()
+            /= common::generateParamDirName(params,
+                getEngine()->globalData().getSeedName()));
 
     // Get the relative path to where the pipeline write the structures to
-    sweepPipeOutputPath = sweepPipeSharedData.getOutputPath().string();
+    sweepPipeOutputPath = sweepSharedData.getOutputPath().string();
 
     // Run the sweep pipeline
     mySubpipeEngine->run();

@@ -347,11 +347,15 @@ SsLibFactoryYaml::createAtomsDescription(const AtomsDataEntry & atomsEntry,
 
   const OptionalDouble radius = parser.getValue(RADIUS, atomsEntry);
   if(radius)
-    atomsDescription->setRadius(*radius);
+    atomsDescription->radius = *radius;
 
   const OptionalArmaVec3 pos = parser.getValue(POSITION, atomsEntry);
   if(pos)
-    atomsDescription->setPosition(*pos);
+    atomsDescription->position = *pos;
+
+  const ::boost::optional< ::std::string> label = parser.getValue(LABEL, atomsEntry);
+  if(label)
+    atomsDescription->label = *label;
 
   return atomsDescription;
 }
