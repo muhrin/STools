@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
+#include <spl/io/BoostFilesystem.h>
 #include <spl/utility/MultiIdxRange.h>
 #include <spl/utility/UtilFunctions.h>
 
@@ -81,14 +82,15 @@ SweepPotentialParams::start()
     // Store the potential parameters in global memory
     sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
-    // Set a directory for this set of parameters
-    sweepSharedData.setOutputDir(
-        getEngine()->sharedData().getOutputPath()
-            /= common::generateParamDirName(params,
-                getEngine()->globalData().getSeedName()));
+    const fs::path originalPath = fs::current_path();
+    const fs::path sweepPath = originalPath / common::generateParamDirName(params,
+        getEngine()->globalData().getSeedName());
 
-    // Get the relative path to where the pipeline write the structures to
-    sweepPipeOutputPath = sweepSharedData.getOutputPath().string();
+    // Set a directory for this set of parameters
+    ssio::createAndChangeCurrentPath(sweepPath);
+
+    // Change the directory back to the original one
+    fs::current_path(originalPath);
 
     // Run the sweep pipeline
     mySubpipeEngine->run();

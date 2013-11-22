@@ -25,6 +25,7 @@ namespace factory {
 // BLOCKS
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
 ::spl::utility::Key< ::std::string> LOAD_STRUCTURES;
@@ -36,8 +37,10 @@ namespace factory {
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> SWEEP_POTENTIAL_PARAMS;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
+// Stoichiometry search stuff
 ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
+::spl::utility::Key< bool> WRITE_HULL;
 
 ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 ::spl::utility::Key< bool> MULTI_WRITE;

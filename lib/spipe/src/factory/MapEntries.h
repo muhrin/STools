@@ -33,6 +33,7 @@ extern ::spl::utility::Key< ::std::string> RNG_SEED;
 // BLOCKS
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_WITHIN_X_PERCENT;
 extern ::spl::utility::Key< ::std::string> LOAD_STRUCTURES;
@@ -46,6 +47,7 @@ extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
 extern ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
+extern ::spl::utility::Key< bool> WRITE_HULL;
 
 extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
 extern ::spl::utility::Key< bool> MULTI_WRITE;

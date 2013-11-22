@@ -97,20 +97,17 @@ SearchStoichiometries::start()
     BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
     {
       numAtomsOfSpecies = currentIdx[i];
-      if(!range.first.empty() && numAtomsOfSpecies > 0)
-      {
-        generationSettings.atomsSettings[range.first].num = numAtomsOfSpecies;
+      generationSettings.atomsSettings[range.first].num = numAtomsOfSpecies;
 
-        stoichStringStream << numAtomsOfSpecies;
+      stoichStringStream << numAtomsOfSpecies;
 
-        // Append the species symbol
-        if(!range.first.empty())
-          stoichStringStream << range.first;
+      // Append the species symbol
+      if(!range.first.empty())
+        stoichStringStream << range.first;
 
-        // Add delimiter apart from for last species
-        if(i + 1 < currentIdx.dims())
-          stoichStringStream << "-";
-      }
+      // Add delimiter apart from for last species
+      if(i + 1 < currentIdx.dims())
+        stoichStringStream << "-";
       ++i;
     } // End loop over atoms
 

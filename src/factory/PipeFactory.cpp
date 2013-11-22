@@ -188,6 +188,16 @@ PipeFactory::createSearchPipeExtended(const OptionsMap & options) const
         *searchStoichiometries, startBlock))
       return BlockHandle();
     startBlock = searchStoichsBlock;
+
+    const OptionsMap * const keepStableCompositions = options.find(
+        spf::KEEP_STABLE_COMPOSITIONS);
+    if(keepStableCompositions)
+    {
+      BlockHandle block;
+      if(myBlockFactory.createKeepStableCompositionsBlock(&block,
+          *keepStableCompositions))
+        startBlock->connect(block);
+    }
   }
 
   // Are we doing a parameter sweep

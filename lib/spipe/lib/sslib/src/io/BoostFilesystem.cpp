@@ -105,5 +105,14 @@ createFile(const ::boost::filesystem::path & toCreate)
   return boostfs::exists(toCreate);
 }
 
+bool
+createAndChangeCurrentPath(const ::boost::filesystem::path & path)
+{
+  if(!is_directory(path))
+    return false;
+
+  return boostfs::create_directories(path);
+}
+
 }
 }

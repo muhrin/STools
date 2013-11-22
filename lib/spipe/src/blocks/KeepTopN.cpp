@@ -45,7 +45,7 @@ KeepTopN::KeepTopN(const size_t keepTopN, const StructureProperty & property,
 }
 
 void
-KeepTopN::in(spipe::common::StructureData * const data)
+KeepTopN::in(common::StructureData * const data)
 {
   const ssc::Structure * const structure = data->getStructure();
   const double * const value = structure->getProperty(myStructureProperty);

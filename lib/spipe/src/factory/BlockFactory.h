@@ -49,6 +49,9 @@ public:
   createFindSymmetryGroupBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool
+  createKeepStableCompositionsBlock(BlockHandle * const blockOut,
+      const OptionsMap & options) const;
+  bool
   createKeepTopNBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool

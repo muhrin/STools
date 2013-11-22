@@ -42,7 +42,7 @@ public:
 
   // From Block /////////////////
   virtual void
-  in(spipe::common::StructureData * const data);
+  in(common::StructureData * const data);
   // End from Block /////////////
 
   // From Barrier /////////////////

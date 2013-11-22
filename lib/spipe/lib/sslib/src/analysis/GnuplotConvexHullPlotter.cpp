@@ -36,105 +36,14 @@ GnuplotConvexHullPlotter::GnuplotConvexHullPlotter()
 bool
 GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull) const
 {
-  return outputHull(convexHull, NULL);
+  return doOutputHull(convexHull, NULL);
 }
 
 bool
 GnuplotConvexHullPlotter::outputHull(const ConvexHull & convexHull,
-    const ConvexHullInfoSupplier * const infoSupplier) const
+    const ConvexHullInfoSupplier & infoSupplier) const
 {
-  const ConvexHull::Hull * const hull = convexHull.getHull();
-  if(!hull)
-    return false;
-
-  const ::std::string outputFileStem = generateHullFileStem(convexHull);
-  const ::std::string datOutStr = outputFileStem + ".hull",
-      pltOutStr = outputFileStem + ".plt";
-
-  ::std::ofstream datOut(datOutStr.c_str());
-  ::std::ofstream pltOut(pltOutStr.c_str());
-
-  Plot plot;
-
-  // Set up the graph style
-  setStyles(pltOut, convexHull);
-
-  // Print the boundary
-  if(myDrawBoundary)
-    drawBoundary(pltOut, convexHull, plot);
-
-  drawEndpointLabels(pltOut, convexHull, plot);
-  if(myDrawTieLines)
-    drawTieLines(pltOut, convexHull, plot);
-
-  // Now plot the points
-  datOut << "# Hull points" << ::std::endl;
-  ConvexHull::PointD point;
-  for(ConvexHull::Hull::Hull_vertex_const_iterator it =
-      hull->hull_vertices_begin(), end = hull->hull_vertices_end(); it != end;
-      ++it)
-  {
-    point = it->point();
-    const ConvexHull::PointId pointId = point.getId();
-
-    point = prepPoint(point);
-
-    datOut << printPoint(point) << ::std::endl;
-    if(infoSupplier && myDrawLabels)
-    {
-      ::std::vector< ConvexHull::HullTraits::FT> labelPt(
-          point.cartesian_begin(), point.cartesian_end());
-      labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
-      const ::std::string & label = infoSupplier->getLabel(convexHull,
-          pointId);
-      if(!label.empty())
-        pltOut
-            << plot.drawLabel(label,
-                ConvexHull::PointD(labelPt.size(), labelPt.begin(),
-                    labelPt.end()));
-    }
-  }
-
-  bool haveOffHullPoints = false;
-  if(myDrawOffHullPoints)
-  {
-    // Start a new data set
-    datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;;
-    for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
-        convexHull.entriesEnd(); it != end; ++it)
-    {
-      point = *it->getPoint();
-      // Check that this isn't a hull point
-      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point) ==
-          hull->hull_points_end())
-      {
-        datOut << printPoint(prepPoint(point)) << ::std::endl;
-        haveOffHullPoints = true;
-      }
-    }
-  }
-
-  if(plotDims(convexHull) == 3 || convexHull.dims() == 3)
-    pltOut << "set size square" << ::std::endl;
-
-  ::std::stringstream plotStream;
-  plotStream << "\"" << datOutStr << "\" i 0 ls "
-      << HULL_POINT_LINE_STYLE << " title \"Hull point\"";
-  if(myDrawOffHullPoints && haveOffHullPoints)
-    plotStream << ", \"" << datOutStr << "\" i 1 ls "
-        << OFF_HULL_LINE_STYLE << " title \"Off hull point\"";
-
-  if(plotDims(convexHull) == 3)
-    pltOut << "splot " << plotStream.str() << ::std::endl;
-  else
-    pltOut << "plot " << plotStream.str() << ::std::endl;
-
-  if(datOut.is_open())
-    datOut.close();
-  if(pltOut.is_open())
-    pltOut.close();
-
-  return true;
+  return doOutputHull(convexHull, &infoSupplier);
 }
 
 bool
@@ -372,6 +281,104 @@ GnuplotConvexHullPlotter::drawEndpointLabels(::std::ostream & os,
             ConvexHull::PointD(plotDims, vec.cartesian_begin(),
                 vec.cartesian_begin() + plotDims));
   }
+}
+
+bool
+GnuplotConvexHullPlotter::doOutputHull(const ConvexHull & convexHull,
+    const ConvexHullInfoSupplier * const infoSupplier) const
+{
+  const ConvexHull::Hull * const hull = convexHull.getHull();
+  if(!hull)
+    return false;
+
+  const ::std::string outputFileStem = generateHullFileStem(convexHull);
+  const ::std::string datOutStr = outputFileStem + ".hull",
+      pltOutStr = outputFileStem + ".plt";
+
+  ::std::ofstream datOut(datOutStr.c_str());
+  ::std::ofstream pltOut(pltOutStr.c_str());
+
+  Plot plot;
+
+  // Set up the graph style
+  setStyles(pltOut, convexHull);
+
+  // Print the boundary
+  if(myDrawBoundary)
+    drawBoundary(pltOut, convexHull, plot);
+
+  drawEndpointLabels(pltOut, convexHull, plot);
+  if(myDrawTieLines)
+    drawTieLines(pltOut, convexHull, plot);
+
+  // Now plot the points
+  datOut << "# Hull points" << ::std::endl;
+  ConvexHull::PointD point;
+  for(ConvexHull::Hull::Hull_vertex_const_iterator it =
+      hull->hull_vertices_begin(), end = hull->hull_vertices_end(); it != end;
+      ++it)
+  {
+    point = it->point();
+    const ConvexHull::PointId pointId = point.getId();
+
+    point = prepPoint(point);
+
+    datOut << printPoint(point) << ::std::endl;
+    if(infoSupplier && myDrawLabels)
+    {
+      ::std::vector< ConvexHull::HullTraits::FT> labelPt(
+          point.cartesian_begin(), point.cartesian_end());
+      labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
+      const ::std::string & label = infoSupplier->getLabel(convexHull,
+          pointId);
+      if(!label.empty())
+        pltOut
+            << plot.drawLabel(label,
+                ConvexHull::PointD(labelPt.size(), labelPt.begin(),
+                    labelPt.end()));
+    }
+  }
+
+  bool haveOffHullPoints = false;
+  if(myDrawOffHullPoints)
+  {
+    // Start a new data set
+    datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;;
+    for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
+        convexHull.entriesEnd(); it != end; ++it)
+    {
+      point = *it->getPoint();
+      // Check that this isn't a hull point
+      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point) ==
+          hull->hull_points_end())
+      {
+        datOut << printPoint(prepPoint(point)) << ::std::endl;
+        haveOffHullPoints = true;
+      }
+    }
+  }
+
+  if(plotDims(convexHull) == 3 || convexHull.dims() == 3)
+    pltOut << "set size square" << ::std::endl;
+
+  ::std::stringstream plotStream;
+  plotStream << "\"" << datOutStr << "\" i 0 ls "
+      << HULL_POINT_LINE_STYLE << " title \"Hull point\"";
+  if(myDrawOffHullPoints && haveOffHullPoints)
+    plotStream << ", \"" << datOutStr << "\" i 1 ls "
+        << OFF_HULL_LINE_STYLE << " title \"Off hull point\"";
+
+  if(plotDims(convexHull) == 3)
+    pltOut << "splot " << plotStream.str() << ::std::endl;
+  else
+    pltOut << "plot " << plotStream.str() << ::std::endl;
+
+  if(datOut.is_open())
+    datOut.close();
+  if(pltOut.is_open())
+    pltOut.close();
+
+  return true;
 }
 
 int

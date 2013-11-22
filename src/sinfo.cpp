@@ -6,6 +6,8 @@
  */
 
 // INCLUDES //////////////////////////////////
+#include <boost/iterator/transform_iterator.hpp>
+
 #include <spl/SSLib.h>
 #ifdef SSLIB_USE_CGAL
 #  include <spl/analysis/ConvexHullStructures.h>
@@ -15,6 +17,7 @@
 #include <spl/io/ResourceLocator.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/utility/SortedDistanceComparator.h>
+#include <spl/utility/TransformFunctions.h>
 #include <spl/utility/UniqueStructureSet.h>
 
 // From StructurePipe
@@ -35,6 +38,17 @@ namespace ssa = ::spl::analysis;
 namespace ssu = ::spl::utility;
 namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
+
+template< typename Iterator>
+  ::boost::transform_iterator< ssu::AddressOf< typename Iterator::value_type>,
+      Iterator>
+  makeAddressOfIterator(Iterator it)
+  {
+    static const ssu::AddressOf< typename Iterator::value_type> ADDRESS_OF;
+    return ::boost::transform_iterator<
+        ssu::AddressOf< typename Iterator::value_type>, Iterator>(it,
+        ADDRESS_OF);
+  }
 
 void
 addToken(const ::std::string & token, InputOptions & in);
@@ -102,57 +116,66 @@ main(const int argc, char * argv[])
     return 1; // No structures found
 
 #ifdef SSLIB_USE_CGAL
-  const bool useHullDist =
-      in.maxHullDist != MAX_HULL_DIST_IGNORE || tokensInfo.getToken("hd") != NULL;
+  const bool useHullDist = in.maxHullDist
+      != MAX_HULL_DIST_IGNORE|| tokensInfo.getToken("hd") != NULL;
   if(in.stableCompositions || useHullDist)
   {
-    // Generate the convex hull
-    ssa::ConvexHullStructures hullStructures(
-        ssa::ConvexHullStructures::generateEndpoints(structures.begin(),
-            structures.end()));
-    for(StructuresContainer::iterator it = structures.begin();
-        it != structures.end(); /* increment in loop body */)
-    {
-      if(hullStructures.insertStructure(*it) == hullStructures.structuresEnd())
-        it = structures.erase(it); // Erase structures that aren't in the space of the hull
-      else
-        ++it;
-    }
-    // Add the formation enthalpies to the structures properties
-    hullStructures.populateFormationEnthalpies();
-    if(autoTokens)
-      addToken("hf", in);
+    const ssa::ConvexHullStructures::EndpointLabels & endpoints =
+        ssa::ConvexHullStructures::generateEndpoints(
+            makeAddressOfIterator(structures.begin()),
+            makeAddressOfIterator(structures.end()));
 
-    if(useHullDist)
-      hullStructures.populateHullDistances();
-
-    if(in.stableCompositions)
+    if(endpoints.size() > 2)
     {
-      for(StructuresContainer::iterator it = structures.begin();
-          it != structures.end();
-          /* increment in loop body */)
-      {
-        if(hullStructures.getStability(*it)
-            != ssa::ConvexHullStructures::Stability::STABLE)
-          it = structures.erase(it);
-        else
-          ++it;
-      }
-    }
-    else if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
-    {
-      // Now go through getting those that are within the maximum formation enthalpy
+      // Generate the convex hull
+      ssa::ConvexHullStructures hullStructures(endpoints);
       for(StructuresContainer::iterator it = structures.begin();
           it != structures.end(); /* increment in loop body */)
       {
-        const double * const hullDist =
-            it->getProperty(ssc::structure_properties::general::HULL_DISTANCE);
-        if(!hullDist || *hullDist > in.maxHullDist)
-          it = structures.erase(it);
+        if(hullStructures.insert(&(*it)) == hullStructures.structuresEnd())
+          it = structures.erase(it); // Erase structures that aren't in the space of the hull
         else
           ++it;
       }
+      // Add the formation enthalpies to the structures properties
+      hullStructures.populateFormationEnthalpies();
+      if(autoTokens)
+        addToken("hf", in);
+
+      if(useHullDist)
+        hullStructures.populateHullDistances();
+
+      if(in.stableCompositions)
+      {
+        for(StructuresContainer::iterator it = structures.begin();
+            it != structures.end();
+            /* increment in loop body */)
+        {
+          if(hullStructures.getStability(*it)
+              != ssa::ConvexHullStructures::Stability::STABLE)
+            it = structures.erase(it);
+          else
+            ++it;
+        }
+      }
+      else if(in.maxHullDist != MAX_HULL_DIST_IGNORE)
+      {
+        // Now go through getting those that are within the maximum formation enthalpy
+        for(StructuresContainer::iterator it = structures.begin();
+            it != structures.end(); /* increment in loop body */)
+        {
+          const double * const hullDist = it->getProperty(
+              ssc::structure_properties::general::HULL_DISTANCE);
+          if(!hullDist || *hullDist > in.maxHullDist)
+            it = structures.erase(it);
+          else
+            ++it;
+        }
+      }
     }
+    else
+      ::std::cerr << "Error: Found " << endpoints.size()
+          << " endpoints.  Need at least 2 to determine stable compositions.\n";
   }
 #endif
 
@@ -193,10 +216,12 @@ main(const int argc, char * argv[])
 
     BOOST_FOREACH(FormulasMap::reference form, formulasMap)
     {
-      if(static_cast<int>(form.second.size()) > in.compositionTop)
+      if(static_cast< int>(form.second.size()) > in.compositionTop)
       {
         TopN::reverse_iterator it = form.second.rbegin();
-        for(int i = 0; i < static_cast<int>(form.second.size()) - in.compositionTop; ++i, ++it)
+        for(int i = 0;
+            i < static_cast< int>(form.second.size()) - in.compositionTop;
+            ++i, ++it)
           toRemove.insert(it->second);
       }
     }

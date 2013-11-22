@@ -16,7 +16,6 @@
 
 #include <armadillo>
 
-
 #include <spl/SSLib.h>
 #include <spl/common/Structure.h>
 #include <spl/common/Types.h>

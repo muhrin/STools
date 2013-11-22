@@ -15,6 +15,7 @@
 // Local includes
 #include "blocks/BuildStructures.h"
 #include "blocks/FindSymmetryGroup.h"
+#include "blocks/KeepStableCompositions.h"
 #include "blocks/KeepTopN.h"
 #include "blocks/KeepWithinXPercent.h"
 #include "blocks/LoadStructures.h"
@@ -67,6 +68,21 @@ BlockFactory::createFindSymmetryGroupBlock(BlockHandle * const blockOut,
     const OptionsMap & options) const
 {
   blockOut->reset(new blocks::FindSymmetryGroup());
+  return true;
+}
+
+bool
+BlockFactory::createKeepStableCompositionsBlock(BlockHandle * const blockOut,
+    const OptionsMap & options) const
+{
+  bool writeHull = false;
+  {
+    const bool * const writeHullOpt = options.find(WRITE_HULL);
+    if(writeHullOpt)
+      writeHull = *writeHullOpt;
+  }
+
+  blockOut->reset(new blocks::KeepStableCompositions(writeHull));
   return true;
 }
 
@@ -126,8 +142,8 @@ BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
   if(!optimiser.get())
     return false;
 
-  const bool potentialIsParameterisable =
-    optimiser->getPotential() && optimiser->getPotential()->getParameterisable();
+  const bool potentialIsParameterisable = optimiser->getPotential()
+      && optimiser->getPotential()->getParameterisable();
 
   const ssp::OptimisationSettings settings =
       mySplFactory.createOptimisationSettings(options);
@@ -140,9 +156,11 @@ BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
   }
 
   if(potentialIsParameterisable)
-    blockOut->reset(new blocks::ParamGeomOptimise(optimiser, settings, writeSummary));
+    blockOut->reset(
+        new blocks::ParamGeomOptimise(optimiser, settings, writeSummary));
   else
-    blockOut->reset(new blocks::GeomOptimise(optimiser, settings, writeSummary));
+    blockOut->reset(
+        new blocks::GeomOptimise(optimiser, settings, writeSummary));
 
   return true;
 }
@@ -216,7 +234,8 @@ BlockFactory::createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
   const ::std::string * const queueFile = options.find(QUEUE_FILE);
   const ::std::string * const doneFile = options.find(DONE_FILE);
 
-  blockOut->reset(new blocks::RunPotentialParamsQueue(queueFile, doneFile, subpipe));
+  blockOut->reset(
+      new blocks::RunPotentialParamsQueue(queueFile, doneFile, subpipe));
   return true;
 }
 
@@ -224,8 +243,8 @@ bool
 BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
     const OptionsMap & options, BlockHandle subpipe) const
 {
-  typedef ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange>
-    AtomRanges;
+  typedef ::std::map< ::std::string,
+      ::spl::build_cell::AtomsDescription::CountRange> AtomRanges;
 
   if(!subpipe)
     return false;
@@ -234,7 +253,8 @@ BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
   if(!atomRanges)
     return false;
 
-  blockOut->reset(new blocks::SearchStoichiometries(*atomRanges, 1000, subpipe));
+  blockOut->reset(
+      new blocks::SearchStoichiometries(*atomRanges, 1000, subpipe));
 
   return true;
 }
@@ -243,7 +263,8 @@ bool
 BlockFactory::createSweepPotentialParamsBlock(BlockHandle * const blockOut,
     const OptionsMap & options, BlockHandle sweepPipe) const
 {
-  const ::std::vector< ::std::string> * const paramStrings = options.find(PARAM_RANGE);
+  const ::std::vector< ::std::string> * const paramStrings = options.find(
+      PARAM_RANGE);
   if(!paramStrings)
     return false;
 

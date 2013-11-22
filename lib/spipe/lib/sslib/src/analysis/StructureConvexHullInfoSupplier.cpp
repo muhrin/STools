@@ -14,12 +14,16 @@
 namespace spl {
 namespace analysis {
 
-void StructureConvexHullInfoSupplier::addStructure(const common::Structure & structure, int id)
+void
+StructureConvexHullInfoSupplier::addStructure(
+    const common::Structure & structure, int id)
 {
   myStructures[id] = &structure;
 }
 
-::std::string StructureConvexHullInfoSupplier::getLabel(const ConvexHull & convexHull, const ConvexHull::PointId pointId) const
+::std::string
+StructureConvexHullInfoSupplier::getLabel(const ConvexHull & convexHull,
+    const ConvexHull::PointId pointId) const
 {
   ::std::string label;
   if(pointId == -1)

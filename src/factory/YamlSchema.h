@@ -97,6 +97,8 @@ struct Search : PipeSettings
         new spf::blocks::GeomOptimise());
     addEntry("removeDuplicates", spf::REMOVE_DUPLICATES,
         new spf::blocks::RemoveDuplicates());
+    addEntry("keepStableCompositions", spf::KEEP_STABLE_COMPOSITIONS,
+        new spf::blocks::KeepStableCompositions());
     addEntry("keepTopN", spf::KEEP_TOP_N, new spf::blocks::KeepTopN());
     addEntry("keepWithinXPercent", spf::KEEP_WITHIN_X_PERCENT,
         new spf::blocks::KeepWithinXPercent());

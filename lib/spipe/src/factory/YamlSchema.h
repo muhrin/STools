@@ -49,6 +49,14 @@ struct FindSymmetryGroup : HeteroMap
   }
 };
 
+struct KeepStableCompositions : HeteroMap
+{
+  KeepStableCompositions()
+  {
+    addScalarEntry("writeHull", WRITE_HULL)->element()->defaultValue(false);
+  }
+};
+
 struct KeepTopN : HeteroMap
 {
   typedef ::spl::utility::HeterogeneousMap BindingType;

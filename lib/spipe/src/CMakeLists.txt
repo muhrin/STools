@@ -6,6 +6,7 @@ set(spipe_Header_Files__blocks
   blocks/FindSymmetryGroup.h
   blocks/EdgeDetect.h
   blocks/GeomOptimise.h
+  blocks/KeepStableCompositions.h
   blocks/KeepTopN.h
   blocks/KeepWithinXPercent.h
   blocks/LoadStructures.h
@@ -23,6 +24,7 @@ set(spipe_Source_Files__blocks
   blocks/BuildStructures.cpp
   blocks/FindSymmetryGroup.cpp
   blocks/GeomOptimise.cpp
+  blocks/KeepStableCompositions.cpp
   blocks/KeepTopN.cpp
   blocks/KeepWithinXPercent.cpp
   blocks/LoadStructures.cpp

@@ -55,6 +55,14 @@ public:
   { return *pair.second; }
 };
 
+template <typename T>
+class AddressOf : public ::std::unary_function< T &, T *>
+{
+public:
+  T * operator() ( T & x) const
+  { return &x; }
+};
+
 }
 }
 

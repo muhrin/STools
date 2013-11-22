@@ -14,12 +14,9 @@
 
 #include <armadillo>
 
+#include "common/StructureData.h"
+
 // FORWARD DECLARES ////////////////////////////////
-namespace spipe {
-namespace common {
-class StructureData;
-}
-}
 
 // DEFINES ////////////////////////////////////////
 #define EPSILON_REL 1e-5;
@@ -39,6 +36,7 @@ getString(const double in, unsigned int digitsAfterDecimal = 5);
 ::std::string
 generateParamDirName(const ::arma::vec & params,
     const ::std::string & seedName);
+
 
 }
 }

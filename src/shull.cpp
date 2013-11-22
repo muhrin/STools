@@ -6,7 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-
 #include <iostream>
 #include <list>
 #include <set>
@@ -51,10 +50,11 @@ struct InputOptions
   ::std::string distanceStructure;
 };
 
-::spl::UniquePtr<ssa::ConvexHullOutputter>::Type
+::spl::UniquePtr< ssa::ConvexHullOutputter>::Type
 generateOutputter(const InputOptions & in);
 
-int main(const int argc, char * argv[])
+int
+main(const int argc, char * argv[])
 {
   const ::std::string exeName(argv[0]);
 
@@ -63,24 +63,34 @@ int main(const int argc, char * argv[])
 
   try
   {
-    po::options_description desc("Usage: " + exeName + " [options] files...\nOptions:");
-    desc.add_options()
-      ("help", "Show help message")
-      ("input-file", po::value< ::std::vector< ::std::string> >(&in.inputFiles), "input file(s)")
-      ("outputter,o", po::value< ::std::string>(&in.outputter)->default_value("gnuplot"), "the hull outputter to use: gnuplot")
-      ("flatten,f", po::value<bool>(&in.flattenConvexProperty)->default_value(false)->zero_tokens(), "don't output convex property dimensions, only points that lie on the hull.")
-      ("hide-tie-lines,t", po::value<bool>(&in.hideTieLines)->default_value(false)->zero_tokens(), "don't draw tie lines (visual outputters only)")
-      ("hide-labels,l", po::value<bool>(&in.hideLabels)->default_value(false)->zero_tokens(), "don't output labels for hull points")
-      ("hide-off-hull,h", po::value<bool>(&in.hideOffHull)->default_value(false)->zero_tokens(), "hide points not on the hull")
-      ("endpoints,e", po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(), "list of whitespace separated endpoints e.g. SiNi Fe")
-      ("distance,d", po::value< ::std::string>(&in.distanceStructure), "calculate distance from hull to given structure")
-    ;
+    po::options_description desc(
+        "Usage: " + exeName + " [options] files...\nOptions:");
+    desc.add_options()("help", "Show help message")("input-file",
+        po::value< ::std::vector< ::std::string> >(&in.inputFiles),
+        "input file(s)")("outputter,o",
+        po::value< ::std::string>(&in.outputter)->default_value("gnuplot"),
+        "the hull outputter to use: gnuplot")("flatten,f",
+        po::value< bool>(&in.flattenConvexProperty)->default_value(false)->zero_tokens(),
+        "don't output convex property dimensions, only points that lie on the hull.")(
+        "hide-tie-lines,t",
+        po::value< bool>(&in.hideTieLines)->default_value(false)->zero_tokens(),
+        "don't draw tie lines (visual outputters only)")("hide-labels,l",
+        po::value< bool>(&in.hideLabels)->default_value(false)->zero_tokens(),
+        "don't output labels for hull points")("hide-off-hull,h",
+        po::value< bool>(&in.hideOffHull)->default_value(false)->zero_tokens(),
+        "hide points not on the hull")("endpoints,e",
+        po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(),
+        "list of whitespace separated endpoints e.g. SiNi Fe")("distance,d",
+        po::value< ::std::string>(&in.distanceStructure),
+        "calculate distance from hull to given structure");
 
     po::positional_options_description p;
     p.add("input-file", -1);
 
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(desc).positional(p).run(),
+        vm);
 
     // Deal with help first, otherwise missing required parameters will cause exception
     if(vm.count("help"))
@@ -97,7 +107,7 @@ int main(const int argc, char * argv[])
     return 1;
   }
 
-  ::std::vector<ssc::AtomsFormula> endpoints(in.customEndpoints.size());
+  ::std::vector< ssc::AtomsFormula> endpoints(in.customEndpoints.size());
   if(!in.customEndpoints.empty())
   {
     bool error = false;
@@ -105,7 +115,8 @@ int main(const int argc, char * argv[])
     {
       if(!endpoints[i].fromString(in.customEndpoints[i]))
       {
-        ::std::cerr << "Unrecognised endpoint: " << in.customEndpoints[i] << ::std::endl;
+        ::std::cerr << "Unrecognised endpoint: " << in.customEndpoints[i]
+            << ::std::endl;
         error = true;
       }
     }
@@ -123,12 +134,14 @@ int main(const int argc, char * argv[])
   {
     if(!structureLocator.set(inputFile))
     {
-      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping." << ::std::endl;
+      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping."
+          << ::std::endl;
       continue;
     }
     if(!fs::exists(structureLocator.path()))
     {
-      ::std::cerr << "File " << inputFile << " does not exist.  Skipping." << ::std::endl;
+      ::std::cerr << "File " << inputFile << " does not exist.  Skipping."
+          << ::std::endl;
       continue;
     }
 
@@ -136,11 +149,13 @@ int main(const int argc, char * argv[])
   }
 
   if(endpoints.empty())
-    endpoints = ssa::ConvexHull::generateEndpoints(loadedStructures.begin(), loadedStructures.end());
+    endpoints = ssa::ConvexHull::generateEndpoints(loadedStructures.begin(),
+        loadedStructures.end());
 
   if(endpoints.size() < 2)
   {
-    ::std::cerr << "Must have 2 or more endpoints to construct hull, currently have: ";
+    ::std::cerr
+        << "Must have 2 or more endpoints to construct hull, currently have: ";
     BOOST_FOREACH(const ssc::AtomsFormula & formula, endpoints)
       ::std::cerr << formula << " ";
     ::std::cerr << ::std::endl;
@@ -148,7 +163,9 @@ int main(const int argc, char * argv[])
   }
 
   ssa::ConvexHull hullGenerator(endpoints);
-  const ::std::vector<ssa::ConvexHull::PointId> structureIds = hullGenerator.addStructures(loadedStructures.begin(), loadedStructures.end());
+  const ::std::vector< ssa::ConvexHull::PointId> structureIds =
+      hullGenerator.addStructures(loadedStructures.begin(),
+          loadedStructures.end());
 
   // Try to get the distance structure (if any)
   ssc::StructurePtr distanceStructure;
@@ -156,12 +173,14 @@ int main(const int argc, char * argv[])
   {
     if(!structureLocator.set(in.distanceStructure))
     {
-      ::std::cerr << "Invalid distance structure path " << in.distanceStructure << ::std::endl;
+      ::std::cerr << "Invalid distance structure path " << in.distanceStructure
+          << ::std::endl;
       return 1;
     }
     if(!fs::exists(structureLocator.path()))
     {
-      ::std::cerr << "File " << in.distanceStructure << " does not exist" << ::std::endl;
+      ::std::cerr << "File " << in.distanceStructure << " does not exist"
+          << ::std::endl;
       return 1;
     }
     distanceStructure = rwMan.readStructure(structureLocator);
@@ -176,7 +195,8 @@ int main(const int argc, char * argv[])
   {
     if(distanceStructure.get())
     {
-      ::spl::OptionalDouble dist = hullGenerator.distanceToHull(*distanceStructure);
+      ::spl::OptionalDouble dist = hullGenerator.distanceToHull(
+          *distanceStructure);
       if(dist)
         ::std::cout << *dist << ::std::endl;
       else
@@ -189,24 +209,25 @@ int main(const int argc, char * argv[])
       for(size_t i = 0; i < structureIds.size(); ++i)
         infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
 
-      ::spl::UniquePtr<ssa::ConvexHullOutputter>::Type outputter = generateOutputter(in);
+      ::spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter =
+          generateOutputter(in);
       if(outputter.get())
-        outputter->outputHull(hullGenerator, &infoSupplier);
+        outputter->outputHull(hullGenerator, infoSupplier);
     }
   }
 
   return 0;
 }
 
-
-::spl::UniquePtr<ssa::ConvexHullOutputter>::Type
+::spl::UniquePtr< ssa::ConvexHullOutputter>::Type
 generateOutputter(const InputOptions & in)
 {
-  ::spl::UniquePtr<ssa::ConvexHullOutputter>::Type outputter;
+  ::spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter;
 
   if(in.outputter == "gnuplot")
   {
-    ssa::GnuplotConvexHullPlotter * gnuplot = new ssa::GnuplotConvexHullPlotter();
+    ssa::GnuplotConvexHullPlotter * gnuplot =
+        new ssa::GnuplotConvexHullPlotter();
     gnuplot->setSupressEnergyDimension(in.flattenConvexProperty);
     gnuplot->setDrawTieLines(!in.hideTieLines);
     gnuplot->setDrawHullLabels(!in.hideLabels);
@@ -214,7 +235,8 @@ generateOutputter(const InputOptions & in)
     outputter.reset(gnuplot);
   }
   else
-    ::std::cerr << "Error: unrecognised outputter - " << in.outputter << ::std::endl;
+    ::std::cerr << "Error: unrecognised outputter - " << in.outputter
+        << ::std::endl;
 
   return outputter;
 }

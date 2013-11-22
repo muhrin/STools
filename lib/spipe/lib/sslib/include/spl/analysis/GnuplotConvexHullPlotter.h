@@ -33,7 +33,7 @@ public:
   outputHull(const ConvexHull & convexHull) const;
   virtual bool
   outputHull(const ConvexHull & convexHull,
-      const ConvexHullInfoSupplier * const infoSupplier) const;
+      const ConvexHullInfoSupplier & infoSupplier) const;
 
   bool
   getDrawTieLines() const;
@@ -91,12 +91,13 @@ private:
   drawEndpointLabels(::std::ostream & os, const ConvexHull & convexHull,
       Plot & plot) const;
 
+  bool
+  doOutputHull(const ConvexHull & convexHull,
+      const ConvexHullInfoSupplier * const infoSupplier) const;
   int
   plotDims(const ConvexHull & convexHull) const;
-
   ConvexHull::PointD
   prepPoint(const ConvexHull::PointD & point) const;
-
   ::std::string
   generateHullFileStem(const ConvexHull & convexHull) const;
 

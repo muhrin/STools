@@ -13,34 +13,47 @@
 
 # include <boost/iterator/iterator_facade.hpp>
 
+#include "spl/utility/TransformFunctions.h"
+
 namespace spl {
 namespace analysis {
 namespace detail {
 
 class StableStructuresIterator : public ::boost::iterator_facade<
-    StableStructuresIterator,
-    const common::Structure *,
-    ::boost::forward_traversal_tag,
-     const common::Structure *
-   >
+    StableStructuresIterator, const common::Structure *,
+    ::boost::forward_traversal_tag, const common::Structure *>
 {
 public:
-  StableStructuresIterator(): myHullStructures(NULL) {}
+  StableStructuresIterator() :
+      myHullStructures(NULL)
+  {
+  }
 
-  explicit StableStructuresIterator(const ConvexHullStructures * hullStructures):
-    myHullStructures(hullStructures)
+  explicit
+  StableStructuresIterator(const ConvexHullStructures * hullStructures) :
+      myHullStructures(hullStructures)
   {
     myIt = myHullStructures->structuresBegin();
-    goToNextStable();
+    goToFirstStable();
   }
 
 private:
 
-  const common::Structure * dereference() const { return *myIt; }
+  const common::Structure *
+  dereference() const
+  {
+    return *myIt;
+  }
 
-  void increment() { goToNextStable(); }
+  void
+  increment()
+  {
+    ++myIt;
+    goToFirstStable();
+  }
 
-  bool equal(const StableStructuresIterator & other) const
+  bool
+  equal(const StableStructuresIterator & other) const
   {
     if(isAtEnd() && other.isAtEnd())
       return true;
@@ -48,21 +61,26 @@ private:
     return myIt == other.myIt;
   }
 
-  void goToNextStable()
+  void
+  goToFirstStable()
   {
     // Find the next stable structure
     for(; myIt != myHullStructures->structuresEnd(); ++myIt)
     {
-      if(myHullStructures->getStability(**myIt) == ConvexHullStructures::Stability::STABLE)
+      if(myHullStructures->getStability(**myIt)
+          == ConvexHullStructures::Stability::STABLE)
         break;
     }
   }
 
-  bool isAtEnd() const
+  bool
+  isAtEnd() const
   {
     // If we don't have hull structures then we're an end iterator,
     // oterwise check if we're at the end of the hull structures
-    return myHullStructures == NULL ? true : myIt == myHullStructures->structuresEnd();
+    return
+        myHullStructures == NULL ?
+            true : myIt == myHullStructures->structuresEnd();
   }
 
   const ConvexHullStructures * myHullStructures;
@@ -73,48 +91,69 @@ private:
 
 } // namespace detail
 
-ConvexHullStructures::ConvexHullStructures(const EndpointLabels & endpoints):
+ConvexHullStructures::ConvexHullStructures(const EndpointLabels & endpoints) :
     myConvexHull(endpoints)
-{}
+{
+}
 
 ConvexHullStructures::ConvexHullStructures(const EndpointLabels & endpoints,
-    utility::Key< double> & convexProperty):
+    utility::Key< double> & convexProperty) :
     myConvexHull(endpoints, convexProperty)
-{}
+{
+}
 
 ConvexHullStructures::StructuresIterator
-ConvexHullStructures::insertStructure(common::Structure & structure)
+ConvexHullStructures::insert(common::Structure * structure)
 {
-  const ConvexHull::PointId id = myConvexHull.addStructure(structure);
+  const ConvexHull::PointId id = myConvexHull.addStructure(*structure);
   if(id == -1)
     return structuresEnd();
 
-  return StructuresIterator(myStructures.insert(::std::make_pair(&structure, id)).first);
+  return StructuresIterator(
+      myStructures.insert(::std::make_pair(structure, id)).first);
 }
 
-ConvexHullStructures::StructuresIterator ConvexHullStructures::structuresBegin() const
+ConvexHullStructures::StructuresIterator
+ConvexHullStructures::structuresBegin() const
 {
   return StructuresIterator(myStructures.begin());
 }
 
-ConvexHullStructures::StructuresIterator ConvexHullStructures::structuresEnd() const
+ConvexHullStructures::StructuresIterator
+ConvexHullStructures::structuresEnd() const
 {
   return StructuresIterator(myStructures.end());
 }
 
-ConvexHullStructures::StableStructuresIterator ConvexHullStructures::stableStructuresBegin() const
+size_t
+ConvexHullStructures::numStable() const
+{
+  return ::std::distance(stableStructuresBegin(), stableStructuresEnd());
+}
+
+ConvexHullStructures::StableStructuresIterator
+ConvexHullStructures::stableStructuresBegin() const
 {
   return detail::StableStructuresIterator(this);
 }
 
-ConvexHullStructures::StableStructuresIterator ConvexHullStructures::stableStructuresEnd() const
+ConvexHullStructures::StableStructuresIterator
+ConvexHullStructures::stableStructuresEnd() const
 {
   return StableStructuresIterator();
 }
 
-ConvexHullStructures::Stability::Value ConvexHullStructures::getStability(const common::Structure & structure) const
+const ConvexHull &
+ConvexHullStructures::getHull() const
 {
-  const Structures::const_iterator it = myStructures.find(const_cast<common::Structure *>(&structure));
+  return myConvexHull;
+}
+
+ConvexHullStructures::Stability::Value
+ConvexHullStructures::getStability(const common::Structure & structure) const
+{
+  const Structures::const_iterator it = myStructures.find(
+      const_cast< common::Structure *>(&structure));
   SSLIB_ASSERT(it != myStructures.end());
 
   if(it->second == -1)
@@ -125,43 +164,73 @@ ConvexHullStructures::Stability::Value ConvexHullStructures::getStability(const 
     return Stability::UNSTABLE;
 }
 
-double ConvexHullStructures::getFormationEnthalpy(const StructuresIterator structure) const
+double
+ConvexHullStructures::getFormationEnthalpy(
+    const StructuresIterator structure) const
 {
   return getFormationEnthalpy(structure.base()->second);
 }
 
-void ConvexHullStructures::populateFormationEnthalpies()
+void
+ConvexHullStructures::populateFormationEnthalpies()
 {
   BOOST_FOREACH(Structures::reference s, myStructures)
   {
-    s.first->setProperty(common::structure_properties::general::FORMATION_ENTHALPY,
+    s.first->setProperty(
+        common::structure_properties::general::FORMATION_ENTHALPY,
         getFormationEnthalpy(s.second));
   }
 }
 
-void ConvexHullStructures::populateHullDistances()
+void
+ConvexHullStructures::populateHullDistances()
 {
   OptionalDouble dist;
   BOOST_FOREACH(Structures::reference s, myStructures)
   {
     dist = myConvexHull.distanceToHull(s.second);
     if(dist)
-      s.first->setProperty(common::structure_properties::general::HULL_DISTANCE, *dist);
+      s.first->setProperty(common::structure_properties::general::HULL_DISTANCE,
+          *dist);
   }
 }
 
-OptionalDouble ConvexHullStructures::distanceToHull(const common::Structure & structure) const
+OptionalDouble
+ConvexHullStructures::distanceToHull(const common::Structure & structure) const
 {
-  const Structures::const_iterator it = myStructures.find(const_cast<common::Structure *>(&structure));
+  const Structures::const_iterator it = myStructures.find(
+      const_cast< common::Structure *>(&structure));
   if(it == myStructures.end())
     return myConvexHull.distanceToHull(structure);
   else
     return myConvexHull.distanceToHull(it->second); // It's faster to calculate if we know the id
 }
 
-double ConvexHullStructures::getFormationEnthalpy(const ConvexHull::PointId id) const
+::std::string
+ConvexHullStructures::getLabel(const ConvexHull & convexHull,
+    const ConvexHull::PointId pointId) const
 {
-  return CGAL::to_double((*myConvexHull.getEntry(id).getPoint())[myConvexHull.dims() - 1]);
+  typedef utility::TakeSecond< const Structures::value_type> TakeSecond;
+  typedef ::boost::transform_iterator< TakeSecond, Structures::const_iterator> IdsIterator;
+
+  static const TakeSecond TAKE_SECOND;
+
+  SSLIB_ASSERT(&convexHull == &myConvexHull);
+
+  const IdsIterator it = ::std::find(IdsIterator(myStructures.begin(), TAKE_SECOND),
+      IdsIterator(myStructures.end(), TAKE_SECOND), pointId);
+
+  if(it.base() == myStructures.end())
+    return ::std::string();
+
+  return it.base()->first->getComposition().toString();
+}
+
+double
+ConvexHullStructures::getFormationEnthalpy(const ConvexHull::PointId id) const
+{
+  return CGAL::to_double(
+      (*myConvexHull.getEntry(id).getPoint())[myConvexHull.dims() - 1]);
 }
 
 }

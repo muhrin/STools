@@ -101,9 +101,10 @@ ConvexHull::entriesEnd() const
   return myEntries.end();
 }
 
-const ConvexHull::HullEntry & ConvexHull::getEntry(const PointId & id) const
+const ConvexHull::HullEntry &
+ConvexHull::getEntry(const PointId & id) const
 {
-  SSLIB_ASSERT_MSG(id >= 0 && id < static_cast<int>(myEntries.size()),
+  SSLIB_ASSERT_MSG(id >= 0 && id < static_cast< int>(myEntries.size()),
       "Invalid point id supplied: out of range");
   // Make sure the hull is generated
   getHull();
@@ -114,6 +115,10 @@ const ConvexHull::HullEntry & ConvexHull::getEntry(const PointId & id) const
 ::boost::optional< bool>
 ConvexHull::isStable(const PointD & point) const
 {
+#ifdef DEBUG_CONVEX_HULL_GENERATOR
+  ::std::cout << "Checking stability of point: " << point << "\n";
+#endif
+
   if(!myHull.get())
     return ::boost::optional< bool>();
 
@@ -129,8 +134,10 @@ ConvexHull::isStable(const PointD & point) const
   // TODO: Introduce hull facets that only includes facets other than
   // the top and any vertical facets
 
-  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
-  HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
+  const HullTraits::Oriented_side_d sideOf =
+      HullTraits().oriented_side_d_object();
+  HullTraits::Contained_in_simplex_d containedInSimplex =
+      HullTraits().contained_in_simplex_d_object();
 
   HullTraits::Hyperplane_d hyperplane;
   BOOST_FOREACH(Hull::Facet_const_handle facet, myHull->all_facets())
@@ -139,26 +146,34 @@ ConvexHull::isStable(const PointD & point) const
       continue;
 
     hyperplane = myHull->hyperplane_supporting(facet);
-    if(sideOf(hyperplane, point) == CGAL::ON_ORIENTED_BOUNDARY &&
-        containedInSimplex(facet->points_begin() + 1, facet->points_begin() + myHull->current_dimension() + 1, point))
+    if(sideOf(hyperplane, point) == CGAL::ON_ORIENTED_BOUNDARY
+        && containedInSimplex(facet->points_begin() + 1,
+            facet->points_begin() + myHull->current_dimension() + 1, point))
       return true;
   }
   return false;
 }
 
-::boost::optional<bool>
+::boost::optional< bool>
 ConvexHull::isStable(const PointId id) const
 {
   // Make sure the hull is generated
   getHull();
 
-  if(!myEntries[id].getPoint())
+  const HullEntry & entry = myEntries[id];
+
+  if(!entry.getPoint())
     return ::boost::optional< bool>();
+
+  // Is it an endpoint on the hull?
+  if(entry.isEndpoint() && (*entry.getPoint())[dims() - 1] == FT_ZERO)
+    return true; // Skip the more complex check
 
   return isStable(*myEntries[id].getPoint());
 }
 
-OptionalDouble ConvexHull::distanceToHull(const common::Structure & structure) const
+OptionalDouble
+ConvexHull::distanceToHull(const common::Structure & structure) const
 {
   getHull(); // Make sure the hull is generated
 
@@ -173,30 +188,34 @@ OptionalDouble ConvexHull::distanceToHull(const common::Structure & structure) c
   const PointD p = generateHullPoint(structure.getComposition(), *value);
 
   OptionalDouble dist;
-  const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(p);
+  const ::boost::optional< HullTraits::RT> ftDist = distanceToHull(p);
   if(ftDist)
     dist.reset(CGAL::to_double(*ftDist));
   return dist;
 }
 
-OptionalDouble ConvexHull::distanceToHull(const PointId id) const
+OptionalDouble
+ConvexHull::distanceToHull(const PointId id) const
 {
   getHull(); // Make sure the hull is generated
 
   OptionalDouble dist;
-  const ::boost::optional<HullTraits::RT> ftDist = distanceToHull(*myEntries[id].getPoint());
+  const ::boost::optional< HullTraits::RT> ftDist = distanceToHull(
+      *myEntries[id].getPoint());
   if(ftDist)
     dist.reset(CGAL::to_double(*ftDist));
   return dist;
 }
 
-bool ConvexHull::isVerticalFacet(Hull::Facet_const_handle facet) const
+bool
+ConvexHull::isVerticalFacet(Hull::Facet_const_handle facet) const
 {
   const int currentDim = myHull->current_dimension();
   if(currentDim < myHullDims)
     return false; // No facet extends into the convex dimension
 
-  const HullTraits::Direction_d direction = myHull->hyperplane_supporting(facet).orthogonal_direction();
+  const HullTraits::Direction_d direction =
+      myHull->hyperplane_supporting(facet).orthogonal_direction();
   return direction[myHullDims - 1] == FT_ZERO;
 }
 
@@ -283,7 +302,8 @@ ConvexHull::generateEntry(const common::Structure & structure)
     return -1; // This structure has atoms that aren't on the hull so we can't calculate the chemical potential
 
   const PointId id = myEntries.size();
-  myEntries.insert(myEntries.end(), HullEntry(structure.getComposition(), *value, id, isEndpoint));
+  myEntries.insert(myEntries.end(),
+      HullEntry(structure.getComposition(), *value, id, isEndpoint));
   if(isEndpoint)
     updateChemicalPotential(endpoint,
         HullTraits::FT(*value) / HullTraits::FT(endpointFormulaUnits));
@@ -320,7 +340,8 @@ ConvexHull::generateHullPoint(const HullEntry & entry) const
 }
 
 ConvexHull::PointD
-ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const HullTraits::FT & convexValue) const
+ConvexHull::generateHullPoint(const common::AtomsFormula & composition,
+    const HullTraits::FT & convexValue) const
 {
   // Need chemical potentials for all endpoints
   SSLIB_ASSERT(canGenerate());
@@ -333,7 +354,8 @@ ConvexHull::generateHullPoint(const common::AtomsFormula & composition, const Hu
     if(numAtoms != 0)
     {
       totalAtoms += numAtoms;
-      totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second * HullTraits::FT(numAtoms);
+      totalMuNAtoms += myChemicalPotentials.find(endpoint.first)->second
+          * HullTraits::FT(numAtoms);
     }
   }
 
@@ -409,7 +431,9 @@ ConvexHull::generateHull() const
   SortedEntries sortedEntries;
   BOOST_FOREACH(LowestEnergy::reference entry, lowest)
   {
-    sortedEntries.insert(::std::make_pair((*entry.second->getPoint())[dims() - 1], entry.second));
+    sortedEntries.insert(
+        ::std::make_pair((*entry.second->getPoint())[dims() - 1],
+            entry.second));
   }
 
   myHull.reset(new Hull(myHullDims));
@@ -431,25 +455,28 @@ ConvexHull::generateHull() const
 #endif
 
   // Get rid of any points that lie on facets that are vertical wrt convex dimension
-  ::std::vector<PointD> toCheck, toKeep;
+  ::std::vector< PointD> toCheck, toKeep;
   toCheck.reserve(myHull->number_of_vertices());
   toKeep.reserve(myHull->number_of_vertices());
 
-  for(Hull::Hull_point_const_iterator it = myHull->hull_points_begin(), end = myHull->hull_points_end();
-      it != end; ++it)
+  for(Hull::Hull_point_const_iterator it = myHull->hull_points_begin(), end =
+      myHull->hull_points_end(); it != end; ++it)
     toCheck.push_back(*it);
 
   Hull::Hyperplane_d hyperplane;
-  const HullTraits::Oriented_side_d sideOf = HullTraits().oriented_side_d_object();
-  for(Hull::Facet_const_iterator facet = const_cast<const Hull *>(myHull.get())->facets_begin(),
-      facetEnd = const_cast<const Hull *>(myHull.get())->facets_end();
-      facet != facetEnd; ++facet)
+  const HullTraits::Oriented_side_d sideOf =
+      HullTraits().oriented_side_d_object();
+  for(Hull::Facet_const_iterator facet =
+      const_cast< const Hull *>(myHull.get())->facets_begin(), facetEnd =
+      const_cast< const Hull *>(myHull.get())->facets_end(); facet != facetEnd;
+      ++facet)
   {
     if(isVerticalFacet(facet))
       continue;
 
     hyperplane = myHull->hyperplane_supporting(facet);
-    for(::std::vector<PointD>::iterator it = toCheck.begin(); it != toCheck.end();
+    for(::std::vector< PointD>::iterator it = toCheck.begin();
+        it != toCheck.end();
         /* increment in loop */)
     {
       if(sideOf(hyperplane, *it) == CGAL::ON_ORIENTED_BOUNDARY)
@@ -469,7 +496,7 @@ ConvexHull::generateHull() const
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << "Keeping:\n";
   BOOST_FOREACH(const PointD & p, toKeep)
-    ::std::cout << p << ::std::endl;
+  ::std::cout << p << ::std::endl;
 #endif
 }
 
@@ -529,13 +556,14 @@ ConvexHull::initEndpoints(const EndpointLabels & labels)
 #endif
 }
 
-::boost::optional<ConvexHull::HullTraits::RT>
+::boost::optional< ConvexHull::HullTraits::RT>
 ConvexHull::distanceToHull(const PointD & p) const
 {
   if(!getHull())
-    return ::boost::optional<ConvexHull::HullTraits::RT>();
+    return ::boost::optional< ConvexHull::HullTraits::RT>();
 
-  SSLIB_ASSERT_MSG(p.dimension() == myHullDims, "Point must have same dimension as hull to calculate distance.");
+  SSLIB_ASSERT_MSG(p.dimension() == myHullDims,
+      "Point must have same dimension as hull to calculate distance.");
 
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   ::std::cout << "Calculating distance to point: ";
@@ -549,17 +577,20 @@ ConvexHull::distanceToHull(const PointD & p) const
     return p[myHullDims - 1];
 
   // Create the line to test against
-  ::std::vector<HullTraits::FT> direction(myHullDims, FT_ZERO);
+  ::std::vector< HullTraits::FT> direction(myHullDims, FT_ZERO);
   direction[myHullDims - 1] = 1.0;
-  HullTraits::Line_d line(p, HullTraits::Direction_d(myHullDims, direction.begin(), direction.end()));
+  HullTraits::Line_d line(p,
+      HullTraits::Direction_d(myHullDims, direction.begin(), direction.end()));
 
   // Test objects
-  HullTraits::Contained_in_simplex_d containedInSimplex = HullTraits().contained_in_simplex_d_object();
+  HullTraits::Contained_in_simplex_d containedInSimplex =
+      HullTraits().contained_in_simplex_d_object();
   HullTraits::Intersect_d intersect = HullTraits().intersect_d_object();
 
   Hull::Hyperplane_d hyperplane;
-  for(Hull::Facet_const_iterator it = const_cast<const Hull *>(myHull.get())->facets_begin(),
-      end = const_cast<const Hull *>(myHull.get())->facets_end(); it != end; ++it)
+  for(Hull::Facet_const_iterator it =
+      const_cast< const Hull *>(myHull.get())->facets_begin(), end =
+      const_cast< const Hull *>(myHull.get())->facets_end(); it != end; ++it)
   {
     if(isTopFacet(it) || isVerticalFacet(it))
       continue;
@@ -569,28 +600,31 @@ ConvexHull::distanceToHull(const PointD & p) const
     ::CGAL::Object result = intersect(line, hyperplane);
 
     // TODO: Change kernel to use our point type
-    const CGAL::Cartesian_d<RT>::Point_d * const intersectionPoint
-      = CGAL::object_cast< CGAL::Cartesian_d<RT>::Point_d >(&result);
+    const CGAL::Cartesian_d< RT>::Point_d * const intersectionPoint =
+        CGAL::object_cast< CGAL::Cartesian_d< RT>::Point_d>(&result);
     if(intersectionPoint)
     {
-      const PointD interPoint = PointD(myHullDims, intersectionPoint->cartesian_begin(),
+      const PointD interPoint = PointD(myHullDims,
+          intersectionPoint->cartesian_begin(),
           intersectionPoint->cartesian_end());
       // Have to start at points_begin() + 1 because this is the way simplices represent facets.
-      if(containedInSimplex(it->points_begin() + 1, it->points_begin() + myHull->current_dimension() + 1, interPoint))
+      if(containedInSimplex(it->points_begin() + 1,
+          it->points_begin() + myHull->current_dimension() + 1, interPoint))
       {
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
-      ::std::cout << "Found distance to point, from = " << p << ", to = " << interPoint << ::std::endl;
-      ::std::cout << "Hyperplane: " << *it << ::std::endl;
+        ::std::cout << "Found distance to point, from = " << p << ", to = " << interPoint << ::std::endl;
+        ::std::cout << "Hyperplane: " << *it << ::std::endl;
 #endif
         return p[myHullDims - 1] - interPoint[myHullDims - 1];
       }
     }
   }
 
-  return ::boost::optional<RT>(); // Point was not in the space of the hull
+  return ::boost::optional< RT>(); // Point was not in the space of the hull
 }
 
-bool ConvexHull::isTopFacet(Hull::Facet_const_iterator facet) const
+bool
+ConvexHull::isTopFacet(Hull::Facet_const_iterator facet) const
 {
   for(int i = 0; i < myHull->current_dimension(); ++i)
   {
@@ -600,7 +634,8 @@ bool ConvexHull::isTopFacet(Hull::Facet_const_iterator facet) const
   return true;
 }
 
-bool ConvexHull::isEndpoint(const PointD & p) const
+bool
+ConvexHull::isEndpoint(const PointD & p) const
 {
   BOOST_FOREACH(const Endpoint & ep, myEndpoints)
   {
@@ -610,7 +645,8 @@ bool ConvexHull::isEndpoint(const PointD & p) const
   return false;
 }
 
-bool ConvexHull::containsOnlyEndpoints() const
+bool
+ConvexHull::containsOnlyEndpoints() const
 {
 #ifdef DEBUG_CONVEX_HULL_GENERATOR
   // Conveniences for debugging
@@ -621,7 +657,8 @@ bool ConvexHull::containsOnlyEndpoints() const
   return getHull()->number_of_vertices() == myEndpoints.size();
 }
 
-void ConvexHull::printPoint(const PointD & p) const
+void
+ConvexHull::printPoint(const PointD & p) const
 {
   for(int i = 0; i < p.dimension(); ++i)
     ::std::cout << CGAL::to_double(p[i]) << " ";
