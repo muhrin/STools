@@ -114,7 +114,7 @@ main(const int argc, char * argv[])
             ssu::makeAddressOfIterator(structures.begin()),
             ssu::makeAddressOfIterator(structures.end()));
 
-    if(endpoints.size() > 2)
+    if(endpoints.size() >= 2)
     {
       // Generate the convex hull
       ssa::ConvexHullStructures hullStructures(endpoints);

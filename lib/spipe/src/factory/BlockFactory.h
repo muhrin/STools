@@ -83,7 +83,7 @@ public:
       const OptionsMap & options) const;
 
 private:
-  ::spl::factory::SsLibFactoryYaml mySplFactory;
+  ::spl::factory::Factory mySplFactory;
 };
 
 }

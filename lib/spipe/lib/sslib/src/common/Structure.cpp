@@ -175,8 +175,9 @@ Atom &
 Structure::newAtom(const AtomSpeciesId::Value species)
 {
   myAtomPositionsCurrent = false;
-  Atom * const atom = new Atom(species, *this, myAtoms.size());
+  Atom * const atom = new Atom(species, myAtoms.size());
   myAtoms.push_back(atom);
+  atom->addListener(this);
   return *atom;
 }
 
@@ -184,17 +185,20 @@ Atom &
 Structure::newAtom(const Atom & toCopy)
 {
   myAtomPositionsCurrent = false;
-  return *myAtoms.insert(myAtoms.end(), new Atom(toCopy, *this, myAtoms.size()));
+  Atom & atom = *myAtoms.insert(myAtoms.end(), new Atom(toCopy));
+  atom.setIndex(myAtoms.size());
+  atom.addListener(this);
+  return atom;
 }
 
 bool
 Structure::removeAtom(const Atom & atom)
 {
-  if(&atom.getStructure() != this)
+  const size_t index = atom.getIndex();
+  if(index >= myAtoms.size() || &atom != &myAtoms[index])
     return false;
 
-  const size_t index = atom.getIndex();
-
+  myAtoms[index].removeListener(this);
   myAtoms.erase(myAtoms.begin() + index);
 
   for(size_t i = index; i < myAtoms.size(); ++i)
@@ -469,10 +473,15 @@ Structure::onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
 }
 
 void
-Structure::atomMoved(const Atom & atom) const
+Structure::onAtomMoved(Atom * const atom)
 {
   // Atom has moved so the buffer is not longer current
   myAtomPositionsCurrent = false;
+}
+
+void
+Structure::onAtomDestroyed(Atom * const atom)
+{
 }
 
 void

@@ -74,7 +74,10 @@ public:
   clone() const;
 
   const double (&
-  getLatticeParams() const)[6];void setLatticeParams(const double (&params)[6]);
+  getLatticeParams() const)[6];
+
+  void
+  setLatticeParams(const double (&params)[6]);
 
   inline ::arma::vec3 getAVec() const
   {
@@ -193,7 +196,6 @@ public:
   bool removeListener(UnitCellListener & listener);
 
 private:
-
   typedef ::std::set<UnitCellListener *> Listeners;
 
   /** Initialise the unit cell from lattice parameters */
