@@ -108,10 +108,10 @@ createFile(const ::boost::filesystem::path & toCreate)
 bool
 createAndChangeCurrentPath(const ::boost::filesystem::path & path)
 {
-  if(!is_directory(path))
-    return false;
-
-  return boostfs::create_directories(path);
+  boostfs::create_directories(path);
+  ::boost::system::error_code error;
+  boostfs::current_path(path, error);
+  return !error;
 }
 
 }

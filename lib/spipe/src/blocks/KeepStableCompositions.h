@@ -52,6 +52,8 @@ public:
 
   // From Block /////////////////
   virtual void
+  pipelineInitialised();
+  virtual void
   in(common::StructureData * const data);
   virtual void
   pipelineFinishing();
@@ -67,6 +69,7 @@ public:
 private:
   typedef ::std::set< common::StructureData *> StructureStore;
 
+  const bool myWriteHull;
   ::spl::UniquePtr< ::spl::analysis::ConvexHullOutputter>::Type myOutputter;
   StructureStore myStructureStore;
   mutable ::boost::scoped_ptr< ::spl::analysis::ConvexHullStructures> myConvexHullStructures;

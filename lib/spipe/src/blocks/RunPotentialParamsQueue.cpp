@@ -36,6 +36,7 @@ namespace fs = ::boost::filesystem;
 namespace ip = ::boost::interprocess;
 namespace posix_time = ::boost::posix_time;
 
+namespace splio = ::spl::io;
 namespace splu = ::spl::utility;
 
 const ::std::string RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE =
@@ -93,8 +94,7 @@ void
 RunPotentialParamsQueue::pipelineInitialising()
 {
   myTableSupport.setFilename(
-      common::getOutputFileStem(getEngine()->sharedData(),
-          getEngine()->globalData()) + "." + POTPARAMS_FILE_EXTENSION);
+      outputFileStemPath().string() + "." + POTPARAMS_FILE_EXTENSION);
   myTableSupport.registerEngine(getEngine());
 }
 
@@ -112,6 +112,8 @@ RunPotentialParamsQueue::finished(StructureDataUniquePtr data)
 void
 RunPotentialParamsQueue::start()
 {
+  const fs::path workingDir = this->workingDir();
+
   while(getWork())
   {
     while(!myParamsQueue.empty())
@@ -127,17 +129,11 @@ RunPotentialParamsQueue::start()
       sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
           myCurrentParams;
 
+      const fs::path sweepPath = workingDir
+          / common::generateParamDirName(myCurrentParams,
+              getEngine()->globalData().getSeedName());
       // Set a directory for this set of parameters
-      sweepSharedData.setOutputDir(
-          getEngine()->sharedData().getOutputPath()
-              /= common::generateParamDirName(myCurrentParams,
-                  getEngine()->globalData().getSeedName()));
-
-      // Get the relative path to where the pipeline write the structures to
-      // Need to store this now as the shared data is not guaranteed to be
-      // available after the subpipe runs
-      const ::std::string subpipeOutputPath =
-          mySubpipeEngine->sharedData().getOutputPath().string();
+      sweepSharedData.setWorkingDir(sweepPath);
 
       mySubpipeEngine->run();
 
@@ -149,7 +145,7 @@ RunPotentialParamsQueue::start()
           posix_time::microsec_clock::universal_time() - startTime);
 
       // Send the resultant structures down our pipe
-      releaseBufferedStructures(subpipeOutputPath);
+      releaseBufferedStructures(sweepPath.string());
     }
     updateDoneParams();
     updateWorkChunkSize();
@@ -312,7 +308,7 @@ RunPotentialParamsQueue::updateTable(const utility::DataTable::Key & key,
     const StructureDataType * const structureData)
 {
   utility::insertStructureInfoAndPotentialParams(key, *structureData,
-      getEngine()->sharedData().getOutputPath(), myTableSupport.getTable());
+      workingDir(), myTableSupport.getTable());
 }
 
 }

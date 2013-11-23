@@ -17,7 +17,7 @@
 #include <spl/io/ResourceLocator.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/utility/SortedDistanceComparator.h>
-#include <spl/utility/TransformFunctions.h>
+#include <spl/utility/Iterator.h>
 #include <spl/utility/UniqueStructureSet.h>
 
 // From StructurePipe
@@ -38,17 +38,6 @@ namespace ssa = ::spl::analysis;
 namespace ssu = ::spl::utility;
 namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
-
-template< typename Iterator>
-  ::boost::transform_iterator< ssu::AddressOf< typename Iterator::value_type>,
-      Iterator>
-  makeAddressOfIterator(Iterator it)
-  {
-    static const ssu::AddressOf< typename Iterator::value_type> ADDRESS_OF;
-    return ::boost::transform_iterator<
-        ssu::AddressOf< typename Iterator::value_type>, Iterator>(it,
-        ADDRESS_OF);
-  }
 
 void
 addToken(const ::std::string & token, InputOptions & in);
@@ -122,8 +111,8 @@ main(const int argc, char * argv[])
   {
     const ssa::ConvexHullStructures::EndpointLabels & endpoints =
         ssa::ConvexHullStructures::generateEndpoints(
-            makeAddressOfIterator(structures.begin()),
-            makeAddressOfIterator(structures.end()));
+            ssu::makeAddressOfIterator(structures.begin()),
+            ssu::makeAddressOfIterator(structures.end()));
 
     if(endpoints.size() > 2)
     {

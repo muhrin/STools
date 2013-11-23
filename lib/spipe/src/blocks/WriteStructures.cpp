@@ -126,7 +126,7 @@ WriteStructures::generateLocator(ssc::Structure & structure,
     structure.setName(common::generateStructureName(getEngine()->globalData()));
 
   // Create the path to store the structure
-  fs::path p(getEngine()->sharedData().getOutputPath());
+  fs::path p = workingDir();
 
   // Should all the structures be stored in one file or separate files?
   if(useMultiStructure(writer))

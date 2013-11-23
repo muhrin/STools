@@ -31,7 +31,7 @@ parseParamString(const std::string & str, double & from, double & step,
     unsigned int & nSteps);
 
 ::std::string
-getString(const double in, unsigned int digitsAfterDecimal = 5);
+toString(const double in, unsigned int digitsAfterDecimal = 5);
 
 ::std::string
 generateParamDirName(const ::arma::vec & params,

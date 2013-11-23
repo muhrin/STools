@@ -15,6 +15,7 @@
 #include <spl/SSLib.h>
 #include <spl/build_cell/AtomsDescription.h>
 #include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/GenerationSettings.h>
 #include <spl/build_cell/StructureGenerator.h>
 #include <spl/common/Constants.h>
 #include <spl/common/Structure.h>

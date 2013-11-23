@@ -23,8 +23,6 @@
 #include <spl/io/IStructureReader.h>
 #include <spl/utility/HeterogeneousMap.h>
 
-#include "PipeLibTypes.h"
-
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace spl {
 namespace common {
@@ -41,18 +39,20 @@ namespace common {
 class StructureData
 {
 public:
+  spl::common::Structure *
+  getStructure() const;
+  spl::common::Structure &
+  setStructure(::spl::common::types::StructurePtr structure);
+  spl::common::Structure &
+  setStructure(::spl::io::StructuresContainer::auto_type structure);
 
-  spl::common::Structure * getStructure() const;
-  spl::common::Structure & setStructure(::spl::common::types::StructurePtr structure);
-  spl::common::Structure & setStructure(::spl::io::StructuresContainer::auto_type structure);
+  ::spl::io::ResourceLocator
+  getRelativeSavePath(const ::boost::filesystem::path & relativeTo) const;
 
-  ::spl::io::ResourceLocator getRelativeSavePath(const ::boost::filesystem::path & relativeTo) const;
-
-  ::spl::utility::HeterogeneousMap  objectsStore;
+  ::spl::utility::HeterogeneousMap objectsStore;
 
 private:
-
-  ::spl::UniquePtr< ::spl::common::Structure>::Type   myStructure;
+  ::spl::UniquePtr< ::spl::common::Structure>::Type myStructure;
 };
 
 }

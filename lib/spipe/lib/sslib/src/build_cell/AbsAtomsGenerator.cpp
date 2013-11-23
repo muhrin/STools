@@ -179,7 +179,8 @@ AbsAtomsGenerator::getTicket()
 
     // First check if we have any generation settings that should override
     // the settings for this atom
-    if(!atom.label.empty() && !myGenerationSettings->atomsSettings.empty())
+    if(!atom.label.empty() && myGenerationSettings &&
+        !myGenerationSettings->atomsSettings.empty())
     {
       const GenerationSettings::AtomsSettings::const_iterator atomsSettings =
           myGenerationSettings->atomsSettings.find(atom.label);

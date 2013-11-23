@@ -108,9 +108,7 @@ bool DataTableSupport::createWriter()
   if(myFilename.empty())
     return false;
 
-  const fs::path outputPath(myEngine->sharedData().getOutputPath() / myFilename);
-  myWriter.reset(new DataTableWriter(myTable, outputPath)); 
-
+  myWriter.reset(new DataTableWriter(myTable, fs::path(myFilename)));
   return true;
 }
 

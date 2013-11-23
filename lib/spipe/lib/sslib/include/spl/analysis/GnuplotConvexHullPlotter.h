@@ -13,6 +13,8 @@
 
 #ifdef SSLIB_USE_CGAL
 
+#include <boost/filesystem/path.hpp>
+
 #include "spl/analysis/ConvexHull.h"
 #include "spl/analysis/ConvexHullOutputter.h"
 
@@ -27,7 +29,13 @@ namespace analysis {
 class GnuplotConvexHullPlotter : public ConvexHullOutputter
 {
 public:
+  struct Settings
+  {
+    ::boost::filesystem::path outputDir;
+  };
+
   GnuplotConvexHullPlotter();
+  GnuplotConvexHullPlotter(const Settings & settings);
 
   virtual bool
   outputHull(const ConvexHull & convexHull) const;
@@ -101,6 +109,7 @@ private:
   ::std::string
   generateHullFileStem(const ConvexHull & convexHull) const;
 
+  const Settings mySettings;
   bool myDrawBoundary;
   bool myDrawTieLines;
   bool myDrawLabels;

@@ -8,7 +8,6 @@
 // INCLUDES //////////////////////////////////
 #include "common/GlobalData.h"
 
-
 #include <spl/utility/UtilFunctions.h>
 
 #include "common/UtilityFunctions.h"
@@ -22,61 +21,58 @@ namespace ssu = ::spl::utility;
 namespace spipe {
 namespace common {
 
-const char GlobalData::DIR_SUBSTRING_DELIMITER[] = "_";
-
 GlobalData::GlobalData()
 {
   utility::initStructureRwManDefault(myStructureIoManager);
 }
 
-bool GlobalData::appendToOutputDirName(const std::string & toAppend)
-{
-  if(toAppend.empty())
-    return true;  // Nothing to append
-
-  if(!myOutputDir.empty())
-  {
-    myOutputDir = myOutputDir.string() + DIR_SUBSTRING_DELIMITER;
-  }
-  myOutputDir = myOutputDir.string() + toAppend;
-
-  return true;
-}
-
-const ::boost::filesystem::path & GlobalData::getOutputPath() const
-{
-  return myOutputDir;
-}
-
-const ::std::string & GlobalData::getSeedName() const
+const ::std::string &
+GlobalData::getSeedName() const
 {
   return mySeedName;
 }
 
-void GlobalData::setSeedName(const ::std::string & seedName)
+void
+GlobalData::setSeedName(const ::std::string & seedName)
 {
   mySeedName = seedName;
 }
 
-ssc::AtomSpeciesDatabase & GlobalData::getSpeciesDatabase()
+ssc::AtomSpeciesDatabase &
+GlobalData::getSpeciesDatabase()
 {
   return mySpeciesDatabase;
 }
 
-const ssc::AtomSpeciesDatabase & GlobalData::getSpeciesDatabase() const
+const ssc::AtomSpeciesDatabase &
+GlobalData::getSpeciesDatabase() const
 {
   return mySpeciesDatabase;
 }
 
-ssio::StructureReadWriteManager & GlobalData::getStructureIo()
+ssio::StructureReadWriteManager &
+GlobalData::getStructureIo()
 {
   return myStructureIoManager;
 }
 
-void GlobalData::reset()
+const ::boost::filesystem::path &
+GlobalData::getWorkingDir() const
+{
+  return myWorkingDir;
+}
+
+void
+GlobalData::setWorkingDir(const ::boost::filesystem::path & workingDir)
+{
+  myWorkingDir = workingDir;
+}
+
+void
+GlobalData::reset()
 {
   objectsStore.clear();
-  myOutputDir.clear();
+  myWorkingDir.clear();
   mySeedName.clear();
 }
 

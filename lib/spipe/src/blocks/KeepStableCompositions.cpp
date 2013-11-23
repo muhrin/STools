@@ -37,15 +37,26 @@ struct GetStructure : public ::std::unary_function< common::StructureData * cons
 };
 
 KeepStableCompositions::KeepStableCompositions() :
-    Block("Keep stable compositions")
+    Block("Keep stable compositions"),
+    myWriteHull(false)
 {
 }
 
 KeepStableCompositions::KeepStableCompositions(const bool writeHull) :
-    Block("Keep stable compositions")
+    Block("Keep stable compositions"),
+    myWriteHull(writeHull)
 {
-  if(writeHull)
-    myOutputter.reset(new spla::GnuplotConvexHullPlotter());
+}
+
+void
+KeepStableCompositions::pipelineInitialised()
+{
+  if(myWriteHull)
+  {
+    spla::GnuplotConvexHullPlotter::Settings settings;
+    settings.outputDir = workingDir();
+    myOutputter.reset(new spla::GnuplotConvexHullPlotter(settings));
+  }
 }
 
 void

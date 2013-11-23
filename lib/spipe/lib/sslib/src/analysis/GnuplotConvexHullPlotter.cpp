@@ -21,13 +21,25 @@
 #include "spl/analysis/ConvexHullInfoSupplier.h"
 #include "spl/utility/TransformFunctions.h"
 
+namespace fs = ::boost::filesystem;
+
 namespace spl {
 namespace analysis {
 
 GnuplotConvexHullPlotter::GnuplotConvexHullPlotter()
 {
   myDrawBoundary = true;
-  myDrawTieLines = false;
+  myDrawTieLines = true;
+  myDrawLabels = true;
+  myDrawOffHullPoints = true;
+  mySupressEnergyDimension = false;
+}
+
+GnuplotConvexHullPlotter::GnuplotConvexHullPlotter(const Settings & settings) :
+    mySettings(settings)
+{
+  myDrawBoundary = true;
+  myDrawTieLines = true;
   myDrawLabels = true;
   myDrawOffHullPoints = true;
   mySupressEnergyDimension = false;
@@ -238,7 +250,8 @@ GnuplotConvexHullPlotter::drawTieLines(::std::ostream & os,
     os << "# Start of facet\n";
 #endif
 
-    const ConvexHull::PointD startPoint = prepPoint(hull->point_of_facet(facetIt, 0));
+    const ConvexHull::PointD startPoint = prepPoint(
+        hull->point_of_facet(facetIt, 0));
     x0 = x1 = startPoint;
     for(int i = 0; i < hull->current_dimension() - 1; ++i)
     {
@@ -292,11 +305,11 @@ GnuplotConvexHullPlotter::doOutputHull(const ConvexHull & convexHull,
     return false;
 
   const ::std::string outputFileStem = generateHullFileStem(convexHull);
-  const ::std::string datOutStr = outputFileStem + ".hull",
-      pltOutStr = outputFileStem + ".plt";
+  const ::std::string datOutStr = outputFileStem + ".hull", pltOutStr =
+      outputFileStem + ".plt";
 
-  ::std::ofstream datOut(datOutStr.c_str());
-  ::std::ofstream pltOut(pltOutStr.c_str());
+  ::std::ofstream datOut((mySettings.outputDir / datOutStr).c_str());
+  ::std::ofstream pltOut((mySettings.outputDir / pltOutStr).c_str());
 
   Plot plot;
 
@@ -329,8 +342,7 @@ GnuplotConvexHullPlotter::doOutputHull(const ConvexHull & convexHull,
       ::std::vector< ConvexHull::HullTraits::FT> labelPt(
           point.cartesian_begin(), point.cartesian_end());
       labelPt[labelPt.size() - 1] -= LABEL_MARGIN;
-      const ::std::string & label = infoSupplier->getLabel(convexHull,
-          pointId);
+      const ::std::string & label = infoSupplier->getLabel(convexHull, pointId);
       if(!label.empty())
         pltOut
             << plot.drawLabel(label,
@@ -343,14 +355,15 @@ GnuplotConvexHullPlotter::doOutputHull(const ConvexHull & convexHull,
   if(myDrawOffHullPoints)
   {
     // Start a new data set
-    datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;;
+    datOut << "\n" << "\n" << "# Off hull points" << ::std::endl;
+    ;
     for(ConvexHull::EntriesConstIterator it = convexHull.entriesBegin(), end =
         convexHull.entriesEnd(); it != end; ++it)
     {
       point = *it->getPoint();
       // Check that this isn't a hull point
-      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point) ==
-          hull->hull_points_end())
+      if(::std::find(hull->hull_points_begin(), hull->hull_points_end(), point)
+          == hull->hull_points_end())
       {
         datOut << printPoint(prepPoint(point)) << ::std::endl;
         haveOffHullPoints = true;
@@ -362,11 +375,11 @@ GnuplotConvexHullPlotter::doOutputHull(const ConvexHull & convexHull,
     pltOut << "set size square" << ::std::endl;
 
   ::std::stringstream plotStream;
-  plotStream << "\"" << datOutStr << "\" i 0 ls "
-      << HULL_POINT_LINE_STYLE << " title \"Hull point\"";
+  plotStream << "\"" << datOutStr << "\" i 0 ls " << HULL_POINT_LINE_STYLE
+      << " title \"Hull point\"";
   if(myDrawOffHullPoints && haveOffHullPoints)
-    plotStream << ", \"" << datOutStr << "\" i 1 ls "
-        << OFF_HULL_LINE_STYLE << " title \"Off hull point\"";
+    plotStream << ", \"" << datOutStr << "\" i 1 ls " << OFF_HULL_LINE_STYLE
+        << " title \"Off hull point\"";
 
   if(plotDims(convexHull) == 3)
     pltOut << "splot " << plotStream.str() << ::std::endl;
@@ -399,7 +412,7 @@ GnuplotConvexHullPlotter::prepPoint(const ConvexHull::PointD & point) const
     coords[coords.size() - 1] = 0;
 
   // Make sure the point is the correct number of dimensions
-  switch (coords.size())
+  switch(coords.size())
   {
   case 3:
   {
@@ -415,17 +428,23 @@ GnuplotConvexHullPlotter::prepPoint(const ConvexHull::PointD & point) const
   return ConvexHull::PointD(coords.size(), coords.begin(), coords.end());
 }
 
-::std::string GnuplotConvexHullPlotter::generateHullFileStem(const ConvexHull & convexHull) const
+::std::string
+GnuplotConvexHullPlotter::generateHullFileStem(
+    const ConvexHull & convexHull) const
 {
-  typedef ::std::multiset<common::AtomsFormula> SortedEndpoints;
-  typedef ::boost::transform_iterator<utility::TakeFirst<const ConvexHull::Endpoints::value_type>,
+  typedef ::std::multiset< common::AtomsFormula> SortedEndpoints;
+  typedef ::boost::transform_iterator<
+      utility::TakeFirst< const ConvexHull::Endpoints::value_type>,
       ConvexHull::EndpointsConstIterator> TakeFirstIterator;
-  const SortedEndpoints sortedEndpoints(TakeFirstIterator(convexHull.endpointsBegin()),
+
+  const SortedEndpoints sortedEndpoints(
+      TakeFirstIterator(convexHull.endpointsBegin()),
       TakeFirstIterator(convexHull.endpointsEnd()));
 
-  SortedEndpoints::const_iterator it = sortedEndpoints.begin(), end = sortedEndpoints.end();
+  SortedEndpoints::const_iterator it = sortedEndpoints.begin(), end =
+      sortedEndpoints.end();
   if(it == end)
-    return "";
+    return "hull";
 
   ::std::stringstream ss;
   ss << *it;

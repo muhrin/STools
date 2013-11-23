@@ -12,19 +12,14 @@
 // INCLUDES /////////////////////////////////////////////
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace spipe
-{
-namespace common
-{
+namespace spipe {
+namespace common {
 
 struct DataLocation
 {
   enum Value
   {
-    NONE,
-    STRUCTURE,
-    SHARED,
-    GLOBAL
+    NONE, STRUCTURE, SHARED, GLOBAL
   };
 };
 

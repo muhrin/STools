@@ -104,9 +104,9 @@ GeomOptimise::updateTable(const ssc::Structure & structure,
       structure_properties::general::ENERGY_INTERNAL);
   if(internalEnergy)
   {
-    table.insert(strName, "energy", common::getString(*internalEnergy));
+    table.insert(strName, "energy", common::toString(*internalEnergy));
     table.insert(strName, "energy/atom",
-        common::getString(
+        common::toString(
             *internalEnergy / static_cast< double>(structure.getNumAtoms())));
     if(optimisationData.numIters)
       table.insert(strName, "iters",

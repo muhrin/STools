@@ -41,7 +41,7 @@ insertStructureInfoAndPotentialParams(const utility::DataTable::Key & key,
     for(size_t i = 0; i < params->size(); ++i)
     {
       table.insert(key, "p_" + ::boost::lexical_cast< ::std::string>(i),
-          common::getString((*params)[i]));
+          common::toString((*params)[i]));
     }
   }
 
@@ -52,10 +52,10 @@ insertStructureInfoAndPotentialParams(const utility::DataTable::Key & key,
   if(internalEnergy)
   {
     const double energy = *internalEnergy;
-    table.insert(key, "energy", common::getString(energy));
+    table.insert(key, "energy", common::toString(energy));
 
     const size_t numAtoms = structure->getNumAtoms();
-    table.insert(key, "energy/atom", common::getString(energy / numAtoms));
+    table.insert(key, "energy/atom", common::toString(energy / numAtoms));
   }
 
   const splio::ResourceLocator locator = structureData.getRelativeSavePath(

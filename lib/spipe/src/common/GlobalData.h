@@ -26,17 +26,7 @@ namespace common {
 class GlobalData
 {
 public:
-  static const char DIR_SUBSTRING_DELIMITER[];
-
   GlobalData();
-
-  bool
-  appendToOutputDirName(const ::std::string & toAppend);
-
-  // Get the output path for the pipeline that owns this shared data relative to
-  // the parent pipeline (or global data output path if there is not parent).
-  const ::boost::filesystem::path &
-  getOutputPath() const;
 
   const ::std::string &
   getSeedName() const;
@@ -53,12 +43,17 @@ public:
   ::spl::io::StructureReadWriteManager &
   getStructureIo();
 
+  const ::boost::filesystem::path &
+  getWorkingDir() const;
+  void
+  setWorkingDir(const ::boost::filesystem::path & workingDir);
+
 private:
   void
   reset();
 
   ::spl::common::AtomSpeciesDatabase mySpeciesDatabase;
-  ::boost::filesystem::path myOutputDir;
+  ::boost::filesystem::path myWorkingDir;
   ::std::string mySeedName;
   ::spl::io::StructureReadWriteManager myStructureIoManager;
 };

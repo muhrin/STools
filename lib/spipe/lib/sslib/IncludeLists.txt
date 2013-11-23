@@ -208,6 +208,7 @@ set(sslib_Header_Files__utility
   include/spl/utility/IndexingEnums.h
   include/spl/utility/IndexRemappingView.h
   include/spl/utility/IStructureComparator.h
+  include/spl/utility/Iterator.h
   include/spl/utility/MapEx.h
   include/spl/utility/MetaProgramming.h
   include/spl/utility/MultiArray.h

@@ -56,18 +56,17 @@ void
 SweepPotentialParams::pipelineInitialising()
 {
   myTableSupport.setFilename(
-      common::getOutputFileStem(getEngine()->sharedData(),
-          getEngine()->globalData()) + "." + POTPARAMS_FILE_EXTENSION);
+      outputFileStemPath().string() + "." + POTPARAMS_FILE_EXTENSION);
   myTableSupport.registerEngine(getEngine());
 }
 
 void
 SweepPotentialParams::start()
 {
-  ::std::string sweepPipeOutputPath;
-
   const ssu::MultiIdxRange< int> stepsRange(ParamSpaceIdx(myStepExtents.dims()),
       myStepExtents);
+
+  const fs::path workingDir = this->workingDir();
 
   PotentialParams params(myNumParams);
   BOOST_FOREACH(const ParamSpaceIdx & stepsIdx, stepsRange)
@@ -82,21 +81,16 @@ SweepPotentialParams::start()
     // Store the potential parameters in global memory
     sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = params;
 
-    const fs::path originalPath = fs::current_path();
-    const fs::path sweepPath = originalPath / common::generateParamDirName(params,
-        getEngine()->globalData().getSeedName());
-
-    // Set a directory for this set of parameters
-    ssio::createAndChangeCurrentPath(sweepPath);
-
-    // Change the directory back to the original one
-    fs::current_path(originalPath);
+    const fs::path & sweepPath = workingDir
+        / common::generateParamDirName(params,
+            getEngine()->globalData().getSeedName());
+    sweepSharedData.setWorkingDir(sweepPath);
 
     // Run the sweep pipeline
     mySubpipeEngine->run();
 
     // Send any finished structure data down my pipe
-    releaseBufferedStructures(sweepPipeOutputPath);
+    releaseBufferedStructures(sweepPath.string());
   }
 }
 
@@ -156,7 +150,7 @@ SweepPotentialParams::updateTable(const utility::DataTable::Key & key,
     const StructureDataType & structureData)
 {
   utility::insertStructureInfoAndPotentialParams(key, structureData,
-      getEngine()->sharedData().getOutputPath(), myTableSupport.getTable());
+      workingDir(), myTableSupport.getTable());
 }
 
 }

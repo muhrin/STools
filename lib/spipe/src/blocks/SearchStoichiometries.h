@@ -60,8 +60,6 @@ public:
   // From Block ////////
   virtual void
   pipelineInitialising();
-  virtual void
-  pipelineStarting();
   // End from Block ////
 
   // From StartBlock ///

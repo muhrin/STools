@@ -96,7 +96,7 @@ void parseParamString(
   nSteps = lNSteps;
 }
 
-::std::string getString(const double in, unsigned int digitsAfterDecimal)
+::std::string toString(const double in, unsigned int digitsAfterDecimal)
 {
   int digits = ssio::getPrecision(in, digitsAfterDecimal);
   ::std::ostringstream ss;

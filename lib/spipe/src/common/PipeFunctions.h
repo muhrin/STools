@@ -16,6 +16,7 @@
 #include <utility>
 
 #include <boost/concept_check.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <pipelib/pipelib.h>
 
@@ -30,8 +31,6 @@
 
 namespace spipe {
 namespace common {
-
-static const char NAME_DELIMITER[] = "_";
 
 // TODO: Make this better! Don't want to have ObjectData<T> makes user facing code ugly!
 
@@ -49,8 +48,8 @@ template< typename T>
 
 template< typename T>
   ObjectData< T>
-  getObject(const ::spl::utility::Key< T> & key, StructureDataType & strDat,
-      SharedDataType & shared, GlobalDataType & global)
+  getObject(const ::spl::utility::Key< T> & key, StructureData & strDat,
+      SharedData & shared, GlobalData & global)
   {
     ObjectData< T> result;
 
@@ -69,8 +68,8 @@ template< typename T>
 
 template< typename T>
   ObjectData< T>
-  getObject(::spl::utility::Key< T> & key, const SharedDataType & shared,
-      const GlobalDataType & global)
+  getObject(::spl::utility::Key< T> & key, const SharedData & shared,
+      const GlobalData & global)
   {
     ObjectData< T> result;
 
@@ -91,8 +90,8 @@ template< typename T>
 
 template< typename T>
   const ObjectData< const T>
-  getObjectConst(const ::spl::utility::Key< T> & key, const SharedDataType & shared,
-      const GlobalDataType & global)
+  getObjectConst(const ::spl::utility::Key< T> & key, const SharedData & shared,
+      const GlobalData & global)
   {
     ObjectData< const T> result;
 
@@ -114,7 +113,7 @@ template< typename T>
 template< typename T>
   bool
   setObject(::spl::utility::Key< T> & key, const DataLocation::Value location, const T & value,
-      SharedDataType & shared, GlobalDataType & global)
+      SharedData & shared, GlobalData & global)
   {
     if(location == DataLocation::SHARED)
     {
@@ -131,9 +130,13 @@ template< typename T>
   }
 
 ::std::string
-getOutputFileStem(const SharedDataType & shared, const GlobalDataType & global);
+getOutputFileStem(const SharedData & shared, const GlobalData & global);
+
+::boost::filesystem::path
+getWorkingDir(const SharedData & shared, const GlobalData & global);
+
 ::std::string
-generateStructureName(const GlobalDataType & global);
+generateStructureName(const GlobalData & global);
 
 }
 }

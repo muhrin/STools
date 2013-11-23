@@ -50,17 +50,8 @@ SearchStoichiometries::SearchStoichiometries(const AtomRanges & atomRanges,
 void
 SearchStoichiometries::pipelineInitialising()
 {
-  myTableSupport.setFilename(
-      common::getOutputFileStem(getEngine()->sharedData(),
-          getEngine()->globalData()) + ".stoich");
+  myTableSupport.setFilename(outputFileStemPath().string() + ".stoich");
   myTableSupport.registerEngine(getEngine());
-}
-
-void
-SearchStoichiometries::pipelineStarting()
-{
-  // Save where the pipeline will be writing to
-  myOutputPath = getEngine()->sharedData().getOutputPath();
 }
 
 void
@@ -74,7 +65,8 @@ SearchStoichiometries::start()
 
   // Start looping over the possible stoichiometries
   size_t totalAtoms = 0;
-  ::std::string sweepPipeOutputPath;
+
+  const fs::path workingDir = this->workingDir();
 
   const ssu::MultiIdxRange< unsigned int> & stoichRange = getStoichRange();
   BOOST_FOREACH(const ssu::MultiIdx<unsigned int> & currentIdx, stoichRange)
@@ -116,21 +108,19 @@ SearchStoichiometries::start()
         generationSettings;
 
     // Append the species ratios to the output directory name
-    sweepPipeData.setOutputDir(getEngine()->sharedData().getOutputPath() /=
-        stoichStringStream.str());
-
-    // Find out the pipeline relative path to where all the structures are going to be saved
-    sweepPipeOutputPath = sweepPipeData.getOutputPath().string();
+    const fs::path sweepPath = workingDir / stoichStringStream.str();
+    // Set a directory for this set of parameters
+    sweepPipeData.setWorkingDir(sweepPath);
 
     // Start the sweep pipeline
     mySubpipeEngine->run();
 
     // Update the table
-    updateTable(sweepPipeOutputPath, currentIdx, atomsDb);
+    updateTable(sweepPath.string(), currentIdx, atomsDb);
 
     // Send any finished structure data down my pipe, this will also
     // update the table with any information from the buffered structures
-    releaseBufferedStructures(sweepPipeOutputPath);
+    releaseBufferedStructures(sweepPath.string());
 
   } // End loop over stoichiometries
 }
@@ -159,8 +149,7 @@ SearchStoichiometries::releaseBufferedStructures(
   BOOST_FOREACH(StructureDataTyp * const strData, myBuffer)
   {
     structure = strData->getStructure();
-    lastSavedRelative = strData->getRelativeSavePath(
-        getEngine()->sharedData().getOutputPath());
+    lastSavedRelative = strData->getRelativeSavePath(workingDir());
 
     if(!lastSavedRelative.empty())
     {
@@ -184,7 +173,7 @@ SearchStoichiometries::releaseBufferedStructures(
       const size_t numAtoms = structure->getNumAtoms();
       if(numAtoms != 0)
         table.insert(tableKey, "energy/atom",
-            common::getString(*internalEnergy / numAtoms));
+            common::toString(*internalEnergy / numAtoms));
     }
 
     // Pass the structure on
