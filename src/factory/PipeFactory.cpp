@@ -189,6 +189,7 @@ PipeFactory::createSearchPipeExtended(const OptionsMap & options) const
       return BlockHandle();
     startBlock = searchStoichsBlock;
 
+#ifdef SSLIB_USE_CGAL
     const OptionsMap * const keepStableCompositions = options.find(
         spf::KEEP_STABLE_COMPOSITIONS);
     if(keepStableCompositions)
@@ -198,6 +199,7 @@ PipeFactory::createSearchPipeExtended(const OptionsMap & options) const
           *keepStableCompositions))
         startBlock->connect(block);
     }
+#endif
   }
 
   // Are we doing a parameter sweep

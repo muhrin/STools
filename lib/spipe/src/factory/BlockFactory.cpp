@@ -71,6 +71,7 @@ BlockFactory::createFindSymmetryGroupBlock(BlockHandle * const blockOut,
   return true;
 }
 
+#ifdef SSLIB_USE_CGAL
 bool
 BlockFactory::createKeepStableCompositionsBlock(BlockHandle * const blockOut,
     const OptionsMap & options) const
@@ -85,6 +86,7 @@ BlockFactory::createKeepStableCompositionsBlock(BlockHandle * const blockOut,
   blockOut->reset(new blocks::KeepStableCompositions(writeHull));
   return true;
 }
+#endif
 
 bool
 BlockFactory::createKeepTopNBlock(BlockHandle * const blockOut,
@@ -164,47 +166,6 @@ BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
 
   return true;
 }
-
-//
-//bool BlockFactory::createPotentialGeomOptimiseBlock(
-//  BlockPtr & blockOut,
-//  const OptionsMap & optimiserOptions,
-//  const OptionsMap * const potentialOptions,
-//  const ssp::OptimisationSettings * optimisationSettings,
-//  const OptionsMap * const globalOptions
-//) const
-//{
-//  ssp::IGeomOptimiserPtr optimiser = mySsLibBlockFactory.createGeometryOptimiser(
-//    optimiserOptions,
-//    potentialOptions,
-//    globalOptions
-//  );
-//
-//  bool potentialIsParameterisable =
-//    optimiser->getPotential() && optimiser->getPotential()->getParameterisable();
-//
-//  if(!optimiser.get())
-//    return false;
-//
-//  if(optimisationSettings)
-//  {
-//    if(potentialIsParameterisable)
-//      blockOut.reset(new blocks::ParamPotentialGo(optimiser, *optimisationSettings));
-//    else
-//      blockOut.reset(new blocks::PotentialGo(optimiser, *optimisationSettings));
-//  }
-//  else
-//  {
-//    if(potentialIsParameterisable)
-//      blockOut.reset(new blocks::ParamPotentialGo(optimiser));
-//    else
-//      blockOut.reset(new blocks::PotentialGo(optimiser));
-//  }
-//
-//  return true;
-//}
-
-//bool BlockFactory::createParamSweepBlock(BlockHandle * const blockOut, const OptionsMap & options) const {} TODO
 
 bool
 BlockFactory::createRemoveDuplicatesBlock(BlockHandle * blockOut,

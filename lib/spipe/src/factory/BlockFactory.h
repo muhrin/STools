@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include <spl/SSLib.h>
 #include <spl/factory/SsLibFactoryYaml.h>
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/utility/HeterogeneousMap.h>
@@ -48,9 +49,11 @@ public:
   bool
   createFindSymmetryGroupBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
+#ifdef SSLIB_USE_CGAL
   bool
   createKeepStableCompositionsBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
+#endif
   bool
   createKeepTopNBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
