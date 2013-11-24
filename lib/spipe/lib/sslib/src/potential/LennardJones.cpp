@@ -245,8 +245,10 @@ LennardJones::evaluate(const common::Structure & structure,
 
           sigmaOModR = mySigma(speciesI, speciesJ) / modR;
 
-          invRM = pow(sigmaOModR, myM);
-          invRN = myBeta(speciesI, speciesJ) * pow(sigmaOModR, myN);
+          invRN = pow(sigmaOModR, myN);
+          // Deal with special case where N is 2 times M avoiding second pow call
+          invRM = myM == 2.0 * myN ? invRN * invRN : invRM = pow(sigmaOModR, myM);
+          invRN *= myBeta(speciesI, speciesJ);
 
           // Calculate the energy delta
           dE = prefactor * (invRM - invRN) - eShift(speciesI, speciesJ)
