@@ -103,7 +103,7 @@ struct Castep : public HeteroMap
 {
   Castep()
   {
-    addScalarEntry("exe", CASTEP_EXE);
+    addScalarEntry("exe", CASTEP_EXE)->element()->defaultValue("castep")->required();
     addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()->defaultValue(
         false);
     addScalarEntry("seed", CASTEP_SEED)->required();
