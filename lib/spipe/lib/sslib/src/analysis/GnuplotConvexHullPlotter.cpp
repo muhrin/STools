@@ -26,7 +26,8 @@ namespace fs = ::boost::filesystem;
 namespace spl {
 namespace analysis {
 
-GnuplotConvexHullPlotter::GnuplotConvexHullPlotter()
+GnuplotConvexHullPlotter::GnuplotConvexHullPlotter():
+    mySettings()
 {
   myDrawBoundary = true;
   myDrawTieLines = true;

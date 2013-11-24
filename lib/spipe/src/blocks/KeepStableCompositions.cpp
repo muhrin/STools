@@ -117,7 +117,7 @@ KeepStableCompositions::hasData() const
 {
   typedef ::boost::transform_iterator< GetStructure, StructureStore::const_iterator> StructuresIterator;
 
-  static const GetStructure GET_STRUCTURE;
+  static const GetStructure GET_STRUCTURE = GetStructure();
 
   if(myStructureStore.empty())
     return false;

@@ -213,7 +213,7 @@ ConvexHullStructures::getLabel(const ConvexHull & convexHull,
   typedef utility::TakeSecond< const Structures::value_type> TakeSecond;
   typedef ::boost::transform_iterator< TakeSecond, Structures::const_iterator> IdsIterator;
 
-  static const TakeSecond TAKE_SECOND;
+  static const TakeSecond TAKE_SECOND = TakeSecond();
 
   SSLIB_ASSERT(&convexHull == &myConvexHull);
 
