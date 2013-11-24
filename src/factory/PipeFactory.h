@@ -50,7 +50,7 @@ private:
   static const BlockHandle NULL_HANDLE;
 
   ::spipe::factory::BlockFactory myBlockFactory;
-  ::spl::factory::SsLibFactoryYaml mySsLibFactory;
+  ::spl::factory::Factory mySsLibFactory;
 };
 
 

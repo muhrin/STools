@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-  ssf::SsLibFactoryYaml factory(speciesDb);
+  ssf::Factory factory(speciesDb);
 
   const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 

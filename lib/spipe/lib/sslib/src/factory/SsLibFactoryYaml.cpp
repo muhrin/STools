@@ -44,13 +44,13 @@ namespace fs = ::boost::filesystem;
 typedef boost::tokenizer< boost::char_separator< char> > Tok;
 const boost::char_separator< char> tokSep(" \t");
 
-SsLibFactoryYaml::SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb) :
+Factory::Factory(common::AtomSpeciesDatabase & atomSpeciesDb) :
     myAtomSpeciesDb(atomSpeciesDb), myShapeFactory()
 {
 }
 
 build_cell::RandomUnitCellPtr
-SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
+Factory::createRandomCellGenerator(const OptionsMap & map) const
 {
   using namespace utility::cell_params_enum;
 
@@ -129,7 +129,7 @@ SsLibFactoryYaml::createRandomCellGenerator(const OptionsMap & map) const
 }
 
 build_cell::IStructureGeneratorPtr
-SsLibFactoryYaml::createStructureGenerator(const OptionsMap & map) const
+Factory::createStructureGenerator(const OptionsMap & map) const
 {
   build_cell::IStructureGeneratorPtr generator;
 
@@ -143,7 +143,7 @@ SsLibFactoryYaml::createStructureGenerator(const OptionsMap & map) const
 }
 
 potential::IPotentialPtr
-SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
+Factory::createPotential(const OptionsMap & potentialOptions) const
 {
   potential::IPotentialPtr pot;
 
@@ -194,8 +194,8 @@ SsLibFactoryYaml::createPotential(const OptionsMap & potentialOptions) const
   return pot;
 }
 
-SsLibFactoryYaml::GeomOptimiserPtr
-SsLibFactoryYaml::createGeometryOptimiser(const OptionsMap & optimiserMap) const
+Factory::GeomOptimiserPtr
+Factory::createGeometryOptimiser(const OptionsMap & optimiserMap) const
 {
   GeomOptimiserPtr opt;
 
@@ -259,7 +259,7 @@ SsLibFactoryYaml::createGeometryOptimiser(const OptionsMap & optimiserMap) const
 }
 
 potential::OptimisationSettings
-SsLibFactoryYaml::createOptimisationSettings(const OptionsMap & options) const
+Factory::createOptimisationSettings(const OptionsMap & options) const
 {
   potential::OptimisationSettings settings;
 
@@ -276,7 +276,7 @@ SsLibFactoryYaml::createOptimisationSettings(const OptionsMap & options) const
 }
 
 utility::IStructureComparatorPtr
-SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
+Factory::createStructureComparator(const OptionsMap & map) const
 {
   utility::IStructureComparatorPtr comparator;
 
@@ -308,8 +308,8 @@ SsLibFactoryYaml::createStructureComparator(const OptionsMap & map) const
   return comparator;
 }
 
-SsLibFactoryYaml::StructureContentType::Value
-SsLibFactoryYaml::getStructureContentType(
+Factory::StructureContentType::Value
+Factory::getStructureContentType(
     const AtomsDataEntry & atomsEntry) const
 {
   // If it is a list then we know it's a compact atoms info object
@@ -329,7 +329,7 @@ SsLibFactoryYaml::getStructureContentType(
 }
 
 build_cell::AtomsDescriptionPtr
-SsLibFactoryYaml::createAtomsDescription(const AtomsDataEntry & atomsEntry,
+Factory::createAtomsDescription(const AtomsDataEntry & atomsEntry,
     const io::AtomFormatParser & parser) const
 {
   build_cell::AtomsDescriptionPtr atomsDescription;
@@ -361,7 +361,7 @@ SsLibFactoryYaml::createAtomsDescription(const AtomsDataEntry & atomsEntry,
 }
 
 build_cell::StructureBuilderPtr
-SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
+Factory::createStructureBuilder(const OptionsMap & map) const
 {
   build_cell::StructureBuilder::ConstructInfo constructInfo;
 
@@ -448,7 +448,7 @@ SsLibFactoryYaml::createStructureBuilder(const OptionsMap & map) const
 }
 
 build_cell::AtomsGroupPtr
-SsLibFactoryYaml::createAtomsGroup(const OptionsMap & map,
+Factory::createAtomsGroup(const OptionsMap & map,
     io::AtomFormatParser & parser) const
 {
   build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());

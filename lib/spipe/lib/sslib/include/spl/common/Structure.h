@@ -42,7 +42,8 @@ class AtomsFormula;
 class DistanceCalculator;
 class UnitCell;
 
-class Structure : public utility::PropertiesObject, UnitCell::UnitCellListener
+class Structure : public utility::PropertiesObject, UnitCell::UnitCellListener,
+  Atom::Listener
 {
 public:
   typedef utility::NamedProperty< utility::HeterogeneousMap> VisibleProperty;
@@ -136,8 +137,10 @@ private:
   virtual void
   onUnitCellDestroyed() {};
 
-  void
-  atomMoved(const Atom & atom) const;
+  virtual void
+  onAtomMoved(Atom * const atom);
+  virtual void
+  onAtomDestroyed(Atom * const atom);
 
   void
   updatePosBuffer() const;

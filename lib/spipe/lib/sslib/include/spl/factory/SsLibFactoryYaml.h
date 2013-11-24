@@ -44,14 +44,14 @@ class OptimisationSettings;
 
 namespace factory {
 
-class SsLibFactoryYaml : ::boost::noncopyable
+class Factory : ::boost::noncopyable
 {
   typedef utility::HeterogeneousMap OptionsMap;
 public:
   typedef UniquePtr< potential::IGeomOptimiser>::Type GeomOptimiserPtr;
   typedef UniquePtr< utility::UniqueStructureSet< > >::Type UniqueStructureSetPtr;
 
-  SsLibFactoryYaml(common::AtomSpeciesDatabase & atomSpeciesDb);
+  Factory(common::AtomSpeciesDatabase & atomSpeciesDb);
 
   GeomOptimiserPtr
   createGeometryOptimiser(const OptionsMap & optimiserOptions) const;
@@ -102,7 +102,7 @@ private:
 };
 
 template <typename T>
-::boost::optional<T> SsLibFactoryYaml::toOptional(const T * ptr) const
+::boost::optional<T> Factory::toOptional(const T * ptr) const
  {
    ::boost::optional<T> ret;
    if(ptr)
@@ -112,7 +112,7 @@ template <typename T>
 
 template< typename T>
   const T *
-  SsLibFactoryYaml::find(const utility::Key< T> & key,
+  Factory::find(const utility::Key< T> & key,
       const OptionsMap & options, const OptionsMap * globalOptions) const
   {
     const T * value = options.find(key);
