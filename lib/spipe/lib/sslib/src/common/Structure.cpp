@@ -63,7 +63,7 @@ Structure::Structure(const UnitCell & cell) :
 }
 
 Structure::Structure(const Structure & toCopy) :
-    myDistanceCalculator(*this)
+    myAtomPositionsCurrent(false), myDistanceCalculator(*this)
 {
   // Use the equals operator so we don't duplicate code
   *this = toCopy;
@@ -77,7 +77,8 @@ Structure::operator =(const Structure & rhs)
   myName = rhs.myName;
 
   // Copy over the unit cell (if exists)
-  myCell = rhs.myCell;
+  if(rhs.myCell)
+    setUnitCell(*rhs.myCell);
 
   // Copy over the atoms
   clearAtoms();
