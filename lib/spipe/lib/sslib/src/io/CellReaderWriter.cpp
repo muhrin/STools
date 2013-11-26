@@ -111,7 +111,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
             offset += 3;
           else
           {
-            structure->setUnitCell(makeUniquePtr(new common::UnitCell(latticeParams)));
+            structure->setUnitCell(common::UnitCell(latticeParams));
             break;
           }
         }
@@ -140,7 +140,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
         }
       }
       if(vec == 3)
-        structure->setUnitCell(makeUniquePtr(new common::UnitCell(mtx.t())));
+        structure->setUnitCell(common::UnitCell(mtx.t()));
     }
   }
 

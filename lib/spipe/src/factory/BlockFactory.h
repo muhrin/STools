@@ -47,6 +47,9 @@ public:
   createBuildStructuresBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool
+  createCutAndPasteBlock(BlockHandle * const blockOut,
+      const OptionsMap & options) const;
+  bool
   createFindSymmetryGroupBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
 #ifdef SSLIB_USE_CGAL

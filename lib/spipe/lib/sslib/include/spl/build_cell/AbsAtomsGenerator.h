@@ -17,7 +17,7 @@
 #include "spl/OptionalTypes.h"
 #include "spl/build_cell/AtomsDescription.h"
 #include "spl/build_cell/IFragmentGenerator.h"
-#include "spl/build_cell/IGeneratorShape.h"
+#include "spl/build_cell/GeneratorShape.h"
 #include "spl/build_cell/SymmetryGroup.h"
 
 #include "spl/build_cell/SpeciesPair.h"
@@ -38,7 +38,7 @@ public:
   typedef FragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::const_iterator const_iterator;
   typedef Atoms::const_iterator iterator;
-  typedef UniquePtr< IGeneratorShape>::Type GenShapePtr;
+  typedef UniquePtr< GeneratorShape>::Type GenShapePtr;
 
   void
   insertAtoms(const AtomsDescription & atoms);
@@ -49,10 +49,10 @@ public:
   const_iterator
   atomsEnd() const;
 
-  const IGeneratorShape *
+  const GeneratorShape *
   getGeneratorShape() const;
   void
-  setGeneratorShape(UniquePtr< IGeneratorShape>::Type genShape);
+  setGeneratorShape(UniquePtr< GeneratorShape>::Type genShape);
 
   void
   addSpeciesPairDistance(const SpeciesPair & pair, const double distance);
@@ -114,21 +114,21 @@ private:
   generateSpecialPosition(::arma::vec3 & posOut,
       SymmetryGroup::OpMask & opMaskOut,
       const SymmetryGroup::EigenspacesAndMasks & spaces,
-      const IGeneratorShape & genShape,
+      const GeneratorShape & genShape,
       const ::arma::mat44 & transformation) const;
   OptionalArmaVec3
   generateSpeciesPosition(const SymmetryGroup::Eigenspace & eigenspace,
-      const IGeneratorShape & genShape,
+      const GeneratorShape & genShape,
       const ::arma::mat44 & transformation) const;
   double
   getRadius(const AtomsDescription & atom,
       const common::AtomSpeciesDatabase & speciesDb) const;
 
-  const IGeneratorShape &
+  const GeneratorShape &
   getGenShape(const StructureBuild & build) const;
 
   Atoms myAtoms;
-  UniquePtr< IGeneratorShape>::Type myGenShape;
+  UniquePtr< GeneratorShape>::Type myGenShape;
   TicketsMap myTickets;
   GenerationTicket::IdType myLastTicketId;
   SpeciesPairDistances mySpeciesPairDistances;

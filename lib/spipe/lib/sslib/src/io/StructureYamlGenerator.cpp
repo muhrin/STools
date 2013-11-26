@@ -87,11 +87,7 @@ StructureYamlGenerator::generateStructure(const YAML::Node & node) const
     structure->setName(node[kw::STRUCTURE__NAME].as< ::std::string>());
 
   if(node[kw::STRUCTURE__CELL])
-  {
-    common::types::UnitCellPtr cell(new common::UnitCell());
-    *cell = node[kw::STRUCTURE__CELL].as< common::UnitCell>();
-    structure->setUnitCell(cell);
-  }
+    structure->setUnitCell(node[kw::STRUCTURE__CELL].as< common::UnitCell>());
 
   if(node[kw::STRUCTURE__ATOMS] && node[kw::STRUCTURE__ATOMS].IsSequence())
   {

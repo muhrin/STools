@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#include "spl/build_cell/IGeneratorShape.h"
+#include "spl/build_cell/GeneratorShape.h"
 #include "spl/utility/HeterogeneousMap.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -23,12 +23,17 @@ namespace factory {
 class GenShapeFactory : ::boost::noncopyable
 {
 public:
-  typedef UniquePtr<build_cell::IGeneratorShape>::Type GenShapePtr;
+  typedef UniquePtr< build_cell::GeneratorShape>::Type GenShapePtr;
   typedef utility::HeterogeneousMap OptionsMap;
 
-  bool createShape(GenShapePtr & shapeOut, const OptionsMap & shapeOptions) const;
-  bool createSphere(GenShapePtr & shapeOut, const OptionsMap & sphereOptions) const;
-  bool createBox(GenShapePtr & shapeOut, const OptionsMap & boxOptions) const;
+  bool
+  createShape(GenShapePtr & shapeOut, const OptionsMap & shapeOptions) const;
+  bool
+  createBox(GenShapePtr & shapeOut, const OptionsMap & boxOptions) const;
+  bool
+  createCylinder(GenShapePtr & shapeOut, const OptionsMap & boxOptions) const;
+  bool
+  createSphere(GenShapePtr & shapeOut, const OptionsMap & sphereOptions) const;
 };
 
 }

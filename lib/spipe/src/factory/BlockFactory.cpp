@@ -14,6 +14,7 @@
 
 // Local includes
 #include "blocks/BuildStructures.h"
+#include "blocks/CutAndPaste.h"
 #include "blocks/FindSymmetryGroup.h"
 #include "blocks/KeepStableCompositions.h"
 #include "blocks/KeepTopN.h"
@@ -60,6 +61,24 @@ BlockFactory::createBuildStructuresBlock(BlockHandle * const blockOut,
     return false;
 
   blockOut->reset(new blocks::BuildStructures(*numToGenerate, generator));
+  return true;
+}
+
+bool
+BlockFactory::createCutAndPasteBlock(BlockHandle * const blockOut,
+    const OptionsMap & options) const
+{
+  const OptionsMap * const shapeOptions = options.find(ssf::GEN_SHAPE);
+  if(!shapeOptions)
+    return false;
+
+  ssf::GenShapeFactory::GenShapePtr genShape;
+  if(!mySplFactory.getShapeFactory().createShape(genShape, *shapeOptions))
+    return false;
+
+  blocks::CutAndPaste::Settings settings;
+
+  blockOut->reset(new blocks::CutAndPaste(genShape, settings));
   return true;
 }
 

@@ -8,26 +8,27 @@
 // INCLUDES //////////////////////////////////
 #include "spl/potential/LennardJonesData.h"
 
-// NAMESPACES ////////////////////////////////
+#include <iterator>
 
+// NAMESPACES ////////////////////////////////
 
 namespace spl {
 namespace potential {
 
 SimplePairPotentialData::SimplePairPotentialData(
-  const spl::common::Structure & structure,
-  const SimplePairPotentialData::SpeciesList & speciesList):
-PotentialData(structure)
+    const spl::common::Structure & structure,
+    const SimplePairPotentialData::SpeciesList & speciesList) :
+    PotentialData(structure)
 {
   using spl::common::AtomSpeciesId;
 
-	// Get the atom species
-  std::vector<AtomSpeciesId::Value> strSpecies;
-	structure.getAtomSpecies(strSpecies);
+  // Get the atom species
+  std::vector< AtomSpeciesId::Value> strSpecies;
+  structure.getAtomSpecies(::std::back_inserter(strSpecies));
 
-	// Now populate our species vector
+  // Now populate our species vector
   const size_t numAtoms = strSpecies.size();
-	species.resize(numAtoms);
+  species.resize(numAtoms);
 
   bool found;
   const size_t numSpecies = speciesList.size();
@@ -46,13 +47,10 @@ PotentialData(structure)
       }
     }
     if(!found)
-    {
       species[i] = IGNORE_ATOM;
-    }
   }
 
 }
-
 
 }
 }

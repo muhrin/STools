@@ -16,7 +16,7 @@
 
 #include "spl/OptionalTypes.h"
 #include "spl/build_cell/IFragmentGenerator.h"
-#include "spl/build_cell/IGeneratorShape.h"
+#include "spl/build_cell/GeneratorShape.h"
 #include "spl/build_cell/SymmetryGroup.h"
 
 // FORWARD DECLARES //////////////////////////
@@ -35,7 +35,7 @@ public:
   typedef FragmentGenerator::GenerationTicket GenerationTicket;
   typedef Atoms::iterator iterator;
   typedef Atoms::const_iterator const_iterator;
-  typedef UniquePtr<IGeneratorShape>::Type GenShapePtr;
+  typedef UniquePtr<GeneratorShape>::Type GenShapePtr;
 
   struct TransformMode
   {
@@ -56,8 +56,8 @@ public:
   const_iterator beginAtoms() const;
   const_iterator endAtoms() const;
 
-  const IGeneratorShape * getGeneratorShape() const;
-  void setGeneratorShape(UniquePtr<IGeneratorShape>::Type genShape);
+  const GeneratorShape * getGeneratorShape() const;
+  void setGeneratorShape(UniquePtr<GeneratorShape>::Type genShape);
   
   int getNumReplicas() const;
   void setNumReplicas(const int numReplicas);
@@ -112,22 +112,22 @@ private:
     ::arma::vec3 & posOut,
     SymmetryGroup::OpMask & opMaskOut,
     const SymmetryGroup::EigenspacesAndMasks & spaces,
-    const IGeneratorShape & genShape,
+    const GeneratorShape & genShape,
     const ::arma::mat44 & transformation
   ) const;
   OptionalArmaVec3 generateSpeciesPosition(
     const SymmetryGroup::Eigenspace & eigenspace,
-    const IGeneratorShape & genShape,
+    const GeneratorShape & genShape,
     const ::arma::mat44 & transformation
   ) const;
   double getRadius(const AtomsDescription & atom, const common::AtomSpeciesDatabase & speciesDb) const;
 
-  const IGeneratorShape & getGenShape(const StructureBuild & build) const;
+  const GeneratorShape & getGenShape(const StructureBuild & build) const;
 
   ::arma::mat44 generateTransform(const StructureBuild & build) const;
 
   Atoms myAtoms;
-  UniquePtr<IGeneratorShape>::Type myGenShape;
+  UniquePtr<GeneratorShape>::Type myGenShape;
   unsigned int myNumReplicas;
   int myTransformMode;
   ::arma::vec3 myPos;

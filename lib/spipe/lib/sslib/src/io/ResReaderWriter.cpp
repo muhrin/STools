@@ -9,6 +9,7 @@
 #include "spl/io/ResReaderWriter.h"
 
 #include <iomanip>
+#include <iterator>
 #include <set>
 
 #include <boost/algorithm/string.hpp>
@@ -160,8 +161,7 @@ ResReaderWriter::writeStructure(::spl::common::Structure & str,
   }
 
   vector< AtomSpeciesId::Value> species;
-  str.getAtomSpecies(species);
-
+  str.getAtomSpecies(::std::back_inserter(species));
   set< AtomSpeciesId::Value> uniqueSpecies(species.begin(), species.end());
 
   // Output atom species
@@ -377,7 +377,7 @@ ResReaderWriter::parseCell(common::Structure & structure,
   if(!paramsFound || i < 6)
     return false;
 
-  structure.setUnitCell(makeUniquePtr(new common::UnitCell(params)));
+  structure.setUnitCell(common::UnitCell(params));
   return true;
 }
 

@@ -59,14 +59,14 @@ AbsAtomsGenerator::atomsEnd() const
   return myAtoms.end();
 }
 
-const IGeneratorShape *
+const GeneratorShape *
 AbsAtomsGenerator::getGeneratorShape() const
 {
   return myGenShape.get();
 }
 
 void
-AbsAtomsGenerator::setGeneratorShape(UniquePtr< IGeneratorShape>::Type genShape)
+AbsAtomsGenerator::setGeneratorShape(UniquePtr< GeneratorShape>::Type genShape)
 {
   myGenShape = genShape;
 }
@@ -324,7 +324,7 @@ bool
 AbsAtomsGenerator::generateSpecialPosition(::arma::vec3 & posOut,
     SymmetryGroup::OpMask & opMaskOut,
     const SymmetryGroup::EigenspacesAndMasks & spaces,
-    const IGeneratorShape & genShape,
+    const GeneratorShape & genShape,
     const ::arma::mat44 & transformation) const
 {
   typedef ::std::vector< size_t> Indices;
@@ -354,7 +354,7 @@ AbsAtomsGenerator::generateSpecialPosition(::arma::vec3 & posOut,
 
 OptionalArmaVec3
 AbsAtomsGenerator::generateSpeciesPosition(
-    const SymmetryGroup::Eigenspace & space, const IGeneratorShape & genShape,
+    const SymmetryGroup::Eigenspace & space, const GeneratorShape & genShape,
     const ::arma::mat44 & transformation) const
 {
   // Select the correct function depending on the number of eigenvectors
@@ -387,7 +387,7 @@ AbsAtomsGenerator::getRadius(const AtomsDescription & atom,
   return radius;
 }
 
-const IGeneratorShape &
+const GeneratorShape &
 AbsAtomsGenerator::getGenShape(const StructureBuild & build) const
 {
   if(myGenShape.get())

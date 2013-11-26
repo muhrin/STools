@@ -247,7 +247,7 @@ LennardJones::evaluate(const common::Structure & structure,
 
           invRN = pow(sigmaOModR, myN);
           // Deal with special case where N is 2 times M avoiding second pow call
-          invRM = myM == 2.0 * myN ? invRN * invRN : invRM = pow(sigmaOModR, myM);
+          invRM = myM == 2.0 * myN ? invRN * invRN : pow(sigmaOModR, myM);
           invRN *= myBeta(speciesI, speciesJ);
 
           // Calculate the energy delta

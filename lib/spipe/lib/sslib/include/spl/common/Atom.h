@@ -40,6 +40,9 @@ public:
   Atom(const Atom & toCopy);
   ~Atom();
 
+  Atom &
+  operator ==(const Atom & rhs);
+
   const ::arma::vec3 &
   getPosition() const;
   void
@@ -78,7 +81,7 @@ private:
   /** The index of this atom in the structure. */
   size_t myIndex;
 
-  const AtomSpeciesId::Value mySpecies;
+  AtomSpeciesId::Value mySpecies;
   ::arma::vec3 myPosition;
   double myRadius;
 

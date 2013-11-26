@@ -91,14 +91,24 @@ PipeFactory::createSearchPipe(const OptionsMap & options) const
   // Keep track of the last block so we can connect everything up
   BlockHandle block, lastBlock = startBlock;
 
-  const OptionsMap * const preGeomOptimiseOptions = options.find(
-      spf::PRE_GEOM_OPTIMISE);
-  if(preGeomOptimiseOptions)
   {
-    if(myBlockFactory.createGeomOptimiseBlock(&block, *preGeomOptimiseOptions))
+    const OptionsMap * const cutAndPasteOptions = options.find(
+        spf::CUT_AND_PASTE);
+    if(cutAndPasteOptions
+        && myBlockFactory.createCutAndPasteBlock(&block, *cutAndPasteOptions))
       lastBlock = lastBlock->connect(block);
-    else
-      return NULL_HANDLE;
+  }
+
+  {
+    const OptionsMap * const preGeomOptimiseOptions = options.find(
+        spf::PRE_GEOM_OPTIMISE);
+    if(preGeomOptimiseOptions)
+    {
+      if(myBlockFactory.createGeomOptimiseBlock(&block, *preGeomOptimiseOptions))
+        lastBlock = lastBlock->connect(block);
+      else
+        return NULL_HANDLE;
+    }
   }
 
   const OptionsMap * const geomOptimiseOptions = options.find(

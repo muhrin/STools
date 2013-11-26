@@ -16,6 +16,7 @@
 #include <ostream>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <armadillo>
@@ -40,16 +41,19 @@ namespace spl {
 namespace common {
 class AtomsFormula;
 class DistanceCalculator;
-class UnitCell;
 
 class Structure : public utility::PropertiesObject, UnitCell::UnitCellListener,
   Atom::Listener
 {
+  typedef ::boost::ptr_vector< Atom> AtomsContainer;
 public:
+  typedef common::Atom StructureAtom;
+  typedef AtomsContainer::iterator AtomIterator;
   typedef utility::NamedProperty< utility::HeterogeneousMap> VisibleProperty;
 
   explicit
-  Structure(UnitCellPtr cell = UnitCellPtr());
+  Structure();
+  Structure(const UnitCell & cell);
   Structure(const Structure & toCopy);
   Structure &
   operator =(const Structure & rhs);
@@ -72,12 +76,18 @@ public:
 
   // Set the unit cell to be used by the structure.
   void
-  setUnitCell(UnitCellPtr cell);
+  setUnitCell(const UnitCell & cell);
+  void
+  clearUnitCell();
 
   // ATOMS ///////////////////////////////////////////////
   size_t
   getNumAtoms() const;
 
+  AtomIterator
+  atomsBegin();
+  AtomIterator
+  atomsEnd();
   Atom &
   getAtom(const size_t idx);
   const Atom &
@@ -87,6 +97,8 @@ public:
   newAtom(const AtomSpeciesId::Value species);
   Atom &
   newAtom(const Atom & toCopy);
+  AtomIterator
+  eraseAtom(AtomIterator & it);
   bool
   removeAtom(const Atom & atom);
   size_t
@@ -99,8 +111,9 @@ public:
   void
   setAtomPositions(const ::arma::mat & posMtx);
 
+  template <typename OutputIterator>
   void
-  getAtomSpecies(::std::vector< AtomSpeciesId::Value> & species) const;
+  getAtomSpecies(OutputIterator it) const;
   size_t
   getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
   AtomsFormula
@@ -127,8 +140,6 @@ public:
   print(::std::ostream & os) const;
 
 private:
-  typedef ::boost::ptr_vector< Atom> AtomsContainer;
-
   virtual void
   onUnitCellChanged(UnitCell & unitCell);
   virtual void
@@ -149,7 +160,7 @@ private:
   std::string myName;
 
   /** The unit cell for this crystal structure. */
-  UnitCellPtr myCell;
+  ::boost::optional<UnitCell> myCell;
 
   /** The atoms contained in this group */
   AtomsContainer myAtoms;
@@ -163,6 +174,14 @@ private:
 
   friend class Atom;
 };
+
+template <typename OutputIterator>
+void
+Structure::getAtomSpecies(OutputIterator it) const
+{
+  BOOST_FOREACH(const Atom & atom, myAtoms)
+    *it = atom.getSpecies();
+}
 
 }
 }

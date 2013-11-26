@@ -158,9 +158,7 @@ size_t CastepReader::readStructures(StructuresContainer & outStructures, ::std::
       cellUpToDate = parseCell(currentCell, inputStream);
     else if(cellUpToDate && ::boost::find_first(line, CONTENTS_TITLE))
     {
-      common::types::StructurePtr structure(
-        new common::Structure(makeUniquePtr(new common::UnitCell(currentCell)))
-      );
+      common::types::StructurePtr structure(new common::Structure(currentCell));
       if(parseContents(*structure, inputStream))
       {
         // Save the last structure we loaded so we can update it with information from

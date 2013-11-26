@@ -32,6 +32,7 @@ extern ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> CUT_AND_PASTE;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;

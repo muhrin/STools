@@ -3,6 +3,7 @@
 
 set(spipe_Header_Files__blocks
   blocks/BuildStructures.h
+  blocks/CutAndPaste.h
   blocks/FindSymmetryGroup.h
   blocks/EdgeDetect.h
   blocks/GeomOptimise.h
@@ -22,6 +23,7 @@ source_group("Header Files\\blocks" FILES ${spipe_Header_Files__blocks})
 
 set(spipe_Source_Files__blocks
   blocks/BuildStructures.cpp
+  blocks/CutAndPaste.cpp
   blocks/FindSymmetryGroup.cpp
   blocks/GeomOptimise.cpp
   blocks/KeepStableCompositions.cpp

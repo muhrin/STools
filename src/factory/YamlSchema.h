@@ -12,7 +12,6 @@
 // INCLUDES /////////////////////////////////////////////
 
 #include <spl/yaml_schema/YamlSchema.h>
-#include <spl/factory/SsLibYamlSchema.h>
 
 // From SPipe
 #include <factory/YamlSchema.h>
@@ -87,6 +86,8 @@ struct Search : PipeSettings
 
     addEntry("buildStructures", spf::BUILD_STRUCTURES,
         new spf::blocks::BuildStructures());
+    addEntry("cutAndPaste", spf::CUT_AND_PASTE,
+        new spf::blocks::CutAndPaste());
     addEntry("loadStructures", spf::LOAD_STRUCTURES,
         new spf::blocks::LoadStructures());
     addEntry("preGeomOptimise", spf::PRE_GEOM_OPTIMISE,

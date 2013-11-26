@@ -37,6 +37,16 @@ Atom::~Atom()
   sendDestroyedMsg();
 }
 
+Atom &
+Atom::operator ==(const Atom & rhs)
+{
+  mySpecies = rhs.mySpecies;
+  myPosition = rhs.myPosition;
+  myRadius = rhs.myRadius;
+
+  return *this;
+}
+
 const ::arma::vec3 &
 Atom::getPosition() const
 {

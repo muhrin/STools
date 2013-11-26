@@ -55,7 +55,7 @@ struct Result
   {
     ::std::cout << "Average: " << mean << ::std::endl;
     ::std::cout << "Max: " << max << ::std::endl;
-    ::std::cout << "Failure rate: " << failureRate * 100.0 << "%" << ::std::endl;
+    ::std::cout << "Failure rate: " << failureRate * 100 << "%" << ::std::endl;
   }
 
   size_t numWrong;
@@ -90,6 +90,8 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   const size_t NUM_COMPARATORS = comparators.size();
   const size_t MAX_STRUCTURES = 100;
   const double ALLOWED_FAIL_RATE = 0.02;
+  const unsigned int MAX_NUM_WRONG = static_cast<unsigned int>(
+    ::std::ceil(static_cast<double>(MAX_STRUCTURES) * ALLOWED_FAIL_RATE));
 
   BOOST_REQUIRE(fs::exists(REFERENCE_STRUCTURES_PATH));
   BOOST_REQUIRE(fs::is_directory(REFERENCE_STRUCTURES_PATH));
@@ -149,7 +151,6 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   
   comparisonHandles.resize(numStructures);
   const double totalComparisons = 0.5 * (numStructures - 1.0) * numStructures;
-  const size_t maxWrong = static_cast<size_t>(::std::ceil(totalComparisons * ALLOWED_FAIL_RATE));
   double diff;
   for(size_t k = 0; k < NUM_COMPARATORS; ++k)
   {
@@ -176,7 +177,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   {
     results[k].calcStats(totalComparisons);
     results[k].printStats();
-    BOOST_REQUIRE(results[k].numWrong <= maxWrong);
+    BOOST_REQUIRE(results[k].numWrong <= MAX_NUM_WRONG);
   }
 }
 

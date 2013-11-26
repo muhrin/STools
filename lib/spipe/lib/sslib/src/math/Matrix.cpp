@@ -6,7 +6,6 @@
  */
 
 // INCLUEDES /////////////
-
 #include "spl/SSLibAssert.h"
 #include "spl/math/Matrix.h"
 #include "spl/utility/StableComparison.h"
@@ -21,24 +20,28 @@ using namespace arma;
 
 namespace comp = utility::stable;
 
-void normalise(::arma::vec & vec)
+void
+normalise(::arma::vec & vec)
 {
   vec = vec / sqrt(::arma::dot(vec, vec));
 }
 
-::arma::vec normaliseCopy(const ::arma::vec & vec)
+::arma::vec
+normaliseCopy(const ::arma::vec & vec)
 {
   ::arma::vec copy(vec);
   normalise(copy);
   return copy;
 }
 
-bool equals(const ::arma::mat & a, const ::arma::mat & b)
+bool
+equals(const ::arma::mat & a, const ::arma::mat & b)
 {
-  return equals(a, b, 1e3 * ::std::numeric_limits<double>::epsilon());
+  return equals(a, b, 1e3 * ::std::numeric_limits< double>::epsilon());
 }
 
-bool equals(const ::arma::mat & a, const ::arma::mat & b, const double tolerance)
+bool
+equals(const ::arma::mat & a, const ::arma::mat & b, const double tolerance)
 {
   if(a.n_rows != b.n_rows || a.n_cols != b.n_cols)
     return false;
@@ -47,18 +50,21 @@ bool equals(const ::arma::mat & a, const ::arma::mat & b, const double tolerance
   return comp::eq(diff.max(), 0.0, tolerance);
 }
 
-bool isZero(const ::arma::mat & mat)
+bool
+isZero(const ::arma::mat & mat)
 {
-  return isZero(mat, 1e3 * ::std::numeric_limits<double>::epsilon());
+  return isZero(mat, 1e3 * ::std::numeric_limits< double>::epsilon());
 }
 
-bool isZero(const ::arma::mat & mat, const double tolerance)
+bool
+isZero(const ::arma::mat & mat, const double tolerance)
 {
   const ::arma::mat abs(::arma::abs(mat));
   return comp::eq(abs.max(), 0.0, tolerance);
 }
 
-bool isSpannedBy(const ::arma::mat & superspace, const ::arma::mat & subspace)
+bool
+isSpannedBy(const ::arma::mat & superspace, const ::arma::mat & subspace)
 {
   SSLIB_ASSERT(superspace.n_rows == subspace.n_rows);
   SSLIB_ASSERT(superspace.n_cols >= subspace.n_cols);
@@ -73,46 +79,79 @@ bool isSpannedBy(const ::arma::mat & superspace, const ::arma::mat & subspace)
   return isSpanned;
 }
 
-bool isReal(const ::arma::cx_vec & vec)
+bool
+isReal(const ::arma::cx_vec & vec)
 {
-  return isReal(vec, 1e3 * ::std::numeric_limits<double>::epsilon());
+  return isReal(vec, 1e3 * ::std::numeric_limits< double>::epsilon());
 }
 
-bool isReal(const ::arma::cx_vec & vec, const double tolerance)
+bool
+isReal(const ::arma::cx_vec & vec, const double tolerance)
 {
   const ::arma::vec im(::arma::imag(vec));
   return comp::eq(im.max(), 0.0, tolerance);
 }
 
-bool isReal(const ::arma::cx_mat & mat)
+bool
+isReal(const ::arma::cx_mat & mat)
 {
-  return isReal(mat, 1e3 * ::std::numeric_limits<double>::epsilon());
+  return isReal(mat, 1e3 * ::std::numeric_limits< double>::epsilon());
 }
 
-bool isReal(const ::arma::cx_mat & mat, const double tolerance)
+bool
+isReal(const ::arma::cx_mat & mat, const double tolerance)
 {
   const ::arma::vec im(::arma::imag(mat));
   return comp::eq(im.max(), 0.0, tolerance);
 }
 
-::arma::vec3 getTranslation(const mat44 & transform)
+::arma::mat44
+makeTranslation(const ::arma::vec3 & translation)
+{
+  using namespace utility::cart_coords_enum;
+  ::arma::mat44 transform = ::arma::eye(4, 4);
+  transform.col(3).rows(X, Z) = translation;
+  return transform;
+}
+
+::arma::vec3
+getTranslation(const mat44 & transform)
 {
   using namespace utility::cart_coords_enum;
   return transform.col(3).rows(X, Z);
 }
 
-void setTranslation(::arma::mat44 & transform, const vec3 & translation)
+void
+setTranslation(::arma::mat44 & transform, const vec3 & translation)
 {
   using namespace utility::cart_coords_enum;
   transform.col(3).rows(X, Z) = translation;
 }
 
-::arma::mat33 getRotation(const ::arma::mat44 & transform)
+void
+inverse(::arma::mat44 & transform)
+{
+  using namespace utility::cart_coords_enum;
+  transform.submat(0, 0, 2, 2) = ::arma::inv(transform.submat(0, 0, 2, 2));
+  transform.col(3).rows(X, Z) = -transform.col(3).rows(X, Z);
+}
+
+::arma::mat44
+inverseCopy(const ::arma::mat44 & transform)
+{
+  ::arma::mat44 copy = transform;
+  inverse(copy);
+  return copy;
+}
+
+::arma::mat33
+getRotation(const ::arma::mat44 & transform)
 {
   return transform.submat(0, 0, 2, 2);
 }
 
-void setRotation(::arma::mat44 & transform, const vec4 & axisAngle)
+void
+setRotation(::arma::mat44 & transform, const vec4 & axisAngle)
 {
   using namespace utility::cart_coords_enum;
 
@@ -128,17 +167,17 @@ void setRotation(::arma::mat44 & transform, const vec4 & axisAngle)
   crossProductMtx(0, 2) = axis(Y);
   crossProductMtx(1, 2) = -axis(X);
   // Skew symmetric replication
-  crossProductMtx(1,0) = axis(Z);
-  crossProductMtx(2,0) = -axis(Y);
-  crossProductMtx(2,1) = axis(X);
+  crossProductMtx(1, 0) = axis(Z);
+  crossProductMtx(2, 0) = -axis(Y);
+  crossProductMtx(2, 1) = axis(X);
 
-  transform.submat(0, 0, 2, 2) =
-    eye<mat>(3,3) * cos(theta) +
-    sin(theta) * crossProductMtx +
-    (1.0 - cos(theta)) * kron(axis, axis.t());
+  transform.submat(0, 0, 2, 2) = eye< mat>(3, 3) * cos(theta)
+      + sin(theta) * crossProductMtx
+      + (1.0 - cos(theta)) * kron(axis, axis.t());
 }
 
-void transform(::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
+void
+transform(::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
 {
   using namespace utility::cart_coords_enum;
 
@@ -149,7 +188,8 @@ void transform(::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
   vec = transformed.rows(X, Z);
 }
 
-::arma::vec3 transformCopy(const ::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
+::arma::vec3
+transformCopy(const ::arma::vec3 & vec, const ::arma::mat44 & transformMtx)
 {
   ::arma::vec3 copy(vec);
   transform(copy, transformMtx);

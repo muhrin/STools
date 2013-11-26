@@ -56,6 +56,17 @@ UnitCell::~UnitCell()
   }
 }
 
+bool
+UnitCell::operator ==(const UnitCell & rhs) const
+{
+  for(size_t i = 0; i < 6; ++i)
+  {
+    if(myLatticeParams[i] != rhs.myLatticeParams[i])
+      return false;
+  }
+  return true;
+}
+
 UnitCellPtr
 UnitCell::clone() const
 {

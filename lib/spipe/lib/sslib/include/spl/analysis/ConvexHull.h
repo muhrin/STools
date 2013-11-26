@@ -14,6 +14,7 @@
 #ifdef SSLIB_USE_CGAL
 
 #include <map>
+#include <iterator>
 #include <vector>
 #include <string>
 #include <utility>
@@ -199,11 +200,10 @@ template< typename InputIterator>
       return endpoints;
 
     ::std::set< ::std::string> speciesSet;
-    ::std::vector< ::std::string> species;
     for(InputIterator it = first; it != last; ++it)
     {
-      it->getAtomSpecies(species);
-      ::std::set< ::std::string> localSet(species.begin(), species.end());
+      ::std::set< ::std::string> localSet;
+      it->getAtomSpecies(::std::inserter(localSet, localSet.begin()));
       if(localSet.size() == 1)
         speciesSet.insert(*localSet.begin());
       endpoints.clear();

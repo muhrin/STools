@@ -161,7 +161,7 @@ StructureBuild::removeAtom(common::Atom & atom)
     myAtomInfoList.erase(itList);
 }
 
-const IGeneratorShape &
+const GeneratorShape &
 StructureBuild::getGenShape() const
 {
   return *myGenShape;

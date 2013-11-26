@@ -49,9 +49,10 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/BuildCellFwd.h
   include/spl/build_cell/GenerationOutcome.h
   include/spl/build_cell/GenBox.h
+  include/spl/build_cell/GenCylinder.h
   include/spl/build_cell/GenerationSettings.h
   include/spl/build_cell/GenSphere.h
-  include/spl/build_cell/IGeneratorShape.h
+  include/spl/build_cell/GeneratorShape.h
   include/spl/build_cell/IFragmentGenerator.h
   include/spl/build_cell/IUnitCellGenerator.h
   include/spl/build_cell/PointGroups.h

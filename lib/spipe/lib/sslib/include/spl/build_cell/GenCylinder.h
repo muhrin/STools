@@ -1,12 +1,12 @@
 /*
- * GenSphere.h
+ * GenCylinder.h
  *
- *  Created on: Aug 17, 2011
+ *  Created on: Nov 24, 2013
  *      Author: Martin Uhrin
  */
 
-#ifndef GEN_SPHERE_H
-#define GEN_SPHERE_H
+#ifndef GEN_CYLINDER_H
+#define GEN_CYLINDER_H
 
 // INCLUDES /////////////////////////////////
 #include "spl/SSLib.h"
@@ -20,15 +20,27 @@
 namespace spl {
 namespace build_cell {
 
-class GenSphere : public GeneratorShape
+class GenCylinder : public GeneratorShapeWithShell
 {
 public:
   typedef ::boost::optional< double> ShellThickness;
 
-  GenSphere(const double radius);
-  GenSphere(const GenSphere & toCopy);
+  struct Settings
+  {
+    Settings() :
+        shellCapped(false)
+    {
+    }
+    ShellThickness shellThickness;
+    bool shellCapped;
+  };
+
+  GenCylinder(const double radius, const double height);
+  GenCylinder(const double radius, const double height,
+      const Settings & settings);
+  GenCylinder(const GenCylinder & toCopy);
   virtual
-  ~GenSphere()
+  ~GenCylinder()
   {
   }
 
@@ -37,14 +49,7 @@ public:
   void
   setPosition(const ::arma::vec3 & pos);
 
-  const ShellThickness &
-  getShellThickness() const;
-  void
-  setShellThickness(const ShellThickness thickness);
-
   // From GeneratorShape
-  virtual ::arma::vec3
-  randomPoint(const ::arma::mat44 * const transform = NULL) const;
   virtual OptionalArmaVec3
   randomPointOnAxis(const ::arma::vec3 & axis,
       const ::arma::mat44 * const transform = NULL) const;
@@ -64,25 +69,21 @@ public:
   clone() const;
   // End from GeneratorShape
 
-private:
-  double
-  generateRadius() const;
-  ::arma::vec3
-  randomPoint(const ::arma::mat44 & fullTransform) const;
-  OptionalArmaVec3
-  randomPointOnAxis(const ::arma::vec3 & axis,
-      const ::arma::mat44 & fullTransform) const;
-  OptionalArmaVec3
-  randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const ::arma::mat44 & fullTransform) const;
+  virtual bool
+  isInShell(const ::arma::vec3 & pos) const;
 
+private:
+  virtual ::arma::vec3
+  doRandomPoint(const ::arma::mat44 * const transform = NULL) const;
+
+  const double myRadius;
+  const double myHalfHeight;
+  const Settings mySettings;
   ::arma::mat44 myTransform;
   ::arma::mat44 myInvTransform;
-  const double myRadius;
-  ShellThickness myShellThickness;
 };
 
 }
 }
 
-#endif /* GEN_SPHERE_H */
+#endif /* GEN_CYLINDER_H */

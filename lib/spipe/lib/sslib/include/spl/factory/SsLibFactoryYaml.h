@@ -73,6 +73,9 @@ public:
   utility::IStructureComparatorPtr
   createStructureComparator(const OptionsMap & map) const;
 
+  const GenShapeFactory &
+  getShapeFactory() const;
+
 private:
 
   typedef ::boost::optional< AtomSpeciesCount> OptionalAtomSpeciesCount;

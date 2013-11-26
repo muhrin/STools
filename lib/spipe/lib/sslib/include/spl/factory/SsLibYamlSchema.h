@@ -114,7 +114,7 @@ struct Castep : public HeteroMap
   }
 };
 
-struct Optimiser : public yaml_schema::SchemaHeteroMap
+struct Optimiser : public HeteroMap
 {
   Optimiser()
   {
@@ -149,9 +149,40 @@ struct Structure : public yaml_schema::SchemaHeteroMap
 
 namespace builder {
 
-struct GenSphere : HeteroMap
+struct GenBox : HeteroMap
 {
   typedef utility::HeterogeneousMap BindingType;
+  GenBox()
+  {
+    addScalarEntry("pos", POSITION)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE);
+    addScalarEntry("shell", SHELL_THICKNESS);
+    addScalarEntry("width", WIDTH)->required();
+    addScalarEntry("height", HEIGHT)->required();
+    addScalarEntry("depth", DEPTH)->required();
+  }
+  ;
+};
+
+struct GenCylinder : HeteroMap
+{
+  GenCylinder()
+  {
+    addScalarEntry("radius", RADIUS)->required();
+    addScalarEntry("height", HEIGHT)->required();
+    addScalarEntry("pos", POSITION)->element()->defaultValue(
+        ::arma::zeros< ::arma::vec>(3));
+    addScalarEntry("rot", ROT_AXIS_ANGLE);
+    addScalarEntry("shell", SHELL_THICKNESS);
+    addScalarEntry("shellCapped", SHELL_CAPPED);
+  }
+  ;
+};
+
+struct GenSphere : HeteroMap
+{
+  typedef HeteroMap BindingType;
   GenSphere()
   {
     addScalarEntry("radius", RADIUS)->required();
@@ -164,21 +195,15 @@ struct GenSphere : HeteroMap
   ;
 };
 
-struct GenBox : HeteroMap
+struct GenShape : public HeteroMap
 {
-  typedef utility::HeterogeneousMap BindingType;
-  GenBox()
+  typedef HeteroMap BindingType;
+  GenShape()
   {
-    addScalarEntry("pos", POSITION)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(4));
-    addScalarEntry("shell", SHELL_THICKNESS);
-    addScalarEntry("width", WIDTH)->required();
-    addScalarEntry("height", HEIGHT)->required();
-    addScalarEntry("depth", DEPTH)->required();
+    addEntry("box", GEN_BOX, new GenBox());
+    addEntry("cylinder", GEN_CYLINDER, new GenCylinder());
+    addEntry("sphere", GEN_SPHERE, new GenSphere());
   }
-  ;
 };
 
 struct MinMaxRatio : HeteroMap
@@ -333,6 +358,6 @@ struct UnitCell : HeteroMap
 }
 }
 
+#endif /* SSLIB_USE_YAML */
 #endif /* SSLIB_YAML_SCHEMA_H */
 
-#endif /* SSLIB_USE_YAML */

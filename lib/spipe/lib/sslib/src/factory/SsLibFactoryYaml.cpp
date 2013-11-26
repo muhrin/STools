@@ -308,6 +308,12 @@ Factory::createStructureComparator(const OptionsMap & map) const
   return comparator;
 }
 
+const GenShapeFactory &
+Factory::getShapeFactory() const
+{
+  return myShapeFactory;
+}
+
 Factory::StructureContentType::Value
 Factory::getStructureContentType(
     const AtomsDataEntry & atomsEntry) const
@@ -454,7 +460,7 @@ Factory::createAtomsGroup(const OptionsMap & map,
   build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
 
   // Try creating a generator shape
-  UniquePtr< build_cell::IGeneratorShape>::Type genShape;
+  UniquePtr< build_cell::GeneratorShape>::Type genShape;
   myShapeFactory.createShape(genShape, map);
 
   const int * const num = map.find(NUM);

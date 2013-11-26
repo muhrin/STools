@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/LoadStructures.h"
 
+#include <iterator>
 #include <sstream>
 #include <vector>
 
@@ -164,7 +165,7 @@ LoadStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure)
   typedef ::boost::optional< double> OptionalDouble;
 
   ::std::vector< ssc::AtomSpeciesId::Value> species;
-  structure.getAtomSpecies(species);
+  structure.getAtomSpecies(::std::back_inserter(species));
 
   OptionalDouble radius;
   double dRadius, volume = 0.0;

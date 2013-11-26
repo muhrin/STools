@@ -70,14 +70,16 @@ public:
   UnitCell(const UnitCell & toCopy);
   ~UnitCell();
 
+  bool
+  operator ==(const UnitCell & rhs) const;
+
   UnitCellPtr
   clone() const;
 
   const double (&
   getLatticeParams() const)[6];
 
-  void
-  setLatticeParams(const double (&params)[6]);
+void  setLatticeParams(const double (&params)[6]);
 
   inline ::arma::vec3 getAVec() const
   {

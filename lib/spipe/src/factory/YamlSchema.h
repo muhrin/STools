@@ -38,15 +38,21 @@ struct BuildStructures : ::spl::factory::builder::Builder
   typedef ::spl::utility::HeterogeneousMap BindingType;
   BuildStructures()
   {
-    addScalarEntry("num", NUM)->element()->defaultValue(100);
+    addScalarEntry("num", NUM)->element()->defaultValue(1);
+  }
+};
+
+struct CutAndPaste : public HeteroMap
+{
+  CutAndPaste()
+  {
+    addEntry("shape", ::spl::factory::GEN_SHAPE,
+        new ::spl::factory::builder::GenShape())->element()->required();
   }
 };
 
 struct FindSymmetryGroup : HeteroMap
 {
-  FindSymmetryGroup()
-  {
-  }
 };
 
 struct KeepStableCompositions : HeteroMap

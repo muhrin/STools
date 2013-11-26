@@ -51,7 +51,12 @@ private:
   const AtomSpeciesId::Value mySpecies;
 };
 
-Structure::Structure(UnitCellPtr cell) :
+Structure::Structure() :
+    myAtomPositionsCurrent(false), myDistanceCalculator(*this)
+{
+}
+
+Structure::Structure(const UnitCell & cell) :
     myAtomPositionsCurrent(false), myDistanceCalculator(*this)
 {
   setUnitCell(cell);
@@ -72,8 +77,7 @@ Structure::operator =(const Structure & rhs)
   myName = rhs.myName;
 
   // Copy over the unit cell (if exists)
-  if(rhs.myCell.get())
-    setUnitCell(rhs.myCell->clone());
+  myCell = rhs.myCell;
 
   // Copy over the atoms
   clearAtoms();
@@ -96,9 +100,9 @@ Structure::updateWith(const Structure & structure)
 {
   // Update the unit cell
   if(structure.getUnitCell())
-    setUnitCell(structure.getUnitCell()->clone());
+    setUnitCell(*structure.getUnitCell());
   else
-    setUnitCell(UnitCellPtr());
+    clearUnitCell();
 
   // Update the atoms
   clearAtoms();
@@ -126,22 +130,27 @@ Structure::setName(const std::string & name)
 UnitCell *
 Structure::getUnitCell()
 {
-  return myCell.get();
+  if(myCell)
+    return &(*myCell);
+  return NULL;
 }
 
 const UnitCell *
 Structure::getUnitCell() const
 {
-  return myCell.get();
+  if(myCell)
+    return &(*myCell);
+  else
+    return NULL;
 }
 
 void
-Structure::setUnitCell(UnitCellPtr cell)
+Structure::setUnitCell(const UnitCell & cell)
 {
-  if(myCell.get() == cell.get())
+  if(myCell == cell)
     return;
 
-  if(myCell.get())
+  if(myCell)
     myCell->removeListener(*this);
 
   myCell = cell;
@@ -149,10 +158,30 @@ Structure::setUnitCell(UnitCellPtr cell)
   myDistanceCalculator.unitCellChanged();
 }
 
+void
+Structure::clearUnitCell()
+{
+  if(myCell)
+    myCell->removeListener(*this);
+  myCell.reset();
+}
+
 size_t
 Structure::getNumAtoms() const
 {
   return myAtoms.size();
+}
+
+Structure::AtomIterator
+Structure::atomsBegin()
+{
+  return myAtoms.begin();
+}
+
+Structure::AtomIterator
+Structure::atomsEnd()
+{
+  return myAtoms.end();
 }
 
 Atom &
@@ -191,6 +220,20 @@ Structure::newAtom(const Atom & toCopy)
   return atom;
 }
 
+Structure::AtomIterator
+Structure::eraseAtom(AtomIterator & it)
+{
+  const size_t index = it->getIndex();
+  it->removeListener(this);
+  const AtomIterator ret = myAtoms.erase(it);
+
+  for(size_t i = index; i < myAtoms.size(); ++i)
+    myAtoms[i].setIndex(i);
+
+  myAtomPositionsCurrent = false;
+  return ret;
+}
+
 bool
 Structure::removeAtom(const Atom & atom)
 {
@@ -198,15 +241,8 @@ Structure::removeAtom(const Atom & atom)
   if(index >= myAtoms.size() || &atom != &myAtoms[index])
     return false;
 
-  myAtoms[index].removeListener(this);
-  myAtoms.erase(myAtoms.begin() + index);
-
-  for(size_t i = index; i < myAtoms.size(); ++i)
-  {
-    myAtoms[i].setIndex(i);
-  }
-
-  myAtomPositionsCurrent = false;
+  AtomIterator it = myAtoms.begin() + index;
+  eraseAtom(it);
   return true;
 }
 
@@ -257,18 +293,6 @@ Structure::setAtomPositions(const ::arma::mat & posMtx)
   myAtomPositionsCurrent = true;
 }
 
-void
-Structure::getAtomSpecies(::std::vector< AtomSpeciesId::Value> & species) const
-{
-  const size_t numAtoms = getNumAtoms();
-  species.resize(numAtoms);
-
-  for(size_t i = 0; i < numAtoms; ++i)
-  {
-    species[i] = myAtoms[i].getSpecies();
-  }
-}
-
 size_t
 Structure::getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const
 {
@@ -312,7 +336,7 @@ Structure::makePrimitive()
   if(!getUnitCell() || numAtoms == 0)
     return false;
 
-  if(numAtoms > 0 && myCell.get())
+  if(numAtoms > 0 && myCell)
   {
     double lattice[3][3];
     const ::arma::mat33 & orthoMtx = myCell->getOrthoMtx();
@@ -340,7 +364,7 @@ Structure::makePrimitive()
 
     ::std::vector< AtomSpeciesId::Value> speciesVec;
     ::std::vector< AtomSpeciesId::Value> speciesIdxVec;
-    getAtomSpecies(speciesVec);
+    getAtomSpecies(::std::back_inserter(speciesVec));
     ::std::map< common::AtomSpeciesId::Value, int> speciesIndices;
     int idx = 0;
     BOOST_FOREACH(const common::AtomSpeciesId::Value & speciesId, speciesVec)

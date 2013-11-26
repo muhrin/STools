@@ -97,9 +97,12 @@ extern utility::Key< ::std::string> POSITION_STRING;
 extern utility::Key< ::std::string> ROTATION_STRING;
 extern utility::Key< ::std::map< ::std::string, double> > PAIR_DISTANCES;
 // Shape generators
-extern utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 extern utility::Key<utility::HeterogeneousMap> GEN_BOX;
+extern utility::Key<utility::HeterogeneousMap> GEN_CYLINDER;
+extern utility::Key<utility::HeterogeneousMap> GEN_SHAPE;
+extern utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 extern utility::Key<double> SHELL_THICKNESS;
+extern utility::Key<bool> SHELL_CAPPED;
 extern utility::Key<double> WIDTH;
 extern utility::Key<double> HEIGHT;
 extern utility::Key<double> DEPTH;

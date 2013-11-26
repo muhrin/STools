@@ -6,8 +6,9 @@
  */
 
 // INCLUDES /////////////////////////////////////
-
 #include "spl/utility/SortedDistanceComparatorEx.h"
+
+#include <iterator>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -36,11 +37,11 @@ cutoff(_cutoff)
 
   const size_t numAtoms = primitive->getNumAtoms();
 
-  primitive->getAtomSpecies(species);
-  ::std::set<common::AtomSpeciesId::Value> speciesSet(species.begin(), species.end());
-  species.resize(speciesSet.size());
+  ::std::set< common::AtomSpeciesId::Value> speciesSet;
+  primitive->getAtomSpecies(::std::inserter(speciesSet, speciesSet.begin()));
+  const size_t numSpecies = speciesSet.size();
+  species.resize(numSpecies);
   ::std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
-  const size_t numSpecies = species.size();
 
   initSpeciesDistancesMap();
 

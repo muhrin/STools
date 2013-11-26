@@ -72,9 +72,12 @@ utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
 utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
 utility::Key< ::std::map< ::std::string, double> > PAIR_DISTANCES;
 // Shape generators
-utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 utility::Key<utility::HeterogeneousMap> GEN_BOX;
+utility::Key<utility::HeterogeneousMap> GEN_CYLINDER;
+utility::Key<utility::HeterogeneousMap> GEN_SHAPE;
+utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
 utility::Key<double> SHELL_THICKNESS;
+utility::Key<bool> SHELL_CAPPED;
 utility::Key<double> WIDTH;
 utility::Key<double> HEIGHT;
 utility::Key<double> DEPTH;

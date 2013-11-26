@@ -8,6 +8,8 @@
 // INCLUDES /////////////////////////////////////
 #include "spl/utility/DistanceMatrixComparator.h"
 
+#include <iterator>
+
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -50,7 +52,7 @@ DistanceMatrixComparisonData::DistanceMatrixComparisonData(
   unsortedDistnacesMatrix.diag().zeros();
 
   // Copy over the species of all the atoms (ordered by index)
-  primitive->getAtomSpecies(speciesList);
+  primitive->getAtomSpecies(::std::back_inserter(speciesList));
 
   size_t i, j; // Loop indices used throughout
   const common::Atom * atomI;

@@ -24,6 +24,7 @@ namespace factory {
 
 // BLOCKS
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> CUT_AND_PASTE;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;

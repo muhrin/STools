@@ -88,7 +88,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
       return outcome;
 
     if(cell.get())
-      structureOut->setUnitCell(cell);
+      structureOut->setUnitCell(*cell);
     else
       return GenerationOutcome::failure(
           "Unit cell generator failed to generate unit cell");
@@ -96,6 +96,7 @@ StructureBuilder::generateStructure(common::StructurePtr & structureOut,
 
   // By now we should have a unit cell and symmetry if needed
   // so generate the atoms
+  this->generateFragment(structureBuild, structureTicket, speciesDb);
   BOOST_FOREACH(const GeneratorAndTicket & generatorAndTicket, generationInfo)
   {
     outcome = generatorAndTicket.first->generateFragment(structureBuild,

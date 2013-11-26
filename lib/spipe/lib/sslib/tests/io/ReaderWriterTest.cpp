@@ -8,6 +8,8 @@
 // INCLUDES //////////////////////////////////
 #include "sslibtest.h"
 
+#include <iterator>
+
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
@@ -75,8 +77,8 @@ void checkSimilar(const ssc::Structure & str1, const ssc::Structure & str2)
   BOOST_REQUIRE(str1.getNumAtoms() == str2.getNumAtoms());
 
   ::std::vector<ssc::AtomSpeciesId::Value> species1, species2;
-  str1.getAtomSpecies(species1);
-  str2.getAtomSpecies(species2);
+  str1.getAtomSpecies(::std::back_inserter(species1));
+  str2.getAtomSpecies(::std::back_inserter(species2));
   BOOST_REQUIRE(species1.size() == species2.size());
 
   // Put all the species in structure 1 into a set and one by one insert those from

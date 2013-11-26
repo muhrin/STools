@@ -21,7 +21,7 @@
 
 #include "spl/build_cell/AtomExtruder.h"
 #include "spl/build_cell/BuildAtomInfo.h"
-#include "spl/build_cell/IGeneratorShape.h"
+#include "spl/build_cell/GeneratorShape.h"
 #include "spl/build_cell/SpeciesPair.h"
 
 namespace spl {
@@ -44,7 +44,7 @@ public:
   typedef ::std::set< size_t> FixedSet;
   typedef UniquePtr< SymmetryGroup>::Type SymmetryGroupPtr;
   typedef AtomInfoList::iterator AtomInfoIterator;
-  typedef UniquePtr< IGeneratorShape>::Type GenShapePtr;
+  typedef UniquePtr< GeneratorShape>::Type GenShapePtr;
   typedef ::std::vector< ::arma::mat44> TransformStack;
 
   typedef ::std::map< SpeciesPair, double> SpeciesPairDistances;
@@ -128,7 +128,7 @@ public:
   void
   removeAtom(common::Atom & atom);
 
-  const IGeneratorShape &
+  const GeneratorShape &
   getGenShape() const;
 
   const SymmetryGroup *

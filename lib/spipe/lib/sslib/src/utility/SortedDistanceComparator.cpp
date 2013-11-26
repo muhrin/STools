@@ -8,6 +8,7 @@
 // INCLUDES /////////////////////////////////////
 #include "spl/utility/SortedDistanceComparator.h"
 
+#include <iterator>
 #include <memory>
 
 #include <boost/scoped_ptr.hpp>
@@ -71,12 +72,13 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
   const common::DistanceCalculator & distCalc =
       primitive->getDistanceCalculator();
 
-  primitive->getAtomSpecies(species);
-  ::std::set< common::AtomSpeciesId::Value> speciesSet(species.begin(),
-      species.end());
-  species.resize(speciesSet.size());
-  ::std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
-  const size_t numSpecies = species.size();
+  {
+    ::std::set< common::AtomSpeciesId::Value> speciesSet;
+    primitive->getAtomSpecies(::std::inserter(speciesSet, speciesSet.begin()));
+    const size_t numSpecies = speciesSet.size();
+    species.resize(numSpecies);
+    ::std::copy(speciesSet.begin(), speciesSet.end(), species.begin());
+  }
 
   initSpeciesDistancesMap();
 
@@ -101,11 +103,11 @@ SortedDistanceComparisonData::SortedDistanceComparisonData(
   }
 
   // ... and sort them
-  for(size_t i = 0; i < numSpecies; ++i)
+  for(size_t i = 0; i < species.size(); ++i)
   {
     specI = species[i];
     DistancesMap & iDistMap = speciesDistancesMap[specI];
-    for(size_t j = i; j < numSpecies; ++j)
+    for(size_t j = i; j < species.size(); ++j)
     {
       specJ = species[j];
       distVecIJ = iDistMap[specJ];

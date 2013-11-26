@@ -16,56 +16,55 @@ namespace spl {
 namespace build_cell {
 
 GenBox::GenBox(const double width, const double height, const double depth):
-myTransform(::arma::eye< ::arma::mat>(4, 4))
+    myWidth(width), myHalfWidth(0.5 * width), myHeight(height),
+    myHalfHeight(0.5 * height), myDepth(depth), myHalfDepth(0.5 * depth)
 {
-  setWidth(width);
-  setHeight(height);
-  setDepth(depth);
+  setTransform(::arma::eye< ::arma::mat>(4, 4));
 }
 
-GenBox::GenBox(
-  const double width,
-  const double height,
-  const double depth,
-  const ::arma::mat44 & transform
-):
-myTransform(transform)
+GenBox::GenBox(const double width, const double height, const double depth,
+    const ::arma::mat44 & transform) :
+    myWidth(width), myHalfWidth(0.5 * width), myHeight(height),
+    myHalfHeight(0.5 * height), myDepth(depth), myHalfDepth(0.5 * depth),
+    myTransform(transform)
 {
-  setWidth(width);
-  setHeight(height);
-  setDepth(depth);
+  setTransform(transform);
 }
 
-GenBox::GenBox(const GenBox & toCopy):
-myTransform(toCopy.myTransform),
-myShellThickness(toCopy.myShellThickness)
+GenBox::GenBox(const GenBox & toCopy) :
+    myWidth(toCopy.myWidth), myHalfWidth(toCopy.myHalfWidth),
+    myHeight(toCopy.myHeight), myHalfHeight(toCopy.myHalfHeight),
+    myDepth(toCopy.myDepth), myHalfDepth(toCopy.myHalfDepth),
+    myTransform(toCopy.myTransform), myShellThickness(toCopy.myShellThickness)
 {
-  setWidth(toCopy.myWidth);
-  setHeight(toCopy.myHeight);
-  setDepth(toCopy.myDepth);
 }
 
-::arma::vec3 GenBox::getPosition() const
+::arma::vec3
+GenBox::getPosition() const
 {
   return myTransform.col(3).rows(0, 2);
 }
 
-void GenBox::setPosition(const ::arma::vec3 & pos)
+void
+GenBox::setPosition(const ::arma::vec3 & pos)
 {
   myTransform.col(3).rows(0, 2) = pos;
 }
 
-const GenBox::ShellThickness & GenBox::getShellThickness() const
+const GenBox::ShellThickness &
+GenBox::getShellThickness() const
 {
   return myShellThickness;
 }
 
-void GenBox::setShellThickness(const ShellThickness thickness)
+void
+GenBox::setShellThickness(const ShellThickness thickness)
 {
   myShellThickness = thickness;
 }
 
-::arma::vec3 GenBox::randomPoint(const ::arma::mat44 * const transform) const
+::arma::vec3
+GenBox::randomPoint(const ::arma::mat44 * const transform) const
 {
   if(transform)
     return randomPoint(*transform * myTransform);
@@ -73,63 +72,60 @@ void GenBox::setShellThickness(const ShellThickness thickness)
     return randomPoint(myTransform);
 }
 
-void GenBox::randomPoints(
-  ::std::vector< ::arma::vec3> & pointsOut,
-  const unsigned int num,
-  const ::arma::mat44 * const transform
-) const
-{
-  if(transform)
-    return randomPoints(pointsOut, num, *transform * myTransform);
-  else
-    return randomPoints(pointsOut, num, myTransform);
-}
-
-OptionalArmaVec3 GenBox::randomPointOnAxis(const ::arma::vec3 & axis, const ::arma::mat44 * const transform) const
+OptionalArmaVec3
+GenBox::randomPointOnAxis(const ::arma::vec3 & axis,
+    const ::arma::mat44 * const transform) const
 {
   if(transform)
     return randomPointOnAxis(axis, *transform * myTransform);
   else
-    return randomPointOnAxis(axis, myTransform);  
+    return randomPointOnAxis(axis, myTransform);
 }
 
-OptionalArmaVec3 GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b, const ::arma::mat44 * const transform) const
+OptionalArmaVec3
+GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b,
+    const ::arma::mat44 * const transform) const
 {
   if(transform)
     return randomPointInPlane(a, b, *transform * myTransform);
   else
-    return randomPointInPlane(a, b, myTransform);  
+    return randomPointInPlane(a, b, myTransform);
 }
 
-const ::arma::mat44 & GenBox::getTransform() const
+bool
+GenBox::isInShape(const ::arma::vec3 & point) const
+{
+  using namespace utility::cart_coords_enum;
+
+  const ::arma::vec3 local = math::transformCopy(point, myInvTransform);
+  if(local(X) < -myHalfWidth || local(X) > myHalfWidth)
+    return false;
+  if(local(Y) < -myHalfHeight|| local(Y) > myHalfHeight)
+    return false;
+  if(local(Z) < -myHalfDepth || local(Z) > myHalfDepth)
+    return false;
+
+  if(myShellThickness != 0.0 && !isInShell(local))
+    return false;
+
+  return true;
+}
+
+const ::arma::mat44 &
+GenBox::getTransform() const
 {
   return myTransform;
 }
 
-void GenBox::setTransform(const ::arma::mat44 & transform)
+void
+GenBox::setTransform(const ::arma::mat44 & transform)
 {
   myTransform = transform;
+  myInvTransform = math::inverseCopy(myTransform);
 }
 
-void GenBox::setWidth(const double width)
-{
-  myWidth = ::std::abs(width);
-  myHalfWidth = 0.5 * myWidth;
-}
-
-void GenBox::setHeight(const double height)
-{
-  myHeight = ::std::abs(height);
-  myHalfHeight = 0.5 * myHeight;
-}
-
-void GenBox::setDepth(const double depth)
-{
-  myDepth = ::std::abs(depth);
-  myHalfDepth = 0.5 * myDepth;
-}
-
-bool GenBox::isInShell(const ::arma::vec3 & point) const
+bool
+GenBox::isInShell(const ::arma::vec3 & point) const
 {
   using namespace utility::cart_coords_enum;
 
@@ -155,11 +151,11 @@ bool GenBox::isInShell(const ::arma::vec3 & point) const
   return false;
 }
 
-UniquePtr<IGeneratorShape>::Type GenBox::clone() const
+UniquePtr< GeneratorShape>::Type
+GenBox::clone() const
 {
-  return UniquePtr<IGeneratorShape>::Type(new GenBox(*this));
+  return UniquePtr< GeneratorShape>::Type(new GenBox(*this));
 }
-
 
 // To get the shell use rejection algorithm based on flattening a box of a certain
 // thickness and finding points on that:
@@ -170,7 +166,8 @@ UniquePtr<IGeneratorShape>::Type GenBox::clone() const
 //  - - - -
 //   |s|
 //    -
-::arma::vec3 GenBox::randomPoint(const ::arma::mat44 & fullTransform) const
+::arma::vec3
+GenBox::randomPoint(const ::arma::mat44 & fullTransform) const
 {
   using namespace utility::cart_coords_enum;
 
@@ -196,27 +193,30 @@ UniquePtr<IGeneratorShape>::Type GenBox::clone() const
   return point;
 }
 
-void GenBox::randomPoints(
-  ::std::vector< ::arma::vec3> & pointsOut,
-  const unsigned int num,
-  const ::arma::mat44 & fullTransform
-) const
+void
+GenBox::randomPoints(::std::vector< ::arma::vec3> & pointsOut,
+    const unsigned int num, const ::arma::mat44 & fullTransform) const
 {
   for(size_t i = 0; i < num; ++i)
     pointsOut.push_back(randomPoint(fullTransform));
 }
 
-OptionalArmaVec3 GenBox::randomPointOnAxis(const ::arma::vec3 & axis, const ::arma::mat44 & fullTransform) const
+OptionalArmaVec3
+GenBox::randomPointOnAxis(const ::arma::vec3 & axis,
+    const ::arma::mat44 & fullTransform) const
 {
   // TODO: Intersection test of line and box
   const ::arma::vec3 point(randomPoint(fullTransform));
   return OptionalArmaVec3(::arma::dot(point, axis) * axis);
 }
 
-OptionalArmaVec3 GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b, const ::arma::mat44 & fullTransform) const
+OptionalArmaVec3
+GenBox::randomPointInPlane(const ::arma::vec3 & a, const ::arma::vec3 & b,
+    const ::arma::mat44 & fullTransform) const
 {
   // TODO: Intersection test of plane and box
-  const ::arma::vec3 normal(::arma::cross(a, b)), point(randomPoint(fullTransform));
+  const ::arma::vec3 normal(::arma::cross(a, b)), point(
+      randomPoint(fullTransform));
   return OptionalArmaVec3(point - ::arma::dot(normal, point) * normal);
 }
 
