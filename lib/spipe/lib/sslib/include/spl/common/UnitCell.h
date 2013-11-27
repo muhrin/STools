@@ -70,6 +70,8 @@ public:
   UnitCell(const UnitCell & toCopy);
   ~UnitCell();
 
+  UnitCell &
+  operator =(const UnitCell & rhs);
   bool
   operator ==(const UnitCell & rhs) const;
 

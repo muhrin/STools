@@ -115,10 +115,9 @@ public:
   isValid() const = 0;
 
   virtual void
-  unitCellChanged()
+  setUnitCell(common::UnitCell * const unitCell)
   {
   }
-  ;
 
 protected:
 

@@ -9,7 +9,6 @@
 #include "spl/common/OrthoCellDistanceCalculator.h"
 
 #include "spl/common/Structure.h"
-#include "spl/common/UnitCell.h"
 #include "spl/utility/IndexingEnums.h"
 #include "spl/utility/StableComparison.h"
 
@@ -25,9 +24,17 @@ namespace common {
 const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-10;
 
 OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(Structure & structure) :
-    DistanceCalculator(structure)
+    DistanceCalculator(structure), myUnitCell(NULL)
 {
-  updateBufferedValues();
+  SSLIB_ASSERT(structure.getUnitCell());
+
+  setUnitCell(structure.getUnitCell());
+}
+
+OrthoCellDistanceCalculator::~OrthoCellDistanceCalculator()
+{
+  if(myUnitCell)
+    myUnitCell->removeListener(*this);
 }
 
 bool
@@ -40,7 +47,7 @@ OrthoCellDistanceCalculator::getDistsBetween(const arma::vec3 & r1,
   // The cutoff has to be positive
   cutoff = ::std::abs(cutoff);
   const double cutoffSq = cutoff * cutoff;
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
 
   // Get the lattice vectors
   const ::arma::vec3 A(cell.getAVec());
@@ -116,7 +123,9 @@ OrthoCellDistanceCalculator::getDistsBetween(const arma::vec3 & r1,
 OrthoCellDistanceCalculator::getVecMinImg(const ::arma::vec3 & r1,
     const ::arma::vec3 & r2, const unsigned int /*maxCellMultiples*/) const
 {
-  const UnitCell & cell = *myStructure.getUnitCell();
+  using ::std::floor;
+
+  const UnitCell & cell = *myUnitCell;
 
   const ::arma::mat33 & fracMtx = cell.getFracMtx();
   const ::arma::mat33 & orthoMtx = cell.getOrthoMtx();
@@ -138,11 +147,13 @@ OrthoCellDistanceCalculator::getVecsBetween(const ::arma::vec3 & r1,
     ::std::vector< ::arma::vec3> & outVectors, const size_t maxValues,
     const unsigned int maxCellMultiples) const
 {
+  using ::std::floor;
+
   // The cutoff has to be positive
   cutoff = ::std::abs(cutoff);
   const double cutoffSq = cutoff * cutoff;
 
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
 
   const ::arma::vec3 r12 = cell.wrapVec(r2) - cell.wrapVec(r1);
   const double (&params)[6] = cell.getLatticeParams();
@@ -209,10 +220,10 @@ OrthoCellDistanceCalculator::isValid() const
 {
   using namespace utility::cell_params_enum;
 
-  if(!myStructure.getUnitCell())
+  if(!myUnitCell)
     return false;
 
-  const double (&params)[6] = myStructure.getUnitCell()->getLatticeParams();
+  const double (&params)[6] = myUnitCell->getLatticeParams();
 
   // All angles equal 90
   return utility::stable::eq(params[ALPHA], 90.0, VALID_ANGLE_TOLERANCE)
@@ -221,9 +232,39 @@ OrthoCellDistanceCalculator::isValid() const
 }
 
 void
-OrthoCellDistanceCalculator::unitCellChanged()
+OrthoCellDistanceCalculator::setUnitCell(common::UnitCell * const unitCell)
+{
+  if(myUnitCell == unitCell)
+    return;
+
+  if(myUnitCell)
+    myUnitCell->removeListener(*this);
+
+  myUnitCell = unitCell;
+  if(myUnitCell)
+  {
+    updateBufferedValues();
+    myUnitCell->addListener(*this);
+  }
+}
+
+void
+OrthoCellDistanceCalculator::onUnitCellChanged(UnitCell & unitCell)
 {
   updateBufferedValues();
+}
+
+void
+OrthoCellDistanceCalculator::onUnitCellVolumeChanged(UnitCell & unitCell,
+    const double oldVol, const double newVol)
+{
+  updateBufferedValues();
+}
+
+void
+OrthoCellDistanceCalculator::onUnitCellDestroyed()
+{
+  myUnitCell = NULL;
 }
 
 void
@@ -231,7 +272,7 @@ OrthoCellDistanceCalculator::updateBufferedValues()
 {
   using namespace utility::cell_params_enum;
 
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
   const double (&params)[6] = cell.getLatticeParams();
 
   myA = cell.getAVec();

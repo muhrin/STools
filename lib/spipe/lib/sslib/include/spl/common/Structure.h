@@ -42,8 +42,7 @@ namespace common {
 class AtomsFormula;
 class DistanceCalculator;
 
-class Structure : public utility::PropertiesObject, UnitCell::UnitCellListener,
-  Atom::Listener
+class Structure : public utility::PropertiesObject, Atom::Listener
 {
   typedef ::boost::ptr_vector< Atom> AtomsContainer;
 public:
@@ -55,6 +54,7 @@ public:
   Structure();
   Structure(const UnitCell & cell);
   Structure(const Structure & toCopy);
+  virtual
   ~Structure();
   Structure &
   operator =(const Structure & rhs);
@@ -141,14 +141,6 @@ public:
   print(::std::ostream & os) const;
 
 private:
-  virtual void
-  onUnitCellChanged(UnitCell & unitCell);
-  virtual void
-  onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
-      const double newVol);
-  virtual void
-  onUnitCellDestroyed() {};
-
   virtual void
   onAtomMoved(Atom * const atom);
   virtual void

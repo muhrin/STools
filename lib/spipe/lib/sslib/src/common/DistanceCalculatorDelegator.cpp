@@ -25,7 +25,7 @@ DistanceCalculatorDelegator::DistanceCalculatorDelegator(Structure & structure) 
 }
 
 void
-DistanceCalculatorDelegator::unitCellChanged()
+DistanceCalculatorDelegator::setUnitCell(common::UnitCell * const unitCell)
 {
   updateDelegate();
 }
@@ -33,13 +33,10 @@ DistanceCalculatorDelegator::unitCellChanged()
 void
 DistanceCalculatorDelegator::updateDelegate()
 {
-  const UnitCell * const unitCell = myStructure.getUnitCell();
+  UnitCell * const unitCell = myStructure.getUnitCell();
 
-  bool delegateChanged = false;
   if(unitCell == NULL)
-  {
-    delegateChanged = setDelegate(CalculatorType::CLUSTER);
-  }
+    setDelegate(CalculatorType::CLUSTER);
   else
   {
     const UnitCell::LatticeSystem::Value latticeSystem =
@@ -48,17 +45,12 @@ DistanceCalculatorDelegator::updateDelegate()
     if(latticeSystem == UnitCell::LatticeSystem::TETRAGONAL
         || latticeSystem == UnitCell::LatticeSystem::CUBIC
         || latticeSystem == UnitCell::LatticeSystem::ORTHORHOMBIC)
-    {
-      delegateChanged = setDelegate(CalculatorType::ORTHO_CELL);
-    }
+      setDelegate(CalculatorType::ORTHO_CELL);
     else
-    {
-      delegateChanged = setDelegate(CalculatorType::UNIVERSAL_CRYSTAL);
-    }
+      setDelegate(CalculatorType::UNIVERSAL_CRYSTAL);
   }
 
-  if(!delegateChanged)
-    myDelegate->unitCellChanged();
+  myDelegate->setUnitCell(unitCell);
 }
 
 bool

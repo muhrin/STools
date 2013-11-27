@@ -71,9 +71,6 @@ Structure::Structure(const Structure & toCopy) :
 
 Structure::~Structure()
 {
-  // Have to do this so that we don't receive destroyed message
-  // from the cell after we're destroyed
-  clearUnitCell();
 }
 
 Structure &
@@ -86,6 +83,8 @@ Structure::operator =(const Structure & rhs)
   // Copy over the unit cell (if exists)
   if(rhs.myCell)
     setUnitCell(*rhs.myCell);
+  else
+    clearUnitCell();
 
   // Copy over the atoms
   clearAtoms();
@@ -138,40 +137,30 @@ Structure::setName(const std::string & name)
 UnitCell *
 Structure::getUnitCell()
 {
-  if(myCell)
-    return &(*myCell);
-  return NULL;
+  return ::boost::get_pointer(myCell);
 }
 
 const UnitCell *
 Structure::getUnitCell() const
 {
-  if(myCell)
-    return &(*myCell);
-  else
-    return NULL;
+  return ::boost::get_pointer(myCell);
 }
 
 void
 Structure::setUnitCell(const UnitCell & cell)
 {
-  if(myCell == cell)
+  if(myCell && *myCell == cell)
     return;
 
-  if(myCell)
-    myCell->removeListener(*this);
-
-  myCell = cell;
-  myCell->addListener(*this);
-  myDistanceCalculator.unitCellChanged();
+  myCell.reset(cell);
+  myDistanceCalculator.setUnitCell(::boost::get_pointer(myCell));
 }
 
 void
 Structure::clearUnitCell()
 {
-  if(myCell)
-    myCell->removeListener(*this);
   myCell.reset();
+  myDistanceCalculator.setUnitCell(NULL);
 }
 
 size_t
@@ -489,19 +478,6 @@ Structure::print(::std::ostream & os) const
       os << " " << pos(i);
     os << std::endl;
   }
-}
-
-void
-Structure::onUnitCellChanged(UnitCell & unitCell)
-{
-  myDistanceCalculator.unitCellChanged();
-}
-
-void
-Structure::onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
-    const double newVol)
-{
-  myDistanceCalculator.unitCellChanged();
 }
 
 void

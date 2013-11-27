@@ -43,13 +43,7 @@ public:
   virtual bool
   isValid() const;
 
-  virtual void
-  unitCellChanged()
-  {
-  }
-
 private:
-
   double
   getNumPlaneRepetitionsToBoundSphere(const ::arma::vec3 & boundDir,
       const ::arma::vec3 & planeVecA, const ::arma::vec3 & planeVecB,

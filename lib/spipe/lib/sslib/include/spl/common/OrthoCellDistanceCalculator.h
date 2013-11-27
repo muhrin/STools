@@ -11,17 +11,19 @@
 // INCLUDES ///////////////////////////////////
 #include "spl/SSLib.h"
 
+#include <boost/noncopyable.hpp>
+
 #include <armadillo>
 
 #include "spl/SSLibAssert.h"
 #include "spl/common/DistanceCalculator.h"
+#include "spl/common/UnitCell.h"
 
 namespace spl {
 namespace common {
 
-class Structure;
-
-class OrthoCellDistanceCalculator : public DistanceCalculator
+class OrthoCellDistanceCalculator : public DistanceCalculator,
+  UnitCell::UnitCellListener
 {
 public:
 
@@ -29,6 +31,7 @@ public:
 
   explicit
   OrthoCellDistanceCalculator(Structure & structure);
+  virtual ~OrthoCellDistanceCalculator();
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
@@ -53,10 +56,17 @@ public:
   isValid() const;
 
   void
-  unitCellChanged();
+  setUnitCell(common::UnitCell * const unitCell);
+
+  virtual void
+  onUnitCellChanged(UnitCell & unitCell);
+  virtual void
+  onUnitCellVolumeChanged(UnitCell & unitCell, const double oldVol,
+      const double newVol);
+  virtual void
+  onUnitCellDestroyed();
 
 private:
-
   void
   updateBufferedValues();
 
@@ -72,6 +82,7 @@ private:
   double myBRecip;
   double myCRecip;
 
+  common::UnitCell * myUnitCell;
 };
 
 } // namespace common

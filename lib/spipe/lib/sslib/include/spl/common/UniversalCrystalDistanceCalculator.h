@@ -9,6 +9,8 @@
 #define UNIVERSAL_CRYSTAL_DISTANCE_CALCULATOR_H
 
 // INCLUDES ///////////////////////////////////
+#include <boost/noncopyable.hpp>
+
 #include "spl/common/DistanceCalculator.h"
 #include "spl/common/UnitCell.h"
 
@@ -45,6 +47,9 @@ public:
 
   virtual bool
   isValid() const;
+
+  virtual void
+  setUnitCell(common::UnitCell * const unitCell);
 
 private:
   struct Cache
@@ -87,6 +92,7 @@ private:
   virtual void
   onUnitCellDestroyed();
 
+  common::UnitCell * myUnitCell;
   Cache myCache;
 };
 

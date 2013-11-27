@@ -121,7 +121,7 @@ public:
   }
 
   virtual void
-  unitCellChanged();
+  setUnitCell(common::UnitCell * const unitCell);
 
   // End from DistanceCalculator /////////////////
 

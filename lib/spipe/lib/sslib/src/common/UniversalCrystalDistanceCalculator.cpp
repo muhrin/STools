@@ -15,22 +15,24 @@ namespace common {
 
 UniversalCrystalDistanceCalculator::UniversalCrystalDistanceCalculator(
     Structure & structure) :
-    DistanceCalculator(structure)
+    DistanceCalculator(structure), myUnitCell(NULL)
 {
-  myCache.update(*structure.getUnitCell());
-  structure.getUnitCell()->addListener(*this);
+  SSLIB_ASSERT(structure.getUnitCell());
+
+  setUnitCell(structure.getUnitCell());
 }
 
 UniversalCrystalDistanceCalculator::~UniversalCrystalDistanceCalculator()
 {
-  myStructure.getUnitCell()->removeListener(*this);
+  if(myUnitCell)
+    myUnitCell->removeListener(*this);
 }
 
 ::arma::vec3
 UniversalCrystalDistanceCalculator::getVecMinImg(const ::arma::vec3 & a,
     const ::arma::vec3 & b, const unsigned int maxCellMultiples) const
 {
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
 
   // Make sure cart1 and 2 are in the unit cell at the origin
   const ::arma::vec3 dR = cell.wrapVec(b) - cell.wrapVec(a);
@@ -83,7 +85,7 @@ UniversalCrystalDistanceCalculator::getDistsBetween(const ::arma::vec3 & a,
     ::std::vector< double> & outValues, const size_t maxValues,
     const unsigned int maxCellMultiples) const
 {
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
   const double vol = cell.getVolume();
   const ::arma::vec3 dR = b - a;
 
@@ -140,7 +142,7 @@ UniversalCrystalDistanceCalculator::getVecsBetween(const ::arma::vec3 & a,
     ::std::vector< ::arma::vec3> & outValues, const size_t maxValues,
     const unsigned int maxCellMultiples) const
 {
-  const UnitCell & cell = *myStructure.getUnitCell();
+  const UnitCell & cell = *myUnitCell;
   const double vol = cell.getVolume();
   const ::arma::vec3 dR = b - a;
 
@@ -193,7 +195,24 @@ UniversalCrystalDistanceCalculator::getVecsBetween(const ::arma::vec3 & a,
 bool
 UniversalCrystalDistanceCalculator::isValid() const
 {
-  return myStructure.getUnitCell() != NULL;
+  return myUnitCell;
+}
+
+void
+UniversalCrystalDistanceCalculator::setUnitCell(common::UnitCell * const unitCell)
+{
+  if(myUnitCell == unitCell)
+    return;
+
+  if(myUnitCell)
+    myUnitCell->removeListener(*this);
+
+  myUnitCell = unitCell;
+  if(myUnitCell)
+  {
+    myCache.update(*myUnitCell);
+    myUnitCell->addListener(*this);
+  }
 }
 
 double
@@ -203,7 +222,7 @@ UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
 {
   // The vector normal to the plane
   const ::arma::vec3 normal = ::arma::cross(planeVec1, planeVec2);
-  const double unitCellVolume = myStructure.getUnitCell()->getVolume(); // = a . |b x c|
+  const double unitCellVolume = myUnitCell->getVolume(); // = a . |b x c|
 
   return radius / unitCellVolume * ::std::sqrt(::arma::dot(normal, normal));
 }
@@ -211,19 +230,24 @@ UniversalCrystalDistanceCalculator::getNumPlaneRepetitionsToBoundSphere(
 void
 UniversalCrystalDistanceCalculator::onUnitCellChanged(UnitCell & unitCell)
 {
-  myCache.update(unitCell);
+  SSLIB_ASSERT(myUnitCell == &unitCell);
+
+  myCache.update(*myUnitCell);
 }
 
 void
 UniversalCrystalDistanceCalculator::onUnitCellVolumeChanged(UnitCell & unitCell,
     const double oldVol, const double newVol)
 {
-  myCache.update(unitCell);
+  SSLIB_ASSERT(myUnitCell == &unitCell);
+
+  myCache.update(*myUnitCell);
 }
 
 void
 UniversalCrystalDistanceCalculator::onUnitCellDestroyed()
 {
+  myUnitCell = NULL;
 }
 
 void

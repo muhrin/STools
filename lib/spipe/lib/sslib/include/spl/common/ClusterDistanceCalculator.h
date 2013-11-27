@@ -69,12 +69,6 @@ public:
   {
     return myStructure.getUnitCell() == NULL;
   }
-
-  virtual void
-  unitCellChanged()
-  {
-  }
-
 };
 
 }

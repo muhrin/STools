@@ -45,7 +45,7 @@ UnitCell::UnitCell(const double (&latticeParams)[6])
 UnitCell::UnitCell(const UnitCell & toCopy) :
     myOrthoMtx(toCopy.myOrthoMtx), myFracMtx(toCopy.myFracMtx), myVolume(toCopy.myVolume)
 {
-  memcpy(myLatticeParams, toCopy.myLatticeParams, sizeof(double) * 6);
+  ::std::copy(toCopy.myLatticeParams, toCopy.myLatticeParams + 6, myLatticeParams);
 }
 
 UnitCell::~UnitCell()
@@ -54,6 +54,17 @@ UnitCell::~UnitCell()
   {
     l->onUnitCellDestroyed();
   }
+}
+
+UnitCell &
+UnitCell::operator =(const UnitCell & rhs)
+{
+  myOrthoMtx = rhs.myOrthoMtx;
+  myFracMtx = rhs.myFracMtx;
+  myVolume = rhs.myVolume;
+  ::std::copy(rhs.myLatticeParams, rhs.myLatticeParams + 6, myLatticeParams);
+
+  return *this;
 }
 
 bool
