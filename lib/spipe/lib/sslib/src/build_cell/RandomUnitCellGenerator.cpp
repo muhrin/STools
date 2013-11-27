@@ -46,7 +46,7 @@ RandomUnitCellGenerator::getMin(const size_t param) const
     if(isLength(param))
       returnVal.first = myMinLength ? *myMinLength : DEFAULT_MIN_LENGTH;
     else
-      returnVal.first = myMinAngle ? * myMinAngle : DEFAULT_MIN_ANGLE;
+      returnVal.first = myMinAngle ? *myMinAngle : DEFAULT_MIN_ANGLE;
     returnVal.second = false;
   }
 
@@ -69,63 +69,74 @@ RandomUnitCellGenerator::getMax(const size_t param) const
     if(isLength(param))
       returnVal.first = myMaxLength ? *myMaxLength : DEFAULT_MAX_LENGTH;
     else
-      returnVal.first = myMaxAngle ? * myMaxAngle : DEFAULT_MAX_ANGLE;
+      returnVal.first = myMaxAngle ? *myMaxAngle : DEFAULT_MAX_ANGLE;
     returnVal.second = false;
   }
 
   return returnVal;
 }
 
-void RandomUnitCellGenerator::setMin(const size_t param, const OptionalDouble min)
+void
+RandomUnitCellGenerator::setMin(const size_t param, const OptionalDouble min)
 {
   SSLIB_ASSERT(param < 6);
 
   myParameters[param].first = min;
 }
 
-void RandomUnitCellGenerator::setMax(const size_t param, const OptionalDouble max)
+void
+RandomUnitCellGenerator::setMax(const size_t param, const OptionalDouble max)
 {
   SSLIB_ASSERT(param < 6);
 
   myParameters[param].second = max;
 }
 
-void RandomUnitCellGenerator::setMinLengths(const OptionalDouble length)
+void
+RandomUnitCellGenerator::setMinLengths(const OptionalDouble length)
 {
   myMinLength = length;
 }
 
-void RandomUnitCellGenerator::setMaxLengths(const OptionalDouble length)
+void
+RandomUnitCellGenerator::setMaxLengths(const OptionalDouble length)
 {
   myMaxLength = length;
 }
 
-void RandomUnitCellGenerator::setMinAngles(const OptionalDouble angle)
+void
+RandomUnitCellGenerator::setMinAngles(const OptionalDouble angle)
 {
   myMinAngle = angle;
 }
 
-void RandomUnitCellGenerator::setMaxAngles(const OptionalDouble angle)
+void
+RandomUnitCellGenerator::setMaxAngles(const OptionalDouble angle)
 {
   myMaxAngle = angle;
 }
 
-void RandomUnitCellGenerator::setTargetVolume(const OptionalDouble volume)
+void
+RandomUnitCellGenerator::setTargetVolume(const OptionalDouble volume)
 {
   myTargetVolume = volume;
 }
 
-void RandomUnitCellGenerator::setVolumeDelta(const OptionalDouble delta)
+void
+RandomUnitCellGenerator::setVolumeDelta(const OptionalDouble delta)
 {
   myVolumeDelta = delta;
 }
 
-void RandomUnitCellGenerator::setContentsMultiplier(const OptionalDouble contentsMultiplier)
+void
+RandomUnitCellGenerator::setContentsMultiplier(
+    const OptionalDouble contentsMultiplier)
 {
   myContentsMultiplier = contentsMultiplier;
 }
 
-void RandomUnitCellGenerator::setMaxLengthRatio(const OptionalDouble maxLengthRatio)
+void
+RandomUnitCellGenerator::setMaxLengthRatio(const OptionalDouble maxLengthRatio)
 {
   myMaxLengthRatio = maxLengthRatio;
   if(myMaxLengthRatio)
@@ -146,49 +157,53 @@ RandomUnitCellGenerator::getMaxLengthRatio() const
     return ParameterValueAndSpecific(DEFAULT_MAX_LENGTH_RATIO, false);
 }
 
-GenerationOutcome RandomUnitCellGenerator::generateCell(
-  common::UnitCellPtr & cellOut,
-  const bool structureIsCluster
-) const
+GenerationOutcome
+RandomUnitCellGenerator::generateCell(common::UnitCellPtr & cellOut,
+    const bool structureIsCluster) const
 {
   GenerationOutcome outcome = generateLatticeParameters(cellOut);
   if(!outcome.isSuccess())
     return outcome;
 
-  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(), structureIsCluster);
+  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(),
+      structureIsCluster);
   cellOut->setVolume(generateVolume(volAndDelta));
 
   return GenerationOutcome::success();
 }
 
-GenerationOutcome RandomUnitCellGenerator::generateCell(
-  common::UnitCellPtr & cellOut,
-  const StructureContents & structureContents,
-  const bool structureIsCluster
-) const
+GenerationOutcome
+RandomUnitCellGenerator::generateCell(common::UnitCellPtr & cellOut,
+    const StructureContents & structureContents,
+    const bool structureIsCluster) const
 {
   GenerationOutcome outcome = generateLatticeParameters(cellOut);
   if(!outcome.isSuccess())
     return outcome;
 
-  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(), structureIsCluster, &structureContents);
+  const VolAndDelta volAndDelta = generateVolumeParams(cellOut->getVolume(),
+      structureIsCluster, &structureContents);
   cellOut->setVolume(generateVolume(volAndDelta));
 
   return outcome;
 }
 
-IUnitCellGeneratorPtr RandomUnitCellGenerator::clone() const
+IUnitCellGeneratorPtr
+RandomUnitCellGenerator::clone() const
 {
   return IUnitCellGeneratorPtr(new RandomUnitCellGenerator(*this));
 }
 
-double RandomUnitCellGenerator::generateParameter(const size_t param) const
+double
+RandomUnitCellGenerator::generateParameter(const size_t param) const
 {
   SSLIB_ASSERT(param < 6);
   return math::randu(getMin(param).first, getMax(param).first);
 }
 
-GenerationOutcome RandomUnitCellGenerator::generateLatticeParameters(common::UnitCellPtr & cellOut) const
+GenerationOutcome
+RandomUnitCellGenerator::generateLatticeParameters(
+    common::UnitCellPtr & cellOut) const
 {
   using namespace utility::cell_params_enum;
 
@@ -219,12 +234,14 @@ GenerationOutcome RandomUnitCellGenerator::generateLatticeParameters(common::Uni
   }
   catch(const ::std::runtime_error & /*e*/)
   {
-    return GenerationOutcome::failure("Cell parameters caused singular orthogonalisation matrix.");
+    return GenerationOutcome::failure(
+        "Cell parameters caused singular orthogonalisation matrix.");
   }
   return GenerationOutcome::success();
 }
 
-void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
+void
+RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
 {
   using namespace utility::cell_params_enum;
 
@@ -239,7 +256,8 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
   MinMaxIndex minMax;
 
   const bool overrideLengthRatio = myMaxLengthRatio;
-  const double maxRatio = overrideLengthRatio ? *myMaxLengthRatio : DEFAULT_MAX_LENGTH_RATIO;
+  const double maxRatio =
+      overrideLengthRatio ? *myMaxLengthRatio : DEFAULT_MAX_LENGTH_RATIO;
   double minLength, maxLength, ratio, cFactor;
   bool canMoveMin, canMoveMax, madeStep = true;
   size_t i;
@@ -257,8 +275,10 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
     {
       // Can move if the user hasn't set the parameter or if we are still within
       // the user set range
-      canMoveMin = !myParameters[minMax.first].first || comp::lt(minLength, *myParameters[minMax.first].second);
-      canMoveMax = !myParameters[minMax.second].second || comp::gt(maxLength, *myParameters[minMax.second].first);
+      canMoveMin = !myParameters[minMax.first].first
+          || comp::lt(minLength, *myParameters[minMax.first].second);
+      canMoveMax = !myParameters[minMax.second].second
+          || comp::gt(maxLength, *myParameters[minMax.second].first);
 
       // Three possibilities for movement
       if(canMoveMin && canMoveMax) // move both
@@ -287,7 +307,8 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
       }
 
       // Have we made any changes?
-      if(minLength != params[minMax.first] || maxLength != params[minMax.second])
+      if(minLength != params[minMax.first]
+          || maxLength != params[minMax.second])
       {
         params[minMax.first] = minLength;
         params[minMax.second] = maxLength;
@@ -297,27 +318,27 @@ void RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
   }
 }
 
-double RandomUnitCellGenerator::generateVolume(const VolAndDelta & volAndDelta) const
+double
+RandomUnitCellGenerator::generateVolume(const VolAndDelta & volAndDelta) const
 {
-  return math::randu(
-    volAndDelta.first * (1.0 - volAndDelta.second),
-    volAndDelta.first * (1.0 + volAndDelta.second)
-  );
+  return math::randu(volAndDelta.first * (1.0 - volAndDelta.second),
+      volAndDelta.first * (1.0 + volAndDelta.second));
 }
 
-RandomUnitCellGenerator::MinMaxIndex RandomUnitCellGenerator::getMinMaxLengths(const double (&params)[6]) const
+RandomUnitCellGenerator::MinMaxIndex
+RandomUnitCellGenerator::getMinMaxLengths(const double (&params)[6]) const
 {
   using namespace utility::cell_params_enum;
 
   MinMaxIndex minMax;
   if(params[A] > params[B])
   {
-    minMax.first  = B;
+    minMax.first = B;
     minMax.second = A;
   }
   else
   {
-    minMax.first  = A;
+    minMax.first = A;
     minMax.second = B;
   }
 
@@ -329,22 +350,28 @@ RandomUnitCellGenerator::MinMaxIndex RandomUnitCellGenerator::getMinMaxLengths(c
   return minMax;
 }
 
-bool RandomUnitCellGenerator::areParametersValid(const double (&params)[6]) const
+bool
+RandomUnitCellGenerator::areParametersValid(const double (&params)[6]) const
 {
   using ::std::abs;
   using namespace utility::cell_params_enum;
 
   const double anglesSum = params[ALPHA] + params[BETA] + params[GAMMA];
 
-  if(anglesSum >= 360.0) return false;
-  if(abs(params[ALPHA]-params[BETA]) > params[GAMMA]) return false;
-  if(abs(params[BETA]-params[GAMMA]) > params[ALPHA]) return false;
-  if(abs(params[GAMMA]-params[ALPHA]) > params[BETA]) return false;
+  if(anglesSum >= 360.0)
+    return false;
+  if(abs(params[ALPHA] - params[BETA]) > params[GAMMA])
+    return false;
+  if(abs(params[BETA] - params[GAMMA]) > params[ALPHA])
+    return false;
+  if(abs(params[GAMMA] - params[ALPHA]) > params[BETA])
+    return false;
 
   return true;
 }
 
-bool RandomUnitCellGenerator::cellFullySpecified() const
+bool
+RandomUnitCellGenerator::cellFullySpecified() const
 {
   using namespace utility::cell_params_enum;
   bool fullySpecified = true;
@@ -355,14 +382,13 @@ bool RandomUnitCellGenerator::cellFullySpecified() const
   return fullySpecified;
 }
 
-::std::pair<double, double> RandomUnitCellGenerator::generateVolumeParams(
-  const double currentVolume,
-  const bool isCluster,
-  const StructureContents * const structureContents
-) const
+::std::pair< double, double>
+RandomUnitCellGenerator::generateVolumeParams(const double currentVolume,
+    const bool isCluster,
+    const StructureContents * const structureContents) const
 {
   VolAndDelta volAndDelta;
-  
+
   if(myTargetVolume)
     volAndDelta.first = *myTargetVolume;
   else if(cellFullySpecified())

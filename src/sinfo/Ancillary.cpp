@@ -225,6 +225,7 @@ generateTokens(TokensMap & map)
   addToken(map,
       utility::makeFunctionToken< ::std::string>("Name", "n", utility::functions::getName, "%|-|"));
   addToken(map, TokenPtr(new utility::FormulaToken("Formula", "fo", "%|-|")));
+  addToken(map, TokenPtr(new utility::FormulaToken("Formula", "rfo", "%|-|", true)));
 
   addToken(map,
       utility::makeFunctionToken< double>("V", "v", utility::functions::getVolume, "%.2f"));

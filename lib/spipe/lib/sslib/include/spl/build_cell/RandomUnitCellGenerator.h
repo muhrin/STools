@@ -16,14 +16,13 @@
 
 // FORWARD DECLARATIONS ///////
 
-
 namespace spl {
 namespace build_cell {
 
 class RandomUnitCellGenerator : public IUnitCellGenerator
 {
 public:
-  typedef ::std::pair<double, bool> ParameterValueAndSpecific;
+  typedef ::std::pair< double, bool> ParameterValueAndSpecific;
 
   static const double DEFAULT_MIN_ANGLE;
   static const double DEFAULT_MAX_ANGLE;
@@ -35,62 +34,84 @@ public:
   static const double DEFAULT_BULK_CONTENTS_MULTIPLIER;
   static const double DEFAULT_CLUSTER_CONTENTS_MULTIPLIER;
 
-  ParameterValueAndSpecific getMin(const size_t param) const;
-  ParameterValueAndSpecific getMax(const size_t param) const;
+  ParameterValueAndSpecific
+  getMin(const size_t param) const;
+  ParameterValueAndSpecific
+  getMax(const size_t param) const;
 
-  void setMin(const size_t param, const OptionalDouble min = OptionalDouble());
-  void setMax(const size_t param, const OptionalDouble max = OptionalDouble());
+  void
+  setMin(const size_t param, const OptionalDouble min = OptionalDouble());
+  void
+  setMax(const size_t param, const OptionalDouble max = OptionalDouble());
 
-  void setMinLengths(const OptionalDouble length = OptionalDouble());
-  void setMaxLengths(const OptionalDouble length = OptionalDouble());
+  void
+  setMinLengths(const OptionalDouble length = OptionalDouble());
+  void
+  setMaxLengths(const OptionalDouble length = OptionalDouble());
 
-  void setMinAngles(const OptionalDouble angle = OptionalDouble());
-  void setMaxAngles(const OptionalDouble angle = OptionalDouble());
+  void
+  setMinAngles(const OptionalDouble angle = OptionalDouble());
+  void
+  setMaxAngles(const OptionalDouble angle = OptionalDouble());
 
-  void setTargetVolume(const OptionalDouble volume = OptionalDouble());
-  void setVolumeDelta(const OptionalDouble delta = OptionalDouble());
-  void setContentsMultiplier(const OptionalDouble contentsMultiplier = OptionalDouble());
+  void
+  setTargetVolume(const OptionalDouble volume = OptionalDouble());
+  void
+  setVolumeDelta(const OptionalDouble delta = OptionalDouble());
+  void
+  setContentsMultiplier(const OptionalDouble contentsMultiplier =
+      OptionalDouble());
 
-  void setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
-  ParameterValueAndSpecific getMaxLengthRatio() const;
+  void
+  setMaxLengthRatio(const OptionalDouble maxLengthRatio = OptionalDouble());
+  ParameterValueAndSpecific
+  getMaxLengthRatio() const;
 
   // From IUnitCellGenerator ////
-  virtual GenerationOutcome generateCell(
-    common::UnitCellPtr & cellOut,
-    const bool structureIsCluster = false
-  ) const;
-  virtual GenerationOutcome generateCell(
-    common::UnitCellPtr & cellOut,
-    const StructureContents & contents,
-    const bool structureIsCluster = false
-  ) const;
+  virtual GenerationOutcome
+  generateCell(common::UnitCellPtr & cellOut, const bool structureIsCluster =
+      false) const;
+  virtual GenerationOutcome
+  generateCell(common::UnitCellPtr & cellOut,
+      const StructureContents & contents,
+      const bool structureIsCluster = false) const;
 
-  virtual IUnitCellGeneratorPtr clone() const;
+  virtual IUnitCellGeneratorPtr
+  clone() const;
   // End from IUnitCellGenerator //////
 
 private:
-  typedef ::std::pair<OptionalDouble, OptionalDouble> MinMax;
-  typedef ::std::pair<size_t, size_t> MinMaxIndex;
-  typedef ::std::pair<double, double> VolAndDelta;
+  typedef ::std::pair< OptionalDouble, OptionalDouble> MinMax;
+  typedef ::std::pair< size_t, size_t> MinMaxIndex;
+  typedef ::std::pair< double, double> VolAndDelta;
 
-  inline bool isLength(const size_t param) const { return param <= utility::cell_params_enum::C; }
+  inline bool
+  isLength(const size_t param) const
+  {
+    return param <= utility::cell_params_enum::C;
+  }
 
-  double generateParameter(const size_t param) const;
-  GenerationOutcome generateLatticeParameters(common::UnitCellPtr & cellOut) const;
+  double
+  generateParameter(const size_t param) const;
+  GenerationOutcome
+  generateLatticeParameters(common::UnitCellPtr & cellOut) const;
 
-  void generateLengths(double (&latticeParams)[6]) const;
+  void
+  generateLengths(double (&latticeParams)[6]) const;
 
-  double generateVolume(const VolAndDelta & volAndDelta) const;
+  double
+  generateVolume(const VolAndDelta & volAndDelta) const;
 
-  MinMaxIndex getMinMaxLengths(const double (&latticeParams)[6]) const;
+  MinMaxIndex
+  getMinMaxLengths(const double (&latticeParams)[6]) const;
 
-  bool areParametersValid(const double (&latticeParams)[6]) const;
-  bool cellFullySpecified() const;
-  VolAndDelta generateVolumeParams(
-    const double currentVolume,
-    const bool isCluster,
-    const StructureContents * const structureContents = NULL
-  ) const;
+  bool
+  areParametersValid(const double (&latticeParams)[6]) const;
+  bool
+  cellFullySpecified() const;
+  VolAndDelta
+  generateVolumeParams(const double currentVolume, const bool isCluster,
+      const StructureContents * const structureContents = NULL) const;
 
   /** An array of the optional min/max values of the unit cell lattice parameters. */
   MinMax myParameters[6];
