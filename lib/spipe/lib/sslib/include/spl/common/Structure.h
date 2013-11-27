@@ -55,6 +55,7 @@ public:
   Structure();
   Structure(const UnitCell & cell);
   Structure(const Structure & toCopy);
+  ~Structure();
   Structure &
   operator =(const Structure & rhs);
   StructurePtr

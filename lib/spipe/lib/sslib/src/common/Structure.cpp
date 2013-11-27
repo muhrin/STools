@@ -69,6 +69,13 @@ Structure::Structure(const Structure & toCopy) :
   *this = toCopy;
 }
 
+Structure::~Structure()
+{
+  // Have to do this so that we don't receive destroyed message
+  // from the cell after we're destroyed
+  clearUnitCell();
+}
+
 Structure &
 Structure::operator =(const Structure & rhs)
 {

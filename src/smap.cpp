@@ -12,6 +12,7 @@
 #ifdef SSLIB_USE_CGAL
 
 #include <fstream>
+#include <string>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -33,7 +34,7 @@ namespace fs = ::boost::filesystem;
 namespace spla = ::spl::analysis;
 
 // TYPEDEFS ////////////////////////////////////
-typedef unsigned int LabelType;
+typedef ::std::string LabelType;
 typedef ::spl::analysis::AnchorArrangement< LabelType> AnchorArrangement;
 typedef AnchorArrangement::EdgeTracer EdgeTracer;
 typedef EdgeTracer::Point Point;
