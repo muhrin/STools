@@ -104,7 +104,7 @@ SearchStoichiometries::start()
     } // End loop over atoms
 
     // Set the stoichiometry in shared data
-    sweepPipeData.objectsStore[common::GlobalKeys::GENERATION_SETTINGS] =
+    getEngine()->globalData().objectsStore[common::GlobalKeys::GENERATION_SETTINGS] =
         generationSettings;
 
     // Append the species ratios to the output directory name

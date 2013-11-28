@@ -59,7 +59,7 @@ ParamGeomOptimise::pipelineStarting()
   GeomOptimise::pipelineStarting();
 
   // The pipeline is starting so try and get the potential parameters
-  PotentialParams * const params = getEngine()->sharedData().objectsStore.find(
+  PotentialParams * const params = getEngine()->globalData().objectsStore.find(
       common::GlobalKeys::POTENTIAL_PARAMS);
 
   if(params)

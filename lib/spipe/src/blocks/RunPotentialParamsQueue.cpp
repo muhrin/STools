@@ -125,8 +125,8 @@ RunPotentialParamsQueue::start()
 
       myCurrentParams = myParamsQueue.front();
 
-      // Store the potential parameters in shared memory
-      sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
+      // Store the potential parameters in global memory
+      getEngine()->globalData().objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
           myCurrentParams;
 
       const fs::path sweepPath = workingDir

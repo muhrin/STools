@@ -122,7 +122,7 @@ BuildStructures::generateStructure() const
 {
   ssc::StructurePtr str;
   const ssbc::GenerationSettings * const settings =
-      getEngine()->sharedData().objectsStore.find(common::GlobalKeys::GENERATION_SETTINGS);
+      getEngine()->globalData().objectsStore.find(common::GlobalKeys::GENERATION_SETTINGS);
 
   if(settings)
     myStructureGenerator->generateStructure(str,

@@ -1,0 +1,58 @@
+rngSeed:
+  123
+
+buildStructures:
+  num: 100
+  atoms:
+    - spec: A 2
+    - spec: B 2
+  unitCell:
+    angles:
+      min: 45
+      max: 135
+
+searchStoichiometries:
+  ranges:
+    A: 0~4
+    B: 0~4
+
+keepStableCompositions:
+  writeHull: true
+
+runPotentialParamsQueue:
+
+geomOptimise:
+  optimiser: &opt
+    tpsd:
+      tol:  1e-13
+      potential:
+        lennardJones:
+          spec:      A B
+          eps:       1 1 1
+          sig:       2 2 2
+          beta:      1 1 1
+          pow:       12 6
+          combining: none
+          cut:       2.5
+  writeSummary: false
+
+preGeomOptimise:
+  optimiser: *opt
+  pressure: 0.1
+  writeSummary: false
+
+removeDuplicates:
+  comparator:
+    sortedDist:
+
+keepWithinXPercent:
+  percent: 0.03
+
+findSymmetryGroup:
+
+writeStructures:
+  format: res
+
+engine:
+  multithreaded:
+

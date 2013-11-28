@@ -79,7 +79,8 @@ SweepPotentialParams::start()
           + static_cast< double>(stepsIdx[i]) * myParamRange.step[i];
 
     // Store the potential parameters in global memory
-    sweepSharedData.objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] = params;
+    getEngine()->globalData().objectsStore[common::GlobalKeys::POTENTIAL_PARAMS] =
+        params;
 
     const fs::path & sweepPath = workingDir
         / common::generateParamDirName(params,
