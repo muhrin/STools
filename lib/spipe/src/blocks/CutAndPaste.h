@@ -16,6 +16,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <spl/build_cell/PointSeparator.h>
 #include <spl/factory/GenShapeFactory.h>
 
 #include "SpTypes.h"
@@ -48,6 +49,7 @@ public:
 private:
   ShapePtr myShape;
   const Settings & mySettings;
+  const ::spl::build_cell::PointSeparator mySeparator;
 };
 
 }
