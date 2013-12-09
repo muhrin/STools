@@ -19,6 +19,7 @@
 namespace spipe {
 namespace blocks {
 
+namespace splbc = ::spl::build_cell;
 namespace splc = ::spl::common;
 
 CutAndPaste::CutAndPaste(ShapePtr shape, Settings & settings):
@@ -61,6 +62,10 @@ CutAndPaste::in(common::StructureData * const data)
       structure->newAtom(atom);
     }
   }
+
+  splbc::SeparationData<splc::AtomSpeciesId::Value> sepData =
+      splbc::makeSeparationData(*structure);
+  mySeparator.separatorPoints(&sepData);
 
   out(data);
 }

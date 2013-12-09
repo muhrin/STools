@@ -18,61 +18,59 @@
 #include <armadillo>
 
 #include "spl/common/Types.h"
+#include "spl/common/DistanceCalculator.h"
 
 namespace spl {
 namespace common {
 class DistanceCalculator;
 class Structure;
 }
-  
+
 namespace build_cell {
 
 class AtomExtruder
 {
 public:
-
-  typedef ::std::set<size_t> FixedAtoms;
+  typedef ::std::set< size_t> FixedAtoms;
+  typedef ::std::vector< common::Atom *> Atoms;
 
   static const double DEFAULT_TOLERANCE;
   static const int DEFAULT_MAX_ITERATIONS;
 
   AtomExtruder();
 
-  bool extrudeAtoms(
-    common::Structure & structure) const;
+  bool
+  extrudeAtoms(common::Structure & structure) const;
 
-  bool extrudeAtoms(
-    common::Structure & structure,
-    const FixedAtoms & fixed) const;
+  bool
+  extrudeAtoms(common::Structure & structure, const FixedAtoms & fixed) const;
 
-  bool extrudeAtoms(
-    common::Structure & structure,
-    const ::arma::mat & sepSqMtx,
-    const FixedAtoms & fixed
-  ) const;
+  bool
+  extrudeAtoms(common::Structure & structure, const ::arma::mat & sepSqMtx,
+      const FixedAtoms & fixed) const;
 
-  double getTolerance() const;
-  void setTolerance(const double tolerance);
+  double
+  getTolerance() const;
+  void
+  setTolerance(const double tolerance);
 
-  int getMaxIterations() const;
-  void setMaxIterations(const int maxIterations);
+  int
+  getMaxIterations() const;
+  void
+  setMaxIterations(const int maxIterations);
 
 private:
-  typedef ::std::vector<common::Atom *> Atoms;
-  typedef ::std::vector<bool> FixedList;
+  typedef ::std::vector< bool> FixedList;
 
-  bool extrude(
-    const common::DistanceCalculator & distanceCalc,
-    Atoms & atoms,
-    const FixedList & fixedList,
-    const ::arma::mat & sepSqMtx) const;
+  bool
+  extrude(const common::DistanceCalculator & distanceCalc, Atoms & atoms,
+      const FixedList & fixedList, const ::arma::mat & sepSqMtx) const;
 
-  double calcMaxOverlapFractionSq(
-    const common::DistanceCalculator & distanceCalc,
-    const ::std::vector<common::Atom *> & atoms,
-    const FixedList & fixedList,
-    const ::arma::mat & sepSqMtx) const;
-    
+  double
+  calcMaxOverlapFractionSq(const common::DistanceCalculator & distanceCalc,
+      const ::std::vector< common::Atom *> & atoms, const FixedList & fixedList,
+      const ::arma::mat & sepSqMtx) const;
+
   double myTolerance;
   int myMaxIterations;
 };
