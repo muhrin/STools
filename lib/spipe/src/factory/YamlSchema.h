@@ -138,6 +138,8 @@ struct SearchStoichiometries : HeteroMap
   SearchStoichiometries()
   {
     addEntry("ranges", ATOM_RANGES, new AtomRanges());
+    addScalarEntry("useSeparateDirs", USE_SEPARATE_DIRS)->element()->defaultValue(
+        false);
   }
 };
 

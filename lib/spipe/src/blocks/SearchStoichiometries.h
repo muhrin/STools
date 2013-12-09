@@ -54,8 +54,19 @@ public:
   typedef ::spl::utility::Range< int> CountRange;
   typedef ::std::map< ::std::string, CountRange> AtomRanges;
 
-  SearchStoichiometries(const AtomRanges & atomRanges, const size_t maxAtoms,
-      BlockHandle & subpipe);
+  struct Options
+  {
+    static const size_t UNLIMITED_ATOMS;
+    Options():
+      atomRanges(), maxAtoms(UNLIMITED_ATOMS), useSeparateDirectories(false)
+    {
+    }
+    AtomRanges atomRanges;
+    size_t maxAtoms;
+    bool useSeparateDirectories;
+  };
+
+  SearchStoichiometries(const Options & options, BlockHandle & subpipe);
 
   // From Block ////////
   virtual void
@@ -94,8 +105,7 @@ private:
       const ::spl::utility::MultiIdx< unsigned int> & currentIdx,
       const ::spl::common::AtomSpeciesDatabase & atomsDb);
 
-  const AtomRanges myAtomRanges;
-  const size_t myMaxAtoms;
+  const Options myOptions;
 
   BlockHandle mySubpipe;
   Engine * mySubpipeEngine;
@@ -106,7 +116,6 @@ private:
 
   /** Buffer to store structure that have finished their path through the sub pipeline. */
   ::std::vector< StructureDataTyp *> myBuffer;
-
 };
 
 }

@@ -233,8 +233,16 @@ BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
   if(!atomRanges)
     return false;
 
-  blockOut->reset(
-      new blocks::SearchStoichiometries(*atomRanges, 1000, subpipe));
+  blocks::SearchStoichiometries::Options searchOptions;
+  searchOptions.atomRanges = *atomRanges;
+
+  {
+    const bool * const separateDirectories = options.find(USE_SEPARATE_DIRS);
+    if(separateDirectories)
+      searchOptions.useSeparateDirectories = *separateDirectories;
+  }
+
+  blockOut->reset(new blocks::SearchStoichiometries(searchOptions, subpipe));
 
   return true;
 }

@@ -39,11 +39,13 @@ namespace ssio = ::spl::io;
 namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
-SearchStoichiometries::SearchStoichiometries(const AtomRanges & atomRanges,
-    const size_t maxAtoms, BlockHandle & subpipe) :
-    Block("Search stoichiometries"), myAtomRanges(atomRanges), myMaxAtoms(
-        maxAtoms), mySubpipe(subpipe), mySubpipeEngine(
-    NULL)
+const size_t SearchStoichiometries::Options::UNLIMITED_ATOMS =
+    ::std::numeric_limits<size_t>::max();
+
+SearchStoichiometries::SearchStoichiometries(const Options & options,
+    BlockHandle & subpipe) :
+    Block("Search stoichiometries"), myOptions(options), mySubpipe(subpipe),
+    mySubpipeEngine(NULL)
 {
 }
 
@@ -76,7 +78,7 @@ SearchStoichiometries::start()
     SharedDataType & sweepPipeData = mySubpipeEngine->sharedData();
 
     totalAtoms = currentIdx.sum();
-    if(totalAtoms == 0 || totalAtoms > myMaxAtoms)
+    if(totalAtoms == 0 || totalAtoms > myOptions.maxAtoms)
       continue;
 
     ssbc::GenerationSettings generationSettings;
@@ -86,7 +88,7 @@ SearchStoichiometries::start()
     size_t numAtomsOfSpecies;
     ssc::AtomSpeciesId::Value species;
     size_t i = 0;
-    BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
+    BOOST_FOREACH(AtomRanges::const_reference range, myOptions.atomRanges)
     {
       numAtomsOfSpecies = currentIdx[i];
       generationSettings.atomsSettings[range.first].num = numAtomsOfSpecies;
@@ -108,7 +110,9 @@ SearchStoichiometries::start()
         generationSettings;
 
     // Append the species ratios to the output directory name
-    const fs::path sweepPath = workingDir / stoichStringStream.str();
+    fs::path sweepPath = workingDir;
+    if(myOptions.useSeparateDirectories)
+      sweepPath /= stoichStringStream.str();
     // Set a directory for this set of parameters
     sweepPipeData.setWorkingDir(sweepPath);
 
@@ -206,12 +210,12 @@ SearchStoichiometries::engineDetached()
 ssu::MultiIdxRange< unsigned int>
 SearchStoichiometries::getStoichRange()
 {
-  const size_t numSpecies = myAtomRanges.size();
+  const size_t numSpecies = myOptions.atomRanges.size();
 
   ssu::MultiIdx< unsigned int> lower(numSpecies), upper(numSpecies);
 
   size_t i = 0;
-  BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
+  BOOST_FOREACH(AtomRanges::const_reference range, myOptions.atomRanges)
   {
     lower[i] = range.second.lower();
     // Need to add one as the extents is a half-open interval i.e. [x0, x1)
@@ -236,7 +240,7 @@ SearchStoichiometries::updateTable(const utility::DataTable::Key & key,
   string speciesTableColumn;
   size_t numAtomsOfSpecies;
   size_t i = 0;
-  BOOST_FOREACH(AtomRanges::const_reference range, myAtomRanges)
+  BOOST_FOREACH(AtomRanges::const_reference range, myOptions.atomRanges)
   {
     numAtomsOfSpecies = currentIdx[i];
 

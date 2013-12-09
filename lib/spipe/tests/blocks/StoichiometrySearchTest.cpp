@@ -94,9 +94,9 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
   typedef spipe::SerialEngine Engine;
 
   // SETTINGS ////
-  AtomRanges atomRanges;
-  atomRanges["Na"] = Range(1, 7);
-  atomRanges["Cl"] = Range(4, 13);
+  blocks::SearchStoichiometries::Options searchOptions;
+  searchOptions.atomRanges["Na"] = Range(1, 7);
+  searchOptions.atomRanges["Cl"] = Range(4, 13);
 
   splbc::StructureBuilderPtr builder(new splbc::StructureBuilder);
   builder->insertAtoms(splbc::AtomsDescription("Na"));
@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE(StoichiometrySearchTest)
 
   spipe::BlockHandle buildStructures(new blocks::BuildStructures(1, builder));
   spipe::BlockHandle searchStoichiometries(
-      new blocks::SearchStoichiometries(atomRanges, 1000, buildStructures));
+      new blocks::SearchStoichiometries(searchOptions, buildStructures));
 
   Engine engine;
-  StoichiometrySink sink(atomRanges);
+  StoichiometrySink sink(searchOptions.atomRanges);
 
   engine.setFinishedDataSink(&sink);
   engine.run(searchStoichiometries);

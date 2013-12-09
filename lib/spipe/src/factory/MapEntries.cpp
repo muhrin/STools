@@ -41,6 +41,7 @@ namespace factory {
 // Stoichiometry search stuff
 ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
+::spl::utility::Key<bool> USE_SEPARATE_DIRS;
 ::spl::utility::Key< bool> WRITE_HULL;
 
 ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;

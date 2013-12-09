@@ -48,6 +48,7 @@ extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> WRITE_STRUCTURES;
 
 extern ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
+extern ::spl::utility::Key<bool> USE_SEPARATE_DIRS;
 extern ::spl::utility::Key< bool> WRITE_HULL;
 
 extern ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;
