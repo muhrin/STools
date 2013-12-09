@@ -143,7 +143,6 @@ struct SearchStoichiometries : HeteroMap
 
 struct SweepPotentialParams : HeteroMap
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
   SweepPotentialParams()
   {
     addEntry("range", PARAM_RANGE,
@@ -154,7 +153,6 @@ struct SweepPotentialParams : HeteroMap
 
 struct WriteStructures : HeteroMap
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
   WriteStructures()
   {
     addScalarEntry("multiWrite", MULTI_WRITE)->element()->defaultValue(
