@@ -1,12 +1,14 @@
 
-randomStructures:
-  num: 1
+nProcs: &nProcs
+  1
+
+buildStructures:
+  num: 100
   atoms:
     - spec: P 2
   unitCell:
 
 geomOptimise:
-  pressure: 0.0
   optimiser:
     castep:
       keep: true
@@ -16,7 +18,8 @@ removeDuplicates:
   comparator:
     sortedDist:
 
-output:
-  multiWrite: true
-  fileType: res
+writeStructures:
+  format: res
 
+engine:
+  serial:

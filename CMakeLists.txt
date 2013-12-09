@@ -98,9 +98,11 @@ if(UNIX)
     scripts/sgen_work
     scripts/potparams2queue
     scripts/srefine
+    scripts/srun
   )
 
   INSTALL(PROGRAMS ${STOOLS_SCRIPTS}
     DESTINATION "bin"
   )
 endif(UNIX)
+

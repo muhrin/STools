@@ -1,5 +1,9 @@
+
 rngSeed:
   123
+
+nProcs: &nProcs
+  1
 
 buildStructures:
   num: 100
@@ -55,4 +59,4 @@ writeStructures:
 
 engine:
   multithreaded:
-
+    nThreads: *nProcs
