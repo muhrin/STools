@@ -158,7 +158,7 @@ RunPotentialParamsQueue::getWork()
   if(!fs::exists(myQueueFile))
     return false;
 
-  ip::file_lock lock(myQueueFile.c_str());
+  ip::file_lock lock(myQueueFile.string().c_str());
   ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::fstream queueStream(myQueueFile);
@@ -253,7 +253,7 @@ RunPotentialParamsQueue::updateDoneParams()
     return;
 
   // Update the file of finish parameters
-  ip::file_lock lock(myDoneFile.c_str());
+  ip::file_lock lock(myDoneFile.string().c_str());
   ip::scoped_lock< ip::file_lock> lockQueue(lock);
 
   fs::ofstream doneStream(myDoneFile, std::ios::out | std::ios::app);

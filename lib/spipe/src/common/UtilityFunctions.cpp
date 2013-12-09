@@ -10,6 +10,7 @@
 
 #include <iomanip>
 
+#include <boost/functional/hash.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <spl/io/IoFunctions.h>

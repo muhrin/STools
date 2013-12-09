@@ -28,6 +28,8 @@
 # define _ADD_REQUIRED_
 #endif
 
-
+#if (BOOST_VERSION / 100000) <= 1 && ((BOOST_VERSION / 100) % 1000) <= 45
+#  define STOOLS_USE_BOOSTFS_V2
+#endif
 
 #endif /* BOOST_CAPABILITIES_H */

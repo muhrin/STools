@@ -56,7 +56,7 @@ main(const int argc, char * argv[])
     return 1;
   }
 
-  ip::file_lock lock(fileToLock.c_str());
+  ip::file_lock lock(fileToLock.string().c_str());
 
   ::std::cout << "Locking " << fileToLock.string() << "..." << ::std::flush;
   if(in.tryLock)

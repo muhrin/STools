@@ -13,7 +13,7 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 #ifdef SP_ENABLE_THREAD_AWARE
-#  include <boost/thread/lock_guard.hpp>
+#  include <boost/thread/locks.hpp>
 #endif
 #include <boost/range/iterator_range.hpp>
 

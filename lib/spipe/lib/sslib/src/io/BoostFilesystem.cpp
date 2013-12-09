@@ -109,9 +109,14 @@ bool
 createAndChangeCurrentPath(const ::boost::filesystem::path & path)
 {
   boostfs::create_directories(path);
+#ifdef SSLIB_USE_BOOSTFS_V2
+  boostfs::current_path(path);
+  return true;
+#else
   ::boost::system::error_code error;
   boostfs::current_path(path, error);
   return !error;
+#endif
 }
 
 }

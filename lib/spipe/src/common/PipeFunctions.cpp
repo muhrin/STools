@@ -8,6 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "PipeFunctions.h"
 
+#include <spl/io/BoostFilesystem.h>
 #include <spl/utility/UtilFunctions.h>
 
 // NAMESPACES ////////////////////////////////
@@ -33,7 +34,7 @@ namespace ssu = ::spl::utility;
 getWorkingDir(const SharedData & shared, const GlobalData & global)
 {
   fs::path dir = shared.getWorkingDir();
-  if(!dir.empty() && dir.is_absolute())
+  if(!dir.empty() && ::spl::io::isAbsolute(dir))
     return dir;
 
   return global.getWorkingDir() / dir;
