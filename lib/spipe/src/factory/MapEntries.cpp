@@ -24,7 +24,16 @@ namespace factory {
 
 // BLOCKS
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+
+::spl::utility::Key< ::spl::utility::HeterogeneousMap> CLONE;
+::spl::utility::Key< bool> CLONE__GIVE_UNIQUE_NAMES;
+::spl::utility::Key< int> CLONE__TIMES;
+
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> CUT_AND_PASTE;
+::spl::utility::Key< bool> CUT_AND_PASTE__FIX_UNTOUCHED;
+::spl::utility::Key< bool> CUT_AND_PASTE__PASTE;
+::spl::utility::Key< bool> CUT_AND_PASTE__SEPARATE;
+
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
@@ -43,10 +52,6 @@ namespace factory {
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
 ::spl::utility::Key<bool> USE_SEPARATE_DIRS;
 
-// Cut and paste stuff
-::spl::utility::Key< bool> CUT_AND_PASTE__FIX_UNTOUCHED;
-::spl::utility::Key< bool> CUT_AND_PASTE__PASTE;
-::spl::utility::Key< bool> CUT_AND_PASTE__SEPARATE;
 
 ::spl::utility::Key< bool> WRITE_HULL;
 

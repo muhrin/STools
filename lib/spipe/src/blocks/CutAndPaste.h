@@ -1,8 +1,8 @@
 /*
- * CutANdPaste.h
+ * CutAndPaste.h
  *
  *
- *  Created on: Nov 24, 2011
+ *  Created on: Nov 24, 2013
  *      Author: Martin Uhrin
  */
 

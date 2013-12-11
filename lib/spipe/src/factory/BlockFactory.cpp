@@ -14,6 +14,7 @@
 
 // Local includes
 #include "blocks/BuildStructures.h"
+#include "blocks/Clone.h"
 #include "blocks/CutAndPaste.h"
 #include "blocks/FindSymmetryGroup.h"
 #include "blocks/KeepStableCompositions.h"
@@ -61,6 +62,22 @@ BlockFactory::createBuildStructuresBlock(BlockHandle * const blockOut,
     return false;
 
   blockOut->reset(new blocks::BuildStructures(*numToGenerate, generator));
+  return true;
+}
+
+bool
+BlockFactory::createCloneBlock(BlockHandle * const blockOut,
+    const OptionsMap & options) const
+{
+  const int * const times = options.find(factory::CLONE__TIMES);
+  if(!times)
+    return false;
+
+  const bool * const giveUniqueNames = options.find(factory::CLONE__GIVE_UNIQUE_NAMES);
+  if(giveUniqueNames)
+    blockOut->reset(new blocks::Clone(*times, *giveUniqueNames));
+  else
+    blockOut->reset(new blocks::Clone(*times));
   return true;
 }
 

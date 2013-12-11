@@ -32,7 +32,16 @@ extern ::spl::utility::Key< ::std::string> RNG_SEED;
 
 // BLOCKS
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> BUILD_STRUCTURES;
+
+extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> CLONE;
+extern ::spl::utility::Key< bool> CLONE__GIVE_UNIQUE_NAMES;
+extern ::spl::utility::Key< int> CLONE__TIMES;
+
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> CUT_AND_PASTE;
+extern ::spl::utility::Key< bool> CUT_AND_PASTE__FIX_UNTOUCHED;
+extern ::spl::utility::Key< bool> CUT_AND_PASTE__PASTE;
+extern ::spl::utility::Key< bool> CUT_AND_PASTE__SEPARATE;
+
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> FIND_SYMMETRY_GROUP;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_STABLE_COMPOSITIONS;
 extern ::spl::utility::Key< ::spl::utility::HeterogeneousMap> KEEP_TOP_N;
@@ -50,9 +59,6 @@ extern ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
 extern ::spl::utility::Key<bool> USE_SEPARATE_DIRS;
 
-extern ::spl::utility::Key< bool> CUT_AND_PASTE__FIX_UNTOUCHED;
-extern ::spl::utility::Key< bool> CUT_AND_PASTE__PASTE;
-extern ::spl::utility::Key< bool> CUT_AND_PASTE__SEPARATE;
 
 extern ::spl::utility::Key< bool> WRITE_HULL;
 

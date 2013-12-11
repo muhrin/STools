@@ -1,0 +1,24 @@
+rngSeed:
+  123
+
+loadStructures: C.cell
+
+cutAndPaste:
+  paste: true
+# Uncomment to allow atoms outside the shape to be moved to accomodated the
+# pasted atoms
+  fixUntouched: true 
+  shape:
+    cylinder:
+      pos: 8.57 7.80 7
+      radius: 4.24
+      height: 0.02
+      shell: 2.9
+      shellCapped: false
+
+writeStructures:
+  format: res
+
+engine:
+  serial:
+

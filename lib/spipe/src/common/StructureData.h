@@ -39,6 +39,9 @@ namespace common {
 class StructureData
 {
 public:
+  StructureData &
+  operator =(const StructureData & rhs);
+
   spl::common::Structure *
   getStructure() const;
   spl::common::Structure &

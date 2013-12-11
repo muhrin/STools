@@ -42,6 +42,13 @@ struct BuildStructures : ::spl::factory::builder::Builder
   }
 };
 
+struct Clone : public HeteroMap
+{
+  Clone()
+  {
+  }
+};
+
 struct CutAndPaste : public HeteroMap
 {
   CutAndPaste()

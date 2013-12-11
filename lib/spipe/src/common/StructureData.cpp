@@ -25,6 +25,15 @@ namespace ssio = ::spl::io;
 namespace ssu = ::spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
+StructureData &
+StructureData::operator =(const StructureData & rhs)
+{
+  objectsStore = rhs.objectsStore;
+  if(rhs.myStructure.get())
+    myStructure.reset(new ssc::Structure(*rhs.myStructure));
+  return *this;
+}
+
 ssc::Structure *
 StructureData::getStructure() const
 {

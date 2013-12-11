@@ -47,6 +47,9 @@ public:
   createBuildStructuresBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool
+  createCloneBlock(BlockHandle * const blockOut,
+      const OptionsMap & options) const;
+  bool
   createCutAndPasteBlock(BlockHandle * const blockOut,
       const OptionsMap & options) const;
   bool
