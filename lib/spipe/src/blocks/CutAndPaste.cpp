@@ -56,16 +56,25 @@ CutAndPaste::in(common::StructureData * const data)
 
   if(mySettings.paste)
   {
+    const size_t numUntouched = structure->getNumAtoms();
     BOOST_FOREACH(splc::Atom & atom, cutAtoms)
     {
       atom.setPosition(myShape->randomPoint());
       structure->newAtom(atom);
     }
-  }
 
-  splbc::SeparationData<splc::AtomSpeciesId::Value> sepData =
-      splbc::makeSeparationData(*structure);
-  mySeparator.separatorPoints(&sepData);
+    if(mySettings.separate)
+    {
+      splbc::SeparationData sepData(*structure, getEngine()->globalData().getSpeciesDatabase());
+      if(mySettings.fixUntouched)
+      {
+        for(size_t i = 0; i < numUntouched; ++i)
+          sepData.fixedPoints.insert(i);
+      }
+      mySeparator.separatePoints(&sepData);
+      structure->setAtomPositions(sepData.points);
+    }
+  }
 
   out(data);
 }

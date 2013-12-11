@@ -155,7 +155,7 @@ AbsAtomsGenerator::generateFragment(StructureBuild & build,
   }
 
   // Finally solve any atom overlap
-  if(build.extrudeAtoms())
+  if(build.separateAtoms())
     outcome.setSuccess();
   else
     outcome.setFailure(

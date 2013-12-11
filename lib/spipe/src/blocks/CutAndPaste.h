@@ -33,10 +33,12 @@ public:
   struct Settings
   {
     Settings():
-      paste(false)
+      paste(false), separate(true), fixUntouched(true)
     {
     }
     bool paste;
+    bool separate;
+    bool fixUntouched;
   };
 
   CutAndPaste(ShapePtr shape, Settings & settings);
@@ -48,7 +50,7 @@ public:
 
 private:
   ShapePtr myShape;
-  const Settings & mySettings;
+  const Settings mySettings;
   const ::spl::build_cell::PointSeparator mySeparator;
 };
 

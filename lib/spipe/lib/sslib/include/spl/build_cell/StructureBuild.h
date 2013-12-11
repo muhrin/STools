@@ -19,9 +19,9 @@
 #include <boost/noncopyable.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
-#include "spl/build_cell/AtomExtruder.h"
 #include "spl/build_cell/BuildAtomInfo.h"
 #include "spl/build_cell/GeneratorShape.h"
+#include "spl/build_cell/PointSeparator.h"
 #include "spl/build_cell/SpeciesPair.h"
 
 namespace spl {
@@ -140,7 +140,7 @@ public:
   getFixedSet() const;
 
   bool
-  extrudeAtoms();
+  separateAtoms();
 
   void
   pushTransform(const ::arma::mat44 & transform);
@@ -157,7 +157,6 @@ public:
   getSpeciesPairDistances() const;
 
 private:
-
   void
   atomInserted(BuildAtomInfo & atomInfo, common::Atom & atom);
   void
@@ -170,7 +169,6 @@ private:
   const common::AtomSpeciesDatabase & mySpeciesDb;
   AtomInfoMap myAtomsInfo;
   AtomInfoList myAtomInfoList;
-  AtomExtruder myAtomsExtruder;
   SymmetryGroupPtr mySymmetryGroup;
   GenShapePtr myGenShape;
 
@@ -183,6 +181,8 @@ private:
   SpeciesPairDistancesStack mySpeciesPairDistancesStack;
   mutable SpeciesPairDistances mySpeciesPairDistances;
   mutable bool mySpeciesPairDistancesCurrent;
+
+  const PointSeparator myPointSeparator;
 
   friend class BuildAtomInfo;
 };

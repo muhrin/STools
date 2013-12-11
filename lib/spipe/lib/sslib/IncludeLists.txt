@@ -41,7 +41,6 @@ source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analys
 
 set(sslib_Header_Files__build_cell
   include/spl/build_cell/AbsAtomsGenerator.h
-  include/spl/build_cell/AtomExtruder.h
   include/spl/build_cell/AtomsDescription.h
   include/spl/build_cell/AtomsGroup.h
   include/spl/build_cell/AtomsGenerator.h

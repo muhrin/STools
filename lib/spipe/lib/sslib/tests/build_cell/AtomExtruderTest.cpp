@@ -13,8 +13,8 @@
 
 #include <armadillo>
 
-#include <spl/build_cell/AtomExtruder.h>
 #include <spl/build_cell/GenerationOutcome.h>
+#include <spl/build_cell/PointSeparator.h>
 #include <spl/build_cell/RandomUnitCellGenerator.h>
 #include <spl/common/Atom.h>
 #include <spl/common/AtomSpeciesId.h>
@@ -38,9 +38,10 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
   ssbc::RandomUnitCellGenerator randomCell;
   randomCell.setVolumeDelta(0.0);
 
-  ssbc::AtomExtruder extruder;
+  ssbc::PointSeparator separator(ssbc::PointSeparator::DEFAULT_MAX_ITERATIONS,
+      0.001);
 
-  const double radius = 1.0, minsep = 2.0 * radius - 0.1, minsepSq = minsep * minsep;
+  const double radius = 1.0, minsep = 2.0 * radius, minsepSq = minsep * minsep;
   size_t numAtoms;
 
   bool extruded;
@@ -74,13 +75,17 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
       atom.setPosition(cell->randomPoint());
     }
 
-    extruded = extruder.extrudeAtoms(structure);
+    ssbc::SeparationData sepData(structure);
+    sepData.separations.fill(minsep);
+    extruded = separator.separatePoints(&sepData);
 
     if(extruded)
     {
-      // Check that they are indeed no closer than 2 apart
+      structure.setAtomPositions(sepData.points);
+
+      // Check that they are indeed no closer than the minsep apart
       const ssc::DistanceCalculator & distanceCalc = structure.getDistanceCalculator();
-      double dr;
+      double drSq;
 
       for(size_t k = 0; k < numAtoms - 1; ++k)
       {
@@ -88,9 +93,9 @@ BOOST_AUTO_TEST_CASE(ExtrusionTest)
         for(size_t l = k + 1; l < numAtoms; ++l)
         {
           const ::arma::vec & pos2 = structure.getAtom(l).getPosition();
-          dr = distanceCalc.getDistMinImg(pos1, pos2);
+          drSq = distanceCalc.getDistSqMinImg(pos1, pos2);
 
-          BOOST_REQUIRE(::spl::utility::stable::geq(dr * dr, minsepSq));
+          BOOST_REQUIRE(::spl::utility::stable::geq(drSq, minsepSq, 0.005 * minsepSq));
         }
       }
     }
