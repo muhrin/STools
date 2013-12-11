@@ -194,10 +194,14 @@ StructureBuild::getFixedSet() const
 }
 
 bool
-StructureBuild::extrudeAtoms()
+StructureBuild::separateAtoms()
 {
-  return myAtomsExtruder.extrudeAtoms(myStructure, generateSepSqMatrix(),
-      getFixedSet());
+  SeparationData sepData(myStructure);
+  sepData.separations = generateSepSqMatrix();
+  const bool succeeded = myPointSeparator.separatePoints(&sepData);
+  if(succeeded)
+    myStructure.setAtomPositions(sepData.points);
+  return succeeded;
 }
 
 void

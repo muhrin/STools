@@ -48,6 +48,11 @@ struct CutAndPaste : public HeteroMap
   {
     addEntry("shape", ::spl::factory::GEN_SHAPE,
         new ::spl::factory::builder::GenShape())->element()->required();
+    addScalarEntry("paste", CUT_AND_PASTE__PASTE)->element()->defaultValue(true);
+    addScalarEntry("separate", CUT_AND_PASTE__SEPARATE)->element()->defaultValue(
+        true);
+    addScalarEntry("fixUntouched", CUT_AND_PASTE__FIX_UNTOUCHED)->element()->defaultValue(
+        true);
   }
 };
 

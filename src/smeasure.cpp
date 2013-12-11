@@ -166,7 +166,7 @@ Result calcLengths(const StructuresContainer & structures, const InputOptions & 
         pairs.push_back(AtomPair(i, j));
 
     const ssio::ResourceLocator * const locator = structure.getProperty(ssc::structure_properties::io::LAST_ABS_FILE_PATH);
-    ::std::cout << locator->path() << ::std::endl;
+    ::std::cout << locator->path() << "\n";
     if(in.histogramMode)
       doHistogram(structure, pairs, in);
     else
@@ -203,7 +203,7 @@ void doLengths(const ssc::Structure & structure, const AtomPairs & pairs, const 
         "-" << pair.second << "(" << structure.getAtom(pair.second).getSpecies() << ")" << ": ";
     for(size_t i = startOffset; i < startOffset + numDists; ++i)
       ss << dists[i] << " ";
-    ::std::cout << ss.str() << ::std::endl;
+    ::std::cout << ss.str() << "\n";
   }
 }
 
@@ -235,10 +235,10 @@ void doHistogram(const ssc::Structure & structure, const AtomPairs & pairs, cons
 
   // Print the histogram values
   for(size_t i = 0; i < hist.numBins(); ++i)
-    ::std::cout << i << ": " << hist.getFrequency(i) << ::std::endl;
+    ::std::cout << i << ": " << hist.getFrequency(i) << "\n";
 
   if(in.histogramShowGraph)
-    ::std::cout << hist << ::std::endl;
+    ::std::cout << hist << "\n";
 }
 
 Result calcAngles(const StructuresContainer & structures, const InputOptions & in)

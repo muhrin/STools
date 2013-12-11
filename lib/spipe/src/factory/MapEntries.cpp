@@ -42,6 +42,12 @@ namespace factory {
 ::spl::utility::Key<
     ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> > ATOM_RANGES;
 ::spl::utility::Key<bool> USE_SEPARATE_DIRS;
+
+// Cut and paste stuff
+::spl::utility::Key< bool> CUT_AND_PASTE__FIX_UNTOUCHED;
+::spl::utility::Key< bool> CUT_AND_PASTE__PASTE;
+::spl::utility::Key< bool> CUT_AND_PASTE__SEPARATE;
+
 ::spl::utility::Key< bool> WRITE_HULL;
 
 ::spl::utility::Key< ::std::vector< ::std::string> > PARAM_RANGE;

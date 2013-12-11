@@ -77,6 +77,21 @@ BlockFactory::createCutAndPasteBlock(BlockHandle * const blockOut,
     return false;
 
   blocks::CutAndPaste::Settings settings;
+  {
+    const bool * const paste = options.find(factory::CUT_AND_PASTE__PASTE);
+    if(paste)
+      settings.paste = *paste;
+  }
+  {
+    const bool * const separate = options.find(factory::CUT_AND_PASTE__SEPARATE);
+    if(separate)
+      settings.separate = *separate;
+  }
+  {
+    const bool * const fixUntouched = options.find(factory::CUT_AND_PASTE__FIX_UNTOUCHED);
+    if(fixUntouched)
+      settings.fixUntouched = *fixUntouched;
+  }
 
   blockOut->reset(new blocks::CutAndPaste(genShape, settings));
   return true;

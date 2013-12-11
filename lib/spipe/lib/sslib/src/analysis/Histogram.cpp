@@ -83,7 +83,7 @@ void Histogram::print(::std::ostream & os) const
       else
         ::std::cout << " ";
     }
-    ::std::cout << ::std::endl;
+    ::std::cout << "\n";
   }
   // Draw the x-axis
   ::std::cout << "O";

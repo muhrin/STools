@@ -12,6 +12,7 @@
 #include "spl/SSLib.h"
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include <armadillo>
@@ -22,36 +23,37 @@
 namespace spl {
 namespace common {
 class Atom;
+class AtomSpeciesDatabase;
 class DistanceCalculator;
 class Structure;
 }
 
 namespace build_cell {
 
-template <typename Label>
 struct SeparationData
 {
-  typedef ::std::vector< ::arma::vec3> Points;
-  typedef ::std::vector<Label> Labels;
-  typedef utility::MinMax<Label> LabelPair;
-  typedef ::std::map< LabelPair, double> PointSeparations;
-  typedef ::std::vector<size_t> FixedPoints;
-
-  static SeparationData<Label>
-  fromStructure(const common::Structure & structure);
+  typedef ::arma::mat Points;
+  typedef ::std::set<size_t> FixedPoints;
 
   SeparationData(const size_t numPoints,
       const common::DistanceCalculator & distanceCalculator);
+  SeparationData(const common::Structure & structure);
+  SeparationData(const common::Structure & structure,
+      const common::AtomSpeciesDatabase & db);
+
+  template <typename Label>
+  void
+  setSeparationsFromLabels(const ::std::vector<Label> & pointLabels,
+      ::std::map< utility::MinMax<Label>, double> & sepList);
 
   const common::DistanceCalculator & distanceCalculator;
   Points points;
-  Labels labels;
-  PointSeparations separations;
+  ::arma::mat separations;
   FixedPoints fixedPoints;
+private:
+  void
+  init(const size_t numPoints);
 };
-
-SeparationData<common::AtomSpeciesId::Value>
-makeSeparationData(const common::Structure & structure);
 
 class PointSeparator
 {
@@ -62,28 +64,17 @@ public:
   PointSeparator();
   PointSeparator(const size_t maxIterations, const double tolerance);
 
-  template <typename Label>
   bool
-  separatorPoints(SeparationData<Label> * const sepData) const;
+  separatePoints(SeparationData * const sepData) const;
+
 private:
   typedef ::std::vector< bool> FixedList;
 
-  template <typename Label>
-  void
-  generateMinSepSqs(const SeparationData<Label> & sepData,
-      ::arma::mat * const sepSqs) const;
-  template <typename Label>
-  void
-  generateFixedList(const SeparationData<Label> & sepData,
-      FixedList * const fixed) const;
-  template <typename Label>
+  FixedList
+  generateFixedList(const SeparationData & sepData) const;
   double
-  calcMaxOverlapFraction(const SeparationData<Label> & sepData,
+  calcMaxOverlapFraction(const SeparationData & sepData,
       const ::arma::mat & minSepSqs, const FixedList & fixed) const;
-  template <typename Label>
-  bool
-  separatePoints(const ::arma::mat & minSepSqs, const FixedList & fixed,
-      SeparationData<Label> * const sepData) const;
 
   const size_t myMaxIterations;
   const double myTolerance;

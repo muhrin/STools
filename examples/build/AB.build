@@ -1,0 +1,13 @@
+rngSeed:
+  123
+
+buildStructures:
+  num: 1
+  atoms:
+    - spec: A 32
+    - spec: B 32
+  unitCell:
+    angles:
+      min: 45
+      max: 135
+
