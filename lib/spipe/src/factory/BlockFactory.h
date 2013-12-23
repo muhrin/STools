@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <map>
 #include <string>
 
 #include <spl/SSLib.h>
@@ -38,10 +39,33 @@ class BlockFactory
 public:
   typedef ::spl::utility::HeterogeneousMap OptionsMap;
 
-  BlockFactory(::spl::common::AtomSpeciesDatabase & speciesDb) :
-      mySplFactory(speciesDb)
+  struct Blocks
   {
-  }
+    enum Value
+    {
+      BUILD_STRUCTURES,
+      CLONE_BLOCK,
+      CUT_AND_PASTE,
+      FIND_SYMMETRY,
+#ifdef SSLIB_USE_CGAL
+      KEEP_STABLE_COMPOSITIONS,
+#endif
+      KEEP_TOP_N,
+      KEEP_WITHIN_X_PERCENT,
+      LOAD_STRUCTURES,
+      NIGGLI_REDUCE,
+      GEOM_OPTIMISE,
+      REMOVE_DUPLICATES,
+      RUN_POTENTIAL_PARAMS_QUEUE,
+      WRITE_STRUCTURES
+    };
+  };
+
+  BlockFactory(::spl::common::AtomSpeciesDatabase & speciesDb);
+
+  bool
+  createBlock(const Blocks::Value block, const OptionsMap & options,
+      BlockHandle * const blockOut) const;
 
   bool
   createBuildStructuresBlock(BlockHandle * const blockOut,

@@ -49,7 +49,7 @@ struct Clone : public HeteroMap
   }
 };
 
-struct CutAndPaste : public HeteroMap
+struct CutAndPaste : HeteroMap
 {
   CutAndPaste()
   {

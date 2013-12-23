@@ -47,6 +47,62 @@ namespace ssio = ::spl::io;
 namespace ssp = ::spl::potential;
 namespace ssu = ::spl::utility;
 
+struct BlockMap
+{
+  typedef bool
+  (BlockFactory::*CreationFunction)(BlockHandle * const blockOut,
+      const BlockFactory::OptionsMap & options) const;
+  typedef ::std::map< BlockFactory::Blocks::Value, CreationFunction> CreationMap;
+
+  BlockMap()
+  {
+    map[BlockFactory::Blocks::BUILD_STRUCTURES] =
+        &BlockFactory::createBuildStructuresBlock;
+    map[BlockFactory::Blocks::CLONE_BLOCK] = &BlockFactory::createCloneBlock;
+    map[BlockFactory::Blocks::CUT_AND_PASTE] =
+        &BlockFactory::createCutAndPasteBlock;
+    map[BlockFactory::Blocks::FIND_SYMMETRY] =
+        &BlockFactory::createFindSymmetryGroupBlock;
+#ifdef SSLIB_USE_CGAL
+    map[BlockFactory::Blocks::KEEP_STABLE_COMPOSITIONS] =
+        &BlockFactory::createKeepStableCompositionsBlock;
+#endif
+    map[BlockFactory::Blocks::KEEP_TOP_N] =
+        &BlockFactory::createKeepTopNBlock;
+    map[BlockFactory::Blocks::KEEP_WITHIN_X_PERCENT] =
+        &BlockFactory::createKeepWithinXPercentBlock;
+    //map[BlockFactory::Blocks::LOAD_STRUCTURES] =
+    //    &BlockFactory::createLoadStructuresBlock;
+    map[BlockFactory::Blocks::NIGGLI_REDUCE] =
+        &BlockFactory::createNiggliReduceBlock;
+    map[BlockFactory::Blocks::GEOM_OPTIMISE] =
+        &BlockFactory::createGeomOptimiseBlock;
+    map[BlockFactory::Blocks::REMOVE_DUPLICATES] =
+        &BlockFactory::createRemoveDuplicatesBlock;
+    map[BlockFactory::Blocks::WRITE_STRUCTURES] =
+        &BlockFactory::createWriteStructuresBlock;
+  }
+  CreationMap map;
+};
+
+static BlockMap BLOCK_MAP;
+
+BlockFactory::BlockFactory(::spl::common::AtomSpeciesDatabase & speciesDb) :
+    mySplFactory(speciesDb)
+{
+}
+
+bool
+BlockFactory::createBlock(const Blocks::Value block,
+    const OptionsMap & options, BlockHandle * const blockOut) const
+{
+  BlockMap::CreationMap::const_iterator it = BLOCK_MAP.map.find(block);
+  if(it == BLOCK_MAP.map.end())
+    return false;
+
+  return (this->*it->second)(blockOut, options);
+}
+
 bool
 BlockFactory::createBuildStructuresBlock(BlockHandle * const blockOut,
     const OptionsMap & options) const
@@ -73,7 +129,8 @@ BlockFactory::createCloneBlock(BlockHandle * const blockOut,
   if(!times)
     return false;
 
-  const bool * const giveUniqueNames = options.find(factory::CLONE__GIVE_UNIQUE_NAMES);
+  const bool * const giveUniqueNames = options.find(
+      factory::CLONE__GIVE_UNIQUE_NAMES);
   if(giveUniqueNames)
     blockOut->reset(new blocks::Clone(*times, *giveUniqueNames));
   else
@@ -100,12 +157,14 @@ BlockFactory::createCutAndPasteBlock(BlockHandle * const blockOut,
       settings.paste = *paste;
   }
   {
-    const bool * const separate = options.find(factory::CUT_AND_PASTE__SEPARATE);
+    const bool * const separate = options.find(
+        factory::CUT_AND_PASTE__SEPARATE);
     if(separate)
       settings.separate = *separate;
   }
   {
-    const bool * const fixUntouched = options.find(factory::CUT_AND_PASTE__FIX_UNTOUCHED);
+    const bool * const fixUntouched = options.find(
+        factory::CUT_AND_PASTE__FIX_UNTOUCHED);
     if(fixUntouched)
       settings.fixUntouched = *fixUntouched;
   }
