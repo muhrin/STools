@@ -49,436 +49,57 @@ Factory::Factory(common::AtomSpeciesDatabase & atomSpeciesDb) :
 {
 }
 
-build_cell::RandomUnitCellPtr
-Factory::createRandomCellGenerator(const OptionsMap & map) const
-{
-  using namespace utility::cell_params_enum;
-
-  build_cell::RandomUnitCellPtr cell(new build_cell::RandomUnitCellGenerator());
-
-  {
-    const double * const targetVol = map.find(UNIT_CELL_BUILDER_VOLUME);
-    if(targetVol)
-      cell->setTargetVolume(*targetVol);
-  }
-
-  {
-    const double * const contentsMultiplier = map.find(
-        UNIT_CELL_BUILDER_MULTIPLIER);
-    if(contentsMultiplier)
-      cell->setContentsMultiplier(*contentsMultiplier);
-  }
-
-  {
-    const double * const volDelta = map.find(UNIT_CELL_BUILDER_VOLUME_DELTA);
-    if(volDelta)
-      cell->setVolumeDelta(*volDelta);
-  }
-
-  {
-    const OptionsMap * const angles = map.find(UNIT_CELL_BUILDER_ANGLES);
-    if(angles)
-    {
-      const double * const min = angles->find(MIN);
-      const double * const max = angles->find(MAX);
-      if(min)
-        cell->setMinAngles(*min);
-      if(max)
-        cell->setMaxAngles(*max);
-    }
-  }
-
-  {
-    const OptionsMap * const lengths = map.find(UNIT_CELL_BUILDER_ANGLES);
-    if(lengths)
-    {
-      const double * const min = lengths->find(MIN);
-      const double * const max = lengths->find(MAX);
-      const double * const maxRatio = lengths->find(MAX_RATIO);
-      if(min)
-        cell->setMinLengths(*min);
-      if(max)
-        cell->setMaxLengths(*max);
-      if(maxRatio)
-        cell->setMaxLengthRatio(*maxRatio);
-    }
-  }
-
-  {
-    // Do this after settings the general min/max length/angles as this is a more specific
-    // way of specifying the unit cell dimensions
-    const ::std::vector< utility::Range< double> > * const abc = map.find(
-        UNIT_CELL_BUILDER_ABC);
-    if(abc)
-    {
-      // TODO: Eventuall emit error instead
-      SSLIB_ASSERT(abc->size() == 6);
-
-      if(abc->size() == 6)
-      {
-        for(size_t i = A; i <= GAMMA; ++i)
-        {
-          cell->setMin(i, (*abc)[i].lower());
-          cell->setMax(i, (*abc)[i].upper());
-        }
-      }
-    }
-  }
-
-  return cell;
-}
-
-build_cell::IStructureGeneratorPtr
-Factory::createStructureGenerator(const OptionsMap & map) const
-{
-  build_cell::IStructureGeneratorPtr generator;
-
-  const OptionsMap * generatorMap = map.find(BUILDER);
-  if(generatorMap)
-  {
-    generator = createStructureBuilder(*generatorMap);
-  }
-
-  return generator;
-}
-
-potential::IPotentialPtr
-Factory::createPotential(const OptionsMap & potentialOptions) const
-{
-  potential::IPotentialPtr pot;
-
-  const OptionsMap * const lj = potentialOptions.find(LENNARD_JONES);
-  if(lj)
-  {
-    // Get the species list
-    const AtomSpeciesIdVector * const speciesVec = lj->find(SPECIES_LIST);
-    if(!speciesVec)
-      return pot; // TODO: Emit error
-
-    // Build up the potential parameters one by one
-    const ::arma::mat * const epsilon = lj->find(LJ_EPSILON);
-    if(!epsilon)
-      return pot;
-
-    const ::arma::mat * const sigma = lj->find(LJ_SIGMA);
-    if(!sigma)
-      return pot;
-
-    const ::arma::mat * const beta = lj->find(LJ_BETA);
-    if(!beta)
-      return pot;
-
-    const ::arma::vec * const pow = lj->find(LJ_POWERS);
-    if(!pow)
-      return pot;
-
-    const double * const cutoff = lj->find(CUTOFF);
-    if(!cutoff)
-      return pot;
-
-    const potential::CombiningRule::Value * const comb = lj->find(
-        POT_COMBINING);
-    if(!comb)
-      return pot;
-
-    const size_t numSpecies = epsilon->n_rows;
-
-    if((numSpecies != sigma->n_rows) || (numSpecies != beta->n_rows))
-      return pot;
-
-    pot.reset(
-        new potential::LennardJones(myAtomSpeciesDb, *speciesVec,
-            *epsilon, *sigma, *cutoff, *beta, (*pow)(0), (*pow)(1), *comb));
-  }
-
-  return pot;
-}
-
-Factory::GeomOptimiserPtr
-Factory::createGeometryOptimiser(const OptionsMap & optimiserMap) const
-{
-  GeomOptimiserPtr opt;
-
-  const OptionsMap * const tpsdOptions = optimiserMap.find(TPSD);
-  const OptionsMap * const castepOptions = optimiserMap.find(CASTEP);
-  if(tpsdOptions)
-  {
-    const OptionsMap * const potentialOptions = tpsdOptions->find(POTENTIAL);
-
-    // Have to have a potential with this optimiser
-    if(!potentialOptions)
-      return opt;
-
-    potential::IPotentialPtr potential = createPotential(*potentialOptions);
-    if(!potential.get())
-      return opt;
-
-    UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
-        new potential::TpsdGeomOptimiser(potential));
-
-    {
-      const double * const energyTol = tpsdOptions->find(ENERGY_TOL);
-      if(energyTol)
-        tpsd->setEnergyTolerance(*energyTol);
-    }
-    {
-      const double * const forceTol = tpsdOptions->find(FORCE_TOL);
-      if(forceTol)
-        tpsd->setForceTolerance(*forceTol);
-    }
-
-    opt = tpsd;
-  }
-  else if(castepOptions)
-  {
-    // Read in the settings
-    potential::CastepGeomOptimiseSettings settings;
-    const bool * const keepIntermediates = castepOptions->find(
-        CASTEP_KEEP_INTERMEDIATES);
-    if(keepIntermediates)
-      settings.keepIntermediateFiles = *keepIntermediates;
-
-    const int * const numRoughSteps = castepOptions->find(
-        CASTEP_NUM_ROUGH_STEPS);
-    if(numRoughSteps)
-      settings.numRoughSteps = *numRoughSteps;
-
-    const int * const numSelfConsistent = castepOptions->find(
-        CASTEP_NUM_SELF_CONSISTENT);
-    if(numSelfConsistent)
-      settings.numConsistentRelaxations = *numSelfConsistent;
-
-    const ::std::string * const castepExe = castepOptions->find(CASTEP_EXE);
-    const ::std::string * const seed = castepOptions->find(CASTEP_SEED);
-    if(castepExe && seed)
-      opt.reset(
-          new potential::CastepGeomOptimiser(*castepExe, *seed, settings));
-  }
-
-  return opt;
-}
-
-potential::OptimisationSettings
-Factory::createOptimisationSettings(const OptionsMap & options) const
-{
-  potential::OptimisationSettings settings;
-
-  settings.maxIter = toOptional(options.find(MAX_ITER));
-
-  const double * const pressure = options.find(PRESSURE);
-  if(pressure)
-  {
-    settings.pressure.reset(::arma::zeros(3, 3));
-    settings.pressure->diag().fill(*pressure);
-  }
-
-  return settings;
-}
-
-utility::IStructureComparatorPtr
-Factory::createStructureComparator(const OptionsMap & map) const
-{
-  utility::IStructureComparatorPtr comparator;
-
-  const OptionsMap * const comparatorMap = map.find(SORTED_DISTANCE);
-  if(comparatorMap)
-  {
-    utility::SortedDistanceComparator::ConstructionInfo constructInfo;
-
-    {
-      const double * const tolerance = map.find(TOLERANCE);
-      if(tolerance)
-        constructInfo.tolerance = *tolerance;
-    }
-    {
-      const bool * const volAgnostic = map.find(
-          SORTED_DISTANCE__VOLUME_AGNOSTIC);
-      if(volAgnostic)
-        constructInfo.volumeAgnostic = *volAgnostic;
-    }
-    {
-      const bool * const usePrimitive = map.find(
-          SORTED_DISTANCE__USE_PRIMITIVE);
-      if(usePrimitive)
-        constructInfo.usePrimitive = *usePrimitive;
-    }
-    comparator.reset(new utility::SortedDistanceComparator(constructInfo));
-  }
-
-  return comparator;
-}
-
-const GenShapeFactory &
-Factory::getShapeFactory() const
-{
-  return myShapeFactory;
-}
-
-Factory::StructureContentType::Value
-Factory::getStructureContentType(
-    const AtomsDataEntry & atomsEntry) const
-{
-  // If it is a list then we know it's a compact atoms info object
-  if(::boost::get< AtomsCompactInfo>(&atomsEntry))
-    return StructureContentType::ATOMS;
-
-  const OptionsMap * const map = ::boost::get< OptionsMap>(&atomsEntry);
-  if(map)
-  {
-    if(map->find(SPECIES))
-      return StructureContentType::ATOMS;
-    else if(map->find(ATOMS_GROUP))
-      return StructureContentType::GROUP;
-  }
-
-  return StructureContentType::UNKNOWN;
-}
-
 build_cell::AtomsDescriptionPtr
-Factory::createAtomsDescription(const AtomsDataEntry & atomsEntry,
-    const io::AtomFormatParser & parser) const
+Factory::createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
+    const io::AtomFormatParser< builder::SimpleAtomsData> & parser) const
 {
   build_cell::AtomsDescriptionPtr atomsDescription;
 
-  ::boost::optional< AtomSpeciesCount> speciesAndCount = parser.getValue(
-      SPECIES, atomsEntry);
-  if(!speciesAndCount
-      || (speciesAndCount->count.nullSpan()
-          && speciesAndCount->count.lower() == 0))
+  const AtomSpeciesCount speciesCount = *parser.getValue(
+      &builder::SimpleAtomsData::species, options);
+
+  if(speciesCount.count.nullSpan() && speciesCount.count.lower() == 0)
     return atomsDescription;
 
   atomsDescription.reset(
-      new build_cell::AtomsDescription(speciesAndCount->species,
-          speciesAndCount->count));
+      new build_cell::AtomsDescription(speciesCount.species,
+          speciesCount.count));
 
-  const OptionalDouble radius = parser.getValue(RADIUS, atomsEntry);
-  if(radius)
-    atomsDescription->radius = *radius;
+  atomsDescription->radius = parser.getValue(&builder::SimpleAtomsData::radius,
+      options);
+  atomsDescription->position = parser.getValue(&builder::SimpleAtomsData::pos,
+      options);
 
-  const OptionalArmaVec3 pos = parser.getValue(POSITION, atomsEntry);
-  if(pos)
-    atomsDescription->position = *pos;
-
-  const ::boost::optional< ::std::string> label = parser.getValue(LABEL, atomsEntry);
+  const boost::optional< std::string> label = parser.getValue(
+      &builder::SimpleAtomsData::label, options);
   if(label)
     atomsDescription->label = *label;
 
   return atomsDescription;
 }
 
-build_cell::StructureBuilderPtr
-Factory::createStructureBuilder(const OptionsMap & map) const
-{
-  build_cell::StructureBuilder::ConstructInfo constructInfo;
-
-  { // Atoms overlap
-    const double * const atomsOverlap = map.find(ATOMS_OVERLAP);
-    if(atomsOverlap)
-      constructInfo.atomsOverlap = *atomsOverlap;
-  }
-
-  { // Cluster mode
-    const bool * const isCluster = map.find(CLUSTER);
-    if(isCluster)
-      constructInfo.isCluster = *isCluster;
-  }
-
-  build_cell::StructureBuilderPtr builder(
-      new build_cell::StructureBuilder(constructInfo));
-
-  io::AtomFormatParser atomsFormatParser;
-  {
-    const io::AtomFormatParser::FormatDescription * const format = map.find(
-        ATOMS_FORMAT);
-    if(format)
-      atomsFormatParser.setFormat(*format);
-  }
-
-  {
-    const double * const atomsRadius = map.find(RADIUS);
-    if(atomsRadius)
-      atomsFormatParser.setDefault(RADIUS, *atomsRadius);
-  }
-
-  // Generators
-  const AtomsDataEntryList * const atoms = map.find(ATOMS);
-  if(atoms)
-  {
-    // Try creating the default atoms generator
-    {
-      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map,
-          atomsFormatParser);
-      if(atomsGenerator.get())
-        builder->addGenerator(atomsGenerator);
-    }
-
-    // Now look for other generators
-    BOOST_FOREACH(const AtomsDataEntry & atomsEntry, *atoms)
-    {
-      if(getStructureContentType(atomsEntry) == StructureContentType::GROUP)
-      {
-        const OptionsMap * const groupOptions = ::boost::get< OptionsMap>(
-            atomsEntry).find(ATOMS_GROUP);
-        build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(
-            *groupOptions, atomsFormatParser);
-        if(atomsGenerator.get())
-          builder->addGenerator(atomsGenerator);
-      }
-    }
-  }
-
-  // Unit cell
-  const OptionsMap * unitCellBuilder = map.find(UNIT_CELL_BUILDER);
-  if(unitCellBuilder)
-  {
-    build_cell::IUnitCellGeneratorPtr ucGen(
-        createRandomCellGenerator(*unitCellBuilder));
-    if(ucGen.get())
-      builder->setUnitCellGenerator(ucGen);
-  }
-
-  // Symmetry
-  const OptionsMap * const symmetry = map.find(SYMMETRY);
-  if(symmetry)
-  {
-    const ::std::string * const pointGroup = symmetry->find(POINT_GROUP);
-    if(pointGroup)
-    {
-      build_cell::PointGroup group;
-      if(build_cell::getPointGroup(group, *pointGroup))
-        builder->setPointGroup(group);
-    }
-  }
-
-  return builder;
-}
-
 build_cell::AtomsGroupPtr
-Factory::createAtomsGroup(const OptionsMap & map,
-    io::AtomFormatParser & parser) const
+Factory::createAtomsGroup(const builder::AtomsGroup & options,
+    io::AtomFormatParser< builder::SimpleAtomsData> & parser) const
 {
   build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
 
   // Try creating a generator shape
   UniquePtr< build_cell::GeneratorShape>::Type genShape;
-  myShapeFactory.createShape(genShape, map);
+  if(options.genShape)
+    myShapeFactory.createShape(genShape, *options.genShape);
 
-  const int * const num = map.find(NUM);
-  const ::arma::vec3 * const pos = map.find(POSITION);
-  const ::arma::vec4 * const rot = map.find(ROT_AXIS_ANGLE);
+  atomsGenerator->setNumReplicas(options.num);
 
-  if(num)
-    atomsGenerator->setNumReplicas(*num);
-
-  if(pos)
-    atomsGenerator->setPosition(*pos);
+  if(options.pos)
+    atomsGenerator->setPosition(*options.pos);
   else
     atomsGenerator->setTransformMode(
         atomsGenerator->getTransformMode()
             | build_cell::AtomsGroup::TransformMode::RAND_POS);
 
-  if(rot)
-    atomsGenerator->setRotation(*rot);
+  if(options.rot)
+    atomsGenerator->setRotation(*options.rot);
   else
   {
     atomsGenerator->setTransformMode(
@@ -488,36 +109,24 @@ Factory::createAtomsGroup(const OptionsMap & map,
   }
 
   // Check if there is a 'global' radius
-  {
-    const double * const radius = map.find(RADIUS);
-    if(radius)
-      parser.setDefault(RADIUS, *radius);
-  }
+  if(options.atomsRadius)
+    parser.setDefault(&builder::SimpleAtomsData::radius, *options.atomsRadius);
 
   ///////////
   // Atoms
-  const AtomsDataEntryList * const atomsList = map.find(ATOMS);
-  if(atomsList)
+  BOOST_FOREACH(const builder::SimpleAtomsDataEntry & atomData, options.atoms)
   {
-    BOOST_FOREACH(const AtomsDataEntry & atomData, *atomsList)
-    {
-      if(getStructureContentType(atomData) == StructureContentType::ATOMS)
-      {
-        build_cell::AtomsDescriptionPtr atomsDescription =
-            createAtomsDescription(atomData, parser);
-        if(atomsDescription.get())
-          atomsGenerator->insertAtoms(*atomsDescription);
-      }
-    }
+    build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(
+        atomData, parser);
+    if(atomsDescription.get())
+      atomsGenerator->insertAtoms(*atomsDescription);
   }
 
   // Species distances
-  typedef ::std::map< ::std::string, double> PairDistances;
-  const PairDistances * const pairDistances = map.find(PAIR_DISTANCES);
-  if(pairDistances)
+  if(options.pairDistances)
   {
     ::std::vector< ::std::string> species;
-    BOOST_FOREACH(PairDistances::const_reference entry, *pairDistances)
+    BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
     {
       ::boost::split(species, entry.first, ::boost::is_any_of("~"));
       if(species.size() == 2)
@@ -527,6 +136,232 @@ Factory::createAtomsGroup(const OptionsMap & map,
   }
 
   return atomsGenerator;
+}
+
+Factory::GeomOptimiserPtr
+Factory::createGeometryOptimiser(const Optimiser & options) const
+{
+  GeomOptimiserPtr opt;
+
+  if(options.tpsd)
+  {
+    potential::IPotentialPtr potential = createPotential(
+        options.tpsd->potential);
+    if(!potential.get())
+      return opt;
+
+    UniquePtr< potential::TpsdGeomOptimiser>::Type tpsd(
+        new potential::TpsdGeomOptimiser(potential));
+
+    tpsd->setMaxIterations(options.tpsd->maxIterations);
+    tpsd->setEnergyTolerance(options.tpsd->energyTolerance);
+    tpsd->setForceTolerance(options.tpsd->forceTolerance);
+
+    opt = tpsd;
+  }
+  else if(options.castep)
+  {
+    // Read in the settings
+    potential::CastepGeomOptimiseSettings settings;
+    settings.keepIntermediateFiles = options.castep->keepIntermediates;
+    settings.numRoughSteps = options.castep->numRoughSteps;
+    settings.numConsistentRelaxations = options.castep->numSelfConsistent;
+
+    opt.reset(
+        new potential::CastepGeomOptimiser(options.castep->runCommand,
+            options.castep->seed, settings));
+  }
+
+  return opt;
+}
+
+potential::OptimisationSettings
+Factory::createOptimisationSettings(const OptimiserSettings & options) const
+{
+  potential::OptimisationSettings settings;
+
+  settings.maxIter = options.maxIterations;
+  settings.energyTol = options.energyTolerance;
+  settings.forceTol = options.forceTolerance;
+  settings.stressTol = options.stressTolerance;
+
+  settings.pressure.reset(::arma::zeros(3, 3));
+  settings.pressure->diag().fill(options.pressure);
+
+  return settings;
+}
+
+potential::IPotentialPtr
+Factory::createPotential(const Potential & options) const
+{
+  potential::IPotentialPtr pot;
+
+  if(options.lj)
+  {
+    pot.reset(
+        new potential::LennardJones(myAtomSpeciesDb, options.lj->species,
+            options.lj->epsilon, options.lj->sigma, options.lj->cutoff,
+            options.lj->beta, options.lj->powers(0),
+            options.lj->powers(1), options.lj->combiningRule));
+  }
+
+  return pot;
+}
+
+build_cell::RandomUnitCellPtr
+Factory::createRandomCellGenerator(
+    const builder::UnitCellBuilder & options) const
+{
+  using namespace utility::cell_params_enum;
+
+  build_cell::RandomUnitCellPtr cell(new build_cell::RandomUnitCellGenerator());
+
+  if(options.vol)
+    cell->setTargetVolume(*options.vol);
+
+  if(options.mul)
+    cell->setContentsMultiplier(*options.mul);
+
+  if(options.delta)
+    cell->setVolumeDelta(*options.delta);
+
+  if(options.angles)
+  {
+    if(options.angles->min)
+      cell->setMinAngles(*options.angles->min);
+    if(options.angles->max)
+      cell->setMaxAngles(*options.angles->max);
+  }
+
+  if(options.lengths)
+  {
+    if(options.lengths->min)
+      cell->setMinLengths(*options.lengths->min);
+    if(options.lengths->max)
+      cell->setMaxLengths(*options.lengths->max);
+    if(options.lengths->maxRatio)
+      cell->setMaxLengthRatio(*options.lengths->maxRatio);
+  }
+
+  // Do this after settings the general min/max length/angles as this is a more specific
+  // way of specifying the unit cell dimensions
+  if(options.abc)
+  {
+    SSLIB_ASSERT(options.abc->size() == 6);
+    for(size_t i = A; i <= GAMMA; ++i)
+    {
+      cell->setMin(i, (*options.abc)[i].lower());
+      cell->setMax(i, (*options.abc)[i].upper());
+    }
+  }
+
+  return cell;
+}
+
+build_cell::StructureBuilderPtr
+Factory::createStructureBuilder(const builder::Builder & options) const
+{
+  build_cell::StructureBuilder::ConstructInfo constructInfo;
+
+  if(options.overlap)
+    constructInfo.atomsOverlap = *options.overlap;
+
+  if(options.cluster)
+    constructInfo.isCluster = *options.cluster;
+
+  build_cell::StructureBuilderPtr builder(
+      new build_cell::StructureBuilder(constructInfo));
+
+  io::AtomFormatParser< builder::SimpleAtomsData> parser;
+  if(options.atomsFormat)
+    parser.setFormat(*options.atomsFormat);
+
+  if(options.atomsRadius)
+    parser.setDefault(&builder::SimpleAtomsData::radius,
+        *options.atomsRadius);
+
+  // Generators
+  if(options.atoms)
+  {
+    // Try creating the default atoms generator
+    {
+      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map,
+          parser);
+      if(atomsGenerator.get())
+        builder->addGenerator(atomsGenerator);
+    }
+
+  }
+
+  if(options.groups)
+  {
+    BOOST_FOREACH(const builder::AtomsGroup & group, *options.groups)
+    {
+      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(group,
+          parser);
+      if(atomsGenerator.get())
+        builder->addGenerator(atomsGenerator);
+    }
+  }
+
+  // Unit cell
+  if(options.unitCellBuilder)
+  {
+    build_cell::IUnitCellGeneratorPtr ucGen(
+        createRandomCellGenerator(*options.unitCellBuilder));
+    if(ucGen.get())
+      builder->setUnitCellGenerator(ucGen);
+  }
+
+  // Symmetry
+  if(options.symmetry)
+  {
+    if(options.symmetry->pointGroup)
+    {
+      build_cell::PointGroup group;
+      if(build_cell::getPointGroup(group, *options.symmetry->pointGroup))
+        builder->setPointGroup(group);
+    }
+  }
+
+  return builder;
+}
+
+utility::IStructureComparatorPtr
+Factory::createStructureComparator(const Comparator & options) const
+{
+  utility::IStructureComparatorPtr comparator;
+
+  if(options.sortedDist)
+  {
+    utility::SortedDistanceComparator::ConstructionInfo constructInfo;
+
+    constructInfo.tolerance = options.sortedDist->tolerance;
+    constructInfo.volumeAgnostic = options.sortedDist->volumeAgnostic;
+    constructInfo.usePrimitive = options.sortedDist->usePrimitive;
+
+    comparator.reset(new utility::SortedDistanceComparator(constructInfo));
+  }
+
+  return comparator;
+}
+
+build_cell::IStructureGeneratorPtr
+Factory::createStructureGenerator(
+    const builder::StructureGenerator & options) const
+{
+  build_cell::IStructureGeneratorPtr generator;
+
+  if(options.builder)
+    generator = createStructureBuilder(*options.builder);
+
+  return generator;
+}
+
+const GenShapeFactory &
+Factory::getShapeFactory() const
+{
+  return myShapeFactory;
 }
 
 }

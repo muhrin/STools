@@ -12,13 +12,14 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_YAML
+#ifdef SPL_WITH_YAML
+
+#include <schemer/Schemer.h>
 
 #include "spl/factory/SsLibElements.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
 #include "spl/utility/SortedDistanceComparator.h"
 #include "spl/yaml/Transcode.h"
-#include "spl/yaml_schema/YamlSchema.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -26,338 +27,410 @@ namespace spl {
 namespace factory {
 
 // TYPEDEFS //////////////////////////////////////
-typedef yaml_schema::SchemaHeteroMap HeteroMap;
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
-typedef yaml_schema::SchemaList< yaml_schema::SchemaScalar< double> > SchemaDoubleList;
+typedef schemer::Scalar< yaml::VecAsString< ::std::string>::Type> StringsVector;
+typedef schemer::Scalar< yaml::ArmaTriangularMat> TriangularMatrix;
+typedef schemer::Scalar< ::arma::vec2> Vec2;
+typedef schemer::Scalar< ::arma::vec3> Vec3;
+typedef schemer::Scalar< ::arma::vec4> Vec4;
+typedef schemer::Scalar< AtomSpeciesCount> AtomSpeciesCountScalar;
+typedef schemer::Scalar< yaml::VecAsString< utility::Range< double> >::Type> DoubleRanges;
 
 // POTENTIALS ////////////////////////////////////////////////
 
-struct LennardJones : public HeteroMap
+struct LennardJones
 {
-  LennardJones()
-  {
-    addEntry("spec", SPECIES_LIST,
-        new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >)->required();
-    addEntry("eps", LJ_EPSILON,
-        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
-    addEntry("sig", LJ_SIGMA,
-        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
-    addEntry("beta", LJ_BETA,
-        new yaml_schema::SchemaWrapper< yaml::ArmaTriangularMat>())->required();
-
-    ::arma::vec2 powers;
-    powers(0) = 12;
-    powers(1) = 6;
-    addScalarEntry("pow", LJ_POWERS)->element()->defaultValue(powers);
-
-    addEntry("combining", POT_COMBINING,
-        (new yaml_schema::SchemaScalar< potential::CombiningRule::Value>)->defaultValue(
-            potential::CombiningRule::NONE));
-
-    addScalarEntry("cut", CUTOFF)->element()->defaultValue(2.5);
-  }
+  ::std::vector< ::std::string> species;
+  ::arma::mat epsilon;
+  ::arma::mat sigma;
+  ::arma::mat beta;
+  ::arma::vec2 powers;
+  potential::CombiningRule::Value combiningRule;
+  double cutoff;
 };
 
-struct Potential : public yaml_schema::SchemaHeteroMap
+SCHEMER_ENUM(CombiningRuleSchema, potential::CombiningRule::Value)
 {
-  Potential()
-  {
-    addEntry("lennardJones", LENNARD_JONES, new LennardJones());
-  }
+  enumeration("none", potential::CombiningRule::NONE);
+  enumeration("lorentz", potential::CombiningRule::LORENTZ);
+  enumeration("berthelot", potential::CombiningRule::BERTHELOT);
+  enumeration("lorentzBerthelot", potential::CombiningRule::LORENTZ_BERTHELOT);
+  enumeration("geometric", potential::CombiningRule::UHRIN_PICKARD);
+}
+
+SCHEMER_MAP(LennardJonesSchema, LennardJones)
+{
+  element< StringsVector>("spec", &LennardJones::species);
+  element< TriangularMatrix>("eps", &LennardJones::epsilon);
+  element< TriangularMatrix>("sig", &LennardJones::sigma);
+  element< TriangularMatrix>("beta", &LennardJones::beta);
+
+  ::arma::vec2 powers;
+  powers(0) = 12;
+  powers(1) = 6;
+  element< Vec2>("pow", &LennardJones::powers)->defaultValue(powers);
+  element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
+      potential::CombiningRule::NONE);
+  element("cut", &LennardJones::cutoff)->defaultValue(2.5);
+}
+
+struct Potential
+{
+  ::boost::optional< LennardJones> lj;
 };
+
+SCHEMER_MAP(PotentialSchema, Potential)
+{
+  element("lennardJones", &Potential::lj);
+}
 
 // OPTIMISERS ////////////////////////////////////////////////
-struct OptimisationSettings : public HeteroMap
+struct OptimiserSettings
 {
-  OptimisationSettings()
-  {
-    addScalarEntry("maxIter", MAX_ITER);
-    addScalarEntry("energyTol", ENERGY_TOL);
-    addScalarEntry("forceTol", FORCE_TOL);
-    addScalarEntry("stressTol", STRESS_TOL);
-    addScalarEntry("pressure", PRESSURE);
-  }
+  int maxIterations;
+  double energyTolerance;
+  double forceTolerance;
+  double stressTolerance;
+  double pressure;
 };
 
-struct Tpsd : OptimisationSettings
+SCHEMER_MAP(OptimiserSettingsSchema, OptimiserSettings)
 {
-  Tpsd()
-  {
-    addScalarEntry("maxIter", MAX_ITER)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS);
-    addScalarEntry("energyTol", ENERGY_TOL)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
-    addScalarEntry("forceTol", FORCE_TOL)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE);
-    addScalarEntry("stressTol", STRESS_TOL)->element()->defaultValue(
-        potential::TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE);
-    addScalarEntry("pressure", PRESSURE)->element()->defaultValue(0.0);
-    addEntry("potential", POTENTIAL, new Potential())->required();
-  }
+  element("maxIter", &OptimiserSettings::maxIterations)->defaultValue(
+      potential::TpsdGeomOptimiser::DEFAULT_MAX_ITERATIONS);
+  element("energyTol", &OptimiserSettings::energyTolerance)->defaultValue(
+      potential::TpsdGeomOptimiser::DEFAULT_ENERGY_TOLERANCE);
+  element("forceTol", &OptimiserSettings::forceTolerance)->defaultValue(
+      potential::TpsdGeomOptimiser::DEFAULT_FORCE_TOLERANCE);
+  element("stressTol", &OptimiserSettings::stressTolerance)->defaultValue(
+      potential::TpsdGeomOptimiser::DEFAULT_STRESS_TOLERANCE);
+  element("pressure", &OptimiserSettings::pressure)->defaultValue(0.0);
+}
+
+struct OptimiserWithPotentialSettings : public OptimiserSettings
+{
+  Potential potential;
 };
 
-struct Castep : public HeteroMap
+SCHEMER_MAP(OptimiserWithPotentialSettingsSchema, OptimiserWithPotentialSettings)
 {
-  Castep()
-  {
-    addScalarEntry("exe", CASTEP_EXE)->element()->defaultValue("castep")->required();
-    addScalarEntry("keep", CASTEP_KEEP_INTERMEDIATES)->element()->defaultValue(
-        false);
-    addScalarEntry("seed", CASTEP_SEED)->required();
-    addScalarEntry("roughSteps", CASTEP_NUM_ROUGH_STEPS)->element()->defaultValue(
-        0);
-    addScalarEntry("consistent", CASTEP_NUM_SELF_CONSISTENT)->element()->defaultValue(
-        2);
-  }
+  extends< OptimiserSettingsSchema>();
+  element("potential", &OptimiserWithPotentialSettings::potential);
+}
+
+struct Castep
+{
+  ::std::string runCommand;
+  ::std::string seed;
+  bool keepIntermediates;
+  int numRoughSteps;
+  int numSelfConsistent;
 };
 
-struct Optimiser : public HeteroMap
+SCHEMER_MAP(CastepSchema, Castep)
 {
-  Optimiser()
-  {
-    addEntry("tpsd", TPSD, new Tpsd());
-    addEntry("castep", CASTEP, new Castep());
-  }
+  element("exe", &Castep::runCommand)->defaultValue("castep");
+  element("seed", &Castep::seed);
+  element("keep", &Castep::keepIntermediates)->defaultValue(false);
+  element("roughSteps", &Castep::numRoughSteps)->defaultValue(0);
+  element("consistent", &Castep::numSelfConsistent)->defaultValue(2);
+}
+
+struct Optimiser
+{
+  ::boost::optional< OptimiserWithPotentialSettings> tpsd;
+  ::boost::optional< Castep> castep;
 };
+
+SCHEMER_MAP(OptimiserSchema, Optimiser)
+{
+  element("tpsd", &Optimiser::tpsd);
+  element("castep", &Optimiser::castep);
+}
 
 // STRUCTURE //////////////////////////////////////
-struct AtomsDataMap : public HeteroMap
+struct AtomsData
 {
-  typedef utility::HeterogeneousMap BindingType;
-  AtomsDataMap()
-  {
-    addScalarEntry("spec", SPECIES)->required();
-  }
+  AtomSpeciesCount species;
 };
 
-typedef yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> > AtomsDataListSchema;
-typedef yaml_schema::SchemaListMap< AtomsDataListSchema, AtomsDataMap> AtomsDataSchema;
-typedef yaml_schema::SchemaList< AtomsDataSchema> AtomsListSchema;
-
-struct Structure : public yaml_schema::SchemaHeteroMap
+SCHEMER_MAP(AtomsDataSchema, AtomsData)
 {
-  Structure()
-  {
-    addEntry("atoms", ATOMS, new AtomsListSchema());
-  }
+  element< AtomSpeciesCountScalar>("spec", &AtomsData::species);
+}
+
+struct Structure
+{
+  typedef ::boost::variant< ::std::vector< ::std::string>, AtomsData> Variant;
+  ::std::vector< Variant> atoms;
 };
+
+SCHEMER_MAP(StructureSchema, Structure)
+{
+  //typedef schemer::SchemaListMap<schemer::List<>>
+  //element("atoms", &Structure::atoms);
+}
 
 // STRUCTURE BUILDER //////////////////////////////
 
 namespace builder {
 
-struct GenBox : HeteroMap
+struct GenBox
 {
-  typedef utility::HeterogeneousMap BindingType;
-  GenBox()
-  {
-    addScalarEntry("pos", POSITION)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE);
-    addScalarEntry("shell", SHELL_THICKNESS);
-    addScalarEntry("width", WIDTH)->required();
-    addScalarEntry("height", HEIGHT)->required();
-    addScalarEntry("depth", DEPTH)->required();
-  }
-  ;
+  ::boost::optional< ::arma::vec3> pos;
+  ::boost::optional< ::arma::vec4> rot;
+  ::boost::optional< double> shellThickness;
+  double width;
+  double height;
+  double depth;
 };
 
-struct GenCylinder : HeteroMap
+SCHEMER_MAP(GenBoxSchema, GenBox)
 {
-  GenCylinder()
-  {
-    addScalarEntry("radius", RADIUS)->required();
-    addScalarEntry("height", HEIGHT)->required();
-    addScalarEntry("pos", POSITION)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE);
-    addScalarEntry("shell", SHELL_THICKNESS);
-    addScalarEntry("shellCapped", SHELL_CAPPED);
-  }
-  ;
+  element< Vec3>("pos", &GenBox::pos)->defaultValue(
+      ::arma::zeros< ::arma::vec>(3));
+  element< Vec4>("rot", &GenBox::rot);
+  element("shell", &GenBox::shellThickness);
+  element("width", &GenBox::width);
+  element("height", &GenBox::height);
+  element("depth", &GenBox::depth);
+}
+
+struct GenCylinder
+{
+  double radius;
+  double height;
+  ::boost::optional< ::arma::vec3> pos;
+  ::boost::optional< ::arma::vec4> rot;
+  ::boost::optional< double> shellThickness;
+  ::boost::optional< bool> shellCapped;
 };
 
-struct GenSphere : HeteroMap
+SCHEMER_MAP(GenCylinderSchema, GenCylinder)
 {
-  typedef HeteroMap BindingType;
-  GenSphere()
-  {
-    addScalarEntry("radius", RADIUS)->required();
-    addScalarEntry("pos", POSITION)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(3));
-    addScalarEntry("rot", ROT_AXIS_ANGLE)->element()->defaultValue(
-        ::arma::zeros< ::arma::vec>(4));
-    addScalarEntry("shell", SHELL_THICKNESS);
-  }
-  ;
+  element("radius", &GenCylinder::radius);
+  element("height", &GenCylinder::height);
+  element< Vec3>("pos", &GenCylinder::pos)->defaultValue(
+      ::arma::zeros< ::arma::vec>(3));
+  element< Vec4>("rot", &GenCylinder::rot);
+  element("shell", &GenCylinder::shellThickness);
+  element("shellCapped", &GenCylinder::shellCapped);
+}
+
+struct GenSphere
+{
+  double radius;
+  ::boost::optional< ::arma::vec3> pos;
+  ::boost::optional< ::arma::vec4> rot;
+  ::boost::optional< double> shellThickness;
 };
 
-struct GenShape : public HeteroMap
+SCHEMER_MAP(GenSphereSchema, GenSphere)
 {
-  typedef HeteroMap BindingType;
-  GenShape()
-  {
-    addEntry("box", GEN_BOX, new GenBox());
-    addEntry("cylinder", GEN_CYLINDER, new GenCylinder());
-    addEntry("sphere", GEN_SPHERE, new GenSphere());
-  }
+  element("radius", &GenSphere::radius);
+  element< Vec3>("pos", &GenSphere::pos)->defaultValue(
+      ::arma::zeros< ::arma::vec>(3));
+  element< Vec4>("rot", &GenSphere::rot)->defaultValue(
+      ::arma::zeros< ::arma::vec>(4));
+  element("shell", &GenSphere::shellThickness);
+}
+
+struct GenShape
+{
+  ::boost::optional< GenBox> box;
+  ::boost::optional< GenCylinder> cylinder;
+  ::boost::optional< GenSphere> sphere;
 };
 
-struct MinMaxRatio : HeteroMap
+SCHEMER_MAP(GenShapeSchema, GenShape)
 {
-  typedef utility::HeterogeneousMap BindingType;
-  MinMaxRatio()
-  {
-    addScalarEntry("min", MIN);
-    addScalarEntry("max", MAX);
-    addScalarEntry("maxRatio", MAX_RATIO);
-  }
+  element("box", &GenShape::box);
+  element("cylinder", &GenShape::cylinder);
+  element("sphere", &GenShape::sphere);
+}
+
+struct MinMaxRatio
+{
+  ::boost::optional< double> min;
+  ::boost::optional< double> max;
+  ::boost::optional< double> maxRatio;
 };
 
-struct UnitCellBuilder : public yaml_schema::SchemaHeteroMap
+SCHEMER_MAP(MinMaxRatioSchema, MinMaxRatio)
 {
-  typedef utility::HeterogeneousMap BindingType;
-  UnitCellBuilder()
-  {
-    typedef utility::Range< double> DoubleRange;
-    addEntry("abc", UNIT_CELL_BUILDER_ABC,
-        new yaml_schema::SchemaWrapper< yaml::VectorAsString< DoubleRange> >());
-    addScalarEntry("vol", UNIT_CELL_BUILDER_VOLUME);
-    addScalarEntry("delta", UNIT_CELL_BUILDER_VOLUME_DELTA);
-    addScalarEntry("mul", UNIT_CELL_BUILDER_MULTIPLIER);
-    addEntry("lengths", UNIT_CELL_BUILDER_LENGTHS, new MinMaxRatio());
-    addEntry("angles", UNIT_CELL_BUILDER_ANGLES, new MinMaxRatio());
+  element("min", &MinMaxRatio::min);
+  element("max", &MinMaxRatio::max);
+  element("maxRatio", &MinMaxRatio::maxRatio);
+}
 
-  }
+struct UnitCellBuilder
+{
+  typedef utility::Range< double> DoubleRange;
+  ::boost::optional< ::std::vector< DoubleRange> > abc;
+  ::boost::optional< double> vol;
+  ::boost::optional< double> delta;
+  ::boost::optional< double> mul;
+  ::boost::optional< MinMaxRatio> lengths;
+  ::boost::optional< MinMaxRatio> angles;
 };
 
-struct SimpleAtomsDataMap : HeteroMap
+SCHEMER_MAP(UnitCellBuilderSchema, UnitCellBuilder)
 {
-  typedef utility::HeterogeneousMap BindingType;
-  SimpleAtomsDataMap()
-  {
-    addScalarEntry("spec", SPECIES);
-    addScalarEntry("radius", RADIUS);
-    addScalarEntry("pos", POSITION);
-    addScalarEntry("label", LABEL);
-  }
+  element< DoubleRanges>("abc", &UnitCellBuilder::abc);
+  element("vol", &UnitCellBuilder::vol);
+  element("delta", &UnitCellBuilder::delta);
+  element("mul", &UnitCellBuilder::mul);
+  element("lengths", &UnitCellBuilder::lengths);
+  element("angles", &UnitCellBuilder::angles);
+}
+
+struct SimpleAtomsData
+{
+  AtomSpeciesCount species;
+  ::boost::optional< double> radius;
+  ::boost::optional< ::arma::vec3> pos;
+  ::boost::optional< ::std::string> label;
 };
 
-typedef yaml_schema::SchemaListMap<
-    yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
-    SimpleAtomsDataMap> SimpleAtomsListEntrySchema;
-
-typedef yaml_schema::SchemaList< SimpleAtomsListEntrySchema> SimpleAtomsListSchema;
-
-struct AtomsGroup : HeteroMap
+SCHEMER_MAP(SimpleAtomsDataSchema, SimpleAtomsData)
 {
-  typedef utility::HeterogeneousMap BindingType;
-  AtomsGroup()
-  {
-    addEntry("genSphere", GEN_SPHERE, new GenSphere());
-    addEntry("genBox", GEN_BOX, new GenBox());
-    addEntry("atoms", ATOMS, new SimpleAtomsListSchema())->required();
-    addScalarEntry("atomsRadius", RADIUS);
-    addScalarEntry("pos", POSITION);
-    addScalarEntry("rot", ROT_AXIS_ANGLE);
-    addScalarEntry("num", NUM)->element()->defaultValue(1);
-    addEntry("pairDistances", PAIR_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
-  }
+  element< AtomSpeciesCountScalar>("spec", &SimpleAtomsData::species);
+  element("radius", &SimpleAtomsData::radius);
+  element< Vec3>("pos", &SimpleAtomsData::pos);
+  element("label", &SimpleAtomsData::label);
+}
+
+typedef schemer::VariantListMap< schemer::List< schemer::String>,
+    SimpleAtomsDataSchema> SimpleAtomSpec;
+typedef schemer::List< SimpleAtomSpec> SimpleAtomList;
+
+typedef ::std::vector< ::std::string> AtomsCompactInfo;
+typedef ::boost::variant< AtomsCompactInfo, SimpleAtomsData> SimpleAtomsDataEntry;
+
+struct AtomsGroup
+{
+  ::boost::optional< GenShape> genShape;
+  ::std::vector< SimpleAtomsDataEntry> atoms;
+  ::boost::optional< double> atomsRadius;
+  ::boost::optional< ::arma::vec3> pos;
+  ::boost::optional< ::arma::vec4> rot;
+  int num;
+  ::boost::optional< PairDistances> pairDistances;
 };
 
-struct ExtendedAtomsDataMap : public SimpleAtomsDataMap
+SCHEMER_MAP(AtomsGroupSchema, AtomsGroup)
 {
-  typedef utility::HeterogeneousMap BindingType;
-  ExtendedAtomsDataMap()
-  {
-    addEntry("group", ATOMS_GROUP, new AtomsGroup());
-  }
+  element("genShape", &AtomsGroup::genShape);
+  element< SimpleAtomList>("atoms", &AtomsGroup::atoms);
+  element("atomsRadius", &AtomsGroup::atomsRadius);
+  element< Vec3>("pos", &AtomsGroup::pos);
+  element< Vec4>("rot", &AtomsGroup::rot);
+  element("num", &AtomsGroup::num)->defaultValue(1);
+  element("pairDistances", &AtomsGroup::pairDistances);
+}
+
+struct Symmetry
+{
+  ::boost::optional< MinMax> minMaxOps;
+  ::boost::optional< ::std::string> pointGroup;
 };
 
-struct Symmetry : HeteroMap
+SCHEMER_MAP(SymmetrySchema, Symmetry)
 {
-  typedef utility::HeterogeneousMap BindingType;
+  element< schemer::Scalar< MinMax> >("ops", &Symmetry::minMaxOps);
+  element("pointGroup", &Symmetry::pointGroup);
+}
 
-  Symmetry()
-  {
-    addScalarEntry("ops", SYM_OPS);
-    addScalarEntry("pointGroup", POINT_GROUP);
-  }
+struct Builder
+{
+  ::boost::optional< ::std::vector< ::std::string> > atomsFormat;
+  ::boost::optional< double> atomsRadius;
+  ::boost::optional< bool> cluster;
+  ::boost::optional< ::std::vector< SimpleAtomsDataEntry> > atoms;
+  ::boost::optional< ::std::vector< AtomsGroup> > groups;
+  ::boost::optional< GenShape> genShape;
+  ::boost::optional< UnitCellBuilder> unitCellBuilder;
+  ::boost::optional< Symmetry> symmetry;
+  ::boost::optional< ::std::map< ::std::string, double> > pairDistances;
+  ::boost::optional< double> overlap;
 };
 
-struct Builder : HeteroMap
+SCHEMER_MAP(BuilderSchema, Builder)
 {
-  typedef utility::HeterogeneousMap BindingType;
+  element< StringsVector>("atomsFormat", &Builder::atomsFormat);
+  element("atomsRadius", &Builder::atomsRadius);
+  element("cluster", &Builder::cluster)->defaultValue(false);
+  element< SimpleAtomList>("atoms", &Builder::atoms);
+  element<AtomsGroupSchema>("groups", &Builder::groups);
+  element("genShape", &Builder::genShape);
+  element("unitCell", &Builder::unitCellBuilder);
+  element("symmetry", &Builder::symmetry);
+  element("pairDistances", &Builder::pairDistances);
+  element("overlap", &Builder::overlap);
+}
 
-  typedef yaml_schema::SchemaListMap<
-      yaml_schema::SchemaList< yaml_schema::SchemaScalar< ::std::string> >,
-      ExtendedAtomsDataMap> ExtendedAtomsListEntrySchema;
-  typedef yaml_schema::SchemaList< ExtendedAtomsListEntrySchema> ExtendedAtomsListSchema;
-
-  Builder()
-  {
-    addEntry("atomsFormat", ATOMS_FORMAT,
-        new yaml_schema::SchemaWrapper< yaml::VectorAsString< ::std::string> >());
-    addScalarEntry("atomsRadius", RADIUS);
-    addScalarEntry("cluster", CLUSTER)->element()->defaultValue(false);
-    addEntry("atoms", ATOMS, (new ExtendedAtomsListSchema()));
-    addEntry("genSphere", GEN_SPHERE, new GenSphere());
-    addEntry("genBox", GEN_BOX, new GenBox());
-    addEntry("unitCell", UNIT_CELL_BUILDER, new UnitCellBuilder());
-    addEntry("symmetry", SYMMETRY, new Symmetry());
-    addEntry("pairDistances", PAIR_DISTANCES,
-        new yaml_schema::SchemaHomoMap< yaml_schema::SchemaScalar< double> >());
-    addScalarEntry("overlap", ATOMS_OVERLAP);
-  }
+struct StructureGenerator
+{
+  ::boost::optional<Builder> builder;
 };
+
+SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
+{
+  element("builder", &StructureGenerator::builder);
+}
 
 } // namespace builder
 
 // STRUCTURE COMPARATORS //////////////////////////
 
-struct SortedDistance : HeteroMap
+struct SortedDistance
 {
-  SortedDistance()
-  {
-    addScalarEntry("tol", TOLERANCE)->element()->defaultValue(
-        utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
-    addScalarEntry("volAgnostic", SORTED_DISTANCE__VOLUME_AGNOSTIC)->element()->defaultValue(
-        false);
-    addScalarEntry("usePrimitive", SORTED_DISTANCE__USE_PRIMITIVE)->element()->defaultValue(
-        false);
-  }
+  double tolerance;
+  bool volumeAgnostic;
+  bool usePrimitive;
 };
 
-struct Comparator : HeteroMap
+SCHEMER_MAP(SortedDistanceSchema, SortedDistance)
 {
-  Comparator()
-  {
-    addEntry("sortedDist", SORTED_DISTANCE, new SortedDistance());
+  element("tol", &SortedDistance::tolerance)->defaultValue(
+      utility::SortedDistanceComparator::DEFAULT_TOLERANCE);
+  element("volAgnostic", &SortedDistance::volumeAgnostic)->defaultValue(false);
+  element("usePrimitive", &SortedDistance::usePrimitive)->defaultValue(false);
+}
 
-    // Defaults
-    utility::HeterogeneousMap comparatorDefault;
-    comparatorDefault[SORTED_DISTANCE];
-    defaultValue(comparatorDefault);
-  }
+struct Comparator
+{
+  ::boost::optional< SortedDistance> sortedDist;
 };
+
+SCHEMER_MAP(ComparatorSchema, Comparator)
+{
+  element("sortedDist", &Comparator::sortedDist);
+}
 
 // UNIT CELL //////////////////////////////////////////
 
-struct UnitCell : HeteroMap
+struct UnitCell
 {
-  UnitCell()
-  {
-    addEntry("abc", ABC, (new SchemaDoubleList())->length(6)->required());
-  }
+  ::std::vector< double> abc;
 };
 
+SCHEMER_LIST(LatticeParams, schemer::Scalar<double>)
+{
+  length(6);
+}
+
+SCHEMER_MAP(UnitCellSchema, UnitCell)
+{
+  element< LatticeParams>("abc", &UnitCell::abc);
+}
+
 }
 }
 
-#endif /* SSLIB_USE_YAML */
+#endif /* SPL_WITH_YAML */
 #endif /* SSLIB_YAML_SCHEMA_H */
 

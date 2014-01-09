@@ -7,7 +7,7 @@
 
 #include "spl/analysis/GnuplotConvexHullPlotter.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 //#define DEBUG_GNUPLOT_CONVEX_HULL_PLOTTER
 
@@ -459,4 +459,4 @@ GnuplotConvexHullPlotter::generateHullFileStem(
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL

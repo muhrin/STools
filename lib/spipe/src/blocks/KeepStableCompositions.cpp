@@ -8,7 +8,7 @@
 // INCLUDES //////////////////////////////////
 #include "blocks/KeepStableCompositions.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/thread/lock_guard.hpp>
@@ -140,4 +140,4 @@ KeepStableCompositions::hasData() const
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL

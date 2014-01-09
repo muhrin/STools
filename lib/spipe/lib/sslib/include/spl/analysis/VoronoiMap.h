@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 #include <map>
 #include <set>
@@ -69,5 +69,5 @@ namespace analysis {
 }
 
 
-#endif /* SSLIB_USE_CGAL */
+#endif /* SPL_WITH_CGAL */
 #endif /* VORONOI_MAP_H */

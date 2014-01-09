@@ -65,17 +65,17 @@ main(const int argc, char * argv[])
   if(result != 0)
     return result;
 
-  splys::SchemaParse parse;
-  stools::factory::Build buildSchema;
-  splu::HeterogeneousMap buildOptions;
-  buildSchema.nodeToValue(parse, buildOptions, buildNode, true);
-  if(parse.hasErrors())
+  schemer::ParseLog log;
+  const stools::factory::BuildSchema buildSchema;
+  stools::factory::Build buildOptions;
+  buildSchema.nodeToValue(buildNode, &buildOptions, &log);
+  if(log.hasErrors())
   {
     ::std::cout << "Found errors:\n";
-    parse.printErrors();
+    log.printErrors();
     return 1;
   }
-  ::stools::input::seedRandomNumberGenerator(buildOptions);
+  ::stools::input::seedRandomNumberGenerator(buildOptions.rngSeed);
 
   // Create the pipe engine to drive the pipe
   factory::PipeEnginePtr engine = factory::createPipeEngine(buildOptions);

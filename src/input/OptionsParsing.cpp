@@ -27,7 +27,8 @@
 namespace stools {
 namespace input {
 
-int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
+int
+parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
 {
   try
   {
@@ -41,7 +42,9 @@ int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
   return 0;
 }
 
-bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> & scalarValues)
+bool
+insertScalarValues(YAML::Node & node,
+    const ::std::vector< ::std::string> & scalarValues)
 {
   BOOST_FOREACH(const ::std::string & keyValueString, scalarValues)
   {
@@ -54,26 +57,27 @@ bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> &
   return true;
 }
 
-void seedRandomNumberGenerator(const ::spl::utility::HeterogeneousMap & options)
+void
+seedRandomNumberGenerator(const ::std::string & seed)
 {
   namespace spf = ::spipe::factory;
   namespace ssm = ::spl::math;
 
-  const ::std::string * const rngSeed = options.find(spf::RNG_SEED);
-  bool userSuppliedSeed = false;
-  if(rngSeed)
+  if(seed == "time")
+    ssm::seed(
+        static_cast< unsigned int>(time(NULL))
+            * static_cast< unsigned int>(::spl::os::getProcessId()));
+  else
   {
-    // Is it an integer?
     try
     {
-      ssm::seed(::boost::lexical_cast<unsigned int>(*rngSeed));
-      userSuppliedSeed = true;
+      ssm::seed(::boost::lexical_cast< unsigned int>(seed));
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)
-    {}
+    {
+    }
   }
-  if(!userSuppliedSeed)
-    ssm::seed(static_cast<unsigned int>(time(NULL)) * static_cast<unsigned int>(::spl::os::getProcessId()));
+
 }
 
 } // namespace stools

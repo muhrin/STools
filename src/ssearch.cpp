@@ -88,13 +88,13 @@ int main(const int argc, char * argv[])
     return false;
   
   // Parse the yaml
-  ssys::SchemaParse parse;
-  factory::Search searchSchema;
-  ssu::HeterogeneousMap schemaOptions;
-  searchSchema.nodeToValue(parse, schemaOptions, searchNode, true);
-  if(parse.hasErrors())
+  schemer::ParseLog log;
+  const factory::SearchSchema searchSchema;
+  factory::Search schemaOptions;
+  searchSchema.nodeToValue(searchNode, &schemaOptions, &log);
+  if(log.hasErrors())
   {
-    parse.printErrors();
+    log.printErrors();
     return 1;
   }
   ::stools::input::seedRandomNumberGenerator(schemaOptions);

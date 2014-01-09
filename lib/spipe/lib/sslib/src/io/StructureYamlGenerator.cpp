@@ -18,7 +18,6 @@
 #include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/Structure.h"
 #include "spl/common/UnitCell.h"
-#include "spl/factory/SsLibYamlKeywords.h"
 #include "spl/io/IoFunctions.h"
 #include "spl/utility/IndexingEnums.h"
 #include "spl/yaml/Transcode.h"
@@ -30,8 +29,17 @@
 namespace spl {
 namespace io {
 
-namespace kw = factory::sslib_yaml_keywords;
 namespace structure_properties = common::structure_properties;
+
+namespace kw {
+static const std::string STRUCTURE__ATOMS__SPEC = "spec";
+static const std::string STRUCTURE__ATOMS__POS = "pos";
+static const std::string STRUCTURE__ATOMS__RADIUS = "radius";
+static const std::string STRUCTURE__NAME = "name";
+static const std::string STRUCTURE__CELL = "cell";
+static const std::string STRUCTURE__ATOMS = "atoms";
+static const std::string STRUCTURE__PROPERTIES = "properties";
+}
 
 StructureYamlGenerator::StructureYamlGenerator()
 {

@@ -55,7 +55,7 @@ bool convert< ::spl::common::UnitCell>::decode(const Node & node, ::spl::common:
   if(!node[kw::STRUCTURE__CELL__ABC])
     return false;
 
-  typedef ssy::VectorAsString<double> DoublesVec;
+  typedef ssy::VecAsString<double>::Type DoublesVec;
   // Maybe it is a string separated by spaces
   DoublesVec doublesVec;
 

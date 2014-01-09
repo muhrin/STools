@@ -7,7 +7,7 @@
 
 #include "spl/analysis/VoronoiMap.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 namespace spl {
 namespace analysis {
@@ -25,4 +25,4 @@ namespace analysis {
 }
 }
 
-#endif /* SSLIB_USE_CGAL */
+#endif /* SPL_WITH_CGAL */

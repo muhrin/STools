@@ -12,11 +12,11 @@
 
 #include <spl/SSLib.h>
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 BOOST_AUTO_TEST_CASE(VoronoiMapTest)
 {
   //::spl::analysis::VoronoiMap map;
 }
 
-#endif /* SSLIB_USE_CGAL */
+#endif /* SPL_WITH_CGAL */

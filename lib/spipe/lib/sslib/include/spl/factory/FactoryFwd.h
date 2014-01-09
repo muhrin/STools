@@ -10,6 +10,7 @@
 #define FACTORY_FWD_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -30,30 +31,40 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // TYPEDEFS
 ///////////////////////////////////////////////////////////
-typedef ::std::vector< ::std::string> AtomsCompactInfo;
-typedef ::boost::variant<AtomsCompactInfo, utility::HeterogeneousMap> AtomsDataEntry;
-typedef ::std::vector<AtomsDataEntry> AtomsDataEntryList;
-typedef ::std::string AtomSpeciesIdType;
+typedef ::std::map< ::std::string, double> PairDistances;
 
 ///////////////////////////////////////////////////////////
 // CLASSES
 ///////////////////////////////////////////////////////////
 struct AtomSpeciesCount
 {
-  AtomSpeciesCount(): count(1) {}
-  //common::AtomSpeciesId::Value species;
-  AtomSpeciesIdType species;
+  AtomSpeciesCount() :
+      count(1)
+  {
+  }
+  ::std::string species;
   build_cell::AtomsDescription::CountRange count;
 };
 
+std::ostream &
+operator <<(std::ostream & out, const AtomSpeciesCount & speciesCount)
+{
+  out << speciesCount.species << " " << speciesCount.count;
+  return out;
+}
+
+std::istream &
+operator >>(std::istream &in, AtomSpeciesCount & speciesCount)
+{
+  in >> speciesCount.species >> speciesCount.count;
+  return in;
+}
+
 struct MinMax
 {
-  ::boost::optional<double> min;
-  ::boost::optional<double> max;
+  ::boost::optional< double> min;
+  ::boost::optional< double> max;
 };
-
-//typedef VectorAsString<common::AtomSpeciesId::Value> AtomSpeciesIdVector;
-typedef ::std::vector<AtomSpeciesIdType> AtomSpeciesIdVector;
 
 }
 }

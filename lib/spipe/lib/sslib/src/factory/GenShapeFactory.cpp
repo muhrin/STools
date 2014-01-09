@@ -26,46 +26,30 @@ namespace ssu = ::spl::utility;
 
 bool
 GenShapeFactory::createShape(GenShapePtr & shapeOut,
-    const OptionsMap & shapeOptions) const
+    const builder::GenShape & options) const
 {
-  {
-    const OptionsMap * const sphereOptions = shapeOptions.find(GEN_SPHERE);
-    if(sphereOptions)
-      return createSphere(shapeOut, *sphereOptions);
-  }
+  if(options.sphere)
+    return createSphere(shapeOut, *options.sphere);
 
-  {
-    const OptionsMap * const boxOptions = shapeOptions.find(GEN_BOX);
-    if(boxOptions)
-      return createBox(shapeOut, *boxOptions);
-  }
+  if(options.box)
+    return createBox(shapeOut, *options.box);
 
-  {
-    const OptionsMap * const cylinder = shapeOptions.find(GEN_CYLINDER);
-    if(cylinder)
-      return createCylinder(shapeOut, *cylinder);
-  }
+  if(options.cylinder)
+    return createCylinder(shapeOut, *options.cylinder);
 
   return false;
 }
 
 bool
 GenShapeFactory::createSphere(GenShapePtr & shapeOut,
-    const OptionsMap & sphereOptions) const
+    const builder::GenSphere & options) const
 {
-  const double * const radius = sphereOptions.find(ssf::RADIUS);
-  const ::arma::vec3 * const pos = sphereOptions.find(ssf::POSITION);
-  const double * const thickness = sphereOptions.find(ssf::SHELL_THICKNESS);
+  UniquePtr< ssbc::GenSphere>::Type sphere(new ssbc::GenSphere(options.radius));
+  if(options.pos)
+    sphere->setPosition(*options.pos);
 
-  if(!radius)
-    return false;
-
-  UniquePtr< ssbc::GenSphere>::Type sphere(new ssbc::GenSphere(*radius));
-  if(pos)
-    sphere->setPosition(*pos);
-
-  if(thickness)
-    sphere->setShellThickness(*thickness);
+  if(options.shellThickness)
+    sphere->setShellThickness(*options.shellThickness);
 
   shapeOut = sphere;
   return true;
@@ -73,69 +57,42 @@ GenShapeFactory::createSphere(GenShapePtr & shapeOut,
 
 bool
 GenShapeFactory::createBox(GenShapePtr & shapeOut,
-    const OptionsMap & boxOptions) const
+    const builder::GenBox & options) const
 {
-  const double * const width = boxOptions.find(ssf::WIDTH);
-  const double * const height = boxOptions.find(ssf::HEIGHT);
-  const double * const depth = boxOptions.find(ssf::DEPTH);
-  const ::arma::vec3 * const pos = boxOptions.find(ssf::POSITION);
-  const ::arma::vec4 * const rot = boxOptions.find(ssf::ROT_AXIS_ANGLE);
-  const double * const thickness = boxOptions.find(ssf::SHELL_THICKNESS);
-
   ::arma::mat44 transform;
   transform.eye();
-  if(pos)
-    math::setTranslation(transform, *pos);
-  if(rot)
-    math::setRotation(transform, *rot);
-
-  if(!width || !height || !depth)
-    return false;
+  if(options.pos)
+    math::setTranslation(transform, *options.pos);
+  if(options.rot)
+    math::setRotation(transform, *options.rot);
 
   UniquePtr< ssbc::GenBox>::Type box(
-      new ssbc::GenBox(*width, *height, *depth, transform));
+      new ssbc::GenBox(options.width, options.height, options.depth, transform));
 
-  if(thickness)
-    box->setShellThickness(*thickness);
+  if(options.shellThickness)
+    box->setShellThickness(*options.shellThickness);
 
   shapeOut = box;
   return true;
 }
 
 bool
-GenShapeFactory::createCylinder(GenShapePtr & shapeOut, const OptionsMap & options) const
+GenShapeFactory::createCylinder(GenShapePtr & shapeOut,
+    const builder::GenCylinder & options) const
 {
-  const double * const radius = options.find(ssf::RADIUS);
-  const double * const height = options.find(ssf::HEIGHT);
-
-  const ::arma::vec3 * const pos = options.find(ssf::POSITION);
-  const ::arma::vec4 * const rot = options.find(ssf::ROT_AXIS_ANGLE);
-
-  if(!radius || !height)
-    return false;
-
   ssbc::GenCylinder::Settings settings;
-  {
-    const double * const thickness = options.find(ssf::SHELL_THICKNESS);
-    if(thickness)
-      settings.shellThickness = *thickness;
-  }
-
-  {
-    const bool * const shellCapped = options.find(ssf::SHELL_CAPPED);
-    if(shellCapped)
-      settings.shellCapped = *shellCapped;
-  }
+  settings.shellThickness = options.shellThickness;
+  settings.shellCapped = options.shellCapped;
 
   UniquePtr< ssbc::GenCylinder>::Type cylinder(
-      new ssbc::GenCylinder(*radius, *height, settings));
+      new ssbc::GenCylinder(options.radius, options.height, settings));
 
   ::arma::mat44 transform;
   transform.eye();
-  if(pos)
-    math::setTranslation(transform, *pos);
-  if(rot)
-    math::setRotation(transform, *rot);
+  if(options.pos)
+    math::setTranslation(transform, *options.pos);
+  if(options.rot)
+    math::setRotation(transform, *options.rot);
   cylinder->setTransform(transform);
 
   shapeOut = cylinder;

@@ -26,155 +26,173 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // TYPEDEFS
 ///////////////////////////////////////////////////////////
-typedef ::spl::factory::HeteroMap HeteroMap;
 
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct BuildStructures : ::spl::factory::builder::Builder
+struct BuildStructures : public ::spl::factory::builder::Builder
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  BuildStructures()
-  {
-    addScalarEntry("num", NUM)->element()->defaultValue(1);
-  }
+  int num;
 };
 
-struct Clone : public HeteroMap
+SCHEMER_MAP(BuildStructuresSchema, BuildStructures)
 {
-  Clone()
-  {
-  }
+  element("num", &BuildStructures::num)->defaultValue(1);
+}
+;
+
+struct Clone
+{
+  int times;
+  ::boost::optional< bool> giveUniqueNames;
 };
 
-struct CutAndPaste : public HeteroMap
+SCHEMER_MAP(CloneSchema, Clone)
 {
-  CutAndPaste()
-  {
-    addEntry("shape", ::spl::factory::GEN_SHAPE,
-        new ::spl::factory::builder::GenShape())->element()->required();
-    addScalarEntry("paste", CUT_AND_PASTE__PASTE)->element()->defaultValue(true);
-    addScalarEntry("separate", CUT_AND_PASTE__SEPARATE)->element()->defaultValue(
-        true);
-    addScalarEntry("fixUntouched", CUT_AND_PASTE__FIX_UNTOUCHED)->element()->defaultValue(
-        true);
-  }
+  element("times", &Clone::times);
+  element("giveUniqueNames", &Clone::giveUniqueNames);
+}
+
+struct CutAndPaste
+{
+  ::spl::factory::builder::GenShape genShape;
+  bool paste;
+  bool separate;
+  bool fixUntouched;
 };
 
-struct FindSymmetryGroup : HeteroMap
+SCHEMER_MAP(CutAndPasteSchema, CutAndPaste)
 {
-};
+  element("shape", &CutAndPaste::genShape);
+  element("paste", &CutAndPaste::paste)->defaultValue(true);
+  element("separate", &CutAndPaste::separate)->defaultValue(true);
+  element("fixUntouched", &CutAndPaste::fixUntouched)->defaultValue(true);
+}
 
-struct KeepStableCompositions : HeteroMap
-{
-  KeepStableCompositions()
-  {
-    addScalarEntry("writeHull", WRITE_HULL)->element()->defaultValue(false);
-  }
-};
-
-struct KeepTopN : HeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  KeepTopN()
-  {
-    addScalarEntry("num", NUM)->element()->defaultValue(1);
-  }
-};
-
-struct KeepWithinXPercent : HeteroMap
-{
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  KeepWithinXPercent()
-  {
-    addScalarEntry("percent", PERCENT)->element()->defaultValue(5.0);
-  }
-};
-
-struct LoadStructures : spl::yaml_schema::SchemaScalar< ::std::string>
+struct FindSymmetryGroup
 {
 };
 
-struct NiggliReduce : HeteroMap
+SCHEMER_MAP(FindSymmetryGroupSchema, FindSymmetryGroup)
 {
-  NiggliReduce()
-  {
-  }
+}
+
+struct KeepStableCompositions
+{
+  bool writeHull;
 };
 
-struct GeomOptimise : ::spl::factory::OptimisationSettings
+SCHEMER_MAP(KeepStableCompositionsSchema, KeepStableCompositions)
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  GeomOptimise()
-  {
-    addEntry("optimiser", ::spl::factory::OPTIMISER,
-        new ::spl::factory::Optimiser());
-    addScalarEntry("writeSummary", ::spl::factory::WRITE_SUMMARY)->element()->defaultValue(
-        false);
-  }
+  element("writeHull", &KeepStableCompositions::writeHull)->defaultValue(false);
+}
+
+struct KeepTopN
+{
+  int num;
 };
 
-struct RemoveDuplicates : HeteroMap
+SCHEMER_MAP(KeepTopNSchema, KeepTopN)
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  RemoveDuplicates()
-  {
-    addEntry("comparator", ::spl::factory::COMPARATOR,
-        new ::spl::factory::Comparator());
+  element("num", &KeepTopN::num)->defaultValue(1);
+}
 
-    //::spl::utility::HeterogeneousMap defaultOptions;
-    //defaultOptions[::spl::factory::COMPARATOR];
-    //defaultValue(defaultOptions);
-  }
+struct KeepWithinXPercent
+{
+  double percent;
 };
 
-struct RunPotentialParamsQueue : HeteroMap
+SCHEMER_MAP(KeepWithinXPercentSchema, KeepWithinXPercent)
 {
-  RunPotentialParamsQueue()
-  {
-    addScalarEntry("queueFile", QUEUE_FILE)->element()->defaultValue(
-        spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE);
-    addScalarEntry("doneFile", DONE_FILE)->element()->defaultValue(
-        spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE);
-  }
+  element("percent", &KeepWithinXPercent::percent)->defaultValue(5);
+}
+
+typedef ::schemer::Scalar< ::std::string> LoadStructures;
+
+struct NiggliReduce
+{
 };
 
-struct SearchStoichiometries : HeteroMap
+SCHEMER_MAP(NiggliReduceSchema, NiggliReduce)
 {
-  typedef ::spl::yaml_schema::SchemaScalar<
-      ::spl::build_cell::AtomsDescription::CountRange> CountRange;
-  typedef ::spl::yaml_schema::SchemaHomoMap< CountRange> AtomRanges;
+}
 
-  SearchStoichiometries()
-  {
-    addEntry("ranges", ATOM_RANGES, new AtomRanges());
-    addScalarEntry("useSeparateDirs", USE_SEPARATE_DIRS)->element()->defaultValue(
-        false);
-  }
+struct GeomOptimise : ::spl::factory::OptimiserSettings
+{
+  ::spl::factory::Optimiser optimiser;
+  bool writeSummary;
 };
 
-struct SweepPotentialParams : HeteroMap
+SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
 {
-  SweepPotentialParams()
-  {
-    addEntry("range", PARAM_RANGE,
-        new ::spl::yaml_schema::SchemaWrapper<
-            ::spl::yaml::VectorAsString< ::std::string> >)->required();
-  }
+  extends< ::spl::factory::OptimiserSettingsSchema>();
+  element("optimiser", &GeomOptimise::optimiser);
+  element("writeSummary", &GeomOptimise::writeSummary)->defaultValue(false);
+}
+
+struct RemoveDuplicates
+{
+  ::spl::factory::Comparator comparator;
 };
 
-struct WriteStructures : HeteroMap
+SCHEMER_MAP(RemoveDuplicatesSchema, RemoveDuplicates)
 {
-  WriteStructures()
-  {
-    addScalarEntry("multiWrite", MULTI_WRITE)->element()->defaultValue(
-        ::spipe::blocks::WriteStructures::WRITE_MULTI_DEFAULT);
-    addScalarEntry("format", FORMAT)->element()->defaultValue(
-        ::spipe::blocks::WriteStructures::FORMAT_DEFAULT);
-  }
+  element("comparator", &RemoveDuplicates::comparator);
+}
+
+struct RunPotentialParamsQueue
+{
+  ::std::string paramsQueueFile;
+  ::std::string paramsDoneFile;
 };
+
+SCHEMER_MAP(RunPotentialParamsQueueSchema, RunPotentialParamsQueue)
+{
+  element("queueFile", &RunPotentialParamsQueue::paramsQueueFile)->defaultValue(
+      spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE);
+  element("doneFile", &RunPotentialParamsQueue::paramsDoneFile)->defaultValue(
+      spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE);
+}
+
+struct SearchStoichiometries
+{
+  ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> ranges;
+  bool useSeparateDirs;
+};
+
+SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
+{
+  element("ranges", &SearchStoichiometries::ranges);
+  element("useSeparateDirs", &SearchStoichiometries::useSeparateDirs)->defaultValue(
+      false);
+}
+
+struct SweepPotentialParams
+{
+  ::std::vector< ::std::string> range;
+};
+
+SCHEMER_MAP(SweepPotentialParamsRange, SweepPotentialParams)
+{
+  element< ::spl::factory::StringsVector>("range",
+      &SweepPotentialParams::range);
+}
+
+struct WriteStructures
+{
+  ::std::string format;
+  bool multiWrite;
+};
+
+SCHEMER_MAP(WriteStructuresSchema, WriteStructures)
+{
+  element("format", &WriteStructures::format)->defaultValue(
+      ::spipe::blocks::WriteStructures::FORMAT_DEFAULT);
+  element("multiWrite", &WriteStructures::multiWrite)->defaultValue(
+      ::spipe::blocks::WriteStructures::WRITE_MULTI_DEFAULT);
+}
 
 } // namespace blocks
 }

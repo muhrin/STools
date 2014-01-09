@@ -45,7 +45,6 @@ utility::Key<double> STRESS_TOL;
 utility::Key<utility::HeterogeneousMap> POTENTIAL;
 utility::Key<utility::HeterogeneousMap> LENNARD_JONES;
 
-utility::Key<factory::AtomSpeciesIdVector> SPECIES_LIST;
 utility::Key< ::arma::mat> LJ_EPSILON;
 utility::Key< ::arma::mat> LJ_SIGMA;
 utility::Key< ::arma::mat> LJ_BETA;
@@ -54,7 +53,6 @@ utility::Key<potential::CombiningRule::Value> POT_COMBINING;
 
 // STRUCTURE //////////////////////////////////////
 utility::Key<utility::HeterogeneousMap> STRUCTURE;
-utility::Key<AtomsDataEntryList> ATOMS;
 utility::Key<AtomSpeciesCount> SPECIES;
 utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
 

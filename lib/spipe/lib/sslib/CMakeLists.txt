@@ -12,28 +12,6 @@ set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION
 
 message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
 
-## CONFIGURATION SETTINGS ##############################
-
-# Custom paths to libraries ####
-set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
-set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
-set(CGAL_ROOT "" CACHE FILEPATH "Path to CGAL library")
-set(LAPACK_ROOT "" CACHE FILEPATH "Path to LAPACK library")
-
-# Build options ###
-set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
-set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded environment (requires Boost thread)")
-set(SSLIB_USE_YAML TRUE CACHE BOOL "SSLib should use YAML for input")
-set(SSLIB_USE_CGAL FALSE CACHE BOOL "Enable functionality that uses CGAL such as convex hulls")
-set(SSLIB_USE_LAPACK TRUE CACHE BOOL "Enable functionality that uses LAPACK")
-
-configure_file(
-  "${PROJECT_SOURCE_DIR}/include/spl/SSLibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
-)
-
-## END CONFIGURATION SETTINGS ##########################
-
 ## FIND PACKAGES ########################################
 
 # Tell CMake where to find modules
@@ -81,11 +59,34 @@ endif(NOT SPGLIB_LIBRARIES)
 
 #
 # YamlCpp
-if(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
-  find_package(YamlCpp REQUIRED)
-endif(SSLIB_USE_YAML AND NOT YAML_CPP_LIBRARIES)
+find_package(YamlCpp QUIET)
 
 ## END FIND PACKAGES ####################################
+
+## CONFIGURATION SETTINGS ##############################
+
+# Build options ###
+set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
+set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded environment (requires Boost thread)")
+
+set(SPL_WITH_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
+set(SPL_WITH_YAML ${YamlCpp_FOUND} CACHE INTERNAL "Build SPL with Yaml support.")
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/spl/SSLibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/include/spl/SSLibConfig.h"
+)
+
+## END CONFIGURATION SETTINGS ##########################
+
+## EXTERNAL DEPENDENCIES ###############################
+
+if(SPL_WITH_YAML)
+  add_subdirectory(external/schemer)
+  include_directories(external/schemer/include)
+endif(SPL_WITH_YAML)
+
+## END EXTERNAL DEPENDENCIES ###########################
 
 ## INCLUDE DIRECTORIES ##################################
 
@@ -143,18 +144,19 @@ target_link_libraries(sslib
   ${ARMADILLO_LIBRARIES}
 )
 
-if(SSLIB_USE_YAML)
+if(SPL_WITH_YAML)
   target_link_libraries(sslib
     ${YAML_CPP_LIBRARIES}
+    schemer
   )
-endif(SSLIB_USE_YAML)
+endif(SPL_WITH_YAML)
 
-if(SSLIB_USE_CGAL)
+if(SPL_WITH_CGAL)
   target_link_libraries(sslib
     ${CGAL_LIBRARY}
     ${CGAL_Core_LIBRARY}
   )
-endif(SSLIB_USE_CGAL)
+endif(SPL_WITH_CGAL)
 
 ###########
 ## Tests ##
@@ -163,3 +165,4 @@ endif(SSLIB_USE_CGAL)
 if(SSLIB_ENABLE_TESTING)
   add_subdirectory(tests)
 endif(SSLIB_ENABLE_TESTING)
+

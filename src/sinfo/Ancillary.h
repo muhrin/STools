@@ -79,7 +79,7 @@ struct InputOptions
   double uniqueTolerance;
   ::std::string filterString;
   int compositionTop;
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
   double maxHullDist;
   bool stableCompositions;
 #endif

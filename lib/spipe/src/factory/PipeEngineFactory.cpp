@@ -8,47 +8,40 @@
 // INCLUDES //////////////////////////////////
 #include "factory/PipeEngineFactory.h"
 
-// Local includes
-#include "factory/PipeEngineSchemaEntries.h"
-
 // NAMESPACES ////////////////////////////////
 
 namespace spipe {
 namespace factory {
 
 PipeEngineFactory::EnginePtr
-PipeEngineFactory::createEngine(const HeteroMap & settings) const
+PipeEngineFactory::createEngine(const Engine & settings) const
 {
-  const HeteroMap * const serialSettings = settings.find(SERIAL);
-  const HeteroMap * const multithreadedSettings = settings.find(BOOST_THREAD);
-  if(serialSettings)
-    return EnginePtr(createSerialEngine(*serialSettings).release());
+  if(settings.serialEngine)
+    return EnginePtr(createSerialEngine(*settings.serialEngine).release());
 #ifdef PIPELIB_USE_BOOST_THREAD
-  else if(multithreadedSettings)
-    return EnginePtr(createBoostThreadEngine(*multithreadedSettings).release());
+  else if(settings.boostThreadEngine)
+    return EnginePtr(
+        createBoostThreadEngine(*settings.boostThreadEngine).release());
 #endif
 
   return EnginePtr();
 }
 
-UniquePtr<SerialEngine>::Type
-PipeEngineFactory::createSerialEngine(const HeteroMap & settings) const
+UniquePtr< ::spipe::SerialEngine>::Type
+PipeEngineFactory::createSerialEngine(const SerialEngine & settings) const
 {
-  return UniquePtr<SerialEngine>::Type(new SerialEngine);
+  return UniquePtr< ::spipe::SerialEngine>::Type(new ::spipe::SerialEngine);
 }
 
 #ifdef PIPELIB_USE_BOOST_THREAD
-UniquePtr<BoostThreadEngine>::Type
-PipeEngineFactory::createBoostThreadEngine(const HeteroMap & settings) const
+UniquePtr< ::spipe::BoostThreadEngine>::Type
+PipeEngineFactory::createBoostThreadEngine(
+    const BoostThreadEngine & settings) const
 {
-  const int * const numThreads = settings.find(NUM_THREADS);
-  if(numThreads)
-    return UniquePtr<BoostThreadEngine>::Type(new BoostThreadEngine(*numThreads));
-  else
-    return UniquePtr<BoostThreadEngine>::Type(new BoostThreadEngine());
+  return UniquePtr< ::spipe::BoostThreadEngine>::Type(
+      new ::spipe::BoostThreadEngine(settings.nThreads));
 }
 #endif
-
 
 } // namespace factory
 } // namespace spipe

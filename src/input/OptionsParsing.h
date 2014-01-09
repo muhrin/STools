@@ -26,10 +26,15 @@ class HeterogeneousMap;
 namespace stools {
 namespace input {
 
-int parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile);
-bool insertScalarValues(YAML::Node & node, const ::std::vector< ::std::string> & scalarValues);
+int
+parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile);
+bool
+insertScalarValues(YAML::Node & node,
+    const ::std::vector< ::std::string> & scalarValues);
 
-void seedRandomNumberGenerator(const ::spl::utility::HeterogeneousMap & schemaOptions);
+void
+seedRandomNumberGenerator(
+    const ::std::string & seed);
 
 }
 }

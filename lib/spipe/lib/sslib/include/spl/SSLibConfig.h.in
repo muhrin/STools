@@ -8,9 +8,8 @@
 #define SSLIB_VERSION_PATCH @SSLIB_VERSION_PATCH@
 #define SSLIB_VERSION @SSLIB_VERSION@
 
-#cmakedefine SSLIB_USE_YAML
-#cmakedefine SSLIB_USE_CGAL
-#cmakedefine SSLIB_USE_LAPACK
+#cmakedefine SPL_WITH_YAML
+#cmakedefine SPL_WITH_CGAL
 
 #cmakedefine SSLIB_ENABLE_THREAD_AWARE
 

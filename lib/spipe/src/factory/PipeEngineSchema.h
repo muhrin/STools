@@ -13,38 +13,39 @@
 
 #include <spl/factory/SsLibYamlSchema.h>
 
-#include "factory/PipeEngineSchemaEntries.h"
-
 namespace spipe {
 namespace factory {
 
-///////////////////////////////////////////////////////////
-// TYPEDEFS
-///////////////////////////////////////////////////////////
-typedef ::spl::factory::HeteroMap HeteroMap;
 
-struct SerialEngine : HeteroMap
+struct SerialEngine
 {
-  SerialEngine()
-  {}
 };
 
-struct BoostThreadEngine : HeteroMap
+SCHEMER_MAP(SerialEngineSchema, SerialEngine)
 {
-  BoostThreadEngine()
-  {
-    addScalarEntry("nThreads", NUM_THREADS);
-  }
+}
+
+struct BoostThreadEngine
+{
+  int nThreads;
 };
 
-struct Engine : HeteroMap
+SCHEMER_MAP(BoostThreadEngineSchema, BoostThreadEngine)
 {
-  Engine()
-  {
-    addEntry("serial", SERIAL, new SerialEngine());
-    addEntry("multithreaded", BOOST_THREAD, new BoostThreadEngine());
-  }
+  element("nThreads", &BoostThreadEngine::nThreads);
+}
+
+struct Engine
+{
+  ::boost::optional< SerialEngine> serialEngine;
+  ::boost::optional< BoostThreadEngine> boostThreadEngine;
 };
+
+SCHEMER_MAP(EngineSchema, Engine)
+{
+  element("serial", &Engine::serialEngine);
+  element("multithreaded", &Engine::boostThreadEngine);
+}
 
 }
 }

@@ -12,24 +12,29 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
-#include <yaml-cpp/yaml.h>
-
 #include <spl/build_cell/BuildCellFwd.h>
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/factory/FactoryError.h>
 #include <spl/factory/SsLibFactoryYaml.h>
 #include <spl/factory/SsLibYamlKeywords.h>
 #include <spl/factory/SsLibYamlSchema.h>
-#include <spl/utility/HeterogeneousMap.h>
-#include <spl/yaml_schema/SchemaMap.h>
+
+using namespace ::spl;
 
 namespace ssbc = ::spl::build_cell;
 namespace ssc  = ::spl::common;
-namespace ssf = ::spl::factory;
+namespace splf = ::spl::factory;
 namespace ssu = ::spl::utility;
-namespace ssys = ::spl::yaml_schema;
 
-namespace kw = ::spl::factory::sslib_yaml_keywords;
+struct StructureGenerator
+{
+  ::boost::optional<factory::builder::Builder> builder;
+};
+
+SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
+{
+  element("builder", &StructureGenerator::builder);
+}
 
 BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 {
@@ -39,23 +44,23 @@ BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 
   ssc::AtomSpeciesDatabase speciesDb;
 
-  ssf::Factory factory(speciesDb);
+  splf::Factory factory(speciesDb);
 
   const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 
-  ssys::SchemaParse parse;
-  ssys::SchemaHeteroMap schema;
-  schema.addEntry("builder", ssf::BUILDER, new ssf::builder::Builder());
-  ssu::HeterogeneousMap builderMap;
-  schema.nodeToValue(parse, builderMap, loadedNode, true);
-  parse.printErrors();
+  StructureGeneratorSchema schema;
+  StructureGenerator generator;
+  schemer::ParseLog log;
+  schema.nodeToValue(loadedNode, &generator, &log);
+  log.printErrors();
 
-  try
-  {
-    ssbc::IStructureGeneratorPtr strGen = factory.createStructureGenerator(builderMap);
-  }
-  catch(const ssf::FactoryError & e)
-  {
-    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
-  }
+  // TODO: Re-add the following
+//  try
+//  {
+//    ssbc::IStructureGeneratorPtr strGen = factory.createStructureGenerator(builderMap);
+//  }
+//  catch(const splf::FactoryError & e)
+//  {
+//    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
+//  }
 }

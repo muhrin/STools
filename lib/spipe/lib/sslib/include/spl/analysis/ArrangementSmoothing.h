@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 
 // FORWARD DECLARATIONS ///////
@@ -56,5 +56,5 @@ smoothArrangement(const SmoothingOptions & options, AnchorArrangement<LabelType>
 
 #include "spl/analysis/detail/ArrangementSmoothing.h"
 
-#endif /* SSLIB_USE_CGAL */
+#endif /* SPL_WITH_CGAL */
 #endif /* ARRANGEMENT_SMOOTHING_H */

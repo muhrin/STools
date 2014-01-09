@@ -12,7 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_YAML
+#ifdef SPL_WITH_YAML
 
 #include <string>
 #include <vector>
@@ -31,6 +31,6 @@ bool insertScalars(YAML::Node & node, const ::std::vector< ::std::string> & valu
 }
 }
 
-#endif /* SSLIB_USE_YAML */
+#endif /* SPL_WITH_YAML */
 #endif /* PROGRAM_OPTIONS_H */
 

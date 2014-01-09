@@ -15,16 +15,15 @@
 #include <map>
 
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/utility.hpp>
 
-#include "spl/OptionalTypes.h"
 #include "spl/build_cell/BuildCellFwd.h"
 #include "spl/build_cell/StructureBuilder.h"
 #include "spl/build_cell/StructureGenerator.h"
 #include "spl/factory/FactoryFwd.h"
 #include "spl/factory/GenShapeFactory.h"
+#include "spl/factory/SsLibYamlSchema.h"
 #include "spl/io/AtomFormatParser.h"
 #include "spl/io/IStructureWriter.h"
 #include "spl/potential/Types.h"
@@ -46,86 +45,48 @@ namespace factory {
 
 class Factory : ::boost::noncopyable
 {
-  typedef utility::HeterogeneousMap OptionsMap;
 public:
   typedef UniquePtr< potential::IGeomOptimiser>::Type GeomOptimiserPtr;
   typedef UniquePtr< utility::UniqueStructureSet< > >::Type UniqueStructureSetPtr;
 
   Factory(common::AtomSpeciesDatabase & atomSpeciesDb);
 
-  GeomOptimiserPtr
-  createGeometryOptimiser(const OptionsMap & optimiserOptions) const;
-  potential::OptimisationSettings
-  createOptimisationSettings(const OptionsMap & options) const;
-  build_cell::IStructureGeneratorPtr
-  createStructureGenerator(const OptionsMap & map) const;
-  build_cell::StructureBuilderPtr
-  createStructureBuilder(const OptionsMap & map) const;
   build_cell::AtomsDescriptionPtr
-  createAtomsDescription(const AtomsDataEntry & atomsEntry,
-      const io::AtomFormatParser & parser) const;
+  createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
+      const io::AtomFormatParser< builder::SimpleAtomsData> & parser) const;
+
   build_cell::AtomsGroupPtr
-  createAtomsGroup(const OptionsMap & map, io::AtomFormatParser & parser) const;
-  build_cell::RandomUnitCellPtr
-  createRandomCellGenerator(const OptionsMap & map) const;
+  createAtomsGroup(const builder::AtomsGroup & options,
+      io::AtomFormatParser< builder::SimpleAtomsData> & parser) const;
+
+  GeomOptimiserPtr
+  createGeometryOptimiser(const Optimiser & options) const;
+
+  potential::OptimisationSettings
+  createOptimisationSettings(const OptimiserSettings & options) const;
+
   potential::IPotentialPtr
-  createPotential(const OptionsMap & map) const;
+  createPotential(const Potential & options) const;
+
+  build_cell::RandomUnitCellPtr
+  createRandomCellGenerator(const builder::UnitCellBuilder & options) const;
+
+  build_cell::StructureBuilderPtr
+  createStructureBuilder(const builder::Builder & options) const;
+
   utility::IStructureComparatorPtr
-  createStructureComparator(const OptionsMap & map) const;
+  createStructureComparator(const Comparator & options) const;
+
+  build_cell::IStructureGeneratorPtr
+  createStructureGenerator(const builder::StructureGenerator & options) const;
 
   const GenShapeFactory &
   getShapeFactory() const;
 
 private:
-
-  typedef ::boost::optional< AtomSpeciesCount> OptionalAtomSpeciesCount;
-  typedef ::boost::optional< common::AtomSpeciesId::Value> OptionalSpecies;
-
-  struct StructureContentType : ::boost::noncopyable
-  {
-    enum Value
-    {
-      UNKNOWN, ATOMS, GROUP
-    };
-  };
-
-  template <typename T>
-  ::boost::optional<T> toOptional(const T * ptr) const;
-
-  StructureContentType::Value
-  getStructureContentType(const AtomsDataEntry & atomsEntry) const;
-
-  template< typename T>
-    const T *
-    find(const utility::Key< T> & key, const OptionsMap & options,
-        const OptionsMap * globalOptions) const;
-
   common::AtomSpeciesDatabase & myAtomSpeciesDb;
   const GenShapeFactory myShapeFactory;
 };
-
-template <typename T>
-::boost::optional<T> Factory::toOptional(const T * ptr) const
- {
-   ::boost::optional<T> ret;
-   if(ptr)
-     ret.reset(*ptr);
-   return ret;
- }
-
-template< typename T>
-  const T *
-  Factory::find(const utility::Key< T> & key,
-      const OptionsMap & options, const OptionsMap * globalOptions) const
-  {
-    const T * value = options.find(key);
-    // If the value isn't present and we have global options then
-    // try to find it there
-    if(!value && globalOptions)
-      value = globalOptions->find(key);
-
-    return value;
-  }
 
 }
 }

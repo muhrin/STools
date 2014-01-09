@@ -33,6 +33,19 @@ struct TypeWrapper
   const T & operator *() const { return value; }
   T * operator ->() { return &value; }
   const T * operator ->() const { return &value; }
+
+  TypeWrapper &
+  operator =(const T & rhs)
+  {
+    value = rhs;
+    return *this;
+  }
+
+  operator T() const
+  {
+    return value;
+  }
+
   T value;
 };
 
@@ -40,17 +53,14 @@ struct TypeWrapper
 // to store all the repeated values
 typedef TypeWrapper< ::arma::mat> ArmaTriangularMat;
 
-
 // Wrap up a vector so that it can be read as a string
 // rather than as a YAML sequence
 template <typename T>
-struct VectorAsString : public TypeWrapper< ::std::vector<T> >
+struct VecAsString
 {
-  typedef ::std::vector<T> ValueType;
-
-  VectorAsString() {}
-  VectorAsString(const ::std::vector<T> & value): TypeWrapper<ValueType>(value) {}
+  typedef TypeWrapper< ::std::vector<T> > Type;
 };
+
 
 }
 }

@@ -70,7 +70,6 @@ source_group("Source Files\\common\\event" FILES ${sslib_Source_Files__common__e
 
 set(sslib_Source_Files__factory
   src/factory/GenShapeFactory.cpp
-  src/factory/SsLibElements.cpp
   src/factory/SsLibFactoryYaml.cpp
 )
 source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
@@ -78,7 +77,6 @@ source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 ## io
 
 set(sslib_Source_Files__io
-  src/io/AtomFormatParser.cpp
   src/io/AtomYamlFormatParser.cpp
   src/io/BoostFilesystem.cpp
   src/io/CastepReader.cpp

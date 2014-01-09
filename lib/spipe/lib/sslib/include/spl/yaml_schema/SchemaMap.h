@@ -26,69 +26,84 @@ namespace yaml_schema {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace detail {
-template <typename T>
-class SchemaHeteroMapEntry;
+template< typename T>
+  class SchemaHeteroMapEntry;
 class SchemaHeteroMapEntryBase;
-SchemaHeteroMapEntryBase * new_clone(const SchemaHeteroMapEntryBase & entry);
+SchemaHeteroMapEntryBase *
+new_clone(const SchemaHeteroMapEntryBase & entry);
 }
 
-template <typename T>
-class SchemaHomoMap : public detail::SchemaElementBase< ::std::map< ::std::string, typename T::BindingType> >
-{
-  // TODO: Test this class and make sure it's doing the right thing
-  typedef typename T::BindingType MapSecondType;
-public:
-  typedef ::std::map< ::std::string, MapSecondType> BindingType;
+template< typename T>
+  class SchemaHomoMap : public detail::SchemaElementBase<
+      ::std::map< ::std::string, typename T::BindingType> >
+  {
+    // TODO: Test this class and make sure it's doing the right thing
+    typedef typename T::BindingType MapSecondType;
+  public:
+    typedef ::std::map< ::std::string, MapSecondType> BindingType;
 
-  SchemaHomoMap();
-  virtual ~SchemaHomoMap() {}
+    SchemaHomoMap();
+    virtual
+    ~SchemaHomoMap()
+    {
+    }
 
-  virtual bool valueToNode(YAML::Node & node, const BindingType & value, const bool useDefaultOnFail) const;
-  virtual bool nodeToValue(SchemaParse & parse, BindingType & value, const YAML::Node & node, const bool useDefaultOnFail) const;
+    virtual bool
+    valueToNode(YAML::Node & node, const BindingType & value,
+        const bool useDefaultOnFail) const;
+    virtual bool
+    nodeToValue(SchemaParse & parse, BindingType & value,
+        const YAML::Node & node, const bool useDefaultOnFail) const;
 
-  void addEntry(const ::std::string & name, const T & element);
+    void
+    addEntry(const ::std::string & name, const T & element);
 
-  virtual SchemaHomoMap * clone() const;
+    virtual SchemaHomoMap *
+    clone() const;
 
-  bool areUnknownEntriesAllowed() const;
-  void setAllowUnknownEntries(const bool allowUnknownEntries);
+    bool
+    areUnknownEntriesAllowed() const;
+    void
+    setAllowUnknownEntries(const bool allowUnknownEntries);
 
-private:
-  typedef ::boost::ptr_map< ::std::string, T> EntriesMap;
+  private:
+    typedef ::boost::ptr_map< ::std::string, T> EntriesMap;
 
-  T myDefaultEntry;
-  EntriesMap myEntries;
-  bool myAllowUnknownEntries;
-};
+    T myDefaultEntry;
+    EntriesMap myEntries;
+    bool myAllowUnknownEntries;
+  };
 
-class SchemaHeteroMap : public detail::SchemaElementBase<utility::HeterogeneousMap>
+class SchemaHeteroMap : public detail::SchemaElementBase<
+    utility::HeterogeneousMap>
 {
 public:
   typedef utility::HeterogeneousMap BindingType;
 
-  virtual bool valueToNode(YAML::Node & node, const BindingType & map, const bool useDefaultOnFail) const;
-  virtual bool nodeToValue(SchemaParse & parse, BindingType & map, const YAML::Node & node, const bool useDefaultOnFail) const;
+  virtual bool
+  valueToNode(YAML::Node & node, const BindingType & map,
+      const bool useDefaultOnFail) const;
+  virtual bool
+  nodeToValue(SchemaParse & parse, BindingType & map, const YAML::Node & node,
+      const bool useDefaultOnFail) const;
 
-  template <typename T>
-  detail::SchemaHeteroMapEntry<T> * addEntry(
-    const ::std::string & name,
-    const utility::Key<T> & key,
-    detail::SchemaElementBase<T> * const element
-  );
-  template <typename T>
-  detail::SchemaHeteroMapEntry<T> * addScalarEntry(
-    const ::std::string & name,
-    const utility::Key<T> & key
-  );
+  template< typename T>
+    detail::SchemaHeteroMapEntry< T> *
+    addEntry(const ::std::string & name, const utility::Key< T> & key,
+        detail::SchemaElementBase< T> * const element);
+  template< typename T>
+    detail::SchemaHeteroMapEntry< T> *
+    addScalarEntry(const ::std::string & name, const utility::Key< T> & key);
 
-  virtual SchemaHeteroMap * clone() const;
+  virtual SchemaHeteroMap *
+  clone() const;
 
 private:
-  typedef ::boost::ptr_map<const utility::KeyId *, detail::SchemaHeteroMapEntryBase> EntriesMap;
+  typedef ::boost::ptr_map< const utility::KeyId *,
+      detail::SchemaHeteroMapEntryBase> EntriesMap;
 
   EntriesMap myEntries;
 };
-
 
 }
 }

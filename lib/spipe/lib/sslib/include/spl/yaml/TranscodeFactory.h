@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_YAML
+#ifdef SPL_WITH_YAML
 
 #include <yaml-cpp/yaml.h>
 
@@ -42,5 +42,5 @@ struct convert < ::spl::factory::AtomSpeciesCount>
 
 }
 
-#endif /* SSLIB_USE_YAML */
+#endif /* SPL_WITH_YAML */
 #endif /* TRANSCODE_FACTORY_H */

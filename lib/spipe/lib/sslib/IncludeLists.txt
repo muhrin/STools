@@ -116,7 +116,6 @@ set(sslib_Header_Files__factory
   include/spl/factory/GenShapeFactory.h
   include/spl/factory/SsLibElements.h
   include/spl/factory/SsLibFactoryYaml.h
-  include/spl/factory/SsLibYamlKeywords.h
   include/spl/factory/SsLibYamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${sslib_Header_Files__factory})

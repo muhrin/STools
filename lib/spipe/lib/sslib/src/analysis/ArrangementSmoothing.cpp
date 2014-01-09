@@ -7,7 +7,7 @@
 
 #include "spl/analysis/ArrangementSmoothing.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 
 namespace spl {
@@ -22,4 +22,4 @@ const double SmoothingOptions::FORCE_TOL_DEFAULT = 1e-3;
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL

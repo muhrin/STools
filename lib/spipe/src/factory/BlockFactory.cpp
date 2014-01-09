@@ -48,8 +48,8 @@ namespace ssp = ::spl::potential;
 namespace ssu = ::spl::utility;
 
 bool
-BlockFactory::createBuildStructuresBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::BuildStructures & options) const
 {
   // Try to construct a structure generator
   ssbc::IStructureGeneratorPtr generator(
@@ -57,141 +57,96 @@ BlockFactory::createBuildStructuresBlock(BlockHandle * const blockOut,
   if(!generator.get())
     return false;
 
-  const int * const numToGenerate = options.find(NUM);
-  if(!numToGenerate)
-    return false;
-
-  blockOut->reset(new blocks::BuildStructures(*numToGenerate, generator));
+  blockOut->reset(new spipe::blocks::BuildStructures(options.num, generator));
   return true;
 }
 
 bool
-BlockFactory::createCloneBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::Clone & options) const
 {
-  const int * const times = options.find(factory::CLONE__TIMES);
-  if(!times)
-    return false;
-
-  const bool * const giveUniqueNames = options.find(factory::CLONE__GIVE_UNIQUE_NAMES);
-  if(giveUniqueNames)
-    blockOut->reset(new blocks::Clone(*times, *giveUniqueNames));
+  if(options.giveUniqueNames)
+    blockOut->reset(
+        new spipe::blocks::Clone(options.times, *options.giveUniqueNames));
   else
-    blockOut->reset(new blocks::Clone(*times));
+    blockOut->reset(new spipe::blocks::Clone(options.times));
   return true;
 }
 
 bool
-BlockFactory::createCutAndPasteBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::CutAndPaste & options) const
 {
-  const OptionsMap * const shapeOptions = options.find(ssf::GEN_SHAPE);
-  if(!shapeOptions)
-    return false;
-
   ssf::GenShapeFactory::GenShapePtr genShape;
-  if(!mySplFactory.getShapeFactory().createShape(genShape, *shapeOptions))
+  if(!mySplFactory.getShapeFactory().createShape(genShape, options.genShape))
     return false;
 
-  blocks::CutAndPaste::Settings settings;
-  {
-    const bool * const paste = options.find(factory::CUT_AND_PASTE__PASTE);
-    if(paste)
-      settings.paste = *paste;
-  }
-  {
-    const bool * const separate = options.find(factory::CUT_AND_PASTE__SEPARATE);
-    if(separate)
-      settings.separate = *separate;
-  }
-  {
-    const bool * const fixUntouched = options.find(factory::CUT_AND_PASTE__FIX_UNTOUCHED);
-    if(fixUntouched)
-      settings.fixUntouched = *fixUntouched;
-  }
+  ::spipe::blocks::CutAndPaste::Settings settings;
+  settings.paste = options.paste;
+  settings.separate = options.separate;
+  settings.fixUntouched = options.fixUntouched;
 
-  blockOut->reset(new blocks::CutAndPaste(genShape, settings));
+  blockOut->reset(new ::spipe::blocks::CutAndPaste(genShape, settings));
   return true;
 }
 
 bool
-BlockFactory::createFindSymmetryGroupBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::FindSymmetryGroup & options) const
 {
-  blockOut->reset(new blocks::FindSymmetryGroup());
+  blockOut->reset(new ::spipe::blocks::FindSymmetryGroup());
   return true;
 }
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 bool
-BlockFactory::createKeepStableCompositionsBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::KeepStableCompositions & options) const
 {
-  bool writeHull = false;
-  {
-    const bool * const writeHullOpt = options.find(WRITE_HULL);
-    if(writeHullOpt)
-      writeHull = *writeHullOpt;
-  }
-
-  blockOut->reset(new blocks::KeepStableCompositions(writeHull));
+  blockOut->reset(
+      new ::spipe::blocks::KeepStableCompositions(options.writeHull));
   return true;
 }
 #endif
 
 bool
-BlockFactory::createKeepTopNBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::KeepTopN & options) const
 {
-  const int * const num = options.find(NUM);
-  if(num)
-  {
-    blockOut->reset(new blocks::KeepTopN(*num));
-    return true;
-  }
+  blockOut->reset(new ::spipe::blocks::KeepTopN(options.num));
+  return true;
+}
+
+bool
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::KeepWithinXPercent & options) const
+{
+  blockOut->reset(new ::spipe::blocks::KeepWithinXPercent(options.percent));
   return false;
 }
 
 bool
-BlockFactory::createKeepWithinXPercentBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
-{
-  const double * const percent = options.find(PERCENT);
-  if(percent)
-  {
-    blockOut->reset(new blocks::KeepWithinXPercent(*percent));
-    return true;
-  }
-
-  return false;
-}
-
-bool
-BlockFactory::createLoadStructuresBlock(BlockHandle * const blockOut,
+BlockFactory::createBlock(BlockHandle * const blockOut,
     const ::std::string & toLoad) const
 {
-  blockOut->reset(new blocks::LoadStructures(toLoad));
+  blockOut->reset(new ::spipe::blocks::LoadStructures(toLoad));
   return true;
 }
 
 bool
-BlockFactory::createNiggliReduceBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::NiggliReduce & options) const
 {
-  blockOut->reset(new blocks::NiggliReduce());
+  blockOut->reset(new ::spipe::blocks::NiggliReduce());
   return true;
 }
 
 bool
-BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::GeomOptimise & options) const
 {
-  const OptionsMap * const optimiserOptions = options.find(ssf::OPTIMISER);
-  if(!optimiserOptions)
-    return false;
-
   ssp::IGeomOptimiserPtr optimiser = mySplFactory.createGeometryOptimiser(
-      *optimiserOptions);
+      *options.optimiser);
   if(!optimiser.get())
     return false;
 
@@ -201,59 +156,47 @@ BlockFactory::createGeomOptimiseBlock(BlockHandle * const blockOut,
   const ssp::OptimisationSettings settings =
       mySplFactory.createOptimisationSettings(options);
 
-  bool writeSummary = false;
-  {
-    const bool * const writeSummaryOpt = options.find(ssf::WRITE_SUMMARY);
-    if(writeSummaryOpt)
-      writeSummary = *writeSummaryOpt;
-  }
-
   if(potentialIsParameterisable)
     blockOut->reset(
-        new blocks::ParamGeomOptimise(optimiser, settings, writeSummary));
+        new ::spipe::blocks::ParamGeomOptimise(optimiser, settings,
+            options.writeSummary));
   else
     blockOut->reset(
-        new blocks::GeomOptimise(optimiser, settings, writeSummary));
+        new ::spipe::blocks::GeomOptimise(optimiser, settings,
+            options.writeSummary));
 
   return true;
 }
 
 bool
-BlockFactory::createRemoveDuplicatesBlock(BlockHandle * blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * blockOut,
+    const blocks::RemoveDuplicates & options) const
 {
-  // Check for setting relating to the comparator
-  const OptionsMap * const comparatorOptions = options.find(ssf::COMPARATOR);
-  if(!comparatorOptions)
-    return false;
-
   ssu::IStructureComparatorPtr comparator(
-      mySplFactory.createStructureComparator(*comparatorOptions));
+      mySplFactory.createStructureComparator(*options.comparator));
   if(!comparator.get())
     return false;
 
-  blockOut->reset(new blocks::RemoveDuplicates(comparator));
+  blockOut->reset(new ::spipe::blocks::RemoveDuplicates(comparator));
   return true;
 }
 
 bool
-BlockFactory::createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
-    const OptionsMap & options, BlockHandle subpipe) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::RunPotentialParamsQueue & options, BlockHandle subpipe) const
 {
   if(!subpipe)
     return false;
 
-  const ::std::string * const queueFile = options.find(QUEUE_FILE);
-  const ::std::string * const doneFile = options.find(DONE_FILE);
-
   blockOut->reset(
-      new blocks::RunPotentialParamsQueue(queueFile, doneFile, subpipe));
+      new ::spipe::blocks::RunPotentialParamsQueue(&options.paramsQueueFile,
+          &options.paramsDoneFile, subpipe));
   return true;
 }
 
 bool
-BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
-    const OptionsMap & options, BlockHandle subpipe) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::SearchStoichiometries & options, BlockHandle subpipe) const
 {
   typedef ::std::map< ::std::string,
       ::spl::build_cell::AtomsDescription::CountRange> AtomRanges;
@@ -261,55 +204,41 @@ BlockFactory::createSearchStoichiometriesBlock(BlockHandle * const blockOut,
   if(!subpipe)
     return false;
 
-  const AtomRanges * const atomRanges = options.find(ATOM_RANGES);
-  if(!atomRanges)
-    return false;
+  ::spipe::blocks::SearchStoichiometries::Options searchOptions;
+  searchOptions.atomRanges = options.ranges;
+  searchOptions.useSeparateDirectories = options.useSeparateDirs;
 
-  blocks::SearchStoichiometries::Options searchOptions;
-  searchOptions.atomRanges = *atomRanges;
-
-  {
-    const bool * const separateDirectories = options.find(USE_SEPARATE_DIRS);
-    if(separateDirectories)
-      searchOptions.useSeparateDirectories = *separateDirectories;
-  }
-
-  blockOut->reset(new blocks::SearchStoichiometries(searchOptions, subpipe));
+  blockOut->reset(
+      new ::spipe::blocks::SearchStoichiometries(searchOptions, subpipe));
 
   return true;
 }
 
 bool
-BlockFactory::createSweepPotentialParamsBlock(BlockHandle * const blockOut,
-    const OptionsMap & options, BlockHandle sweepPipe) const
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::SweepPotentialParams & options, BlockHandle sweepPipe) const
 {
-  const ::std::vector< ::std::string> * const paramStrings = options.find(
-      PARAM_RANGE);
-  if(!paramStrings)
+  if(!sweepPipe)
     return false;
 
   common::ParamRange paramRange;
-  if(!paramRange.fromStrings(*paramStrings))
+  if(!paramRange.fromStrings(options.range))
     return false;
 
-  blockOut->reset(new blocks::SweepPotentialParams(paramRange, sweepPipe));
+  blockOut->reset(
+      new ::spipe::blocks::SweepPotentialParams(paramRange, sweepPipe));
   return true;
 }
 
 bool
-BlockFactory::createWriteStructuresBlock(BlockHandle * blockOut,
-    const OptionsMap & options) const
+BlockFactory::createBlock(BlockHandle * blockOut,
+    const blocks::WriteStructures & options) const
 {
-  ::spl::UniquePtr< blocks::WriteStructures>::Type writeStructures(
-      new blocks::WriteStructures());
+  ::spl::UniquePtr< ::spipe::blocks::WriteStructures>::Type writeStructures(
+      new ::spipe::blocks::WriteStructures());
 
-  const bool * const multiWrite = options.find(MULTI_WRITE);
-  if(multiWrite)
-    writeStructures->setWriteMulti(*multiWrite);
-
-  const ::std::string * const format = options.find(FORMAT);
-  if(format)
-    writeStructures->setFileType(*format);
+  writeStructures->setFileType(options.format);
+  writeStructures->setWriteMulti(options.multiWrite);
 
   // Transfer ownership
   *blockOut = writeStructures;

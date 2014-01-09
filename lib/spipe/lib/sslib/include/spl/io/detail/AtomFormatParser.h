@@ -10,8 +10,11 @@
 #define ATOM_FORMAT_PARSER_DETAIL_H
 
 // INCLUDES /////////////////////////////////////////////
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "spl/factory/SsLibYamlSchema.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -20,73 +23,210 @@
 namespace spl {
 namespace io {
 
-template <typename T>
-void AtomFormatParser::addEntry(const ::std::string & name, utility::Key<T> & key)
-{
-  myFormatEntries[name] = key.getId();
-}
-
-template <typename T>
-bool AtomFormatParser::setDefault(utility::Key<T> & key, const T & value)
-{
-  bool found = true;
-  BOOST_FOREACH(FormatEntries::const_reference entry, myFormatEntries)
+template< typename AtomDataType>
+  AtomFormatParser< AtomDataType>::AtomFormatParser()
   {
-    if(entry.second == key.getId())
-    {
-      found = true;
-      break;
-    }
+    init< AtomDataType>();
   }
-  if(!found)
-    return false;
 
-  myDefaults[key] = value;
-  return true;
-}
-
-template <typename T>
-::boost::optional<T> AtomFormatParser::getValue(const utility::Key<T> & key, const factory::AtomsDataEntry & atomData) const
-{
-  ::boost::optional<T> value;
+template< typename AtomDataType>
+  AtomFormatParser< AtomDataType>::AtomFormatParser(
+      const FormatDescription & formatDescription)
   {
-    const utility::HeterogeneousMap * const map = ::boost::get<utility::HeterogeneousMap>(&atomData);
-    if(map)
+    init< AtomDataType>();
+    setFormat(formatDescription);
+  }
+
+template< typename AtomDataType>
+  AtomFormatParser< AtomDataType> &
+  AtomFormatParser< AtomDataType>::operator =(const AtomFormatParser & toCopy)
+  {
+    myDefaults = toCopy.myDefaults;
+    myFormatOrder = toCopy.myFormatOrder;
+    myFormatEntries = toCopy.myFormatEntries;
+    myFormatEntriesList = toCopy.myFormatEntriesList;
+    return *this;
+  }
+
+template< typename AtomDataType>
+  bool
+  AtomFormatParser< AtomDataType>::setFormat(
+      const FormatDescription & formatDescription)
+  {
+    FormatOrder newFormatOrder;
+
+    bool succeeded = true;
+    BOOST_FOREACH(const ::std::string & formatString, formatDescription)
     {
-      const T * const mapValue = map->find(key);
-      if(mapValue)
-        value.reset(*mapValue);
-    }
-    else
-    {
-      const ::std::vector< ::std::string> * const vector = ::boost::get< ::std::vector< ::std::string> >(&atomData);
-      if(vector)
+      ::std::vector< ::std::string> strs;
+      ::boost::split(strs, formatString, boost::is_any_of("="));
+      if(strs.size() > 2)
       {
-        // Check if we know this key type
-        size_t i;
-        for(i = 0; i < myFormatOrder.size(); ++i)
-        {
-          if(myFormatOrder[i] == key.getId())
-            break;
-        }
-        if(i != myFormatOrder.size() && i < vector->size())
-        {
-          const ::std::string valueString = (*vector)[i];
-          // TODO: Parse string and set to value
-        }
+        succeeded = false;
+        break;
+      }
+      ::boost::algorithm::trim(strs[0]);
+
+      const typename FormatEntries::const_iterator it = myFormatEntries.find(
+          strs[0]);
+      if(it == myFormatEntries.end())
+      {
+        succeeded = false;
+        break;
+      }
+
+      myFormatOrder.push_back(it->second);
+
+      // Check if there is a default value
+      if(strs.size() == 2)
+      {
+        // TODO: Complete this
       }
     }
-  }
-  
-  if(!value)
-  {
-    const T * const mapValue = myDefaults.find(key);
-    if(mapValue)
-      value.reset(*mapValue);
+
+    if(succeeded)
+      myFormatOrder = newFormatOrder;
+
+    return succeeded;
   }
 
-  return value;
-}
+template< typename AtomDataType>
+  template< typename T>
+    void
+    AtomFormatParser< AtomDataType>::addEntry(const ::std::string & name,
+        T AtomDataType::* const memberPtr)
+    {
+      const CanonicalMemberPtrType canonical = canonicalise(memberPtr);
+      myFormatEntries[name] = canonical;
+      myFormatEntriesList.push_back(canonical);
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    bool
+    AtomFormatParser< AtomDataType>::setDefault(
+        T AtomDataType::* const memberPtr, const T & value)
+    {
+      const size_t idx = entryIdx(memberPtr);
+      if(idx == myFormatEntriesList.size())
+        return false;
+
+      myDefaults[idx] = value;
+      return true;
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    ::boost::optional< T>
+    AtomFormatParser< AtomDataType>::getValue(T AtomDataType::* const memberPtr,
+        const AtomInfo & atomData) const
+    {
+      ::boost::optional< T> value;
+      {
+        const AtomDataType * const dataClass = ::boost::get< AtomDataType>(
+            &atomData);
+        if(dataClass)
+          value = dataClass->*memberPtr;
+        else
+        {
+          const CompactAtomInfo * const vector = ::boost::get< CompactAtomInfo>(
+              &atomData);
+          const size_t idx = formatIdx(memberPtr);
+          if(vector && idx != myFormatOrder.size() && idx < vector->size())
+            value = ::boost::lexical_cast< T>((*vector)[idx]);
+        }
+      }
+
+      // Try to get a default
+      if(!value)
+      {
+        const size_t idx = entryIdx(memberPtr);
+        if(idx != myFormatEntries.size() && !myDefaults[idx].empty())
+          value = boost::any_cast< T>(myDefaults[idx]);
+      }
+
+      return value;
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    ::boost::optional< T>
+    AtomFormatParser< AtomDataType>::getValue(
+        boost::optional< T> AtomDataType::* const memberPtr,
+        const AtomInfo & atomData) const
+    {
+      ::boost::optional< T> value;
+      {
+        const AtomDataType * const dataClass = ::boost::get< AtomDataType>(
+            &atomData);
+        if(dataClass)
+          value = dataClass->*memberPtr;
+        else
+        {
+          const CompactAtomInfo * const vector = ::boost::get< CompactAtomInfo>(
+              &atomData);
+          const size_t idx = formatIdx(memberPtr);
+          if(vector && idx != myFormatOrder.size() && idx < vector->size())
+            value = ::boost::lexical_cast< T>((*vector)[idx]);
+        }
+      }
+
+      // Try to get a default
+      if(!value)
+      {
+        const size_t idx = entryIdx(memberPtr);
+        if(idx != myFormatEntries.size() && !myDefaults[idx].empty())
+          value = boost::any_cast< T>(myDefaults[idx]);
+      }
+
+      return value;
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    typename AtomFormatParser< AtomDataType>::CanonicalMemberPtrType
+    AtomFormatParser< AtomDataType>::canonicalise(
+        T AtomDataType::* const memberPtr) const
+    {
+      return reinterpret_cast< CanonicalMemberPtrType>(memberPtr);
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    size_t
+    AtomFormatParser< AtomDataType>::entryIdx(
+        T AtomDataType::* const memberPtr) const
+    {
+      const typename FormatEntriesList::const_iterator it = std::find(
+          myFormatEntriesList.begin(), myFormatEntriesList.end(),
+          canonicalise(memberPtr));
+
+      return it - myFormatEntriesList.begin();
+    }
+
+template< typename AtomDataType>
+  template< typename T>
+    size_t
+    AtomFormatParser< AtomDataType>::formatIdx(
+        T AtomDataType::* const memberPtr) const
+    {
+      const typename FormatOrder::const_iterator it = std::find(
+          myFormatOrder.begin(), myFormatOrder.end(), canonicalise(memberPtr));
+
+      return it - myFormatOrder.begin();
+    }
+
+template< >
+  template< >
+    void
+    AtomFormatParser< ::spl::factory::builder::SimpleAtomsData>::init<
+      ::spl::factory::builder::SimpleAtomsData>()
+    {
+      addEntry("spec", &factory::builder::SimpleAtomsData::species);
+      addEntry("radius", &factory::builder::SimpleAtomsData::radius);
+      addEntry("pos", &factory::builder::SimpleAtomsData::pos);
+      addEntry("label", &factory::builder::SimpleAtomsData::label);
+    }
 
 } // namespace io
 } // namespace spl

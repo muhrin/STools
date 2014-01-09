@@ -7,7 +7,7 @@
 
 #include "spl/analysis/AnchorArrangement.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 #include "spl/SSLibAssert.h"
 
@@ -53,4 +53,4 @@ AnchorPoint::idx() const
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL

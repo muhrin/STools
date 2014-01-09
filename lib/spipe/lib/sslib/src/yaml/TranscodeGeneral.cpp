@@ -44,7 +44,7 @@ Node convert<arma::vec>::encode(const arma::vec & rhs)
 
 bool convert<arma::vec>::decode(const Node& node, arma::vec & rhs)
 {
-  typedef ssy::VectorAsString<double> DoublesVec;
+  typedef ssy::VecAsString<double>::Type DoublesVec;
   // Maybe it is a string separated by spaces
   DoublesVec doublesVec;
 
@@ -70,7 +70,7 @@ Node convert<ssy::ArmaTriangularMat>::encode(
   const ssy::ArmaTriangularMat & rhs)
 {
   Node node;
-  ssy::VectorAsString<double> flatMatrix;
+  ssy::VecAsString<double>::Type flatMatrix;
 
   for(size_t i = 0; i < rhs->n_rows; ++i)
   {
@@ -85,7 +85,7 @@ Node convert<ssy::ArmaTriangularMat>::encode(
 bool convert< ssy::ArmaTriangularMat>::decode(
   const Node & node, ssy::ArmaTriangularMat & rhs)
 {
-  typedef ssy::VectorAsString<double> DoublesVec;
+  typedef ssy::VecAsString<double>::Type DoublesVec;
 
   DoublesVec flatMatrix;
   try

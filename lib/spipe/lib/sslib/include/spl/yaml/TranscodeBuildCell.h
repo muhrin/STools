@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_YAML
+#ifdef SPL_WITH_YAML
 
 #include <yaml-cpp/yaml.h>
 

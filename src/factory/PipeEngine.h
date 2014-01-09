@@ -24,20 +24,12 @@ namespace factory {
 
 typedef ::spipe::factory::PipeEngineFactory::EnginePtr PipeEnginePtr;
 
+template <class T>
 PipeEnginePtr
-createPipeEngine(const ::spl::utility::HeterogeneousMap & options)
+createPipeEngine(const T & options)
 {
-  typedef ::spl::utility::HeterogeneousMap OptionsMap;
-
-  const OptionsMap * const engineSettings = options.find(
-      ::spipe::factory::ENGINE);
-  if(engineSettings)
-  {
-    ::spipe::factory::PipeEngineFactory engineFactory;
-    return engineFactory.createEngine(*engineSettings);
-  }
-
-  return PipeEnginePtr();
+  static const ::spipe::factory::PipeEngineFactory ENGINE_FACTORY;
+  return ENGINE_FACTORY.createEngine(options.engine);
 }
 
 }

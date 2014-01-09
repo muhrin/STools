@@ -30,7 +30,6 @@
 #include "spl/common/StructureProperties.h"
 #include "spl/common/Types.h"
 #include "spl/common/UnitCell.h"
-#include "spl/factory/SsLibYamlKeywords.h"
 #include "spl/io/IoFunctions.h"
 #include "spl/io/BoostFilesystem.h"
 #include "spl/io/StructureYamlGenerator.h"
@@ -46,10 +45,14 @@ namespace io {
 
 namespace fs = ::boost::filesystem;
 namespace properties = common::structure_properties;
-namespace kw = factory::sslib_yaml_keywords;
 
 const unsigned int SslibReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 const ::std::string SslibReaderWriter::DEFAULT_EXTENSION = "spl";
+
+namespace kw {
+static const std::string STRUCTURE = "structure";
+static const std::string STRUCTURES = "structures";
+}
 
 void
 SslibReaderWriter::writeStructure(common::Structure & str,

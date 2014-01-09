@@ -11,7 +11,7 @@
 // INCLUDES //////////////////////////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_YAML
+#ifdef SPL_WITH_YAML
 
 #include "spl/yaml/HelperTypes.h"
 #include "spl/yaml/TranscodeBuildCell.h"
@@ -21,5 +21,5 @@
 #include "spl/yaml/TranscodeIo.h"
 #include "spl/yaml/TranscodePotential.h"
 
-#endif /* SSLIB_USE_YAML */
+#endif /* SPL_WITH_YAML */
 #endif /* YAML_TRANSCODE_H */

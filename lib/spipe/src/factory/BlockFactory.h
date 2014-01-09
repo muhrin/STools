@@ -17,11 +17,11 @@
 #include <spl/SSLib.h>
 #include <spl/factory/SsLibFactoryYaml.h>
 #include <spl/potential/OptimisationSettings.h>
-#include <spl/utility/HeterogeneousMap.h>
 
 // Local includes
 #include "StructurePipe.h"
 #include "SpTypes.h"
+#include "factory/YamlSchema.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace spl {
@@ -36,60 +36,58 @@ namespace factory {
 class BlockFactory
 {
 public:
-  typedef ::spl::utility::HeterogeneousMap OptionsMap;
-
   BlockFactory(::spl::common::AtomSpeciesDatabase & speciesDb) :
       mySplFactory(speciesDb)
   {
   }
 
   bool
-  createBuildStructuresBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::BuildStructures & options) const;
   bool
-  createCloneBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::Clone & options) const;
   bool
-  createCutAndPasteBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::CutAndPaste & options) const;
   bool
-  createFindSymmetryGroupBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
-#ifdef SSLIB_USE_CGAL
+  createBlock(BlockHandle * const blockOut,
+      const blocks::FindSymmetryGroup & options) const;
+#ifdef SPL_WITH_CGAL
   bool
-  createKeepStableCompositionsBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::KeepStableCompositions & options) const;
 #endif
   bool
-  createKeepTopNBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::KeepTopN & options) const;
   bool
-  createKeepWithinXPercentBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::KeepWithinXPercent & options) const;
   bool
-  createLoadStructuresBlock(BlockHandle * const blockOut,
-      const ::std::string & toLoad) const;
+  createBlock(BlockHandle * const blockOut, const ::std::string & toLoad) const;
   bool
-  createNiggliReduceBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::NiggliReduce & options) const;
   bool
-  createGeomOptimiseBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::GeomOptimise & options) const;
   bool
-  createRemoveDuplicatesBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::RemoveDuplicates & options) const;
   bool
-  createRunPotentialParamsQueueBlock(BlockHandle * const blockOut,
-      const OptionsMap & options, BlockHandle subpipe) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::RunPotentialParamsQueue & options,
+      BlockHandle subpipe) const;
   bool
-  createSearchStoichiometriesBlock(BlockHandle * const blockOut,
-      const OptionsMap & options, BlockHandle subpipe) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::SearchStoichiometries & options, BlockHandle subpipe) const;
   bool
-  createSweepPotentialParamsBlock(BlockHandle * const blockOut,
-      const OptionsMap & options, BlockHandle sweepPipe) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::SweepPotentialParams & options, BlockHandle sweepPipe) const;
   bool
-  createWriteStructuresBlock(BlockHandle * const blockOut,
-      const OptionsMap & options) const;
+  createBlock(BlockHandle * const blockOut,
+      const blocks::WriteStructures & options) const;
 
 private:
   ::spl::factory::Factory mySplFactory;

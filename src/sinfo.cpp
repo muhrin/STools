@@ -9,7 +9,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include <spl/SSLib.h>
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 #  include <spl/analysis/ConvexHullStructures.h>
 #endif
 #include <spl/common/Types.h>
@@ -32,7 +32,7 @@
 // NAMESPACES ////////////////////////////////
 using namespace ::stools::sinfo;
 namespace sp = ::spipe;
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 namespace ssa = ::spl::analysis;
 #endif
 namespace ssu = ::spl::utility;
@@ -104,7 +104,7 @@ main(const int argc, char * argv[])
   if(structures.empty())
     return 1; // No structures found
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
   const bool useHullDist = in.maxHullDist
       != MAX_HULL_DIST_IGNORE|| tokensInfo.getToken("hd") != NULL;
   if(in.stableCompositions || useHullDist)

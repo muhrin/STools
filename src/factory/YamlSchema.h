@@ -23,96 +23,82 @@ namespace stools {
 namespace factory {
 
 ///////////////////////////////////////////////////////////
-// TYPEDEFS
-///////////////////////////////////////////////////////////
-typedef ::spl::factory::HeteroMap HeteroMap;
-
-///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
 
-struct PipeSettings : HeteroMap
+struct PipeSettings
 {
-  PipeSettings()
-  {
-    namespace spf = ::spipe::factory;
-
-    addEntry("engine", spf::ENGINE, new spf::Engine())->element()->required();
-
-    ::spl::utility::HeterogeneousMap defaults;
-    defaults[spf::ENGINE][spf::SERIAL];
-    defaultValue(defaults);
-  }
+  ::spipe::factory::Engine engine;
 };
 
-struct Build : PipeSettings
+SCHEMER_MAP(PipeSettingsSchema, PipeSettings)
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  Build()
-  {
-    namespace spf = ::spipe::factory;
+  ::spipe::factory::Engine engineDefault;
+  engineDefault.serialEngine = ::spipe::factory::SerialEngine();
 
-    ::spl::utility::HeterogeneousMap buildStructuresDefault;
-    buildStructuresDefault[spf::NUM] = 1;
+  element("engine", &PipeSettings::engine)->defaultValue(engineDefault);
+}
 
-    addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
-    addEntry("buildStructures", spf::BUILD_STRUCTURES,
-        (new spf::blocks::BuildStructures())->defaultValue(
-            buildStructuresDefault))->required();
-    addEntry("writeStructures", spf::WRITE_STRUCTURES,
-        new spf::blocks::WriteStructures());
-
-    // Defaults
-    BindingType defaultOptions;
-    if(getDefault())
-      defaultOptions = *getDefault();
-    defaultOptions[spf::WRITE_STRUCTURES];
-    defaultValue(defaultOptions);
-  }
+struct Build : public PipeSettings
+{
+  ::std::string rngSeed;
+  ::boost::optional< ::spipe::factory::blocks::BuildStructures> buildStructures;
+  ::boost::optional< ::spipe::factory::blocks::WriteStructures> writeStructures;
 };
 
-struct Search : PipeSettings
+SCHEMER_MAP(BuildSchema, Build)
 {
-  typedef ::spl::utility::HeterogeneousMap BindingType;
-  Search()
-  {
-    namespace spf = ::spipe::factory;
-    namespace ssf = ::spl::factory;
+  extends< PipeSettingsSchema>();
 
-    // Global options
-    addScalarEntry("rngSeed", spf::RNG_SEED)->element()->defaultValue("time");
-    addScalarEntry("castepExe", ssf::CASTEP_EXE)->element()->defaultValue(
-        "castep");
+  element("rngSeed", &Build::rngSeed)->defaultValue("time");
+  element("buildStructures", &Build::buildStructures)->defaultValue(
+      ::spipe::factory::blocks::BuildStructures());
+  element("writeStructures", &Build::writeStructures)->defaultValue(
+      ::spipe::factory::blocks::WriteStructures());
+}
 
-    addEntry("buildStructures", spf::BUILD_STRUCTURES,
-        new spf::blocks::BuildStructures());
-    addEntry("cutAndPaste", spf::CUT_AND_PASTE,
-        new spf::blocks::CutAndPaste());
-    addEntry("loadStructures", spf::LOAD_STRUCTURES,
-        new spf::blocks::LoadStructures());
-    addEntry("preGeomOptimise", spf::PRE_GEOM_OPTIMISE,
-        new spf::blocks::GeomOptimise());
-    addEntry("findSymmetryGroup", spf::FIND_SYMMETRY_GROUP,
-        new spf::blocks::FindSymmetryGroup());
-    addEntry("geomOptimise", spf::GEOM_OPTIMISE,
-        new spf::blocks::GeomOptimise());
-    addEntry("removeDuplicates", spf::REMOVE_DUPLICATES,
-        new spf::blocks::RemoveDuplicates());
-    addEntry("keepStableCompositions", spf::KEEP_STABLE_COMPOSITIONS,
-        new spf::blocks::KeepStableCompositions());
-    addEntry("keepTopN", spf::KEEP_TOP_N, new spf::blocks::KeepTopN());
-    addEntry("keepWithinXPercent", spf::KEEP_WITHIN_X_PERCENT,
-        new spf::blocks::KeepWithinXPercent());
-    addEntry("writeStructures", spf::WRITE_STRUCTURES,
-        new spf::blocks::WriteStructures());
-    addEntry("searchStoichiometries", spf::SEARCH_STOICHIOMETRIES,
-        new spf::blocks::SearchStoichiometries());
-    addEntry("sweepPotentialParams", spf::SWEEP_POTENTIAL_PARAMS,
-        new spf::blocks::SweepPotentialParams());
-    addEntry("runPotentialParamsQueue", spf::RUN_POTENTIAL_PARAMS_QUEUE,
-        new spf::blocks::RunPotentialParamsQueue());
-  }
+struct Search : public Build
+{
+  ::std::string castepExe;
+
+  ::boost::optional< ::spipe::factory::blocks::RunPotentialParamsQueue> runPotParamsQueue;
+  ::boost::optional< ::spipe::factory::blocks::SearchStoichiometries> searchStoichiometries;
+  ::boost::optional< ::spipe::factory::blocks::SweepPotentialParams> sweepPotentialParams;
+  ::boost::optional< ::std::string> loadStructures;
+  ::boost::optional< ::spipe::factory::blocks::CutAndPaste> cutAndPaste;
+  ::boost::optional< ::spipe::factory::blocks::GeomOptimise> preGeomOptimise;
+  ::boost::optional< ::spipe::factory::blocks::GeomOptimise> geomOptimise;
+  ::boost::optional< ::spipe::factory::blocks::RemoveDuplicates> removeDuplicates;
+#ifdef SPL_WITH_CGAL
+  ::boost::optional< ::spipe::factory::blocks::KeepStableCompositions> keepStableCompositions;
+#endif
+  ::boost::optional< ::spipe::factory::blocks::KeepTopN> keepTopN;
+  ::boost::optional< ::spipe::factory::blocks::KeepWithinXPercent> keepWithinXPercent;
+  ::boost::optional< ::spipe::factory::blocks::FindSymmetryGroup> findSymmetryGroup;
 };
+
+SCHEMER_MAP(SearchSchema, Search)
+{
+  extends< BuildSchema>();
+
+  element("castep", &Search::castepExe)->defaultValue("castep");
+
+  element("runPotentialParamsQueue", &Search::runPotParamsQueue);
+  element("searchStoichiometries", &Search::searchStoichiometries);
+  element("sweepPotentialParams", &Search::sweepPotentialParams);
+  element("loadStructures", &Search::loadStructures);
+  element("cutAndPaste", &Search::cutAndPaste);
+  element("preGeomOptimise", &Search::preGeomOptimise);
+  element("geomOptimise", &Search::geomOptimise);
+  element("removeDuplicates", &Search::removeDuplicates);
+#ifdef SPL_WITH_CGAL
+  element("keepStableCompositions", &Search::keepStableCompositions);
+#endif
+  element("keepTopN", &Search::keepTopN);
+  element("keepWithinXPercent", &Search::keepWithinXPercent);
+  element("findSymmetryGroup", &Search::findSymmetryGroup);
+  element("writeStructures", &Search::writeStructures);
+}
 
 }
 }

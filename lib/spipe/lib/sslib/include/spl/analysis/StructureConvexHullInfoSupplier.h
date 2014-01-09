@@ -11,7 +11,7 @@
 // INCLUDES ////////////
 #include "spl/SSLib.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 #include <map>
 
@@ -48,6 +48,6 @@ private:
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL
 
 #endif /* STRUCTURE_CONVEX_HULL_INFO_SUPPLIER_H */

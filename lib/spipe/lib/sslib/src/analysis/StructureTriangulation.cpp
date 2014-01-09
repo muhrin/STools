@@ -7,7 +7,7 @@
 
 #include "spl/analysis/StructureTriangulation.h"
 
-#ifdef SSLIB_USE_CGAL
+#ifdef SPL_WITH_CGAL
 
 #include <iterator>
 
@@ -150,4 +150,4 @@ void StructureTriangulation::updateVertexHandles() const
 }
 }
 
-#endif // SSLIB_USE_CGAL
+#endif // SPL_WITH_CGAL
