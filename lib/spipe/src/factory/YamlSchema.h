@@ -11,12 +11,12 @@
 
 // INCLUDES /////////////////////////////////////////////
 
+#include <schemer/Schemer.h>
+
 #include <spl/factory/SsLibYamlSchema.h>
-#include <spl/yaml_schema/YamlSchema.h>
 
 #include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/WriteStructures.h"
-#include "factory/MapEntries.h"
 
 // DEFINES //////////////////////////////////////////////
 

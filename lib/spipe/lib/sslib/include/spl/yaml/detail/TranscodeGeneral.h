@@ -94,8 +94,9 @@ template< typename T>
   {
     Node node;
 
+    // TODO: Figure out a way to print without \n's from raw_print
     std::stringstream ss;
-    ss << rhs;
+    rhs.raw_print(ss);
     node = ss.str();
 
     return node;

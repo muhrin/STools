@@ -83,7 +83,7 @@ StructureYamlGenerator::generateStructure(const Structure & info) const
   BOOST_FOREACH(const Atom & atomInfo, info.atoms)
   {
     common::Atom & atom = structure->newAtom(atomInfo.species);
-    atom.setPosition(atomInfo.pos);
+    atom.setPosition(atomInfo.pos.t());
     if(atomInfo.radius)
       atom.setRadius(*atomInfo.radius);
   }
@@ -99,7 +99,7 @@ StructureYamlGenerator::generateAtom(const spl::common::Atom & atom) const
 {
   Atom atomInfo;
   atomInfo.species = atom.getSpecies();
-  atomInfo.pos = atom.getPosition();
+  atomInfo.pos = atom.getPosition().t();
   if(atom.getRadius() != 0.0)
     atomInfo.radius = atom.getRadius();
 
@@ -128,7 +128,7 @@ StructureYamlGenerator::extractProperties(const common::Structure & structure,
     const boost::optional< std::string> value = structure.getVisibleProperty(
         property);
 
-    if(!value)
+    if(value)
       (*properties)[property.getName()] = *value;
   }
 }

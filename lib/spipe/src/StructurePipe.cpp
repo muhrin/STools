@@ -8,78 +8,99 @@
 // INCLUDES //////////////////////////////////
 #include <StructurePipe.h>
 
+#include <boost/program_options.hpp>
+
 #include <yaml-cpp/yaml.h>
+
+#include <spl/common/AtomSpeciesDatabase.h>
 
 #include <pipelib/pipelib.h>
 
-// Local includes
-#include <spl/common/SharedData.h>
-#include <spl/common/StructureData.h>
-#include <spl/common/PipeBuilder.h>
-#include <spl/common/PipeFactoryYaml.h>
-
-// TODO: TEMPORARY!!
-#include <spl/factory/ISchemaElementInstance.h>
-#include <spl/factory/SsLibElements.h>
-#include <spl/factory/SchemaDoc.h>
-#include <spl/factory/SchemaMap.h>
-#include <spl/common/YamlInputObjectAdapter.h>
+#include "build/PipeBuilder.h"
 
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
 
-
-int main(const int argc, const char * const argv[])
+// CLASSES //////////////////////////////////
+struct InputOptions
 {
-/*
-  {// START -- TEMPORARY //////////////////////
+  ::std::string input;
+};
 
-  namespace ssf = ::spl::factory;
+// FUNCTIONS ////////////////////////////////
+int
+processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
-  ssf::SsLibElements lib;
+int
+main(const int argc, char * argv[])
+{
+  // Program options
+  InputOptions in;
 
-  ssf::SchemaMap root("root", false);
+  int result = processCommandLineArgs(in, argc, argv);
+  if(result != 0)
+    return result;
 
-  root.insert(lib.cellDesc->newInstance());
+  YAML::Node pipeNode;
+  try
+  {
+    pipeNode = YAML::LoadFile(in.input);
+  }
+  catch(const YAML::Exception & /*e*/)
+  {
+    std::cerr << "Error: Failed reading yaml in " + in.input << "\n";
+    return 1;
+  }
+  spl::common::AtomSpeciesDatabase speciesDb;
+  spipe::BlockHandle startBlock = spipe::build::buildPipe(pipeNode, speciesDb);
 
-  ssf::SchemaDoc doc(root.newInstance());
-  ::spipe::common::YamlInputObjectAdapter testNode(YAML::LoadFile("test.spipe"), "ROOT");
-  doc.getRoot()->validate(testNode, doc);
+  spipe::SerialEngine engine;
+  engine.run(startBlock);
 
   return 0;
-
-  }// END -- TEMPORARY /////////////////////
-*/
-
-  //namespace sp = ::spipe;
-  //namespace spcom = ::spipe::common;
-
-  //if(argc != 2)
-  //{
-  //  ::std::cout << "Usage: " << argv[0] << " [yaml pipline in file]";
-  //  return 1;
-  //}
-
-  //try
-  //{
-  //  YAML::Node config = YAML::LoadFile(argv[1]);
-
-  //  spcom::PipeBuilder builder;
-
-  //  sp::SpPipelineTyp * pipe = builder.buildPipeFromYaml(config);
-
-  //  if(pipe)
-  //  {
-  //    pipe->initialise();
-  //    pipe->start();
-  //  }
-  //}
-  //catch(const YAML::Exception & e)
-  //{
-  //  ::std::cerr << "Error parsing YAML file\n" << e.what();
-  //}
-
-	return 0;
 }
 
+int
+processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
+{
+  namespace po = ::boost::program_options;
+
+  const ::std::string exeName(argv[0]);
+
+  try
+  {
+    po::options_description general(
+        "spipe\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+    general.add_options()("help", "Show help message")("input,i",
+        po::value< std::string>(&in.input), "The structure pipe file");
+
+    po::positional_options_description p;
+    p.add("input", 1);
+
+    po::options_description cmdLineOptions;
+    cmdLineOptions.add(general);
+
+    po::variables_map vm;
+    po::store(
+        po::command_line_parser(argc, argv).options(cmdLineOptions).positional(
+            p).run(), vm);
+
+    // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
+    if(vm.count("help"))
+    {
+      ::std::cout << cmdLineOptions << ::std::endl;
+      return 1;
+    }
+
+    po::notify(vm);
+  }
+  catch(std::exception& e)
+  {
+    ::std::cout << e.what() << "\n";
+    return 1;
+  }
+
+  // Everything went fine
+  return 0;
+}

@@ -44,7 +44,6 @@ namespace fs = ::boost::filesystem;
 namespace sp = ::spipe;
 namespace spu = sp::utility;
 namespace ssu   = ::spl::utility;
-namespace ssys  = ::spl::yaml_schema;
 
 // CLASSES //////////////////////////////////
 struct InputOptions

@@ -33,6 +33,9 @@ public:
   // End from Block /////////////
 
 private:
+  void
+  prepStructure(spl::common::Structure * const structure) const;
+
   const int myTimes;
   const bool myGiveUniqueNames;
 };

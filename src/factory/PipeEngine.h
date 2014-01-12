@@ -15,20 +15,19 @@
 #include <spl/utility/HeterogeneousMap.h>
 
 #include <factory/PipeEngineFactory.h>
-#include <factory/PipeEngineSchemaEntries.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace stools {
 namespace factory {
 
-typedef ::spipe::factory::PipeEngineFactory::EnginePtr PipeEnginePtr;
+typedef spipe::factory::PipeEngineFactory::EnginePtr PipeEnginePtr;
 
 template <class T>
 PipeEnginePtr
 createPipeEngine(const T & options)
 {
-  static const ::spipe::factory::PipeEngineFactory ENGINE_FACTORY;
+  static const spipe::factory::PipeEngineFactory ENGINE_FACTORY;
   return ENGINE_FACTORY.createEngine(options.engine);
 }
 

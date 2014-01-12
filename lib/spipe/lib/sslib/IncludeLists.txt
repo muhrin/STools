@@ -114,7 +114,6 @@ set(sslib_Header_Files__factory
   include/spl/factory/FactoryError.h
   include/spl/factory/FactoryFwd.h
   include/spl/factory/GenShapeFactory.h
-  include/spl/factory/SsLibElements.h
   include/spl/factory/SsLibFactoryYaml.h
   include/spl/factory/SsLibYamlSchema.h
 )
@@ -276,32 +275,6 @@ set(sslib_Header_Files__yaml__detail
 )
 source_group("Header Files\\yaml\\detail" FILES ${sslib_Header_Files__yaml__detail})
 
-## yaml_schema
-
-set(sslib_Header_Files__yaml_schema
-  include/spl/yaml_schema/SchemaFundamental.h
-  include/spl/yaml_schema/SchemaList.h
-  include/spl/yaml_schema/SchemaMap.h
-  include/spl/yaml_schema/SchemaParse.h
-  include/spl/yaml_schema/SchemaScalar.h
-  include/spl/yaml_schema/SchemaVariant.h
-  include/spl/yaml_schema/SchemaWrapper.h
-  include/spl/yaml_schema/YamlSchema.h
-)
-source_group("Header Files\\yaml_schema" FILES ${sslib_Header_Files__yaml_schema})
-
-## yaml_schema/detail
-
-set(sslib_Header_Files__yaml_schema__detail
-  include/spl/yaml_schema/detail/SchemaElement.h
-  include/spl/yaml_schema/detail/SchemaFundamental.h
-  include/spl/yaml_schema/detail/SchemaList.h
-  include/spl/yaml_schema/detail/SchemaMap.h
-  include/spl/yaml_schema/detail/SchemaVariant.h
-  include/spl/yaml_schema/detail/SchemaWrapper.h
-)
-source_group("Header Files\\yaml_schema\\detail" FILES ${sslib_Header_Files__yaml_schema__detail})
-
 set(sslib_Header_Files__
   include/spl/OptionalTypes.h
   include/spl/SSLibConfig.h.in
@@ -330,8 +303,6 @@ set(sslib_Header_Files
   ${sslib_Header_Files__utility__detail}
   ${sslib_Header_Files__yaml}
   ${sslib_Header_Files__yaml__detail}
-  ${sslib_Header_Files__yaml_schema}
-  ${sslib_Header_Files__yaml_schema__detail}
   ${sslib_Header_Files__}
 )
 

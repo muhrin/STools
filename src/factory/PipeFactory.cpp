@@ -8,14 +8,11 @@
 // INCLUDES //////////////////////////////////
 #include "factory/PipeFactory.h"
 
-#include <spl/factory/SsLibElements.h>
 #include <spl/math/Random.h>
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/utility/UtilityFwd.h>
 
-
 // Local includes
-#include "factory/MapEntries.h"
 
 // NAMESPACES ////////////////////////////////
 

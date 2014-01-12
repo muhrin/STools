@@ -11,7 +11,6 @@
 #include "spl/build_cell/GenBox.h"
 #include "spl/build_cell/GenCylinder.h"
 #include "spl/build_cell/GenSphere.h"
-#include "spl/factory/SsLibElements.h"
 #include "spl/math/Matrix.h"
 
 // NAMESPACES ////////////////////////////////

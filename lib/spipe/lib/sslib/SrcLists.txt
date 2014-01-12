@@ -152,14 +152,6 @@ set(sslib_Source_Files__yaml
 )
 source_group("Source Files\\yaml" FILES ${sslib_Source_Files__yaml})
 
-## yaml_schema
-
-set(sslib_Source_Files__yaml_schema
-  src/yaml_schema/SchemaMap.cpp
-  src/yaml_schema/SchemaParse.cpp
-)
-source_group("Source Files\\yaml_schema" FILES ${sslib_Source_Files__yaml_schema})
-
 set(sslib_Source_Files__
 )
 source_group("Header Files" FILES ${sslib_Source_Files__})
@@ -176,7 +168,6 @@ set(sslib_Source_Files
   ${sslib_Source_Files__potential}
   ${sslib_Source_Files__utility}
   ${sslib_Source_Files__yaml}
-  ${sslib_Source_Files__yaml_schema}
   ${sslib_Source_Files__}
 )
 

@@ -10,7 +10,6 @@
 
 #include <spl/potential/Types.h>
 #include <spl/utility/UtilityFwd.h>
-#include <spl/factory/SsLibElements.h>
 
 // Local includes
 #include "blocks/BuildStructures.h"
@@ -32,7 +31,6 @@
 #include "common/CommonData.h"
 #include "common/StructureData.h"
 #include "common/SharedData.h"
-#include "factory/MapEntries.h"
 
 // NAMESPACES ////////////////////////////////
 

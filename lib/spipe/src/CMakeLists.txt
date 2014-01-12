@@ -42,6 +42,20 @@ set(spipe_Source_Files__blocks
 )
 source_group("Source Files\\blocks" FILES ${spipe_Source_Files__blocks})
 
+## spipe/build/
+
+set(spipe_Header_Files__build
+  build/BlockLoader.h
+  build/PipeBuilder.h
+)
+source_group("Header Files\\build" FILES ${spipe_Header_Files__build})
+
+set(spipe_Source_Files__build
+  build/BlockLoader.cpp
+  build/PipeBuilder.cpp
+)
+source_group("Source Files\\build" FILES ${spipe_Source_Files__build})
+
 ## spipe/common/
 
 set(spipe_Header_Files__common
@@ -71,21 +85,27 @@ source_group("Source Files\\common" FILES ${spipe_Source_Files__common})
 
 set(spipe_Header_Files__factory
   factory/BlockFactory.h
-  factory/MapEntries.h
   factory/PipeEngineFactory.h
   factory/PipeEngineSchema.h
-  factory/PipeEngineSchemaEntries.h
   factory/YamlSchema.h
 )
 source_group("Header Files\\factory" FILES ${spipe_Header_Files__factory})
 
 set(spipe_Source_Files__factory
   factory/BlockFactory.cpp
-  factory/MapEntries.cpp
   factory/PipeEngineFactory.cpp
-  factory/PipeEngineSchemaEntries.cpp
 )
 source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
+
+## spipe/io/
+
+set(spipe_Header_Files__io
+)
+source_group("Header Files\\io" FILES ${spipe_Header_Files__io})
+
+set(spipe_Source_Files__io
+)
+source_group("Source Files\\io" FILES ${spipe_Source_Files__io})
 
 ## spipe/utility/
 
@@ -124,16 +144,20 @@ source_group("Source Files" FILES ${spipe_Source_Files__})
 
 set(spipe_Header_Files
   ${spipe_Header_Files__blocks}
+  ${spipe_Header_Files__build}
   ${spipe_Header_Files__common}
   ${spipe_Header_Files__factory}
+  ${spipe_Header_Files__io}
   ${spipe_Header_Files__utility}
   ${spipe_Header_Files__}
 )
 
 set(spipe_Source_Files
   ${spipe_Source_Files__blocks}
+  ${spipe_Source_Files__build}
   ${spipe_Source_Files__common}
   ${spipe_Source_Files__factory}
+  ${spipe_Source_Files__io}
   ${spipe_Source_Files__utility}
   ${spipe_Source_Files__}
 )
@@ -173,14 +197,20 @@ target_link_libraries(spipe
 ###################
 ## StructurePipe ##
 ###################
-#add_executable(spipe-bin
-#  StructurePipe.cpp
-#)
+## Boost ##
+# Disable auto-linking
+add_definitions(-DBOOST_ALL_NO_LIB)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS system program_options)
 
-#add_dependencies(spipe-bin spipe)
+add_executable(spipe-bin
+  StructurePipe.cpp
+)
+
+add_dependencies(spipe-bin spipe)
 
 # Libraries we need to link to
-#target_link_libraries(spipe-bin
-#  spipe
-#)
+target_link_libraries(spipe-bin
+  ${Boost_LIBRARIES}
+  spipe
+)
 

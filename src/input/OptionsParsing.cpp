@@ -20,8 +20,6 @@
 #include <spl/os/Process.h>
 #include <spl/yaml/ProgramOptions.h>
 
-#include <factory/MapEntries.h>
-
 // NAMESPACES ////////////////////////////////
 
 namespace stools {
@@ -60,7 +58,6 @@ insertScalarValues(YAML::Node & node,
 void
 seedRandomNumberGenerator(const ::std::string & seed)
 {
-  namespace spf = ::spipe::factory;
   namespace ssm = ::spl::math;
 
   if(seed == "time")

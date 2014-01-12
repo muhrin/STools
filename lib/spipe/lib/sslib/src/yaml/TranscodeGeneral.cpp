@@ -23,48 +23,6 @@ namespace ssy = ::spl::yaml;
 
 namespace YAML {
 
-//Node convert<arma::vec>::encode(const arma::vec & rhs)
-//{
-//  Node node;
-//
-//  if(rhs.n_rows == 0)
-//    return node;
-//
-//  // Do first entry
-//  ::std::stringstream ss;
-//  ss << ::std::setprecision(12) << rhs(0);
-//  // and now rest
-//  for(size_t i = 1; i < rhs.n_rows; ++i)
-//  {
-//    ss << " " << rhs(i);
-//  }
-//  node = ss.str();
-//  return node;
-//}
-//
-//bool convert<arma::vec>::decode(const Node& node, arma::vec & rhs)
-//{
-//  typedef ssy::VecAsString<double>::Type DoublesVec;
-//  // Maybe it is a string separated by spaces
-//  DoublesVec doublesVec;
-//
-//  try
-//  {
-//    doublesVec = node.as<DoublesVec>();
-//  }
-//  catch(const YAML::TypedBadConversion<DoublesVec> & /*e*/)
-//  {
-//    return false;
-//  }
-//
-//  // Copy over values
-//  rhs.set_size(doublesVec->size());
-//  for(size_t i = 0; i < doublesVec->size(); ++i)
-//    rhs(i) = (*doublesVec)[i];
-//
-//  return true;
-//}
-
 // Armadillo triangular matrices
 Node convert<ssy::ArmaTriangularMat>::encode(
   const ssy::ArmaTriangularMat & rhs)

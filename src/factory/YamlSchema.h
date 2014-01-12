@@ -11,7 +11,7 @@
 
 // INCLUDES /////////////////////////////////////////////
 
-#include <spl/yaml_schema/YamlSchema.h>
+#include <schemer/Schemer.h>
 
 // From SPipe
 #include <factory/YamlSchema.h>

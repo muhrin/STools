@@ -19,7 +19,7 @@
 
 #include <schemer/Schemer.h>
 
-#include "spl/factory/SsLibElements.h"
+#include "spl/potential/CombiningRules.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
 #include "spl/utility/SortedDistanceComparator.h"
 #include "spl/yaml/Transcode.h"

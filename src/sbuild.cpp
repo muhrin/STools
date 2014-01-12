@@ -33,7 +33,6 @@
 using namespace ::stools;
 
 namespace sp = ::spipe;
-namespace splys = ::spl::yaml_schema;
 namespace splu = ::spl::utility;
 
 // CLASSES //////////////////////////////////

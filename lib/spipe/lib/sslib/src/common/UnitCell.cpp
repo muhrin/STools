@@ -23,13 +23,13 @@ UnitCell::UnitCell()
   init(1.0, 1.0, 1.0, 90.0, 90.0, 90.0);
 }
 
-UnitCell::UnitCell(const double a, const double b, const double c, const double alpha,
-    const double beta, const double gamma)
+UnitCell::UnitCell(const double a, const double b, const double c,
+    const double alpha, const double beta, const double gamma)
 {
   init(a, b, c, alpha, beta, gamma);
 }
 
-UnitCell::UnitCell(const ::arma::mat33 & orthoMatrix)
+UnitCell::UnitCell(const arma::mat33 & orthoMatrix)
 {
   init(orthoMatrix);
 }
@@ -38,14 +38,16 @@ UnitCell::UnitCell(const double (&latticeParams)[6])
 {
   using namespace utility::cell_params_enum;
 
-  init(latticeParams[A], latticeParams[B], latticeParams[C], latticeParams[ALPHA],
-      latticeParams[BETA], latticeParams[GAMMA]);
+  init(latticeParams[A], latticeParams[B], latticeParams[C],
+      latticeParams[ALPHA], latticeParams[BETA], latticeParams[GAMMA]);
 }
 
 UnitCell::UnitCell(const UnitCell & toCopy) :
-    myOrthoMtx(toCopy.myOrthoMtx), myFracMtx(toCopy.myFracMtx), myVolume(toCopy.myVolume)
+    myOrthoMtx(toCopy.myOrthoMtx), myFracMtx(toCopy.myFracMtx), myVolume(
+        toCopy.myVolume)
 {
-  ::std::copy(toCopy.myLatticeParams, toCopy.myLatticeParams + 6, myLatticeParams);
+  std::copy(toCopy.myLatticeParams, toCopy.myLatticeParams + 6,
+      myLatticeParams);
 }
 
 UnitCell::~UnitCell()
@@ -62,7 +64,7 @@ UnitCell::operator =(const UnitCell & rhs)
   myOrthoMtx = rhs.myOrthoMtx;
   myFracMtx = rhs.myFracMtx;
   myVolume = rhs.myVolume;
-  ::std::copy(rhs.myLatticeParams, rhs.myLatticeParams + 6, myLatticeParams);
+  std::copy(rhs.myLatticeParams, rhs.myLatticeParams + 6, myLatticeParams);
 
   return *this;
 }
@@ -95,7 +97,8 @@ const double (&
     {
       using namespace utility::cell_params_enum;
 
-      init(params[A], params[B], params[C], params[ALPHA], params[BETA], params[GAMMA]);
+      init(params[A], params[B], params[C], params[ALPHA], params[BETA],
+          params[GAMMA]);
 
       sendUnitCellChangedMsg();
     }
@@ -105,17 +108,18 @@ const double (&
     {
       using namespace utility::cell_params_enum;
 
-      return ::std::max(myLatticeParams[A], ::std::max(myLatticeParams[B], myLatticeParams[C]));
+      return std::max(myLatticeParams[A],
+          std::max(myLatticeParams[B], myLatticeParams[C]));
     }
 
-    const ::arma::mat33 &
+    const arma::mat33 &
     UnitCell::getOrthoMtx() const
     {
       return myOrthoMtx;
     }
 
     bool
-    UnitCell::setOrthoMtx(const ::arma::mat33 & orthoMtx)
+    UnitCell::setOrthoMtx(const arma::mat33 & orthoMtx)
     {
       if(!init(orthoMtx))
         return false;
@@ -125,7 +129,7 @@ const double (&
       return true;
     }
 
-    const ::arma::mat33 &
+    const arma::mat33 &
     UnitCell::getFracMtx() const
     {
       return myFracMtx;
@@ -144,7 +148,7 @@ const double (&
 
       const double oldVol = getVolume();
 
-      const double scale = pow(volume / oldVol, 1.0 / 3.0);
+      const double scale = std::pow(volume / oldVol, 1.0 / 3.0);
       init(scale * myOrthoMtx);
 
       sendUnitCellVolChangedMsg(oldVol);
@@ -158,9 +162,9 @@ const double (&
       using namespace utility::cell_params_enum;
 
       // First normalise the lattice vectors
-      ::arma::vec3 a(myOrthoMtx.col(A));
-      ::arma::vec3 b(myOrthoMtx.col(B));
-      ::arma::vec3 c(myOrthoMtx.col(C));
+      arma::vec3 a(myOrthoMtx.col(A));
+      arma::vec3 b(myOrthoMtx.col(B));
+      arma::vec3 c(myOrthoMtx.col(C));
 
       a /= myLatticeParams[A];
       b /= myLatticeParams[B];
@@ -170,12 +174,12 @@ const double (&
       return std::abs(dot(arma::cross(a, b), c));
     }
 
-    ::arma::vec3
+    arma::vec3
     UnitCell::getLongestDiagonal() const
     {
-      const ::arma::vec3 A = getAVec();
-      const ::arma::vec3 B = getBVec();
-      const ::arma::vec3 C = getCVec();
+      const arma::vec3 A = getAVec();
+      const arma::vec3 B = getBVec();
+      const arma::vec3 C = getCVec();
 
       // This doesn't work:
       //::arma::vec3 diag = A;
@@ -189,11 +193,11 @@ const double (&
       //else
       //  diag -= C;
 
-      ::arma::vec3 longest = A + B + C;
-      double maxLengthSq = ::arma::dot(longest, longest);
+      arma::vec3 longest = A + B + C;
+      double maxLengthSq = arma::dot(longest, longest);
 
-      ::arma::vec3 combination = A + B - C;
-      double lengthSq = ::arma::dot(combination, combination);
+      arma::vec3 combination = A + B - C;
+      double lengthSq = arma::dot(combination, combination);
       if(lengthSq > maxLengthSq)
       {
         longest = combination;
@@ -201,7 +205,7 @@ const double (&
       }
 
       combination = A - B + C;
-      lengthSq = ::arma::dot(combination, combination);
+      lengthSq = arma::dot(combination, combination);
       if(lengthSq > maxLengthSq)
       {
         longest = combination;
@@ -209,7 +213,7 @@ const double (&
       }
 
       combination = A - B - C;
-      lengthSq = ::arma::dot(combination, combination);
+      lengthSq = arma::dot(combination, combination);
       if(lengthSq > maxLengthSq)
       {
         longest = combination;
@@ -295,16 +299,16 @@ const double (&
       return LatticeSystem::TRICLINIC;
     }
 
-    ::arma::vec3
-    UnitCell::wrapVec(const ::arma::vec3 & cart) const
+    arma::vec3
+    UnitCell::wrapVec(const arma::vec3 & cart) const
     {
-      ::arma::vec3 toWrap(cart);
+      arma::vec3 toWrap(cart);
       cartToFracInplace(toWrap); // Fractionalise it
       wrapVecFracInplace(toWrap); // Wrap it
       return fracToCartInplace(toWrap); // Orthogonalise it back
     }
 
-    ::arma::vec3 &
+    arma::vec3 &
     UnitCell::wrapVecInplace(::arma::vec3 & cart) const
     {
       cartToFracInplace(cart);
@@ -313,25 +317,25 @@ const double (&
       return cart;
     }
 
-    ::arma::vec3
-    UnitCell::wrapVecFrac(const ::arma::vec3 & frac) const
+    arma::vec3
+    UnitCell::wrapVecFrac(const arma::vec3 & frac) const
     {
-      ::arma::vec3 toWrap(frac);
+      arma::vec3 toWrap(frac);
       wrapVecFracInplace(toWrap);
       return toWrap;
     }
 
-    ::arma::vec3 &
+    arma::vec3 &
     UnitCell::wrapVecFracInplace(::arma::vec3 & frac) const
     {
-      frac -= ::arma::floor(frac);
+      frac -= arma::floor(frac);
       return frac;
     }
 
-    ::arma::vec3
+    arma::vec3
     UnitCell::randomPoint() const
     {
-      ::arma::vec3 rand;
+      arma::vec3 rand;
       rand.randu();
       return fracToCartInplace(rand);
     }
@@ -350,8 +354,8 @@ const double (&
 
       using namespace utility::cell_params_enum;
       using namespace spl::utility;
-      using ::std::fabs;
-      using ::std::cos;
+      using std::fabs;
+      using std::cos;
 
       // Set maximum number of iterations
       const unsigned int iterations = 1000;
@@ -382,7 +386,8 @@ const double (&
       bool ret = false;
 
       // comparison tolerance
-      const double tol = stable::STABLE_COMP_TOL * std::pow(origVolume, 1.0 / 3.0);
+      const double tol = stable::STABLE_COMP_TOL
+          * std::pow(origVolume, 1.0 / 3.0);
 
       // Initialize change of basis matrices:
       //
@@ -401,21 +406,23 @@ const double (&
 
       // Swap x,y (Used in Step 1). Negatives ensure proper sign of final
       // determinant.
-      tmpMat << 0 << -1 << 0 << arma::endr << -1 << 0 << 0 << arma::endr << 0 << 0 << -1
-          << arma::endr;
+      tmpMat << 0 << -1 << 0 << arma::endr << -1 << 0 << 0 << arma::endr << 0
+          << 0 << -1 << arma::endr;
 
       const arma::mat33 C1(tmpMat);
       // Swap y,z (Used in Step 2). Negatives ensure proper sign of final
       // determinant
-      tmpMat << -1 << 0 << 0 << arma::endr << 0 << 0 << -1 << arma::endr << 0 << -1 << 0
-          << arma::endr;
+      tmpMat << -1 << 0 << 0 << arma::endr << 0 << 0 << -1 << arma::endr << 0
+          << -1 << 0 << arma::endr;
       const arma::mat33 C2(tmpMat);
       // For step 8:
-      tmpMat << 1 << 0 << 1 << arma::endr << 0 << 1 << 1 << arma::endr << 0 << 0 << 1 << arma::endr;
+      tmpMat << 1 << 0 << 1 << arma::endr << 0 << 1 << 1 << arma::endr << 0 << 0
+          << 1 << arma::endr;
       const arma::mat33 C8(tmpMat);
 
       // initial change of basis matrix
-      tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << 0 << arma::endr << 0 << 0 << 1 << arma::endr;
+      tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << 0 << arma::endr << 0 << 0
+          << 1 << arma::endr;
       arma::mat33 cob(tmpMat);
 
 #define NIGGLI_DEBUG(step)
@@ -423,7 +430,8 @@ const double (&
       for(iter = 0; iter < iterations; ++iter)
       {
         // Step 1:
-        if(stable::gt(A, B, tol) || (stable::eq(A, B, tol) && stable::gt(fabs(xi), fabs(eta), tol)))
+        if(stable::gt(A, B, tol)
+            || (stable::eq(A, B, tol) && stable::gt(fabs(xi), fabs(eta), tol)))
         {
           cob *= C1;
           std::swap(A, B);
@@ -447,8 +455,9 @@ const double (&
         if(xi * eta * zeta > 0)
         {
           // Update change of basis matrix:
-          tmpMat << stable::sign(xi) << 0 << 0 << arma::endr << 0 << stable::sign(eta) << 0
-              << arma::endr << 0 << 0 << stable::sign(zeta) << arma::endr;
+          tmpMat << stable::sign(xi) << 0 << 0 << arma::endr << 0
+              << stable::sign(eta) << 0 << arma::endr << 0 << 0
+              << stable::sign(zeta) << arma::endr;
           cob *= tmpMat;
 
           // Update characteristic
@@ -508,8 +517,8 @@ const double (&
             }
             *p = -1;
           }
-          tmpMat << i << 0 << 0 << arma::endr << 0 << j << 0 << arma::endr << 0 << 0 << k
-              << arma::endr;
+          tmpMat << i << 0 << 0 << arma::endr << 0 << j << 0 << arma::endr << 0
+              << 0 << k << arma::endr;
           cob *= tmpMat;
 
           // Update characteristic
@@ -527,8 +536,8 @@ const double (&
         {
           double signXi = stable::sign(xi);
           // Update change of basis matrix:
-          tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << -signXi << arma::endr << 0 << 0 << 1
-              << arma::endr;
+          tmpMat << 1 << 0 << 0 << arma::endr << 0 << 1 << -signXi << arma::endr
+              << 0 << 0 << 1 << arma::endr;
           cob *= tmpMat;
 
           // Update characteristic
@@ -546,8 +555,8 @@ const double (&
         {
           double signEta = stable::sign(eta);
           // Update change of basis matrix:
-          tmpMat << 1 << 0 << -signEta << arma::endr << 0 << 1 << 0 << arma::endr << 0 << 0 << 1
-              << arma::endr;
+          tmpMat << 1 << 0 << -signEta << arma::endr << 0 << 1 << 0
+              << arma::endr << 0 << 0 << 1 << arma::endr;
           cob *= tmpMat;
 
           // Update characteristic
@@ -565,8 +574,8 @@ const double (&
         {
           double signZeta = stable::sign(zeta);
           // Update change of basis matrix:
-          tmpMat << 1 << -signZeta << 0 << arma::endr << 0 << 1 << 0 << arma::endr << 0 << 0 << 1
-              << arma::endr;
+          tmpMat << 1 << -signZeta << 0 << arma::endr << 0 << 1 << 0
+              << arma::endr << 0 << 0 << 1 << arma::endr;
           cob *= tmpMat;
 
           // Update characteristic
@@ -580,7 +589,8 @@ const double (&
         // Step 8:
         double sumAllButC = A + B + xi + eta + zeta;
         if(stable::lt(sumAllButC, 0, tol)
-            || (stable::eq(sumAllButC, 0, tol) && stable::gt(2 * (A + eta) + zeta, 0, tol)))
+            || (stable::eq(sumAllButC, 0, tol)
+                && stable::gt(2 * (A + eta) + zeta, 0, tol)))
         {
           // Update change of basis matrix:
           cob *= C8;
@@ -619,7 +629,8 @@ const double (&
         return false;
       }
 
-      SSLIB_ASSERT_MSG(::arma::det(cob) == 1, "Determinant of change of basis matrix must be 1.");
+      SSLIB_ASSERT_MSG(::arma::det(cob) == 1,
+          "Determinant of change of basis matrix must be 1.");
 
       // Update cell
       init(myOrthoMtx * cob);
@@ -687,20 +698,20 @@ const double (&
     }
 
     bool
-    UnitCell::init(const double a, const double b, const double c, const double alpha,
-        const double beta, const double gamma)
+    UnitCell::init(const double a, const double b, const double c,
+        const double alpha, const double beta, const double gamma)
     {
       using namespace utility::cell_params_enum;
-      using ::std::abs;
+      using std::abs;
 
       // Sanity checks on parameters
-      SSLIB_ASSERT_MSG(alpha+beta+gamma <= 360.0,
+      SSLIB_ASSERT_MSG(alpha + beta + gamma <= 360.0,
           "Non-physical lattice parameters supplied - required that alpha+beta+gamma <= 360.0");
-      SSLIB_ASSERT_MSG(abs(alpha-beta) <= gamma,
+      SSLIB_ASSERT_MSG(abs(alpha - beta) <= gamma,
           "Non-physical lattice parameters supplied - require that abs(alpha-beta) < gamma");
-      SSLIB_ASSERT_MSG(abs(beta-gamma) <= alpha,
+      SSLIB_ASSERT_MSG(abs(beta - gamma) <= alpha,
           "Non-physical lattice parameters supplied - require that abs(beta-gamma) < alpha");
-      SSLIB_ASSERT_MSG(abs(gamma-alpha) <= beta,
+      SSLIB_ASSERT_MSG(abs(gamma - alpha) <= beta,
           "Non-physical lattice parameters supplied - require that abs(gamma-alpha) < beta");
 
       double oldLatticeParams[6];
@@ -724,7 +735,7 @@ const double (&
     }
 
     bool
-    UnitCell::init(const ::arma::mat33 & orthoMtx)
+    UnitCell::init(const arma::mat33 & orthoMtx)
     {
       try
       {
@@ -733,7 +744,7 @@ const double (&
         initLatticeParams();
         initRest();
       }
-      catch(const ::std::runtime_error & /*e*/)
+      catch(const std::runtime_error & /*e*/)
       {
         return false;
       }
@@ -750,7 +761,7 @@ const double (&
       const double betaRad = constants::DEG_TO_RAD * myLatticeParams[BETA];
       const double gammaRad = constants::DEG_TO_RAD * myLatticeParams[GAMMA];
 
-      const ::arma::mat33 oldOrthoMtx = myOrthoMtx;
+      const arma::mat33 oldOrthoMtx = myOrthoMtx;
 
       myOrthoMtx.zeros();
       // A - col 0
@@ -760,17 +771,18 @@ const double (&
       myOrthoMtx.at(Y, B) = myLatticeParams[B] * sin(gammaRad);
       // C - col 2
       myOrthoMtx.at(X, C) = myLatticeParams[C] * cos(betaRad);
-      myOrthoMtx.at(Y, C) = myLatticeParams[C] * (cos(alphaRad) - cos(betaRad) * cos(gammaRad))
-          / sin(gammaRad);
+      myOrthoMtx.at(Y, C) = myLatticeParams[C]
+          * (cos(alphaRad) - cos(betaRad) * cos(gammaRad)) / sin(gammaRad);
       myOrthoMtx.at(Z, C) = sqrt(
-          myLatticeParams[C] * myLatticeParams[C] - myOrthoMtx(X, C) * myOrthoMtx(X, C)
+          myLatticeParams[C] * myLatticeParams[C]
+              - myOrthoMtx(X, C) * myOrthoMtx(X, C)
               - myOrthoMtx(Y, C) * myOrthoMtx(Y, C));
 
       try
       {
         myFracMtx = inv(myOrthoMtx);
       }
-      catch(const ::std::runtime_error & /*e*/)
+      catch(const std::runtime_error & /*e*/)
       {
         myOrthoMtx = oldOrthoMtx; // rollback changes
         return false;
@@ -785,18 +797,21 @@ const double (&
       using namespace arma;
 
       // Get the lattice vectors
-      const ::arma::vec3 a = myOrthoMtx.col(A);
-      const ::arma::vec3 b = myOrthoMtx.col(B);
-      const ::arma::vec3 c = myOrthoMtx.col(C);
+      const arma::vec3 a = myOrthoMtx.col(A);
+      const arma::vec3 b = myOrthoMtx.col(B);
+      const arma::vec3 c = myOrthoMtx.col(C);
 
       myLatticeParams[A] = std::sqrt(dot(a, a));
       myLatticeParams[B] = std::sqrt(dot(b, b));
       myLatticeParams[C] = std::sqrt(dot(c, c));
-      myLatticeParams[ALPHA] = acos(dot(b, c) / (myLatticeParams[B] * myLatticeParams[C]))
+      myLatticeParams[ALPHA] = acos(
+          dot(b, c) / (myLatticeParams[B] * myLatticeParams[C]))
           * constants::RAD_TO_DEG;
-      myLatticeParams[BETA] = acos(dot(a, c) / (myLatticeParams[A] * myLatticeParams[C]))
+      myLatticeParams[BETA] = acos(
+          dot(a, c) / (myLatticeParams[A] * myLatticeParams[C]))
           * constants::RAD_TO_DEG;
-      myLatticeParams[GAMMA] = acos(dot(a, b) / (myLatticeParams[A] * myLatticeParams[B]))
+      myLatticeParams[GAMMA] = acos(
+          dot(a, b) / (myLatticeParams[A] * myLatticeParams[B]))
           * constants::RAD_TO_DEG;
     }
 
@@ -805,7 +820,8 @@ const double (&
     {
       using namespace utility::cell_params_enum;
 
-      myVolume = std::fabs(dot(myOrthoMtx.col(A), cross(myOrthoMtx.col(B), myOrthoMtx.col(C))));
+      myVolume = std::fabs(
+          dot(myOrthoMtx.col(A), cross(myOrthoMtx.col(B), myOrthoMtx.col(C))));
     }
 
     }
