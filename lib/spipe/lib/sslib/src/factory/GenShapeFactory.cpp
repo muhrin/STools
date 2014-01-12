@@ -46,7 +46,7 @@ GenShapeFactory::createSphere(GenShapePtr & shapeOut,
 {
   UniquePtr< ssbc::GenSphere>::Type sphere(new ssbc::GenSphere(options.radius));
   if(options.pos)
-    sphere->setPosition(*options.pos);
+    sphere->setPosition(options.pos->t());
 
   if(options.shellThickness)
     sphere->setShellThickness(*options.shellThickness);
@@ -62,9 +62,9 @@ GenShapeFactory::createBox(GenShapePtr & shapeOut,
   ::arma::mat44 transform;
   transform.eye();
   if(options.pos)
-    math::setTranslation(transform, *options.pos);
+    math::setTranslation(transform, options.pos->t());
   if(options.rot)
-    math::setRotation(transform, *options.rot);
+    math::setRotation(transform, options.rot->t());
 
   UniquePtr< ssbc::GenBox>::Type box(
       new ssbc::GenBox(options.width, options.height, options.depth, transform));
@@ -90,9 +90,9 @@ GenShapeFactory::createCylinder(GenShapePtr & shapeOut,
   ::arma::mat44 transform;
   transform.eye();
   if(options.pos)
-    math::setTranslation(transform, *options.pos);
+    math::setTranslation(transform, options.pos->t());
   if(options.rot)
-    math::setRotation(transform, *options.rot);
+    math::setRotation(transform, options.rot->t());
   cylinder->setTransform(transform);
 
   shapeOut = cylinder;

@@ -140,6 +140,7 @@ set(sslib_Header_Files__io
   include/spl/io/ResourceLocator.h
   include/spl/io/ResReaderWriter.h
   include/spl/io/SslibReaderWriter.h
+  include/spl/io/StructureSchema.h
   include/spl/io/StructureYamlGenerator.h
   include/spl/io/StructureReadWriteManager.h
   include/spl/io/IoFunctions.h
@@ -262,12 +263,9 @@ set(sslib_Header_Files__yaml
   include/spl/yaml/HelperTypes.h
   include/spl/yaml/ProgramOptions.h
   include/spl/yaml/Transcode.h
-  include/spl/yaml/TranscodeBuildCell.h
-  include/spl/yaml/TranscodeCommon.h
   include/spl/yaml/TranscodeFactory.h
   include/spl/yaml/TranscodeGeneral.h
   include/spl/yaml/TranscodeIo.h
-  include/spl/yaml/TranscodePotential.h
 )
 source_group("Header Files\\yaml" FILES ${sslib_Header_Files__yaml})
 

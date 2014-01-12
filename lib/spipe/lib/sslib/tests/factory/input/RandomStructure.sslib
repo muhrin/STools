@@ -1,27 +1,27 @@
-
 builder:
-  genSphere:
-    radius: 10
+  genShape:
+    sphere:
+      radius: 10
   atomsFormat: [spec]
   atoms:
-    - [2 Na]
+    - [Na 2]
     - [Na]
-    - group:
-        genSphere:
+  groups:
+    - genShape:
+        sphere:
           pos: 4 4 4
           radius: 2
-        atomsRadius: 1
-        atoms:
-          - [2 Na]
-
+      atomsRadius: 1
+      atoms:
+        - [Na 2]
   unitCell:
-    params:     10 10 10 90 90 90
+    abc: 10 10 10 90 90 90
     angles:
-      min:      10
-      max:      135
+      min: 10
+      max: 135
     lengths:
-      min:      2
-      max:      4
+      min: 2
+      max: 4
       maxRatio: 2
       
 structure:
@@ -41,3 +41,4 @@ structure:
     
   cell:
     abc: 2 2 2 60 120 90
+

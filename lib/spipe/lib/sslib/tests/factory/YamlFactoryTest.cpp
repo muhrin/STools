@@ -16,7 +16,6 @@
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/factory/FactoryError.h>
 #include <spl/factory/SsLibFactoryYaml.h>
-#include <spl/factory/SsLibYamlKeywords.h>
 #include <spl/factory/SsLibYamlSchema.h>
 
 using namespace ::spl;
@@ -26,15 +25,6 @@ namespace ssc  = ::spl::common;
 namespace splf = ::spl::factory;
 namespace ssu = ::spl::utility;
 
-struct StructureGenerator
-{
-  ::boost::optional<factory::builder::Builder> builder;
-};
-
-SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
-{
-  element("builder", &StructureGenerator::builder);
-}
 
 BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 {
@@ -48,19 +38,18 @@ BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
 
   const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
 
-  StructureGeneratorSchema schema;
-  StructureGenerator generator;
+  splf::builder::StructureGeneratorSchema schema;
+  splf::builder::StructureGenerator generator;
   schemer::ParseLog log;
   schema.nodeToValue(loadedNode, &generator, &log);
   log.printErrors();
 
-  // TODO: Re-add the following
-//  try
-//  {
-//    ssbc::IStructureGeneratorPtr strGen = factory.createStructureGenerator(builderMap);
-//  }
-//  catch(const splf::FactoryError & e)
-//  {
-//    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
-//  }
+  try
+  {
+    ssbc::IStructureGeneratorPtr strGen = factory.createStructureGenerator(generator);
+  }
+  catch(const splf::FactoryError & e)
+  {
+    ::std::cout << ::boost::diagnostic_information(e) << ::std::endl;
+  }
 }

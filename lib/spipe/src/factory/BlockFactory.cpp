@@ -146,7 +146,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::GeomOptimise & options) const
 {
   ssp::IGeomOptimiserPtr optimiser = mySplFactory.createGeometryOptimiser(
-      *options.optimiser);
+      options.optimiser);
   if(!optimiser.get())
     return false;
 
@@ -173,7 +173,7 @@ BlockFactory::createBlock(BlockHandle * blockOut,
     const blocks::RemoveDuplicates & options) const
 {
   ssu::IStructureComparatorPtr comparator(
-      mySplFactory.createStructureComparator(*options.comparator));
+      mySplFactory.createStructureComparator(options.comparator));
   if(!comparator.get())
     return false;
 
@@ -198,9 +198,6 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::SearchStoichiometries & options, BlockHandle subpipe) const
 {
-  typedef ::std::map< ::std::string,
-      ::spl::build_cell::AtomsDescription::CountRange> AtomRanges;
-
   if(!subpipe)
     return false;
 

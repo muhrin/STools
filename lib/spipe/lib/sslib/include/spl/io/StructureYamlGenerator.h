@@ -10,11 +10,10 @@
 #define STRUCTURE_YAML_GENERATOR_H
 
 // INCLUDES /////////////////////////////////////////////
-#include <yaml-cpp/yaml.h>
-
 #include "spl/common/Types.h"
 #include "spl/common/StructureProperties.h"
 #include "spl/io/AtomYamlFormatParser.h"
+#include "spl/io/StructureSchema.h"
 
 namespace spl {
 
@@ -30,30 +29,34 @@ namespace io {
 class StructureYamlGenerator
 {
 public:
-
   typedef AtomYamlFormatParser::FormatEntry FormatEntry;
   typedef AtomYamlFormatParser::AtomsFormat AtomsFormat;
 
-  StructureYamlGenerator();
+  StructureYamlGenerator()
+  {
+  }
   StructureYamlGenerator(const AtomsFormat & atomsFormat);
 
-  YAML::Node generateNode(const common::Structure & structure) const;
+  Structure
+  generateInfo(const common::Structure & structure) const;
 
-  common::types::StructurePtr generateStructure(const YAML::Node & node) const;
+  common::types::StructurePtr
+  generateStructure(const Structure & structureInfo) const;
 
 private:
+  typedef std::map< std::string, std::string> Properties;
+  typedef utility::NamedProperty< utility::HeterogeneousMap> StructureProperty;
 
-  typedef utility::NamedProperty<utility::HeterogeneousMap> StructureProperty;
-
-  YAML::Node generateNode(const common::Atom & atom) const;
-  bool addProperty(
-    YAML::Node propertiesNode,
-    const common::Structure & structure,
-    const StructureProperty & property) const;
-
-  void praseProperties(
-    common::Structure & structure,
-    const YAML::Node & propertiesNode) const;
+  Atom
+  generateAtom(const common::Atom & atom) const;
+  UnitCell
+  generateUnitCell(const common::UnitCell & cell) const;
+  void
+  extractProperties(const common::Structure & structure,
+      Properties * const properties) const;
+  void
+  injectProperties(const Properties & properties,
+      common::Structure * const structure) const;
 
   AtomYamlFormatParser myAtomInfoParser;
 

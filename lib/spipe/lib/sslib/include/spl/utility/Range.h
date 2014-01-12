@@ -153,7 +153,9 @@ template< typename T>
     using boost::lexical_cast;
 
     std::string rangeString;
-    in >> rangeString;
+    while(in.good() && rangeString.empty())
+      in >> rangeString;
+
     const size_t delimPos = rangeString.find('~');
     if(delimPos == std::string::npos)
       range.set(lexical_cast< T>(rangeString));

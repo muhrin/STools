@@ -28,22 +28,22 @@ namespace factory {
 
 struct PipeSettings
 {
-  ::spipe::factory::Engine engine;
+  spipe::factory::Engine engine;
 };
 
 SCHEMER_MAP(PipeSettingsSchema, PipeSettings)
 {
-  ::spipe::factory::Engine engineDefault;
-  engineDefault.serialEngine = ::spipe::factory::SerialEngine();
+  spipe::factory::Engine engineDefault;
+  engineDefault.serialEngine = spipe::factory::SerialEngine();
 
   element("engine", &PipeSettings::engine)->defaultValue(engineDefault);
 }
 
 struct Build : public PipeSettings
 {
-  ::std::string rngSeed;
-  ::boost::optional< ::spipe::factory::blocks::BuildStructures> buildStructures;
-  ::boost::optional< ::spipe::factory::blocks::WriteStructures> writeStructures;
+  std::string rngSeed;
+  boost::optional< spipe::factory::blocks::BuildStructures> buildStructures;
+  boost::optional< spipe::factory::blocks::WriteStructures> writeStructures;
 };
 
 SCHEMER_MAP(BuildSchema, Build)
@@ -52,29 +52,30 @@ SCHEMER_MAP(BuildSchema, Build)
 
   element("rngSeed", &Build::rngSeed)->defaultValue("time");
   element("buildStructures", &Build::buildStructures)->defaultValue(
-      ::spipe::factory::blocks::BuildStructures());
+      spipe::factory::blocks::BuildStructures());
   element("writeStructures", &Build::writeStructures)->defaultValue(
-      ::spipe::factory::blocks::WriteStructures());
+      spipe::factory::blocks::WriteStructures());
 }
 
 struct Search : public Build
 {
-  ::std::string castepExe;
+  std::string castepExe;
 
-  ::boost::optional< ::spipe::factory::blocks::RunPotentialParamsQueue> runPotParamsQueue;
-  ::boost::optional< ::spipe::factory::blocks::SearchStoichiometries> searchStoichiometries;
-  ::boost::optional< ::spipe::factory::blocks::SweepPotentialParams> sweepPotentialParams;
-  ::boost::optional< ::std::string> loadStructures;
-  ::boost::optional< ::spipe::factory::blocks::CutAndPaste> cutAndPaste;
-  ::boost::optional< ::spipe::factory::blocks::GeomOptimise> preGeomOptimise;
-  ::boost::optional< ::spipe::factory::blocks::GeomOptimise> geomOptimise;
-  ::boost::optional< ::spipe::factory::blocks::RemoveDuplicates> removeDuplicates;
+  boost::optional< spipe::factory::blocks::RunPotentialParamsQueue> runPotParamsQueue;
+  boost::optional< spipe::factory::blocks::SearchStoichiometries> searchStoichiometries;
+  boost::optional< spipe::factory::blocks::SweepPotentialParams> sweepPotentialParams;
+  boost::optional< std::string> loadStructures;
+  boost::optional< spipe::factory::blocks::CutAndPaste> cutAndPaste;
+  boost::optional< spipe::factory::blocks::GeomOptimise> preGeomOptimise;
+  boost::optional< spipe::factory::blocks::GeomOptimise> geomOptimise;
+  boost::optional< spipe::factory::blocks::RemoveDuplicates> removeDuplicates;
 #ifdef SPL_WITH_CGAL
-  ::boost::optional< ::spipe::factory::blocks::KeepStableCompositions> keepStableCompositions;
+  boost::optional< spipe::factory::blocks::KeepStableCompositions> keepStableCompositions;
 #endif
-  ::boost::optional< ::spipe::factory::blocks::KeepTopN> keepTopN;
-  ::boost::optional< ::spipe::factory::blocks::KeepWithinXPercent> keepWithinXPercent;
-  ::boost::optional< ::spipe::factory::blocks::FindSymmetryGroup> findSymmetryGroup;
+  boost::optional< spipe::factory::blocks::KeepTopN> keepTopN;
+  boost::optional< spipe::factory::blocks::KeepWithinXPercent> keepWithinXPercent;
+  boost::optional< spipe::factory::blocks::FindSymmetryGroup> findSymmetryGroup;
+  boost::optional< spipe::factory::blocks::WriteStructures> writeStructures;
 };
 
 SCHEMER_MAP(SearchSchema, Search)

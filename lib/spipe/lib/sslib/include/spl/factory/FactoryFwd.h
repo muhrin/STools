@@ -46,25 +46,31 @@ struct AtomSpeciesCount
   build_cell::AtomsDescription::CountRange count;
 };
 
-std::ostream &
+inline std::ostream &
 operator <<(std::ostream & out, const AtomSpeciesCount & speciesCount)
 {
-  out << speciesCount.species << " " << speciesCount.count;
+  out << speciesCount.species;
+  if(!(speciesCount.count.nullSpan() && speciesCount.count.lower() == 1))
+    out << " " << speciesCount.count;
   return out;
 }
 
-std::istream &
+inline std::istream &
 operator >>(std::istream &in, AtomSpeciesCount & speciesCount)
 {
-  in >> speciesCount.species >> speciesCount.count;
+  in >> speciesCount.species;
+  if(in.good() && (in.flags() & std::ios_base::skipws) == 0)
+  {
+    char whitespace;
+    in >> whitespace;
+  }
+  // The count is optional
+  speciesCount.count.set(1);
+  if(in.good())
+    in >> speciesCount.count;
+
   return in;
 }
-
-struct MinMax
-{
-  ::boost::optional< double> min;
-  ::boost::optional< double> max;
-};
 
 }
 }

@@ -55,20 +55,24 @@ Factory::createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
 {
   build_cell::AtomsDescriptionPtr atomsDescription;
 
-  const AtomSpeciesCount speciesCount = *parser.getValue(
+  const boost::optional< AtomSpeciesCount> speciesCount = parser.getValue(
       &builder::SimpleAtomsData::species, options);
+  if(!speciesCount)
+    return atomsDescription;
 
-  if(speciesCount.count.nullSpan() && speciesCount.count.lower() == 0)
+  if(speciesCount->count.nullSpan() && speciesCount->count.lower() == 0)
     return atomsDescription;
 
   atomsDescription.reset(
-      new build_cell::AtomsDescription(speciesCount.species,
-          speciesCount.count));
+      new build_cell::AtomsDescription(speciesCount->species,
+          speciesCount->count));
 
   atomsDescription->radius = parser.getValue(&builder::SimpleAtomsData::radius,
       options);
-  atomsDescription->position = parser.getValue(&builder::SimpleAtomsData::pos,
-      options);
+  const boost::optional< arma::rowvec3> pos = parser.getValue(
+      &builder::SimpleAtomsData::pos, options);
+  if(pos)
+    atomsDescription->position = pos->t();
 
   const boost::optional< std::string> label = parser.getValue(
       &builder::SimpleAtomsData::label, options);
@@ -92,14 +96,14 @@ Factory::createAtomsGroup(const builder::AtomsGroup & options,
   atomsGenerator->setNumReplicas(options.num);
 
   if(options.pos)
-    atomsGenerator->setPosition(*options.pos);
+    atomsGenerator->setPosition(options.pos->t());
   else
     atomsGenerator->setTransformMode(
         atomsGenerator->getTransformMode()
             | build_cell::AtomsGroup::TransformMode::RAND_POS);
 
   if(options.rot)
-    atomsGenerator->setRotation(*options.rot);
+    atomsGenerator->setRotation(options.rot->t());
   else
   {
     atomsGenerator->setTransformMode(
@@ -110,7 +114,7 @@ Factory::createAtomsGroup(const builder::AtomsGroup & options,
 
   // Check if there is a 'global' radius
   if(options.atomsRadius)
-    parser.setDefault(&builder::SimpleAtomsData::radius, *options.atomsRadius);
+    parser.setDefault(&builder::SimpleAtomsData::radius, options.atomsRadius);
 
   ///////////
   // Atoms
@@ -201,8 +205,8 @@ Factory::createPotential(const Potential & options) const
     pot.reset(
         new potential::LennardJones(myAtomSpeciesDb, options.lj->species,
             options.lj->epsilon, options.lj->sigma, options.lj->cutoff,
-            options.lj->beta, options.lj->powers(0),
-            options.lj->powers(1), options.lj->combiningRule));
+            options.lj->beta, options.lj->powers(0), options.lj->powers(1),
+            options.lj->combiningRule));
   }
 
   return pot;
@@ -276,21 +280,40 @@ Factory::createStructureBuilder(const builder::Builder & options) const
   if(options.atomsFormat)
     parser.setFormat(*options.atomsFormat);
 
-  if(options.atomsRadius)
-    parser.setDefault(&builder::SimpleAtomsData::radius,
-        *options.atomsRadius);
+  parser.setDefault(&builder::SimpleAtomsData::radius, options.atomsRadius);
 
   // Generators
   if(options.atoms)
   {
-    // Try creating the default atoms generator
+    build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
+
+    // Try creating a generator shape
+    UniquePtr< build_cell::GeneratorShape>::Type genShape;
+    if(options.genShape)
+      myShapeFactory.createShape(genShape, *options.genShape);
+
+    ///////////
+    // Atoms
+    BOOST_FOREACH(const builder::SimpleAtomsDataEntry & atomData, *options.atoms)
     {
-      build_cell::AtomsGroupPtr atomsGenerator = createAtomsGroup(map,
-          parser);
-      if(atomsGenerator.get())
-        builder->addGenerator(atomsGenerator);
+      build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(
+          atomData, parser);
+      if(atomsDescription.get())
+        atomsGenerator->insertAtoms(*atomsDescription);
     }
 
+    // Species distances
+    if(options.pairDistances)
+    {
+      ::std::vector< ::std::string> species;
+      BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
+      {
+        ::boost::split(species, entry.first, ::boost::is_any_of("~"));
+        if(species.size() == 2)
+          atomsGenerator->addSpeciesPairDistance(
+              build_cell::SpeciesPair(species[0], species[1]), entry.second);
+      }
+    }
   }
 
   if(options.groups)

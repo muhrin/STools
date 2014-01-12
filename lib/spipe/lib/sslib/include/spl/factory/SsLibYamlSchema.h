@@ -14,6 +14,9 @@
 
 #ifdef SPL_WITH_YAML
 
+#include <boost/optional.hpp>
+#include <boost/variant.hpp>
+
 #include <schemer/Schemer.h>
 
 #include "spl/factory/SsLibElements.h"
@@ -31,23 +34,35 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // CUSTOM MAPS
 ///////////////////////////////////////////////////////////
-typedef schemer::Scalar< yaml::VecAsString< ::std::string>::Type> StringsVector;
+typedef schemer::Scalar< yaml::VecAsString< std::string>::Type> StringsVector;
 typedef schemer::Scalar< yaml::ArmaTriangularMat> TriangularMatrix;
-typedef schemer::Scalar< ::arma::vec2> Vec2;
-typedef schemer::Scalar< ::arma::vec3> Vec3;
-typedef schemer::Scalar< ::arma::vec4> Vec4;
+typedef schemer::Scalar< arma::rowvec2> Rowvec2;
+typedef schemer::Scalar< arma::rowvec3> Rowvec3;
+typedef schemer::Scalar< arma::rowvec4> Rowvec4;
 typedef schemer::Scalar< AtomSpeciesCount> AtomSpeciesCountScalar;
 typedef schemer::Scalar< yaml::VecAsString< utility::Range< double> >::Type> DoubleRanges;
+
+struct MinMax
+{
+  ::boost::optional< double> min;
+  ::boost::optional< double> max;
+};
+
+SCHEMER_MAP(MinMaxSchema, MinMax)
+{
+  element("min", &MinMax::min);
+  element("max", &MinMax::max);
+}
 
 // POTENTIALS ////////////////////////////////////////////////
 
 struct LennardJones
 {
-  ::std::vector< ::std::string> species;
-  ::arma::mat epsilon;
-  ::arma::mat sigma;
-  ::arma::mat beta;
-  ::arma::vec2 powers;
+  std::vector< std::string> species;
+  arma::mat epsilon;
+  arma::mat sigma;
+  arma::mat beta;
+  arma::rowvec2 powers;
   potential::CombiningRule::Value combiningRule;
   double cutoff;
 };
@@ -68,10 +83,10 @@ SCHEMER_MAP(LennardJonesSchema, LennardJones)
   element< TriangularMatrix>("sig", &LennardJones::sigma);
   element< TriangularMatrix>("beta", &LennardJones::beta);
 
-  ::arma::vec2 powers;
+  arma::rowvec2 powers;
   powers(0) = 12;
   powers(1) = 6;
-  element< Vec2>("pow", &LennardJones::powers)->defaultValue(powers);
+  element< Rowvec2>("pow", &LennardJones::powers)->defaultValue(powers);
   element< CombiningRuleSchema>("combining", &LennardJones::combiningRule)->defaultValue(
       potential::CombiningRule::NONE);
   element("cut", &LennardJones::cutoff)->defaultValue(2.5);
@@ -79,7 +94,7 @@ SCHEMER_MAP(LennardJonesSchema, LennardJones)
 
 struct Potential
 {
-  ::boost::optional< LennardJones> lj;
+  boost::optional< LennardJones> lj;
 };
 
 SCHEMER_MAP(PotentialSchema, Potential)
@@ -123,8 +138,8 @@ SCHEMER_MAP(OptimiserWithPotentialSettingsSchema, OptimiserWithPotentialSettings
 
 struct Castep
 {
-  ::std::string runCommand;
-  ::std::string seed;
+  std::string runCommand;
+  std::string seed;
   bool keepIntermediates;
   int numRoughSteps;
   int numSelfConsistent;
@@ -141,8 +156,8 @@ SCHEMER_MAP(CastepSchema, Castep)
 
 struct Optimiser
 {
-  ::boost::optional< OptimiserWithPotentialSettings> tpsd;
-  ::boost::optional< Castep> castep;
+  boost::optional< OptimiserWithPotentialSettings> tpsd;
+  boost::optional< Castep> castep;
 };
 
 SCHEMER_MAP(OptimiserSchema, Optimiser)
@@ -164,8 +179,8 @@ SCHEMER_MAP(AtomsDataSchema, AtomsData)
 
 struct Structure
 {
-  typedef ::boost::variant< ::std::vector< ::std::string>, AtomsData> Variant;
-  ::std::vector< Variant> atoms;
+  typedef boost::variant< std::vector< std::string>, AtomsData> Variant;
+  std::vector< Variant> atoms;
 };
 
 SCHEMER_MAP(StructureSchema, Structure)
@@ -180,9 +195,9 @@ namespace builder {
 
 struct GenBox
 {
-  ::boost::optional< ::arma::vec3> pos;
-  ::boost::optional< ::arma::vec4> rot;
-  ::boost::optional< double> shellThickness;
+  boost::optional< arma::rowvec3> pos;
+  boost::optional< arma::rowvec4> rot;
+  boost::optional< double> shellThickness;
   double width;
   double height;
   double depth;
@@ -190,9 +205,8 @@ struct GenBox
 
 SCHEMER_MAP(GenBoxSchema, GenBox)
 {
-  element< Vec3>("pos", &GenBox::pos)->defaultValue(
-      ::arma::zeros< ::arma::vec>(3));
-  element< Vec4>("rot", &GenBox::rot);
+  element< Rowvec3>("pos", &GenBox::pos)->defaultValue(arma::zeros< arma::rowvec>(3));
+  element< Rowvec4>("rot", &GenBox::rot);
   element("shell", &GenBox::shellThickness);
   element("width", &GenBox::width);
   element("height", &GenBox::height);
@@ -203,19 +217,19 @@ struct GenCylinder
 {
   double radius;
   double height;
-  ::boost::optional< ::arma::vec3> pos;
-  ::boost::optional< ::arma::vec4> rot;
-  ::boost::optional< double> shellThickness;
-  ::boost::optional< bool> shellCapped;
+  boost::optional< arma::rowvec3> pos;
+  boost::optional< arma::rowvec4> rot;
+  boost::optional< double> shellThickness;
+  boost::optional< bool> shellCapped;
 };
 
 SCHEMER_MAP(GenCylinderSchema, GenCylinder)
 {
   element("radius", &GenCylinder::radius);
   element("height", &GenCylinder::height);
-  element< Vec3>("pos", &GenCylinder::pos)->defaultValue(
-      ::arma::zeros< ::arma::vec>(3));
-  element< Vec4>("rot", &GenCylinder::rot);
+  element< Rowvec3>("pos", &GenCylinder::pos)->defaultValue(
+      arma::zeros< arma::rowvec>(3));
+  element< Rowvec4>("rot", &GenCylinder::rot);
   element("shell", &GenCylinder::shellThickness);
   element("shellCapped", &GenCylinder::shellCapped);
 }
@@ -223,26 +237,26 @@ SCHEMER_MAP(GenCylinderSchema, GenCylinder)
 struct GenSphere
 {
   double radius;
-  ::boost::optional< ::arma::vec3> pos;
-  ::boost::optional< ::arma::vec4> rot;
-  ::boost::optional< double> shellThickness;
+  boost::optional< arma::rowvec3> pos;
+  boost::optional< arma::rowvec4> rot;
+  boost::optional< double> shellThickness;
 };
 
 SCHEMER_MAP(GenSphereSchema, GenSphere)
 {
   element("radius", &GenSphere::radius);
-  element< Vec3>("pos", &GenSphere::pos)->defaultValue(
-      ::arma::zeros< ::arma::vec>(3));
-  element< Vec4>("rot", &GenSphere::rot)->defaultValue(
-      ::arma::zeros< ::arma::vec>(4));
+  element< Rowvec3>("pos", &GenSphere::pos)->defaultValue(
+      arma::zeros< arma::rowvec>(3));
+  element< Rowvec4>("rot", &GenSphere::rot)->defaultValue(
+      arma::zeros< arma::rowvec>(4));
   element("shell", &GenSphere::shellThickness);
 }
 
 struct GenShape
 {
-  ::boost::optional< GenBox> box;
-  ::boost::optional< GenCylinder> cylinder;
-  ::boost::optional< GenSphere> sphere;
+  boost::optional< GenBox> box;
+  boost::optional< GenCylinder> cylinder;
+  boost::optional< GenSphere> sphere;
 };
 
 SCHEMER_MAP(GenShapeSchema, GenShape)
@@ -254,9 +268,9 @@ SCHEMER_MAP(GenShapeSchema, GenShape)
 
 struct MinMaxRatio
 {
-  ::boost::optional< double> min;
-  ::boost::optional< double> max;
-  ::boost::optional< double> maxRatio;
+  boost::optional< double> min;
+  boost::optional< double> max;
+  boost::optional< double> maxRatio;
 };
 
 SCHEMER_MAP(MinMaxRatioSchema, MinMaxRatio)
@@ -269,12 +283,12 @@ SCHEMER_MAP(MinMaxRatioSchema, MinMaxRatio)
 struct UnitCellBuilder
 {
   typedef utility::Range< double> DoubleRange;
-  ::boost::optional< ::std::vector< DoubleRange> > abc;
-  ::boost::optional< double> vol;
-  ::boost::optional< double> delta;
-  ::boost::optional< double> mul;
-  ::boost::optional< MinMaxRatio> lengths;
-  ::boost::optional< MinMaxRatio> angles;
+  boost::optional< std::vector< DoubleRange> > abc;
+  boost::optional< double> vol;
+  boost::optional< double> delta;
+  boost::optional< double> mul;
+  boost::optional< MinMaxRatio> lengths;
+  boost::optional< MinMaxRatio> angles;
 };
 
 SCHEMER_MAP(UnitCellBuilderSchema, UnitCellBuilder)
@@ -287,19 +301,23 @@ SCHEMER_MAP(UnitCellBuilderSchema, UnitCellBuilder)
   element("angles", &UnitCellBuilder::angles);
 }
 
+typedef std::vector< std::string> AtomsCompactInfo;
+
 struct SimpleAtomsData
 {
   AtomSpeciesCount species;
-  ::boost::optional< double> radius;
-  ::boost::optional< ::arma::vec3> pos;
-  ::boost::optional< ::std::string> label;
+  boost::optional< AtomsCompactInfo> info;
+  boost::optional< double> radius;
+  boost::optional< arma::rowvec3> pos;
+  boost::optional< std::string> label;
 };
 
 SCHEMER_MAP(SimpleAtomsDataSchema, SimpleAtomsData)
 {
   element< AtomSpeciesCountScalar>("spec", &SimpleAtomsData::species);
+  element("info", &SimpleAtomsData::info);
   element("radius", &SimpleAtomsData::radius);
-  element< Vec3>("pos", &SimpleAtomsData::pos);
+  element< Rowvec3>("pos", &SimpleAtomsData::pos);
   element("label", &SimpleAtomsData::label);
 }
 
@@ -307,18 +325,17 @@ typedef schemer::VariantListMap< schemer::List< schemer::String>,
     SimpleAtomsDataSchema> SimpleAtomSpec;
 typedef schemer::List< SimpleAtomSpec> SimpleAtomList;
 
-typedef ::std::vector< ::std::string> AtomsCompactInfo;
-typedef ::boost::variant< AtomsCompactInfo, SimpleAtomsData> SimpleAtomsDataEntry;
+typedef boost::variant< AtomsCompactInfo, SimpleAtomsData> SimpleAtomsDataEntry;
 
 struct AtomsGroup
 {
-  ::boost::optional< GenShape> genShape;
-  ::std::vector< SimpleAtomsDataEntry> atoms;
-  ::boost::optional< double> atomsRadius;
-  ::boost::optional< ::arma::vec3> pos;
-  ::boost::optional< ::arma::vec4> rot;
+  boost::optional< GenShape> genShape;
+  std::vector< SimpleAtomsDataEntry> atoms;
+  boost::optional< double> atomsRadius;
+  boost::optional< arma::rowvec3> pos;
+  boost::optional< arma::rowvec4> rot;
   int num;
-  ::boost::optional< PairDistances> pairDistances;
+  boost::optional< PairDistances> pairDistances;
 };
 
 SCHEMER_MAP(AtomsGroupSchema, AtomsGroup)
@@ -326,45 +343,45 @@ SCHEMER_MAP(AtomsGroupSchema, AtomsGroup)
   element("genShape", &AtomsGroup::genShape);
   element< SimpleAtomList>("atoms", &AtomsGroup::atoms);
   element("atomsRadius", &AtomsGroup::atomsRadius);
-  element< Vec3>("pos", &AtomsGroup::pos);
-  element< Vec4>("rot", &AtomsGroup::rot);
+  element< Rowvec3>("pos", &AtomsGroup::pos);
+  element< Rowvec4>("rot", &AtomsGroup::rot);
   element("num", &AtomsGroup::num)->defaultValue(1);
   element("pairDistances", &AtomsGroup::pairDistances);
 }
 
 struct Symmetry
 {
-  ::boost::optional< MinMax> minMaxOps;
-  ::boost::optional< ::std::string> pointGroup;
+  boost::optional< MinMax> minMaxOps;
+  boost::optional< std::string> pointGroup;
 };
 
 SCHEMER_MAP(SymmetrySchema, Symmetry)
 {
-  element< schemer::Scalar< MinMax> >("ops", &Symmetry::minMaxOps);
+  element("ops", &Symmetry::minMaxOps);
   element("pointGroup", &Symmetry::pointGroup);
 }
 
 struct Builder
 {
-  ::boost::optional< ::std::vector< ::std::string> > atomsFormat;
-  ::boost::optional< double> atomsRadius;
-  ::boost::optional< bool> cluster;
-  ::boost::optional< ::std::vector< SimpleAtomsDataEntry> > atoms;
-  ::boost::optional< ::std::vector< AtomsGroup> > groups;
-  ::boost::optional< GenShape> genShape;
-  ::boost::optional< UnitCellBuilder> unitCellBuilder;
-  ::boost::optional< Symmetry> symmetry;
-  ::boost::optional< ::std::map< ::std::string, double> > pairDistances;
-  ::boost::optional< double> overlap;
+  boost::optional< std::vector< std::string> > atomsFormat;
+  boost::optional< double> atomsRadius;
+  boost::optional< bool> cluster;
+  boost::optional< std::vector< SimpleAtomsDataEntry> > atoms;
+  boost::optional< std::vector< AtomsGroup> > groups;
+  boost::optional< GenShape> genShape;
+  boost::optional< UnitCellBuilder> unitCellBuilder;
+  boost::optional< Symmetry> symmetry;
+  boost::optional< std::map< std::string, double> > pairDistances;
+  boost::optional< double> overlap;
 };
 
 SCHEMER_MAP(BuilderSchema, Builder)
 {
-  element< StringsVector>("atomsFormat", &Builder::atomsFormat);
+  element("atomsFormat", &Builder::atomsFormat);
   element("atomsRadius", &Builder::atomsRadius);
   element("cluster", &Builder::cluster)->defaultValue(false);
   element< SimpleAtomList>("atoms", &Builder::atoms);
-  element<AtomsGroupSchema>("groups", &Builder::groups);
+  element< schemer::List< AtomsGroupSchema> >("groups", &Builder::groups);
   element("genShape", &Builder::genShape);
   element("unitCell", &Builder::unitCellBuilder);
   element("symmetry", &Builder::symmetry);
@@ -374,7 +391,7 @@ SCHEMER_MAP(BuilderSchema, Builder)
 
 struct StructureGenerator
 {
-  ::boost::optional<Builder> builder;
+  boost::optional< Builder> builder;
 };
 
 SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
@@ -403,7 +420,7 @@ SCHEMER_MAP(SortedDistanceSchema, SortedDistance)
 
 struct Comparator
 {
-  ::boost::optional< SortedDistance> sortedDist;
+  boost::optional< SortedDistance> sortedDist;
 };
 
 SCHEMER_MAP(ComparatorSchema, Comparator)
@@ -415,7 +432,7 @@ SCHEMER_MAP(ComparatorSchema, Comparator)
 
 struct UnitCell
 {
-  ::std::vector< double> abc;
+  std::vector< double> abc;
 };
 
 SCHEMER_LIST(LatticeParams, schemer::Scalar<double>)

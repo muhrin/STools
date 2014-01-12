@@ -32,6 +32,7 @@
 #include "spl/common/UnitCell.h"
 #include "spl/io/IoFunctions.h"
 #include "spl/io/BoostFilesystem.h"
+#include "spl/io/StructureSchema.h"
 #include "spl/io/StructureYamlGenerator.h"
 #include "spl/utility/IndexingEnums.h"
 #include "spl/utility/UtilFunctions.h"
@@ -53,6 +54,8 @@ namespace kw {
 static const std::string STRUCTURE = "structure";
 static const std::string STRUCTURES = "structures";
 }
+
+static const StructureSchema STRUCTURE_SCHEMA;
 
 void
 SslibReaderWriter::writeStructure(common::Structure & str,
@@ -104,7 +107,9 @@ SslibReaderWriter::writeStructure(common::Structure & str,
     uniqueLoc.setId(newId);
   }
 
-  doc[kw::STRUCTURES][uniqueLoc.id()] = generator.generateNode(str);
+  const Structure structureInfo = generator.generateInfo(str);
+  YAML::Node strNode = doc[kw::STRUCTURES][uniqueLoc.id()];
+  STRUCTURE_SCHEMA.valueToNode(structureInfo, &strNode);
 
   if(strFile.is_open())
   {
@@ -149,9 +154,19 @@ SslibReaderWriter::readStructure(const ResourceLocator & locator) const
   if(!locatorId.empty())
   {
     if(doc[kw::STRUCTURE][locatorId])
-      structure = generator.generateStructure(doc[kw::STRUCTURE][locatorId]);
+    {
+      Structure structureInfo;
+      if(STRUCTURE_SCHEMA.nodeToValue(doc[kw::STRUCTURE][locatorId],
+          &structureInfo))
+        structure = generator.generateStructure(structureInfo);
+    }
     else if(doc[kw::STRUCTURES][locatorId])
-      structure = generator.generateStructure(doc[kw::STRUCTURES][locatorId]);
+    {
+      Structure structureInfo;
+      if(STRUCTURE_SCHEMA.nodeToValue(doc[kw::STRUCTURES][locatorId],
+          &structureInfo))
+        structure = generator.generateStructure(structureInfo);
+    }
   }
 
   if(structure.get())
@@ -188,9 +203,11 @@ SslibReaderWriter::readStructures(StructuresContainer & outStructures,
 
     if(doc[kw::STRUCTURE] && doc[kw::STRUCTURE].IsMap())
     {
-      const YAML::Node::const_iterator strIt = doc[kw::STRUCTURE].begin();
-      structureId = strIt->first.as< ::std::string>();
-      structure = generator.generateStructure(strIt->second);
+      const YAML::Node::const_iterator it = doc[kw::STRUCTURE].begin();
+      structureId = it->first.as< ::std::string>();
+      Structure structureInfo;
+      if(STRUCTURE_SCHEMA.nodeToValue(it->second, &structureInfo))
+        structure = generator.generateStructure(structureInfo);
 
       if(structure.get())
       {
@@ -207,7 +224,9 @@ SslibReaderWriter::readStructures(StructuresContainer & outStructures,
           doc[kw::STRUCTURES].end(); it != end; ++it)
       {
         structureId = it->first.as< ::std::string>();
-        structure = generator.generateStructure(it->second);
+        Structure structureInfo;
+        if(STRUCTURE_SCHEMA.nodeToValue(it->second, &structureInfo))
+          structure = generator.generateStructure(structureInfo);
 
         if(structure.get())
         {

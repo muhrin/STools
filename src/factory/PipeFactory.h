@@ -53,8 +53,6 @@ public:
     createSearchPipeExtended(const T & options) const;
 
 private:
-  static const BlockHandle NULL_HANDLE;
-
   ::spipe::factory::BlockFactory myBlockFactory;
   ::spl::factory::Factory mySsLibFactory;
 };
@@ -64,23 +62,23 @@ template< class T>
   PipeFactory::createBuildPipe(const T & options) const
   {
     if(!options.buildStructures)
-      return NULL_HANDLE;
+      return BlockHandle();
 
     BlockHandle startBlock;
-    if(!myBlockFactory.createBuildStructuresBlock(&startBlock,
+    if(!myBlockFactory.createBlock(&startBlock,
         *options.buildStructures))
-      return NULL_HANDLE;
+      return BlockHandle();
 
     // Keep track of the last block so we can connect everything up
     BlockHandle block, lastBlock = startBlock;
 
     if(options.buildStructures)
     {
-      if(myBlockFactory.createWriteStructuresBlock(&block,
+      if(myBlockFactory.createBlock(&block,
           *options.buildStructures))
         lastBlock = lastBlock->connect(block);
       else
-        return NULL_HANDLE;
+        return BlockHandle();
     }
 
     return startBlock;
@@ -94,59 +92,59 @@ template< class T>
       BlockHandle startBlock;
       if(options.buildStructures)
       {
-        if(!myBlockFactory.createBuildStructuresBlock(&startBlock,
+        if(!myBlockFactory.createBlock(&startBlock,
             *options.buildStructures))
-          return NULL_HANDLE;
+          return BlockHandle();
       }
       else if(options.loadStructures)
       {
-        if(!myBlockFactory.createLoadStructuresBlock(&startBlock,
+        if(!myBlockFactory.createBlock(&startBlock,
             *options.loadStructures))
-          return NULL_HANDLE;
+          return BlockHandle();
       }
       else
-        return NULL_HANDLE;
+        return BlockHandle();
 
       // Keep track of the last block so we can connect everything up
       BlockHandle block, lastBlock = startBlock;
 
       if(options.cutAndPaste
-          && myBlockFactory.createCutAndPasteBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.cutAndPaste))
         lastBlock = lastBlock->connect(block);
 
       if(options.preGeomOptimise
-          && myBlockFactory.createGeomOptimiseBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.preGeomOptimise))
         lastBlock = lastBlock->connect(block);
 
       if(options.geomOptimise
-          && myBlockFactory.createGeomOptimiseBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.geomOptimise))
         lastBlock = lastBlock->connect(block);
 
       if(options.removeDuplicates
-          && myBlockFactory.createRemoveDuplicatesBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.removeDuplicates))
         lastBlock = lastBlock->connect(block);
 
       if(options.keepWithinXPercent
-          && myBlockFactory.createKeepWithinXPercentBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.keepWithinXPercent))
         lastBlock = lastBlock->connect(block);
 
       if(options.keepTopN
-          && myBlockFactory.createKeepTopNBlock(&block, *options.keepTopN))
+          && myBlockFactory.createBlock(&block, *options.keepTopN))
         lastBlock = lastBlock->connect(block);
 
       // Find out what the symmetry group is
       if(options.findSymmetryGroup
-          && myBlockFactory.createFindSymmetryGroupBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.findSymmetryGroup))
         lastBlock = lastBlock->connect(block);
 
       if(options.writeStructures
-          && myBlockFactory.createWriteStructuresBlock(&block,
+          && myBlockFactory.createBlock(&block,
               *options.writeStructures))
         lastBlock = lastBlock->connect(block);
 
@@ -166,13 +164,13 @@ template< class T>
     // Create a search pipe
     BlockHandle startBlock = createSearchPipe(options);
     if(!startBlock)
-      return NULL_HANDLE;
+      return BlockHandle();
 
     // Are we doing a stoichiometry search?
     if(options.searchStoichiometries)
     {
       BlockHandle searchStoichsBlock;
-      if(!myBlockFactory.createSearchStoichiometriesBlock(&searchStoichsBlock,
+      if(!myBlockFactory.createBlock(&searchStoichsBlock,
           *options.searchStoichiometries, startBlock))
         return BlockHandle();
 
@@ -182,7 +180,7 @@ template< class T>
       if(options.keepStableCompositions)
       {
         BlockHandle block;
-        if(myBlockFactory.createKeepStableCompositionsBlock(&block,
+        if(myBlockFactory.createBlock(&block,
             *options.keepStableCompositions))
           startBlock->connect(block);
       }
@@ -193,9 +191,9 @@ template< class T>
     if(options.sweepPotentialParams)
     {
       BlockHandle sweepStartBlock;
-      if(!myBlockFactory.createSweepPotentialParamsBlock(&sweepStartBlock,
+      if(!myBlockFactory.createBlock(&sweepStartBlock,
           *options.sweepPotentialParams, startBlock))
-        return NULL_HANDLE;
+        return BlockHandle();
 
       return sweepStartBlock;
     }
@@ -203,7 +201,7 @@ template< class T>
     if(options.runPotParamsQueue)
     {
       BlockHandle runQueueBlock;
-      if(!myBlockFactory.createRunPotentialParamsQueueBlock(&runQueueBlock,
+      if(!myBlockFactory.createBlock(&runQueueBlock,
           *options.runPotParamsQueue, startBlock))
         return BlockHandle();
 

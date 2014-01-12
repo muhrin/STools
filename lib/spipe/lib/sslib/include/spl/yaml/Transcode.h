@@ -14,12 +14,9 @@
 #ifdef SPL_WITH_YAML
 
 #include "spl/yaml/HelperTypes.h"
-#include "spl/yaml/TranscodeBuildCell.h"
-#include "spl/yaml/TranscodeCommon.h"
 #include "spl/yaml/TranscodeFactory.h"
 #include "spl/yaml/TranscodeGeneral.h"
 #include "spl/yaml/TranscodeIo.h"
-#include "spl/yaml/TranscodePotential.h"
 
 #endif /* SPL_WITH_YAML */
 #endif /* YAML_TRANSCODE_H */

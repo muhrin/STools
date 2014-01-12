@@ -22,14 +22,6 @@
 // Some custom YAML transcoders
 namespace YAML {
 
-// factory::MinMax
-template <>
-struct convert < ::spl::factory::MinMax>
-{
-  static Node encode(const ::spl::factory::MinMax & rhs);
-  static bool decode(const Node & node, ::spl::factory::MinMax & rhs);
-};
-
 // factory::AtomSpeciesCount
 template <>
 struct convert < ::spl::factory::AtomSpeciesCount>

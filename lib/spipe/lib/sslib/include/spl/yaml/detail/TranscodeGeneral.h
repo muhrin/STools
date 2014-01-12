@@ -19,28 +19,28 @@
 #include <boost/tokenizer.hpp>
 
 #include "spl/io/Parsing.h"
+#include "spl/utility/Armadillo.h"
 
 // NAMESPACES ////////////////////////////////
-namespace ssy = ::spl::yaml;
+namespace ssy = spl::yaml;
 
 namespace YAML {
 
 template< typename T>
   Node
-  convert< ::spl::yaml::TypeWrapper< ::std::vector< T> > >::encode(
+  convert< spl::yaml::TypeWrapper< std::vector< T> > >::encode(
       const typename ssy::VecAsString< T>::Type & vector)
   {
     Node node;
     BOOST_FOREACH(const T & value, *vector)
-    {
       node.push_back(value);
-    }
+
     return node;
   }
 
 template< typename T>
   bool
-  convert< ::spl::yaml::TypeWrapper< ::std::vector< T> > >::decode(
+  convert< spl::yaml::TypeWrapper< std::vector< T> > >::decode(
       const Node & node, typename ssy::VecAsString< T>::Type & vector)
   {
     if(node.IsSequence())
@@ -66,9 +66,9 @@ template< typename T>
       // try conversion on that
 
       // Have to 'save' the string otherwise tokenizer doesn't like it
-      const ::std::string tokenString(node.Scalar());
+      const std::string tokenString(node.Scalar());
       Tok tok(tokenString, sep);
-      BOOST_FOREACH(const ::std::string & entry, tok)
+      BOOST_FOREACH(const std::string & entry, tok)
       {
         Node entryNode;
         entryNode = entry;
@@ -88,55 +88,38 @@ template< typename T>
     return true;
   }
 
-template< unsigned int size>
+template< typename T>
   Node
-  convert< ::arma::vec::fixed< size> >::encode(
-      const ::arma::vec::fixed< size> & rhs)
+  convert< arma::Mat< T> >::encode(const arma::Mat< T> & rhs)
   {
     Node node;
-    ::std::stringstream ss;
-    ss << ::std::setprecision(12);
-    for(size_t i = 0; i < rhs.size() - 1; ++i)
-      ss << rhs(i) << " ";
-    ss << rhs(rhs.size() - 1); // Do the last one separately so we don't have a trailing space
+
+    std::stringstream ss;
+    ss << rhs;
     node = ss.str();
+
     return node;
   }
 
-template< unsigned int size>
+template< typename T>
   bool
-  convert< ::arma::vec::fixed< size> >::decode(const Node & node,
-      ::arma::vec::fixed< size> & rhs)
+  convert< arma::Mat< T> >::decode(const Node & node, arma::Mat< T> & rhs)
   {
-    typedef ssy::VecAsString< double>::Type DoublesVec;
-    // Maybe it is a string separated by spaces
-    DoublesVec doublesVec;
-
-    try
-    {
-      doublesVec = node.as< DoublesVec>();
-    }
-    catch(const YAML::TypedBadConversion< DoublesVec> & /*e*/)
-    {
+    if(!node.IsScalar())
       return false;
-    }
 
-    if(doublesVec->size() != size)
-      return false; // Expecting 3 coordinates
-
-    // Copy over values
-    for(size_t i = 0; i < size; ++i)
-      rhs(i) = (*doublesVec)[i];
+    std::stringstream ss(node.Scalar());
+    ss >> rhs;
 
     return true;
   }
 
 template< typename T>
   Node
-  convert< ::spl::utility::Range< T> >::encode(
-      const ::spl::utility::Range< T> & rhs)
+  convert< spl::utility::Range< T> >::encode(
+      const spl::utility::Range< T> & rhs)
   {
-    ::std::stringstream ss;
+    std::stringstream ss;
     if(rhs.nullSpan())
       ss << rhs.lower();
     else
@@ -148,46 +131,46 @@ template< typename T>
 
 template< typename T>
   bool
-  convert< ::spl::utility::Range< T> >::decode(const Node & node,
-      ::spl::utility::Range< T> & rhs)
+  convert< spl::utility::Range< T> >::decode(const Node & node,
+      spl::utility::Range< T> & rhs)
   {
-    namespace ssio = ::spl::io;
+    namespace ssio = spl::io;
 
     if(!node.IsScalar())
       return false;
 
-    static const ::boost::regex RE_RANGE(ssio::PATTERN_RANGE_CAPTURE);
+    static const boost::regex RE_RANGE(ssio::PATTERN_RANGE_CAPTURE);
 
-    const ::std::string rangeString = node.Scalar();
-    ::boost::smatch match;
+    const std::string rangeString = node.Scalar();
+    boost::smatch match;
     if(::boost::regex_search(rangeString, match, RE_RANGE))
     {
       // Did we only match the first number?
       if(match[1].matched && !match[3].matched)
       { // Has single number
-        const ::std::string lower(match[1].first, match[1].second);
+        const std::string lower(match[1].first, match[1].second);
         try
         {
-          const T x0 = ::boost::lexical_cast< T>(lower);
+          const T x0 = boost::lexical_cast< T>(lower);
           rhs.set(x0, x0);
           return true;
         }
-        catch(const ::boost::bad_lexical_cast & /*e*/)
+        catch(const boost::bad_lexical_cast & /*e*/)
         {
         }
       }
       else if(match[1].matched && match[4].matched)
       { // Has number x0-x1
-        const ::std::string lower(match[1].first, match[1].second);
-        const ::std::string upper(match[4].first, match[4].second);
+        const std::string lower(match[1].first, match[1].second);
+        const std::string upper(match[4].first, match[4].second);
         try
         {
-          const T x0 = ::boost::lexical_cast< T>(lower);
-          const T x1 = ::boost::lexical_cast< T>(upper);
+          const T x0 = boost::lexical_cast< T>(lower);
+          const T x1 = boost::lexical_cast< T>(upper);
           rhs.set(x0, x1);
           return true;
         }
-        catch(const ::boost::bad_lexical_cast & /*e*/)
+        catch(const boost::bad_lexical_cast & /*e*/)
         {
         }
       }

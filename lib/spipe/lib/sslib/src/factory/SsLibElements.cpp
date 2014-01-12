@@ -12,87 +12,86 @@
 
 namespace spl {
 namespace factory {
-
-// GENERAL /////////////////////////////////////////////////
-utility::Key< ::std::string> LABEL;
-utility::Key< ::arma::vec3> POSITION;
-utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
-utility::Key<double> RADIUS;
-utility::Key<double> TOLERANCE;
-utility::Key<double> CUTOFF;
-utility::Key<double> MIN;
-utility::Key<double> MAX;
-utility::Key<double> MAX_RATIO;
-utility::Key<int> NUM;
-
-// OPTIMISERS //////////////////////////////////////////////
-utility::Key<utility::HeterogeneousMap> OPTIMISER;
-utility::Key<bool> WRITE_SUMMARY;
-utility::Key<utility::HeterogeneousMap> TPSD;
-utility::Key<utility::HeterogeneousMap> CASTEP;
-utility::Key< ::std::string> CASTEP_EXE;
-utility::Key< ::std::string> CASTEP_SEED;
-utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
-utility::Key<int> CASTEP_NUM_SELF_CONSISTENT;
-utility::Key<int> CASTEP_NUM_ROUGH_STEPS;
-utility::Key<double> PRESSURE;
-utility::Key<int> MAX_ITER;
-utility::Key<double> ENERGY_TOL;
-utility::Key<double> FORCE_TOL;
-utility::Key<double> STRESS_TOL;
-
-// POTENTIALS //////////////////////////////////////////////
-utility::Key<utility::HeterogeneousMap> POTENTIAL;
-utility::Key<utility::HeterogeneousMap> LENNARD_JONES;
-
-utility::Key< ::arma::mat> LJ_EPSILON;
-utility::Key< ::arma::mat> LJ_SIGMA;
-utility::Key< ::arma::mat> LJ_BETA;
-utility::Key< ::arma::vec2> LJ_POWERS;
-utility::Key<potential::CombiningRule::Value> POT_COMBINING;
-
-// STRUCTURE //////////////////////////////////////
-utility::Key<utility::HeterogeneousMap> STRUCTURE;
-utility::Key<AtomSpeciesCount> SPECIES;
-utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
-
-// STRUCTURE BUILDER //////////////////////////////
-utility::Key<utility::HeterogeneousMap> BUILDER;
-utility::Key<bool> CLUSTER;
-utility::Key<double> ATOMS_OVERLAP;
-utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
-utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
-utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
-utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
-utility::Key<double> UNIT_CELL_BUILDER_VOLUME_DELTA;
-utility::Key<double> UNIT_CELL_BUILDER_MULTIPLIER;
-utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
-utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
-utility::Key< ::std::map< ::std::string, double> > PAIR_DISTANCES;
-// Shape generators
-utility::Key<utility::HeterogeneousMap> GEN_BOX;
-utility::Key<utility::HeterogeneousMap> GEN_CYLINDER;
-utility::Key<utility::HeterogeneousMap> GEN_SHAPE;
-utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
-utility::Key<double> SHELL_THICKNESS;
-utility::Key<bool> SHELL_CAPPED;
-utility::Key<double> WIDTH;
-utility::Key<double> HEIGHT;
-utility::Key<double> DEPTH;
-// Symmetry
-utility::Key<utility::HeterogeneousMap> SYMMETRY;
-utility::Key<MinMax> SYM_OPS;
-utility::Key< ::std::string> POINT_GROUP;
-
-// STRUCTURE COMPARATORS //////////////////////////
-utility::Key<utility::HeterogeneousMap> COMPARATOR;
-utility::Key<utility::HeterogeneousMap> SORTED_DISTANCE;
-utility::Key<bool> SORTED_DISTANCE__VOLUME_AGNOSTIC;
-utility::Key<bool> SORTED_DISTANCE__USE_PRIMITIVE;
-
-// UNIT CELL //////////////////////////////////////
-utility::Key<common::UnitCell> UNIT_CELL;
-utility::Key< ::std::vector<double> > ABC;
+//
+//// GENERAL /////////////////////////////////////////////////
+//utility::Key< ::std::string> LABEL;
+//utility::Key< ::arma::vec3> POSITION;
+//utility::Key< ::arma::vec4> ROT_AXIS_ANGLE;
+//utility::Key<double> RADIUS;
+//utility::Key<double> TOLERANCE;
+//utility::Key<double> CUTOFF;
+//utility::Key<double> MIN;
+//utility::Key<double> MAX;
+//utility::Key<double> MAX_RATIO;
+//utility::Key<int> NUM;
+//
+//// OPTIMISERS //////////////////////////////////////////////
+//utility::Key<utility::HeterogeneousMap> OPTIMISER;
+//utility::Key<bool> WRITE_SUMMARY;
+//utility::Key<utility::HeterogeneousMap> TPSD;
+//utility::Key<utility::HeterogeneousMap> CASTEP;
+//utility::Key< ::std::string> CASTEP_EXE;
+//utility::Key< ::std::string> CASTEP_SEED;
+//utility::Key<bool> CASTEP_KEEP_INTERMEDIATES;
+//utility::Key<int> CASTEP_NUM_SELF_CONSISTENT;
+//utility::Key<int> CASTEP_NUM_ROUGH_STEPS;
+//utility::Key<double> PRESSURE;
+//utility::Key<int> MAX_ITER;
+//utility::Key<double> ENERGY_TOL;
+//utility::Key<double> FORCE_TOL;
+//utility::Key<double> STRESS_TOL;
+//
+//// POTENTIALS //////////////////////////////////////////////
+//utility::Key<utility::HeterogeneousMap> POTENTIAL;
+//utility::Key<utility::HeterogeneousMap> LENNARD_JONES;
+//
+//utility::Key< ::arma::mat> LJ_EPSILON;
+//utility::Key< ::arma::mat> LJ_SIGMA;
+//utility::Key< ::arma::mat> LJ_BETA;
+//utility::Key< ::arma::vec2> LJ_POWERS;
+//utility::Key<potential::CombiningRule::Value> POT_COMBINING;
+//
+//// STRUCTURE //////////////////////////////////////
+//utility::Key<utility::HeterogeneousMap> STRUCTURE;
+//utility::Key<AtomSpeciesCount> SPECIES;
+//utility::Key< ::std::vector< ::std::string> > ATOMS_FORMAT;
+//
+//// STRUCTURE BUILDER //////////////////////////////
+//utility::Key<utility::HeterogeneousMap> BUILDER;
+//utility::Key<bool> CLUSTER;
+//utility::Key<double> ATOMS_OVERLAP;
+//utility::Key<utility::HeterogeneousMap> ATOMS_GROUP;
+//utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER;
+//utility::Key< ::std::vector<utility::Range<double> > > UNIT_CELL_BUILDER_ABC;
+//utility::Key<double> UNIT_CELL_BUILDER_VOLUME;
+//utility::Key<double> UNIT_CELL_BUILDER_VOLUME_DELTA;
+//utility::Key<double> UNIT_CELL_BUILDER_MULTIPLIER;
+//utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_ANGLES;
+//utility::Key<utility::HeterogeneousMap> UNIT_CELL_BUILDER_LENGTHS;
+//utility::Key< ::std::map< ::std::string, double> > PAIR_DISTANCES;
+//// Shape generators
+//utility::Key<utility::HeterogeneousMap> GEN_BOX;
+//utility::Key<utility::HeterogeneousMap> GEN_CYLINDER;
+//utility::Key<utility::HeterogeneousMap> GEN_SHAPE;
+//utility::Key<utility::HeterogeneousMap> GEN_SPHERE;
+//utility::Key<double> SHELL_THICKNESS;
+//utility::Key<bool> SHELL_CAPPED;
+//utility::Key<double> WIDTH;
+//utility::Key<double> HEIGHT;
+//utility::Key<double> DEPTH;
+//// Symmetry
+//utility::Key<utility::HeterogeneousMap> SYMMETRY;
+//utility::Key< ::std::string> POINT_GROUP;
+//
+//// STRUCTURE COMPARATORS //////////////////////////
+//utility::Key<utility::HeterogeneousMap> COMPARATOR;
+//utility::Key<utility::HeterogeneousMap> SORTED_DISTANCE;
+//utility::Key<bool> SORTED_DISTANCE__VOLUME_AGNOSTIC;
+//utility::Key<bool> SORTED_DISTANCE__USE_PRIMITIVE;
+//
+//// UNIT CELL //////////////////////////////////////
+//utility::Key<common::UnitCell> UNIT_CELL;
+//utility::Key< ::std::vector<double> > ABC;
 
 }
 }

@@ -97,7 +97,7 @@ int main(const int argc, char * argv[])
     log.printErrors();
     return 1;
   }
-  ::stools::input::seedRandomNumberGenerator(schemaOptions);
+  ::stools::input::seedRandomNumberGenerator(schemaOptions.rngSeed);
 
   // Create the pipe the run the search
   factory::PipeEnginePtr engine = factory::createPipeEngine(schemaOptions);

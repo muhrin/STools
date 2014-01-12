@@ -77,6 +77,7 @@ source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
 ## io
 
 set(sslib_Source_Files__io
+  src/io/AtomFormatParser.cpp
   src/io/AtomYamlFormatParser.cpp
   src/io/BoostFilesystem.cpp
   src/io/CastepReader.cpp
@@ -145,12 +146,9 @@ source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
 
 set(sslib_Source_Files__yaml
   src/yaml/ProgramOptions.cpp
-  src/yaml/TranscodeBuildCell.cpp
-  src/yaml/TranscodeCommon.cpp
   src/yaml/TranscodeFactory.cpp
   src/yaml/TranscodeGeneral.cpp
   src/yaml/TranscodeIo.cpp
-  src/yaml/TranscodePotential.cpp
 )
 source_group("Source Files\\yaml" FILES ${sslib_Source_Files__yaml})
 

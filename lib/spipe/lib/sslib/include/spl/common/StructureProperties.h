@@ -18,7 +18,6 @@
 #include "spl/utility/HeterogeneousMap.h"
 #include "spl/utility/NamedProperty.h"
 
-
 namespace spl {
 
 // FORWARD DECLARES ////////////////////////////
@@ -30,27 +29,26 @@ namespace common {
 namespace structure_properties {
 namespace general {
 
-extern utility::NamedKey<unsigned int>       SPACEGROUP_NUMBER;
-extern utility::NamedKey< ::std::string>     SPACEGROUP_SYMBOL;
-extern utility::NamedKey<double>             PRESSURE_INTERNAL;
-extern utility::NamedKey<double>             ENERGY_INTERNAL;
-extern utility::NamedKey<double>             ENTHALPY;
-extern utility::NamedKey<double>             FORMATION_ENTHALPY;
-extern utility::NamedKey<double>             HULL_DISTANCE;
-extern utility::Key< ::arma::mat33>          STRESS_TENSOR;
-
+extern utility::NamedKey< unsigned int> SPACEGROUP_NUMBER;
+extern utility::NamedKey< ::std::string> SPACEGROUP_SYMBOL;
+extern utility::NamedKey< double> PRESSURE_INTERNAL;
+extern utility::NamedKey< double> ENERGY_INTERNAL;
+extern utility::NamedKey< double> ENTHALPY;
+extern utility::NamedKey< double> FORMATION_ENTHALPY;
+extern utility::NamedKey< double> HULL_DISTANCE;
+extern utility::Key< ::arma::mat33> STRESS_TENSOR;
 
 } // namespace general
 
 namespace searching {
-extern utility::NamedKey<unsigned int>       TIMES_FOUND;
+extern utility::NamedKey< unsigned int> TIMES_FOUND;
 }
 
 namespace io {
-extern utility::Key< ::spl::io::ResourceLocator>  LAST_ABS_FILE_PATH;
+extern utility::Key< ::spl::io::ResourceLocator> LAST_ABS_FILE_PATH;
 }
 
-extern utility::NamedPropertyStore<utility::HeterogeneousMap> VISIBLE_PROPERTIES;
+extern utility::NamedPropertyStore< utility::HeterogeneousMap> VISIBLE_PROPERTIES;
 
 } // namespace structure_properties
 } // namespace common

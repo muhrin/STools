@@ -14,14 +14,18 @@
 
 #include <armadillo>
 
-namespace spl {
-namespace utility {
-
-}
-}
-
 namespace arma {
-::std::size_t hash_value(const vec & v);
+::std::size_t
+hash_value(const vec & v);
+
+template< typename T>
+  std::istream &
+  operator >>(std::istream &in, arma::Mat< T> & mat)
+  {
+    mat.quiet_load(in);
+    return in;
+  }
+
 }
 
 #endif /* ARMADILLO_H */

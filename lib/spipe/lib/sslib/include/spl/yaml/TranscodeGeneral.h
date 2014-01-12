@@ -36,24 +36,59 @@ template< typename T>
         typename ::spl::yaml::VecAsString< T>::Type & vector);
   };
 
-// Armadillo fixed vectors
-template< unsigned int size>
-  struct convert< arma::vec::fixed< size> >
+// Armadillo
+template< typename T>
+  struct convert< arma::Mat< T> >
   {
     static Node
-    encode(const arma::vec::fixed< size> & rhs);
+    encode(const arma::Mat< T> & rhs);
     static bool
-    decode(const Node & node, arma::vec::fixed< size> & rhs);
+    decode(const Node & node, arma::Mat< T> & rhs);
   };
 
-// Armadillo vec
-template< >
-  struct convert< arma::vec>
+template< typename T>
+  struct convert< arma::Col< T> >
   {
     static Node
-    encode(const arma::vec & rhs);
+    encode(const arma::Col< T> & rhs)
+    {
+      return convert< arma::Mat< T> >::encode(rhs);
+    }
     static bool
-    decode(const Node& node, arma::vec & rhs);
+    decode(const Node & node, arma::Col< T> & rhs)
+    {
+      return convert< arma::Mat< T> >::decode(node, rhs);
+    }
+  };
+
+template< typename arma::uword fixed_n_elem>
+  struct convert< arma::vec::fixed< fixed_n_elem> >
+  {
+    static Node
+    encode(const arma::vec::fixed< fixed_n_elem> & rhs)
+    {
+      return convert< arma::mat>::encode(rhs);
+    }
+    static bool
+    decode(const Node & node, arma::vec::fixed< fixed_n_elem> & rhs)
+    {
+      return convert< arma::mat>::decode(node, rhs);
+    }
+  };
+
+template< typename arma::uword fixed_n_elem>
+  struct convert< arma::rowvec::fixed< fixed_n_elem> >
+  {
+    static Node
+    encode(const arma::rowvec::fixed< fixed_n_elem> & rhs)
+    {
+      return convert< arma::mat>::encode(rhs);
+    }
+    static bool
+    decode(const Node & node, arma::rowvec::fixed< fixed_n_elem> & rhs)
+    {
+      return convert< arma::mat>::decode(node, rhs);
+    }
   };
 
 template< >
@@ -79,5 +114,4 @@ template< typename T>
 #include "spl/yaml/detail/TranscodeGeneral.h"
 
 #endif /* SPL_WITH_YAML */
-
 #endif /* TRANSCODE_GENERAL_H */

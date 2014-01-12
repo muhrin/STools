@@ -28,9 +28,9 @@ template< typename AtomDataType>
   class AtomFormatParser
   {
   public:
-    typedef ::std::vector< ::std::string> CompactAtomInfo;
-    typedef ::boost::variant< CompactAtomInfo, AtomDataType> AtomInfo;
-    typedef ::std::vector< ::std::string> FormatDescription;
+    typedef std::vector< std::string> CompactAtomInfo;
+    typedef boost::variant< CompactAtomInfo, AtomDataType> AtomInfo;
+    typedef std::vector< std::string> FormatDescription;
 
     AtomFormatParser();
     explicit
@@ -44,28 +44,34 @@ template< typename AtomDataType>
 
     template< typename T>
       void
-      addEntry(const ::std::string & name, T AtomDataType::* const memberPtr);
+      addEntry(const std::string & name, T AtomDataType::* const memberPtr);
 
     template< typename T>
       bool
-      setDefault(T AtomDataType::* const memberPtr, const T & value);
+      setDefault(T AtomDataType::* const memberPtr,
+          const boost::optional< T> & value);
 
     template< typename T>
-      ::boost::optional< T>
+      bool
+      setDefault(boost::optional< T> AtomDataType::* const memberPtr,
+          const boost::optional< T> & value);
+
+    template< typename T>
+      boost::optional< T>
       getValue(T AtomDataType::* const memberPtr,
           const AtomInfo & atomData) const;
 
     template< typename T>
-      ::boost::optional< T>
+      boost::optional< T>
       getValue(boost::optional< T> AtomDataType::* const memberPtr,
           const AtomInfo & atomData) const;
 
   private:
     typedef int AtomDataType::* CanonicalMemberPtrType;
-    typedef ::std::vector< CanonicalMemberPtrType> FormatOrder;
-    typedef ::std::map< ::std::string, CanonicalMemberPtrType> FormatEntries;
-    typedef ::std::vector< CanonicalMemberPtrType> FormatEntriesList;
-    typedef ::std::vector< ::boost::any> DefaultsList;
+    typedef std::vector< CanonicalMemberPtrType> FormatOrder;
+    typedef std::map< std::string, CanonicalMemberPtrType> FormatEntries;
+    typedef std::vector< CanonicalMemberPtrType> FormatEntriesList;
+    typedef std::vector< boost::any> DefaultsList;
 
     template< typename T>
       CanonicalMemberPtrType
