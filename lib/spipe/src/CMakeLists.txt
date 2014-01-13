@@ -116,6 +116,7 @@ set(spipe_Header_Files__utility
   utility/DataTableSupport.h
   utility/DataTableWriter.h
   utility/IDataTableChangeListener.h
+  utility/Initialisation.h
 )
 source_group("Header Files\\utility" FILES ${spipe_Header_Files__utility})
 
@@ -125,6 +126,7 @@ set(spipe_Source_Files__utility
   utility/DataTableInserters.cpp
   utility/DataTableSupport.cpp
   utility/DataTableWriter.cpp
+  utility/Initialisation.cpp
 )
 source_group("Source Files\\utility" FILES ${spipe_Source_Files__utility})
 

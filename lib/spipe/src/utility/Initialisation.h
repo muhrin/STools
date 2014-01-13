@@ -1,12 +1,12 @@
 /*
- * OptionsParsing.h
+ * Initialisation.h
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef OPTIONS_PARSING_H
-#define OPTIONS_PARSING_H
+#ifndef INITIALISTAION_H
+#define INITIALISATION_H
 
 // INCLUDES //////////////////////////////////
 #include <string>
@@ -17,14 +17,8 @@ namespace YAML {
 class Node;
 }
 
-namespace spl {
+namespace spipe {
 namespace utility {
-class HeterogeneousMap;
-}
-}
-
-namespace stools {
-namespace input {
 
 int
 parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile);
@@ -39,4 +33,4 @@ seedRandomNumberGenerator(
 }
 }
 
-#endif /* OPTIONS_PARSING_H */
+#endif /* INITIALISATION_H */

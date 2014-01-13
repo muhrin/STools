@@ -22,13 +22,10 @@ source_group("Source Files\\factory" FILES ${stools_Source_Files__factory})
 
 ## stools/input
 set(stools_Header_Files__input
-  input/OptionsParsing.h
-  input/YamlKeywords.h
 )
 source_group("Header Files\\input" FILES ${stools_Header_Files__input})
 
 set(stools_Source_Files__input
-  input/OptionsParsing.cpp
 )
 source_group("Source Files\\input" FILES ${stools_Source_Files__input})
 

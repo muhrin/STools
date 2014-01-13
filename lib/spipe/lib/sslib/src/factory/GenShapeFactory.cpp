@@ -81,7 +81,8 @@ GenShapeFactory::createCylinder(GenShapePtr & shapeOut,
 {
   ssbc::GenCylinder::Settings settings;
   settings.shellThickness = options.shellThickness;
-  settings.shellCapped = options.shellCapped;
+  if(options.shellCapped)
+    settings.shellCapped = *options.shellCapped;
 
   UniquePtr< ssbc::GenCylinder>::Type cylinder(
       new ssbc::GenCylinder(options.radius, options.height, settings));

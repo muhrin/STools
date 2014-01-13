@@ -1,12 +1,12 @@
 /*
- * OptionsParsing.cpp
+ * Initialisation.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "input/OptionsParsing.h"
+#include "utility/Initialisation.h"
 
 #include <ctime>
 #include <iostream>
@@ -22,11 +22,11 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace stools {
-namespace input {
+namespace spipe {
+namespace utility {
 
 int
-parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
+parseYaml(YAML::Node & nodeOut, const std::string & inputFile)
 {
   try
   {
@@ -34,7 +34,8 @@ parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
   }
   catch(const YAML::Exception & e)
   {
-    ::std::cout << e.what();
+    std::cerr << "Error: Failed reading yaml from " + inputFile << "\n";
+    std::cerr << e.what();
     return 1;
   }
   return 0;
@@ -42,13 +43,13 @@ parseYaml(YAML::Node & nodeOut, const ::std::string & inputFile)
 
 bool
 insertScalarValues(YAML::Node & node,
-    const ::std::vector< ::std::string> & scalarValues)
+    const std::vector< std::string> & scalarValues)
 {
-  BOOST_FOREACH(const ::std::string & keyValueString, scalarValues)
+  BOOST_FOREACH(const std::string & keyValueString, scalarValues)
   {
     if(!spl::yaml::insertScalar(node, keyValueString))
     {
-      std::cerr << "Invalid input: " << keyValueString;
+      std::cerr << "Error: Invalid input " << keyValueString << "\n";
       return false;
     }
   }
@@ -56,9 +57,9 @@ insertScalarValues(YAML::Node & node,
 }
 
 void
-seedRandomNumberGenerator(const ::std::string & seed)
+seedRandomNumberGenerator(const std::string & seed)
 {
-  namespace ssm = ::spl::math;
+  namespace ssm = spl::math;
 
   if(seed == "time")
     ssm::seed(
@@ -70,8 +71,11 @@ seedRandomNumberGenerator(const ::std::string & seed)
     {
       ssm::seed(::boost::lexical_cast< unsigned int>(seed));
     }
-    catch(const ::boost::bad_lexical_cast & /*e*/)
+    catch(const boost::bad_lexical_cast & /*e*/)
     {
+      std::cerr
+          << "Error: Random number generator seed must be 'time' or an integer, given - "
+          << seed << "\n";
     }
   }
 

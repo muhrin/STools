@@ -20,26 +20,26 @@
 // From StructurePipe
 #include <factory/PipeEngine.h>
 #include <factory/PipeFactory.h>
+#include <utility/Initialisation.h>
 
 // Local
 #include "factory/YamlSchema.h"
-#include "input/OptionsParsing.h"
 #include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
 
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
-using namespace ::stools;
+using namespace stools;
 
-namespace sp = ::spipe;
-namespace splu = ::spl::utility;
+namespace sp = spipe;
+namespace splu = spl::utility;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
 {
   unsigned int numRandomStructures;
-  ::std::string inputOptionsFile;
+  std::string inputOptionsFile;
 };
 
 // CONSTANTS /////////////////////////////////
@@ -60,7 +60,7 @@ main(const int argc, char * argv[])
 
   // Load up the yaml options
   YAML::Node buildNode;
-  result = ::stools::input::parseYaml(buildNode, in.inputOptionsFile);
+  result = spipe::utility::parseYaml(buildNode, in.inputOptionsFile);
   if(result != 0)
     return result;
 
@@ -70,17 +70,17 @@ main(const int argc, char * argv[])
   buildSchema.nodeToValue(buildNode, &buildOptions, &log);
   if(log.hasErrors())
   {
-    ::std::cout << "Found errors:\n";
+    std::cout << "Found errors:\n";
     log.printErrors();
     return 1;
   }
-  ::stools::input::seedRandomNumberGenerator(buildOptions.rngSeed);
+  spipe::utility::seedRandomNumberGenerator(buildOptions.rngSeed);
 
   // Create the pipe engine to drive the pipe
   factory::PipeEnginePtr engine = factory::createPipeEngine(buildOptions);
   if(!engine.get())
   {
-    ::std::cerr << "Error: Failed to create pipe engine" << ::std::endl;
+    std::cerr << "Error: Failed to create pipe engine" << std::endl;
     return 1;
   }
 
@@ -90,7 +90,7 @@ main(const int argc, char * argv[])
   sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
   if(!pipe)
   {
-    ::std::cerr << "Failed to create build pipe" << ::std::endl;
+    std::cerr << "Failed to create build pipe" << std::endl;
     return 1;
   }
 
@@ -102,9 +102,9 @@ main(const int argc, char * argv[])
 int
 processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
-  namespace po = ::boost::program_options;
+  namespace po = boost::program_options;
 
-  const ::std::string exeName(argv[0]);
+  const std::string exeName(argv[0]);
 
   try
   {
@@ -113,7 +113,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     general.add_options()("help", "Show help message")("num,n",
         po::value< unsigned int>(&in.numRandomStructures)->default_value(1),
         "Number of random starting structures")("input,i",
-        po::value< ::std::string>(&in.inputOptionsFile)_ADD_REQUIRED_,
+        po::value< std::string>(&in.inputOptionsFile)_ADD_REQUIRED_,
         "The file containing the structure configuration");
 
     po::positional_options_description p;
@@ -130,7 +130,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
     if(vm.count("help"))
     {
-      ::std::cout << cmdLineOptions << ::std::endl;
+      std::cout << cmdLineOptions << std::endl;
       return 1;
     }
 
@@ -138,7 +138,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    ::std::cout << e.what() << "\n";
+    std::cout << e.what() << "\n";
     return 1;
   }
 

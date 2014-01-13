@@ -24,10 +24,10 @@
 // From StructurePipe
 #include <factory/PipeEngine.h>
 #include <factory/PipeFactory.h>
+#include <utility/Initialisation.h>
 
 // Local
 #include "utility/PipeDataInitialisation.h"
-#include "input/OptionsParsing.h"
 #include "factory/YamlSchema.h"
 
 // MACROS ////////////////////////////////////
@@ -78,12 +78,12 @@ int main(const int argc, char * argv[])
 
   // Read the yaml options
   YAML::Node searchNode;
-  result = input::parseYaml(searchNode, in.inputOptionsFile);
+  result = spipe::utility::parseYaml(searchNode, in.inputOptionsFile);
   if(result != 0)
     return result;
 
   // Add any additional options specified at the command line
-  if(!input::insertScalarValues(searchNode, in.additionalOptions))
+  if(!spipe::utility::insertScalarValues(searchNode, in.additionalOptions))
     return false;
   
   // Parse the yaml
@@ -96,7 +96,7 @@ int main(const int argc, char * argv[])
     log.printErrors();
     return 1;
   }
-  ::stools::input::seedRandomNumberGenerator(schemaOptions.rngSeed);
+  spipe::utility::seedRandomNumberGenerator(schemaOptions.rngSeed);
 
   // Create the pipe the run the search
   factory::PipeEnginePtr engine = factory::createPipeEngine(schemaOptions);

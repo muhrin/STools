@@ -281,7 +281,8 @@ template< class MapBindingType, typename MapBindingMemberType, typename T>
       if(!node.IsDefined() || node.IsNull())
       {
         // Check for a default
-        defaultValueToMap(map);
+        if(!defaultValueToMap(map) && node.IsDefined())
+          map->*myMember = MapBindingMemberType();
         return true;
       }
 
@@ -295,8 +296,8 @@ template< class MapBindingType, typename MapBindingMemberType, typename T>
     virtual bool
     defaultValueToMap(MapBindingType * const map) const
     {
-      *map.*myMember = myDefault;
-      return true;
+      map->*myMember = myDefault;
+      return myDefault;
     }
     virtual HeteroMapElement *
     clone() const
