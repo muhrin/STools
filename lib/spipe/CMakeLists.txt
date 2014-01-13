@@ -97,7 +97,7 @@ include_directories(
   lib/sslib/include
 )
 
-add_subdirectory(src ${CMAKE_BINARY_DIR}/spipe)
+add_subdirectory(src)
 
 set_property(TARGET PROPERTY PROJECT_LABEL "StructurePipe")
 

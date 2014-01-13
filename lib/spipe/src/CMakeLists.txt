@@ -180,6 +180,7 @@ include_directories(
 ###########################
 ## StructurePipe Library ##
 ###########################
+
 add_library(spipe
   ${spipe_Files}
 )
@@ -200,13 +201,16 @@ target_link_libraries(spipe
 ## Boost ##
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
-find_package(Boost 1.36.0 REQUIRED COMPONENTS system program_options)
+find_package(Boost 1.36.0 QUIET REQUIRED COMPONENTS system program_options)
 
 add_executable(spipe-bin
-  StructurePipe.cpp
+  spipe.cpp
 )
 
 add_dependencies(spipe-bin spipe)
+
+set_target_properties(spipe-bin
+  PROPERTIES OUTPUT_NAME spipe)
 
 # Libraries we need to link to
 target_link_libraries(spipe-bin
@@ -214,3 +218,9 @@ target_link_libraries(spipe-bin
   spipe
 )
 
+## Installation
+install(TARGETS spipe-bin
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)

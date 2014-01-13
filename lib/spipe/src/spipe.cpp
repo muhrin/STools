@@ -47,9 +47,10 @@ main(const int argc, char * argv[])
   {
     pipeNode = YAML::LoadFile(in.input);
   }
-  catch(const YAML::Exception & /*e*/)
+  catch(const YAML::Exception & e)
   {
-    std::cerr << "Error: Failed reading yaml in " + in.input << "\n";
+    std::cerr << "Error reading yaml from " + in.input << "\n";
+    std::cerr << e.what() << "\n";
     return 1;
   }
   spl::common::AtomSpeciesDatabase speciesDb;

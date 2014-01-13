@@ -3,11 +3,15 @@ rngSeed:
 
 loadStructures: C.cell
 
+clone:
+  times: 10
+  giveUniqueNames: true
+
 cutAndPaste:
   paste: true
-# Uncomment to allow atoms outside the shape to be moved to accomodated the
+# Uncomment to allow atoms outside the shape to be moved to accomodate the
 # pasted atoms
-  fixUntouched: true 
+  fixUntouched: true
   shape:
     cylinder:
       pos: 8.57 7.80 7
@@ -22,3 +26,4 @@ writeStructures:
 engine:
   serial:
 
+run: loadStructures | clone | cutAndPaste | writeStructures
