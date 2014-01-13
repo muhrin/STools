@@ -27,7 +27,8 @@ template <class T>
 PipeEnginePtr
 createPipeEngine(const T & options)
 {
-  static const spipe::factory::PipeEngineFactory ENGINE_FACTORY;
+  static const spipe::factory::PipeEngineFactory ENGINE_FACTORY =
+    spipe::factory::PipeEngineFactory();
   return ENGINE_FACTORY.createEngine(options.engine);
 }
 
