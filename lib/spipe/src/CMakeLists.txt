@@ -203,6 +203,11 @@ target_link_libraries(spipe
 add_definitions(-DBOOST_ALL_NO_LIB)
 find_package(Boost 1.36.0 QUIET REQUIRED COMPONENTS system program_options)
 
+# Make sure that after make install shared libraries are correctly linked
+# to.  See http://www.cmake.org/Wiki/CMake_RPATH_handling#Common_questions
+# for more details
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_executable(spipe-bin
   spipe.cpp
 )
