@@ -1,6 +1,3 @@
-rngSeed:
-  123
-
 loadStructures: C.orig.cell
 
 clone:
