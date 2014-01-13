@@ -24,13 +24,13 @@ namespace schemer {
 
 template< class T>
   List< T>::List() :
-      myLength(-1)
+      myLength(-1), myEntryType()
   {
   }
 
 template< class T>
   List< T>::List(const List & toCopy) :
-      myLength(toCopy.myLength)
+      myLength(toCopy.myLength), myEntryType(toCopy.myEntryType)
   {
   }
 
