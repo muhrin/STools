@@ -17,6 +17,7 @@
 
 #include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/WriteStructures.h"
+#include "io/BlockLoaderType.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -32,21 +33,21 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct BuildStructures : public ::spl::factory::builder::Builder
+struct BuildStructures : public spl::factory::builder::Builder
 {
   int num;
 };
 
 SCHEMER_MAP(BuildStructuresSchema, BuildStructures)
 {
+  extends< spl::factory::builder::BuilderSchema>();
   element("num", &BuildStructures::num)->defaultValue(1);
-}
-;
+};
 
 struct Clone
 {
   int times;
-  ::boost::optional< bool> giveUniqueNames;
+  boost::optional< bool> giveUniqueNames;
 };
 
 SCHEMER_MAP(CloneSchema, Clone)
@@ -57,7 +58,7 @@ SCHEMER_MAP(CloneSchema, Clone)
 
 struct CutAndPaste
 {
-  ::spl::factory::builder::GenShape genShape;
+  spl::factory::builder::GenShape genShape;
   bool paste;
   bool separate;
   bool fixUntouched;
@@ -109,7 +110,7 @@ SCHEMER_MAP(KeepWithinXPercentSchema, KeepWithinXPercent)
   element("percent", &KeepWithinXPercent::percent)->defaultValue(5);
 }
 
-typedef ::schemer::Scalar< ::std::string> LoadStructures;
+typedef schemer::Scalar< std::string> LoadStructures;
 
 struct NiggliReduce
 {
@@ -119,22 +120,22 @@ SCHEMER_MAP(NiggliReduceSchema, NiggliReduce)
 {
 }
 
-struct GeomOptimise : ::spl::factory::OptimiserSettings
+struct GeomOptimise : spl::factory::OptimiserSettings
 {
-  ::spl::factory::Optimiser optimiser;
+  spl::factory::Optimiser optimiser;
   bool writeSummary;
 };
 
 SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
 {
-  extends< ::spl::factory::OptimiserSettingsSchema>();
+  extends< spl::factory::OptimiserSettingsSchema>();
   element("optimiser", &GeomOptimise::optimiser);
   element("writeSummary", &GeomOptimise::writeSummary)->defaultValue(false);
 }
 
 struct RemoveDuplicates
 {
-  ::spl::factory::Comparator comparator;
+  spl::factory::Comparator comparator;
 };
 
 SCHEMER_MAP(RemoveDuplicatesSchema, RemoveDuplicates)
@@ -144,8 +145,9 @@ SCHEMER_MAP(RemoveDuplicatesSchema, RemoveDuplicates)
 
 struct RunPotentialParamsQueue
 {
-  ::std::string paramsQueueFile;
-  ::std::string paramsDoneFile;
+  std::string paramsQueueFile;
+  std::string paramsDoneFile;
+  BlockHandle pipe;
 };
 
 SCHEMER_MAP(RunPotentialParamsQueueSchema, RunPotentialParamsQueue)
@@ -154,12 +156,14 @@ SCHEMER_MAP(RunPotentialParamsQueueSchema, RunPotentialParamsQueue)
       spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_QUEUE_FILE);
   element("doneFile", &RunPotentialParamsQueue::paramsDoneFile)->defaultValue(
       spipe::blocks::RunPotentialParamsQueue::DEFAULT_PARAMS_DONE_FILE);
+  element< io::BlockLoaderType>("pipe", &RunPotentialParamsQueue::pipe);
 }
 
 struct SearchStoichiometries
 {
-  ::std::map< ::std::string, ::spl::build_cell::AtomsDescription::CountRange> ranges;
+  std::map< std::string, spl::build_cell::AtomsDescription::CountRange> ranges;
   bool useSeparateDirs;
+  BlockHandle pipe;
 };
 
 SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
@@ -167,31 +171,33 @@ SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
   element("ranges", &SearchStoichiometries::ranges);
   element("useSeparateDirs", &SearchStoichiometries::useSeparateDirs)->defaultValue(
       false);
+  element< io::BlockLoaderType>("pipe", &SearchStoichiometries::pipe);
 }
 
 struct SweepPotentialParams
 {
-  ::std::vector< ::std::string> range;
+  std::vector< std::string> range;
+  BlockHandle pipe;
 };
 
-SCHEMER_MAP(SweepPotentialParamsRange, SweepPotentialParams)
+SCHEMER_MAP(SweepPotentialParamsSchema, SweepPotentialParams)
 {
-  element< ::spl::factory::StringsVector>("range",
-      &SweepPotentialParams::range);
+  element< spl::factory::StringsVector>("range", &SweepPotentialParams::range);
+  element< io::BlockLoaderType>("pipe", &SweepPotentialParams::pipe);
 }
 
 struct WriteStructures
 {
-  ::std::string format;
+  std::string format;
   bool multiWrite;
 };
 
 SCHEMER_MAP(WriteStructuresSchema, WriteStructures)
 {
   element("format", &WriteStructures::format)->defaultValue(
-      ::spipe::blocks::WriteStructures::FORMAT_DEFAULT);
+      spipe::blocks::WriteStructures::FORMAT_DEFAULT);
   element("multiWrite", &WriteStructures::multiWrite)->defaultValue(
-      ::spipe::blocks::WriteStructures::WRITE_MULTI_DEFAULT);
+      spipe::blocks::WriteStructures::WRITE_MULTI_DEFAULT);
 }
 
 } // namespace blocks

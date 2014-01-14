@@ -34,7 +34,7 @@ class BlockLoader
 public:
   typedef std::auto_ptr<BlockCreator> CreatorPtr;
 
-  BlockLoader(spl::common::AtomSpeciesDatabase & speciesDb);
+  BlockLoader();
 
   BlockHandle
   get(const std::string & name);

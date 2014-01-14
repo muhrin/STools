@@ -181,22 +181,22 @@ BlockFactory::createBlock(BlockHandle * blockOut,
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
-    const blocks::RunPotentialParamsQueue & options, BlockHandle subpipe) const
+    blocks::RunPotentialParamsQueue & options) const
 {
-  if(!subpipe)
+  if(!options.pipe)
     return false;
 
   blockOut->reset(
       new ::spipe::blocks::RunPotentialParamsQueue(&options.paramsQueueFile,
-          &options.paramsDoneFile, subpipe));
+          &options.paramsDoneFile, options.pipe));
   return true;
 }
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
-    const blocks::SearchStoichiometries & options, BlockHandle subpipe) const
+    blocks::SearchStoichiometries & options) const
 {
-  if(!subpipe)
+  if(!options.pipe)
     return false;
 
   ::spipe::blocks::SearchStoichiometries::Options searchOptions;
@@ -204,16 +204,16 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   searchOptions.useSeparateDirectories = options.useSeparateDirs;
 
   blockOut->reset(
-      new ::spipe::blocks::SearchStoichiometries(searchOptions, subpipe));
+      new ::spipe::blocks::SearchStoichiometries(searchOptions, options.pipe));
 
   return true;
 }
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
-    const blocks::SweepPotentialParams & options, BlockHandle sweepPipe) const
+    blocks::SweepPotentialParams & options) const
 {
-  if(!sweepPipe)
+  if(!options.pipe)
     return false;
 
   common::ParamRange paramRange;
@@ -221,7 +221,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
     return false;
 
   blockOut->reset(
-      new ::spipe::blocks::SweepPotentialParams(paramRange, sweepPipe));
+      new ::spipe::blocks::SweepPotentialParams(paramRange, options.pipe));
   return true;
 }
 

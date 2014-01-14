@@ -15,7 +15,6 @@
 
 #include <yaml-cpp/yaml.h>
 
-
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/io/BoostFilesystem.h>
 
@@ -38,26 +37,28 @@
 #endif
 
 // NAMESPACES ////////////////////////////////
-using namespace ::stools;
+using namespace stools;
 
-namespace fs = ::boost::filesystem;
-namespace sp = ::spipe;
+namespace fs = boost::filesystem;
+namespace sp = spipe;
 namespace spu = sp::utility;
-namespace ssu   = ::spl::utility;
+namespace ssu = spl::utility;
 
 // CLASSES //////////////////////////////////
 struct InputOptions
 {
-  ::std::string inputOptionsFile;
-  ::std::vector< ::std::string> additionalOptions;
+  std::string inputOptionsFile;
+  std::vector< std::string> additionalOptions;
 };
 
 // CONSTANTS /////////////////////////////////
 
 // FUNCTIONS ////////////////////////////////
-int processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
+int
+processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
-int main(const int argc, char * argv[])
+int
+main(const int argc, char * argv[])
 {
 #ifdef STOOLS_DEBUG
   feenableexcept(FE_DIVBYZERO|FE_INVALID|FE_OVERFLOW);
@@ -72,7 +73,8 @@ int main(const int argc, char * argv[])
 
   if(!fs::exists(in.inputOptionsFile))
   {
-    ::std::cerr << "Couldn't find input file " << in.inputOptionsFile << ::std::endl;
+    std::cerr << "Couldn't find input file " << in.inputOptionsFile
+        << std::endl;
     return 1;
   }
 
@@ -85,7 +87,7 @@ int main(const int argc, char * argv[])
   // Add any additional options specified at the command line
   if(!spipe::utility::insertScalarValues(searchNode, in.additionalOptions))
     return false;
-  
+
   // Parse the yaml
   schemer::ParseLog log;
   const factory::SearchSchema searchSchema;
@@ -102,17 +104,17 @@ int main(const int argc, char * argv[])
   factory::PipeEnginePtr engine = factory::createPipeEngine(schemaOptions);
   if(!engine.get())
   {
-    ::std::cerr << "Error: Failed to create pipe engine" << ::std::endl;
+    std::cerr << "Error: Failed to create pipe engine" << std::endl;
     return 1;
   }
 
   engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
-  factory::PipeFactory factory(engine->globalData().getSpeciesDatabase());
+  factory::PipeFactory factory;
 
   sp::BlockHandle pipe = factory.createSearchPipeExtended(schemaOptions);
   if(!pipe)
   {
-    ::std::cerr << "Error: Failed to create search pipe" << ::std::endl;
+    std::cerr << "Error: Failed to create search pipe" << std::endl;
     return 1;
   }
 
@@ -121,21 +123,22 @@ int main(const int argc, char * argv[])
   return 0;
 }
 
-int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
+int
+processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
-  namespace po = ::boost::program_options;
+  namespace po = boost::program_options;
 
-  const ::std::string exeName(argv[0]);
+  const std::string exeName(argv[0]);
 
   try
   {
-    po::options_description general("ssearch\nUsage: " + exeName + " [options] inpue_file...\nOptions");
-    general.add_options()
-      ("help", "Show help message")
-      ("input,i", po::value< ::std::string>(&in.inputOptionsFile), "The input options file")
-      ("define,D", po::value< ::std::vector< ::std::string> >(&in.additionalOptions)->composing(),
-      "Define program options on the command line as if they had been included in the input file")
-    ;
+    po::options_description general(
+        "ssearch\nUsage: " + exeName + " [options] inpue_file...\nOptions");
+    general.add_options()("help", "Show help message")("input,i",
+        po::value< std::string>(&in.inputOptionsFile), "The input options file")(
+        "define,D",
+        po::value< std::vector< std::string> >(&in.additionalOptions)->composing(),
+        "Define program options on the command line as if they had been included in the input file");
 
     po::positional_options_description p;
     p.add("input", 1);
@@ -144,12 +147,14 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     cmdLineOptions.add(general);
 
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(cmdLineOptions).positional(p).run(), vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(cmdLineOptions).positional(
+            p).run(), vm);
 
     // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
     if(vm.count("help"))
     {
-      ::std::cout << cmdLineOptions << ::std::endl;
+      std::cout << cmdLineOptions << std::endl;
       return 1;
     }
 
@@ -157,12 +162,11 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    ::std::cout << e.what() << "\n";
+    std::cout << e.what() << "\n";
     return 1;
   }
 
   // Everything went fine
   return 0;
 }
-
 

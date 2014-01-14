@@ -30,12 +30,12 @@
 namespace spipe {
 namespace blocks {
 
-namespace fs = ::boost::filesystem;
-namespace common = ::spipe::common;
-namespace utility = ::spipe::utility;
+namespace fs = boost::filesystem;
+namespace common = spipe::common;
+namespace utility = spipe::utility;
 
 ParamGeomOptimise::ParamGeomOptimise(
-    ::spl::potential::IGeomOptimiserPtr optimiser, const bool writeSummary) :
+    spl::potential::IGeomOptimiserPtr optimiser, const bool writeSummary) :
     Block("Parameterised geometry optimise"), GeomOptimise(optimiser,
         writeSummary)
 {
@@ -43,13 +43,20 @@ ParamGeomOptimise::ParamGeomOptimise(
 }
 
 ParamGeomOptimise::ParamGeomOptimise(
-    ::spl::potential::IGeomOptimiserPtr optimiser,
-    const ::spl::potential::OptimisationSettings & optimisationParams,
+    spl::potential::IGeomOptimiserPtr optimiser,
+    const spl::potential::OptimisationSettings & optimisationParams,
     const bool writeSummary) :
     Block("Parameterised potential geometry optimisation"), GeomOptimise(
         optimiser, optimisationParams, writeSummary)
 {
   init();
+}
+
+void
+ParamGeomOptimise::pipelineInitialising()
+{
+  myParamPotential->updateSpeciesDb(
+      &getEngine()->globalData().getSpeciesDatabase());
 }
 
 void
@@ -70,7 +77,7 @@ ParamGeomOptimise::pipelineStarting()
       // The potential may have changed the params so reset them in the shared data
       *params = myCurrentParams;
 
-      ::std::stringstream ss;
+      std::stringstream ss;
       ss << "params: " << myCurrentParams[0];
       for(size_t i = 1; i < myCurrentParams.size(); ++i)
       {
@@ -108,6 +115,9 @@ ParamGeomOptimise::setPotentialParams(const PotentialParams & params)
   // Need to get the actual parameters as the potential may use a combining rule or change
   // them in some way from those specified
   myParamPotential->setParams(params);
+  if(getEngine())
+    myParamPotential->updateSpeciesDb(
+        &getEngine()->globalData().getSpeciesDatabase());
   myCurrentParams = myParamPotential->getParams();
 }
 

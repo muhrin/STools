@@ -22,8 +22,7 @@ typedef boost::tokenizer< boost::char_separator< char> > Tok;
 static const boost::char_separator< char> SEP("|");
 
 BlockHandle
-buildPipe(const YAML::Node & node,
-    spl::common::AtomSpeciesDatabase & speciesDb)
+buildPipe(const YAML::Node & node)
 {
   if(!node.IsMap() || !node["run"].IsScalar())
   {
@@ -31,12 +30,11 @@ buildPipe(const YAML::Node & node,
     return BlockHandle();
   }
 
-  BlockLoader blockLoader(speciesDb);
+  BlockLoader blockLoader;
   blockLoader.load(node);
 
   BlockHandle startBlock, last;
-  Tok tok(node["run"].Scalar(), SEP);
-  std::cout << "GOT: " << node["run"].Scalar() << "\n";
+  const Tok tok(node["run"].Scalar(), SEP);
   for(Tok::const_iterator it = tok.begin(), end = tok.end(); it != end; ++it)
   {
     BlockHandle temp = blockLoader.get(boost::algorithm::trim_copy(*it));

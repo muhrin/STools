@@ -49,8 +49,7 @@ template< typename T>
     const factory::BlockFactory & myFactory;
   };
 
-BlockLoader::BlockLoader(spl::common::AtomSpeciesDatabase & speciesDb) :
-    myBlockFactory(speciesDb)
+BlockLoader::BlockLoader()
 {
   registerCreator("buildStructures",
       CreatorPtr(
@@ -76,7 +75,7 @@ BlockLoader::BlockLoader(spl::common::AtomSpeciesDatabase & speciesDb) :
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::KeepTopNSchema>(
               myBlockFactory)));
-  registerCreator("keepWitinXPercent",
+  registerCreator("keepWithinXPercent",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::KeepWithinXPercentSchema>(
               myBlockFactory)));
@@ -95,6 +94,18 @@ BlockLoader::BlockLoader(spl::common::AtomSpeciesDatabase & speciesDb) :
   registerCreator("removeDuplicates",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::RemoveDuplicatesSchema>(
+              myBlockFactory)));
+  registerCreator("runPotentialParamsQueue",
+      CreatorPtr(
+          new FactoryBlockCreator< factory::blocks::RunPotentialParamsQueueSchema>(
+              myBlockFactory)));
+  registerCreator("searchStoichiometries",
+      CreatorPtr(
+          new FactoryBlockCreator< factory::blocks::SearchStoichiometriesSchema>(
+              myBlockFactory)));
+  registerCreator("sweepPotentialParams",
+      CreatorPtr(
+          new FactoryBlockCreator< factory::blocks::SweepPotentialParamsSchema>(
               myBlockFactory)));
   registerCreator("writeStructures",
       CreatorPtr(

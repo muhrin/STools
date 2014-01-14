@@ -100,10 +100,12 @@ source_group("Source Files\\factory" FILES ${spipe_Source_Files__factory})
 ## spipe/io/
 
 set(spipe_Header_Files__io
+  io/BlockLoaderType.h
 )
 source_group("Header Files\\io" FILES ${spipe_Header_Files__io})
 
 set(spipe_Source_Files__io
+  io/BlockLoaderType.cpp
 )
 source_group("Source Files\\io" FILES ${spipe_Source_Files__io})
 

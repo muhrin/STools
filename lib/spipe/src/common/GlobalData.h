@@ -28,34 +28,34 @@ class GlobalData
 public:
   GlobalData();
 
-  const ::std::string &
+  const std::string &
   getSeedName() const;
   void
-  setSeedName(const ::std::string & seedName);
+  setSeedName(const std::string & seedName);
 
-  ::spl::common::AtomSpeciesDatabase &
+  spl::common::AtomSpeciesDatabase &
   getSpeciesDatabase();
-  const ::spl::common::AtomSpeciesDatabase &
+  const spl::common::AtomSpeciesDatabase &
   getSpeciesDatabase() const;
 
-  ::spl::utility::HeterogeneousMap objectsStore;
+  spl::utility::HeterogeneousMap objectsStore;
 
-  ::spl::io::StructureReadWriteManager &
+  spl::io::StructureReadWriteManager &
   getStructureIo();
 
-  const ::boost::filesystem::path &
+  const boost::filesystem::path &
   getWorkingDir() const;
   void
-  setWorkingDir(const ::boost::filesystem::path & workingDir);
+  setWorkingDir(const boost::filesystem::path & workingDir);
 
 private:
   void
   reset();
 
-  ::spl::common::AtomSpeciesDatabase mySpeciesDatabase;
-  ::boost::filesystem::path myWorkingDir;
-  ::std::string mySeedName;
-  ::spl::io::StructureReadWriteManager myStructureIoManager;
+  spl::common::AtomSpeciesDatabase mySpeciesDatabase;
+  boost::filesystem::path myWorkingDir;
+  std::string mySeedName;
+  spl::io::StructureReadWriteManager myStructureIoManager;
 };
 
 }

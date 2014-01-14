@@ -14,7 +14,7 @@
 
 #include <schemer/Schemer.h>
 
-#include <spl/common/AtomSpeciesDatabase.h>
+#include <spl/io/BoostFilesystem.h>
 
 #include <pipelib/pipelib.h>
 
@@ -83,8 +83,7 @@ main(const int argc, char * argv[])
 
   utility::seedRandomNumberGenerator(pipeOptions.rngSeed);
 
-  spl::common::AtomSpeciesDatabase speciesDb;
-  spipe::BlockHandle startBlock = spipe::build::buildPipe(pipeNode, speciesDb);
+  spipe::BlockHandle startBlock = spipe::build::buildPipe(pipeNode);
   if(!startBlock)
   {
     std::cerr << "Error: Failed to create pipe" << "\n";
@@ -101,7 +100,7 @@ main(const int argc, char * argv[])
     std::cerr << "Error: Failed to create pipe engine" << std::endl;
     return 1;
   }
-
+  engine->globalData().setSeedName(spl::io::stemString(in.input));
   engine->run(startBlock);
 
   return 0;

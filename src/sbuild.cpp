@@ -86,7 +86,7 @@ main(const int argc, char * argv[])
 
   engine->globalData().setSeedName(::spl::io::stemString(in.inputOptionsFile));
 
-  factory::PipeFactory factory(engine->globalData().getSpeciesDatabase());
+  factory::PipeFactory factory;
   sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
   if(!pipe)
   {

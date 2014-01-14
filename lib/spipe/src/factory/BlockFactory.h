@@ -24,11 +24,6 @@
 #include "factory/YamlSchema.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace spl {
-namespace common {
-class AtomSpeciesDatabase;
-}
-}
 
 namespace spipe {
 namespace factory {
@@ -36,11 +31,6 @@ namespace factory {
 class BlockFactory
 {
 public:
-  BlockFactory(::spl::common::AtomSpeciesDatabase & speciesDb) :
-      mySplFactory(speciesDb)
-  {
-  }
-
   bool
   createBlock(BlockHandle * const blockOut,
       const blocks::BuildStructures & options) const;
@@ -65,7 +55,7 @@ public:
   createBlock(BlockHandle * const blockOut,
       const blocks::KeepWithinXPercent & options) const;
   bool
-  createBlock(BlockHandle * const blockOut, const ::std::string & toLoad) const;
+  createBlock(BlockHandle * const blockOut, const std::string & toLoad) const;
   bool
   createBlock(BlockHandle * const blockOut,
       const blocks::NiggliReduce & options) const;
@@ -77,20 +67,19 @@ public:
       const blocks::RemoveDuplicates & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
-      const blocks::RunPotentialParamsQueue & options,
-      BlockHandle subpipe) const;
+      blocks::RunPotentialParamsQueue & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
-      const blocks::SearchStoichiometries & options, BlockHandle subpipe) const;
+      blocks::SearchStoichiometries & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
-      const blocks::SweepPotentialParams & options, BlockHandle sweepPipe) const;
+      blocks::SweepPotentialParams & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
       const blocks::WriteStructures & options) const;
 
 private:
-  ::spl::factory::Factory mySplFactory;
+  spl::factory::Factory mySplFactory;
 };
 
 }

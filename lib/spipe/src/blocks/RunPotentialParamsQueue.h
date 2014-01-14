@@ -36,16 +36,19 @@ class Structure;
 namespace spipe {
 namespace blocks {
 
-class RunPotentialParamsQueue : public StartBlock, public FinishedSink, ::boost::noncopyable
+class RunPotentialParamsQueue : public StartBlock,
+    public FinishedSink,
+    boost::noncopyable
 {
 public:
-  static const ::std::string DEFAULT_PARAMS_QUEUE_FILE;
-  static const ::std::string DEFAULT_PARAMS_DONE_FILE;
-  static const ::std::string POTPARAMS_FILE_EXTENSION;
+  static const std::string DEFAULT_PARAMS_QUEUE_FILE;
+  static const std::string DEFAULT_PARAMS_DONE_FILE;
+  static const std::string POTPARAMS_FILE_EXTENSION;
 
-  explicit RunPotentialParamsQueue(BlockHandle & sweepPipeline);
-  RunPotentialParamsQueue(const ::std::string * const queueFile,
-      const ::std::string * const doneFile, BlockHandle & sweepPipeline);
+  explicit
+  RunPotentialParamsQueue(BlockHandle & sweepPipeline);
+  RunPotentialParamsQueue(const std::string * const queueFile,
+      const std::string * const doneFile, BlockHandle & sweepPipeline);
 
   // From Block ///////////////////////////////
   virtual void
@@ -61,24 +64,26 @@ public:
   start();
   // End from StartBlock
 private:
-  typedef ::std::vector<double> Params;
+  typedef std::vector< double> Params;
 
   // From FinishedSink ///////////////////////
   virtual void
   finished(StructureDataUniquePtr data);
   // End from FinishedSink //////////////////
 
-  bool getWork();
-  void writeParams(const Params & params, ::std::ostream & os) const;
-  ::boost::optional< Params> readParams(const ::std::string & paramsLine) const;
+  bool
+  getWork();
+  void
+  writeParams(const Params & params, std::ostream & os) const;
+  boost::optional< Params>
+  readParams(const std::string & paramsLine) const;
   void
   updateDoneParams();
   void
   updateWorkChunkSize();
 
   void
-  releaseBufferedStructures(
-      const ::spipe::utility::DataTable::Key & key);
+  releaseBufferedStructures(const spipe::utility::DataTable::Key & key);
   void
   updateTable(const utility::DataTable::Key & key,
       const StructureDataType * const structureData);
@@ -86,21 +91,21 @@ private:
   BlockHandle mySweepPipeline;
   Engine * mySubpipeEngine;
 
-  const ::boost::filesystem::path myQueueFile;
-  const ::boost::filesystem::path myDoneFile;
+  const boost::filesystem::path myQueueFile;
+  const boost::filesystem::path myDoneFile;
 
   Params myCurrentParams;
 
-  ::std::queue< Params> myParamsQueue;
-  ::std::vector< Params> myDoneParams;
+  std::queue< Params> myParamsQueue;
+  std::vector< Params> myDoneParams;
 
-  ::std::vector< StructureDataType *> myBuffer;
+  std::vector< StructureDataType *> myBuffer;
 
   size_t myNumWorkItemsChunk;
-  ::spl::math::GenericRunningStats< ::boost::posix_time::time_duration> myWorkItemsTiming;
-  const ::boost::posix_time::time_duration myTargetChunkTime;
+  spl::math::GenericRunningStats< boost::posix_time::time_duration> myWorkItemsTiming;
+  const boost::posix_time::time_duration myTargetChunkTime;
 
-  ::spipe::utility::DataTableSupport myTableSupport;
+  spipe::utility::DataTableSupport myTableSupport;
 };
 
 }

@@ -17,9 +17,12 @@
 
 // DEFINES //////////////////////////////////////////////
 
-// FORWARD DECLARATIONS ////////////////////////////////////
-
 namespace spl {
+// FORWARD DECLARATIONS ////////////////////////////////////
+namespace common {
+class AtomSpeciesDatabase;
+}
+
 namespace potential {
 
 class IParameterisable
@@ -43,6 +46,9 @@ public:
   // Set the parameters for this potential.
   virtual void
   setParams(const PotentialParams & params) = 0;
+
+  virtual bool
+  updateSpeciesDb(common::AtomSpeciesDatabase * const speciesDb) const = 0;
 };
 
 }

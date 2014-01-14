@@ -38,14 +38,14 @@
 namespace spl {
 namespace factory {
 
-namespace fs = ::boost::filesystem;
+namespace fs = boost::filesystem;
 
 // Boost Tokenizer stuff
 typedef boost::tokenizer< boost::char_separator< char> > Tok;
 const boost::char_separator< char> tokSep(" \t");
 
-Factory::Factory(common::AtomSpeciesDatabase & atomSpeciesDb) :
-    myAtomSpeciesDb(atomSpeciesDb), myShapeFactory()
+Factory::Factory() :
+    myShapeFactory()
 {
 }
 
@@ -129,10 +129,10 @@ Factory::createAtomsGroup(const builder::AtomsGroup & options,
   // Species distances
   if(options.pairDistances)
   {
-    ::std::vector< ::std::string> species;
+    std::vector< std::string> species;
     BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
     {
-      ::boost::split(species, entry.first, ::boost::is_any_of("~"));
+      boost::split(species, entry.first, boost::is_any_of("~"));
       if(species.size() == 2)
         atomsGenerator->addSpeciesPairDistance(
             build_cell::SpeciesPair(species[0], species[1]), entry.second);
@@ -203,9 +203,9 @@ Factory::createPotential(const Potential & options) const
   if(options.lj)
   {
     pot.reset(
-        new potential::LennardJones(myAtomSpeciesDb, options.lj->species,
-            options.lj->epsilon, options.lj->sigma, options.lj->cutoff,
-            options.lj->beta, options.lj->powers(0), options.lj->powers(1),
+        new potential::LennardJones(options.lj->species, options.lj->epsilon,
+            options.lj->sigma, options.lj->cutoff, options.lj->beta,
+            options.lj->powers(0), options.lj->powers(1),
             options.lj->combiningRule));
   }
 
@@ -285,7 +285,7 @@ Factory::createStructureBuilder(const builder::Builder & options) const
   // Generators
   if(options.atoms)
   {
-    build_cell::AtomsGroupPtr atomsGenerator(new build_cell::AtomsGroup());
+    build_cell::AtomsGroupPtr group(new build_cell::AtomsGroup());
 
     // Try creating a generator shape
     UniquePtr< build_cell::GeneratorShape>::Type genShape;
@@ -299,21 +299,23 @@ Factory::createStructureBuilder(const builder::Builder & options) const
       build_cell::AtomsDescriptionPtr atomsDescription = createAtomsDescription(
           atomData, parser);
       if(atomsDescription.get())
-        atomsGenerator->insertAtoms(*atomsDescription);
+        group->insertAtoms(*atomsDescription);
     }
 
     // Species distances
     if(options.pairDistances)
     {
-      ::std::vector< ::std::string> species;
+      std::vector< std::string> species;
       BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
       {
-        ::boost::split(species, entry.first, ::boost::is_any_of("~"));
+        boost::split(species, entry.first, boost::is_any_of("~"));
         if(species.size() == 2)
-          atomsGenerator->addSpeciesPairDistance(
+          group->addSpeciesPairDistance(
               build_cell::SpeciesPair(species[0], species[1]), entry.second);
       }
     }
+
+    builder->addGenerator(group);
   }
 
   if(options.groups)

@@ -14,8 +14,6 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <spl/common/AtomSpeciesDatabase.h>
-
 #include <SpTypes.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -23,8 +21,7 @@ namespace spipe {
 namespace build {
 
 BlockHandle
-buildPipe(const YAML::Node & node,
-    spl::common::AtomSpeciesDatabase & speciesDb);
+buildPipe(const YAML::Node & node);
 
 }
 }

@@ -34,13 +34,8 @@ namespace factory {
 class PipeFactory
 {
 public:
-  typedef ::spipe::BlockHandle BlockHandle;
-  typedef ::spl::utility::HeterogeneousMap OptionsMap;
-
-  PipeFactory(::spl::common::AtomSpeciesDatabase & speciesDb) :
-      myBlockFactory(speciesDb), mySsLibFactory(speciesDb)
-  {
-  }
+  typedef spipe::BlockHandle BlockHandle;
+  typedef spl::utility::HeterogeneousMap OptionsMap;
 
   template< class T>
     BlockHandle
@@ -50,11 +45,11 @@ public:
     createSearchPipe(const T & options) const;
   template< class T>
     BlockHandle
-    createSearchPipeExtended(const T & options) const;
+    createSearchPipeExtended(T & options) const;
 
 private:
-  ::spipe::factory::BlockFactory myBlockFactory;
-  ::spl::factory::Factory mySsLibFactory;
+  spipe::factory::BlockFactory myBlockFactory;
+  spl::factory::Factory mySsLibFactory;
 };
 
 template< class T>
@@ -151,7 +146,7 @@ template< class T>
       // Finally tack on a lowest energy block to make sure that only one structure
       // comes out the end in all eventualities
       lastBlock = lastBlock->connect(
-          BlockHandle(new ::spipe::blocks::KeepTopN(1)));
+          BlockHandle(new spipe::blocks::KeepTopN(1)));
 
       return startBlock;
     }
@@ -159,19 +154,17 @@ template< class T>
 
 template< class T>
   PipeFactory::BlockHandle
-  PipeFactory::createSearchPipeExtended(const T & options) const
+  PipeFactory::createSearchPipeExtended(T & options) const
   {
     // Create a search pipe
-    BlockHandle startBlock = createSearchPipe(options);
-    if(!startBlock)
-      return BlockHandle();
+    BlockHandle startBlock;
 
     // Are we doing a stoichiometry search?
     if(options.searchStoichiometries)
     {
       BlockHandle searchStoichsBlock;
       if(!myBlockFactory.createBlock(&searchStoichsBlock,
-          *options.searchStoichiometries, startBlock))
+          *options.searchStoichiometries))
         return BlockHandle();
 
       startBlock = searchStoichsBlock;
@@ -192,7 +185,7 @@ template< class T>
     {
       BlockHandle sweepStartBlock;
       if(!myBlockFactory.createBlock(&sweepStartBlock,
-          *options.sweepPotentialParams, startBlock))
+          *options.sweepPotentialParams))
         return BlockHandle();
 
       return sweepStartBlock;
@@ -202,7 +195,7 @@ template< class T>
     {
       BlockHandle runQueueBlock;
       if(!myBlockFactory.createBlock(&runQueueBlock,
-          *options.runPotParamsQueue, startBlock))
+          *options.runPotParamsQueue))
         return BlockHandle();
 
       return runQueueBlock;

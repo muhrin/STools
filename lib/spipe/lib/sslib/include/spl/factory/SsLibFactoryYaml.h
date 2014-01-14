@@ -49,7 +49,7 @@ public:
   typedef UniquePtr< potential::IGeomOptimiser>::Type GeomOptimiserPtr;
   typedef UniquePtr< utility::UniqueStructureSet< > >::Type UniqueStructureSetPtr;
 
-  Factory(common::AtomSpeciesDatabase & atomSpeciesDb);
+  Factory();
 
   build_cell::AtomsDescriptionPtr
   createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
@@ -84,7 +84,6 @@ public:
   getShapeFactory() const;
 
 private:
-  common::AtomSpeciesDatabase & myAtomSpeciesDb;
   const GenShapeFactory myShapeFactory;
 };
 

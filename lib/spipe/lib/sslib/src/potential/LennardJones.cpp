@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/DistanceCalculator.h"
 #include "spl/common/UnitCell.h"
 #include "spl/utility/IndexingEnums.h"
@@ -29,16 +30,13 @@ LennardJones::numParams(const unsigned int numSpecies)
   return 0;
 }
 
-LennardJones::LennardJones(
-    common::AtomSpeciesDatabase & atomSpeciesDb,
-    const SpeciesList & speciesList, const ::arma::mat & epsilon,
-    const ::arma::mat & sigma, const double cutoffFactor,
-    const ::arma::mat & beta, const double m, const double n,
-    const CombiningRule::Value combiningRule) :
-    myAtomSpeciesDb(atomSpeciesDb), myName("Simple pair potential"), myNumSpecies(
-        speciesList.size()), mySpeciesList(speciesList), myEpsilon(epsilon), mySigma(
-        sigma), myBeta(beta), myCutoffFactor(cutoffFactor), myM(m), myN(n), myCombiningRule(
-        combiningRule)
+LennardJones::LennardJones(const SpeciesList & speciesList,
+    const ::arma::mat & epsilon, const ::arma::mat & sigma,
+    const double cutoffFactor, const ::arma::mat & beta, const double m,
+    const double n, const CombiningRule::Value combiningRule) :
+    myName("Simple pair potential"), myNumSpecies(speciesList.size()), mySpeciesList(
+        speciesList), myEpsilon(epsilon), mySigma(sigma), myBeta(beta), myCutoffFactor(
+        cutoffFactor), myM(m), myN(n), myCombiningRule(combiningRule)
 {
   SSLIB_ASSERT(myNumSpecies == myEpsilon.n_rows);
   SSLIB_ASSERT(myEpsilon.is_square());
@@ -56,7 +54,6 @@ LennardJones::init()
   applyCombiningRule();
   initCutoff();
   updateEquilibriumSeparations();
-  updateSpeciesDb();
 }
 
 void
@@ -176,6 +173,25 @@ LennardJones::setParams(const IParameterisable::PotentialParams & params)
 
   // Initialise everything with the new params
   init();
+}
+
+bool
+LennardJones::updateSpeciesDb(
+    common::AtomSpeciesDatabase * const speciesDb) const
+{
+  SSLIB_ASSERT(speciesDb);
+
+  for(int i = 0; i < static_cast< int>(myNumSpecies); ++i)
+  {
+    speciesDb->setRadius(mySpeciesList[i],
+        *getPotentialRadius(mySpeciesList[i]));
+    for(int j = i; j < static_cast< int>(myNumSpecies); ++j)
+    {
+      speciesDb->setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
+          *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));
+    }
+  }
+  return true;
 }
 
 bool
@@ -346,8 +362,7 @@ LennardJones::getSpeciesPairDistance(common::AtomSpeciesId::Value s1,
 }
 
 ::boost::shared_ptr< IPotentialEvaluator>
-LennardJones::createEvaluator(
-    const spl::common::Structure & structure) const
+LennardJones::createEvaluator(const spl::common::Structure & structure) const
 {
   // Build the data from the structure
   ::std::auto_ptr< SimplePairPotentialData> data(
@@ -370,21 +385,6 @@ LennardJones::resetAccumulators(SimplePairPotentialData & data) const
   data.internalEnergy = 0.0;
   data.forces.zeros();
   data.stressMtx.zeros();
-}
-
-void
-LennardJones::updateSpeciesDb()
-{
-  for(int i = 0; i < static_cast< int>(myNumSpecies); ++i)
-  {
-    myAtomSpeciesDb.setRadius(mySpeciesList[i],
-        *getPotentialRadius(mySpeciesList[i]));
-    for(int j = i; j < static_cast< int>(myNumSpecies); ++j)
-    {
-      myAtomSpeciesDb.setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
-          *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));
-    }
-  }
 }
 
 void
