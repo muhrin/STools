@@ -13,7 +13,7 @@
 #include <spl/build_cell/AtomsDescription.h>
 #include <spl/common/Structure.h>
 #include <spl/potential/PotentialData.h>
-#include <spl/potential/IGeomOptimiser.h>
+#include <spl/potential/GeomOptimiser.h>
 #include <spl/potential/IPotential.h>
 
 #include "common/PipeFunctions.h"
@@ -81,7 +81,7 @@ GeomOptimise::in(common::StructureData * const data)
   }
 }
 
-ssp::IGeomOptimiser &
+ssp::GeomOptimiser &
 GeomOptimise::getOptimiser()
 {
   return *myOptimiser;

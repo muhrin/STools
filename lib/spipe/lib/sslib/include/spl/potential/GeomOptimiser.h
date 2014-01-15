@@ -1,13 +1,13 @@
 /*
- * IGeomOptimiser.h
+ * GeomOptimiser.h
  *
  *
  *  Created on: Aug 17, 2011
  *      Author: Martin Uhrin
  */
 
-#ifndef I_GEOM_OPTIMISER_H
-#define I_GEOM_OPTIMISER_H
+#ifndef GEOM_OPTIMISER_H
+#define GEOM_OPTIMISER_H
 
 // INCLUDES /////////////////////////////////////////////
 
@@ -64,20 +64,20 @@ private:
   template< typename T>
     void
     setProperty(common::Structure & structure, utility::Key< T> & key,
-        const ::boost::optional< T> & value) const;
+        const boost::optional< T> & value) const;
   template< typename T>
     bool
-    setOptimisationDataValue(::boost::optional< T> & value,
+    setOptimisationDataValue(boost::optional< T> & value,
         const common::Structure & structure,
         const utility::Key< T> & key) const;
 };
 
-class IGeomOptimiser
+class GeomOptimiser
 {
 public:
 
   virtual
-  ~IGeomOptimiser()
+  ~GeomOptimiser()
   {
   }
 
@@ -85,9 +85,15 @@ public:
   // geometry optimisers need to have a potential in which case NULL
   // will be returned.
   virtual IPotential *
-  getPotential() = 0;
+  getPotential()
+  {
+    return NULL;
+  }
   virtual const IPotential *
-  getPotential() const = 0;
+  getPotential() const
+  {
+    return NULL;
+  }
 
   virtual OptimisationOutcome
   optimise(common::Structure & structure,
@@ -122,7 +128,7 @@ OptimisationData::loadFromStructure(const common::Structure & structure)
 template< typename T>
   void
   OptimisationData::setProperty(common::Structure & structure,
-      utility::Key< T> & key, const ::boost::optional< T> & value) const
+      utility::Key< T> & key, const boost::optional< T> & value) const
   {
     if(value)
       structure.setProperty(key, *value);
@@ -132,7 +138,7 @@ template< typename T>
 
 template< typename T>
   bool
-  OptimisationData::setOptimisationDataValue(::boost::optional< T> & value,
+  OptimisationData::setOptimisationDataValue(boost::optional< T> & value,
       const common::Structure & structure, const utility::Key< T> & key) const
   {
     const T * structureValue = structure.getProperty(key);
@@ -146,4 +152,4 @@ template< typename T>
 }
 }
 
-#endif /* I_GEOM_OPTIMISER_H */
+#endif /* GEOM_OPTIMISER_H */

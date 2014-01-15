@@ -10,7 +10,6 @@
 #define OPTIMISATION_SETTINGS_H
 
 // INCLUDES /////////////////////////////////////////////
-
 #include <vector>
 
 #include <boost/ptr_container/ptr_list.hpp>
@@ -19,7 +18,6 @@
 
 #include "spl/OptionalTypes.h"
 #include "spl/common/Types.h"
-#include "spl/potential/OptimisationConstraint.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -27,21 +25,16 @@ namespace spl {
 namespace potential {
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-class OptimisationConstraint;
 
 struct OptimisationSettings
 {
-  typedef ::boost::ptr_list<OptimisationConstraint> Constraints;
-  typedef Constraints::iterator ConstraintsIterator;
-  typedef Constraints::const_iterator ConstConstraintsIterator;
-
   struct Optimise
   {
     enum Value
     {
-      ATOMS             = 0x01, // 001
-      LATTICE           = 0x02, // 010
-      ATOMS_AND_LATTICE = 0x03  // 011
+      ATOMS = 0x01, // 001
+      LATTICE = 0x02, // 010
+      ATOMS_AND_LATTICE = 0x03 // 011
     };
   };
 
@@ -50,28 +43,8 @@ struct OptimisationSettings
   OptionalDouble forceTol;
   OptionalDouble stressTol;
   OptionalArmaMat33 pressure;
-  ::boost::optional<Optimise::Value> optimisationType;
-
-  void insertConstraint(OptimisationConstraint & constraint);
-  ConstraintsIterator beginConstraints();
-  ConstraintsIterator endConstraints();
-  ConstraintsIterator eraseConstraint(ConstraintsIterator it);
-
-  void applyLatticeConstraints(
-    const common::Structure & structure,
-    const ::arma::mat33 & lattice,
-    ::arma::mat33 & deltaLattice) const;
-
-  void applyAtomsConstraints(
-    const common::Structure & structure,
-    const ::arma::mat & currentPos,
-    ::arma::mat & deltaPos) const;
-
-private:
-
-  Constraints myConstraints;
+  boost::optional< Optimise::Value> optimisationType;
 };
-
 
 }
 }

@@ -46,7 +46,7 @@ namespace factory {
 class Factory : ::boost::noncopyable
 {
 public:
-  typedef UniquePtr< potential::IGeomOptimiser>::Type GeomOptimiserPtr;
+  typedef UniquePtr< potential::GeomOptimiser>::Type GeomOptimiserPtr;
   typedef UniquePtr< utility::UniqueStructureSet< > >::Type UniqueStructureSetPtr;
 
   Factory();

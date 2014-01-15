@@ -91,6 +91,21 @@ template< typename arma::uword fixed_n_elem>
     }
   };
 
+template< typename arma::uword n_rows, typename arma::uword n_cols>
+  struct convert< arma::mat::fixed< n_rows, n_cols> >
+  {
+    static Node
+    encode(const arma::mat::fixed< n_rows, n_cols> & rhs)
+    {
+      return convert< arma::mat>::encode(rhs);
+    }
+    static bool
+    decode(const Node & node, arma::mat::fixed< n_rows, n_cols> & rhs)
+    {
+      return convert< arma::mat>::decode(node, rhs);
+    }
+  };
+
 template< >
   struct convert< ::spl::yaml::ArmaTriangularMat>
   {

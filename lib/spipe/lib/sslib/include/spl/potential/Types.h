@@ -15,11 +15,11 @@ namespace spl {
 namespace potential {
 
 // FORWARD DECLARES ////////////
-class IGeomOptimiser;
+class GeomOptimiser;
 class IPotential;
 
 typedef UniquePtr<IPotential>::Type IPotentialPtr;
-typedef UniquePtr<IGeomOptimiser>::Type IGeomOptimiserPtr;
+typedef UniquePtr<GeomOptimiser>::Type IGeomOptimiserPtr;
 
 }
 }

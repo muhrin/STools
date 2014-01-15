@@ -15,7 +15,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "spl/potential/CastepRun.h"
-#include "spl/potential/IGeomOptimiser.h"
+#include "spl/potential/GeomOptimiser.h"
 #include "spl/io/CastepReader.h"
 #include "spl/io/CellReaderWriter.h"
 
@@ -33,101 +33,82 @@ struct CastepGeomOptimiseSettings
   bool keepIntermediateFiles;
 };
 
-class CastepGeomOptimiser : public IGeomOptimiser
+class CastepGeomOptimiser : public GeomOptimiser
 {
 public:
 
   typedef CastepGeomOptimiseSettings Settings;
 
-  static const ::std::string FINAL_ENTHALPY;
+  static const std::string FINAL_ENTHALPY;
 
-  CastepGeomOptimiser(
-    const ::std::string & castepExe,
-    const ::std::string & castepSeed
-  );
+  CastepGeomOptimiser(const std::string & castepExe,
+      const std::string & castepSeed);
 
-  CastepGeomOptimiser(
-    const ::std::string & castepExe,
-    const ::std::string & castepSeed,
-    const Settings & settings
-  );
+  CastepGeomOptimiser(const std::string & castepExe,
+      const std::string & castepSeed, const Settings & settings);
 
   // From IGeomOptimiser ////////
-  // Don't have a potential
-  virtual IPotential * getPotential() { return NULL; }
-  virtual const IPotential * getPotential() const { return NULL; };
-
-  virtual OptimisationOutcome optimise(
-    common::Structure & structure,
-    const OptimisationSettings & options
-  ) const;
-  virtual OptimisationOutcome optimise(
-    common::Structure & structure,
-    OptimisationData & data,
-    const OptimisationSettings & options
-  ) const;
+  virtual OptimisationOutcome
+  optimise(common::Structure & structure,
+      const OptimisationSettings & options) const;
+  virtual OptimisationOutcome
+  optimise(common::Structure & structure, OptimisationData & data,
+      const OptimisationSettings & options) const;
   // End from IGeomOptimiser //////////////
 
-  void applySettings(const Settings & settings);
+  void
+  applySettings(const Settings & settings);
 
 private:
   Settings mySettings;
-  const ::std::string myCastepSeed;
+  const std::string myCastepSeed;
   const io::CellReaderWriter myCellReaderWriter;
   const io::CastepReader myCastepReader;
-  const ::std::string myCastepExe;
+  const std::string myCastepExe;
 };
 
 namespace detail {
-  
+
 class CastepGeomOptRun
 {
 public:
-  CastepGeomOptRun(
-    const OptimisationSettings & optimisationSettings,
-    const ::std::string & originalSeed,
-    const ::std::string & newSeed,
-    const io::CellReaderWriter & myCellReaderWriter,
-    const io::CastepReader & myCastepReader,
-    const CastepGeomOptimiseSettings & settings
-  );
+  CastepGeomOptRun(const OptimisationSettings & optimisationSettings,
+      const std::string & originalSeed, const std::string & newSeed,
+      const io::CellReaderWriter & myCellReaderWriter,
+      const io::CastepReader & myCastepReader,
+      const CastepGeomOptimiseSettings & settings);
   ~CastepGeomOptRun();
 
-  OptimisationOutcome runFullRelax(
-    common::Structure & structure,
-    OptimisationData & data,
-    const ::std::string & castepExeAndArgs
-  );
-  OptimisationOutcome updateStructure(
-    common::Structure & structure,
-    OptimisationData & data
-  );
+  OptimisationOutcome
+  runFullRelax(common::Structure & structure, OptimisationData & data,
+      const std::string & castepExeAndArgs);
+  OptimisationOutcome
+  updateStructure(common::Structure & structure, OptimisationData & data);
 
 private:
   static const int MAX_RELAX_ATTEMPTS;
 
-  bool copyParamFile() const;
-  OptimisationOutcome makeCellCopy(common::Structure & structure);
-  OptimisationOutcome doPreRelaxation(
-    common::Structure & structure,
-    OptimisationData & optimisationData,
-    const ::std::string & castepExeAndArgs
-  );
-  OptimisationOutcome doRelaxation(
-    common::Structure & structure,
-    OptimisationData & optimistaionData,
-    const ::std::string & castepExeAndArgs
-  );
-  bool optimisationSucceeded();
-  bool parseOptimisationInfo(
-    common::Structure & structure,
-    OptimisationData & data
-  );
+  bool
+  copyParamFile() const;
+  OptimisationOutcome
+  makeCellCopy(common::Structure & structure);
+  OptimisationOutcome
+  doPreRelaxation(common::Structure & structure,
+      OptimisationData & optimisationData,
+      const std::string & castepExeAndArgs);
+  OptimisationOutcome
+  doRelaxation(common::Structure & structure,
+      OptimisationData & optimistaionData,
+      const std::string & castepExeAndArgs);
+  bool
+  optimisationSucceeded();
+  bool
+  parseOptimisationInfo(common::Structure & structure, OptimisationData & data);
 
   CastepRun myCastepRun;
   const CastepGeomOptimiseSettings mySettings;
-  const ::boost::filesystem::path myOrigCellFile;
-  const ::boost::filesystem::path myOrigParamFile;
+  const boost::filesystem::path myOrigCellFile;
+  const boost::filesystem::path myOrigParamFile;
   const io::CellReaderWriter & myCellReaderWriter;
   const io::CastepReader & myCastepReader;
   const OptimisationSettings & myOptimisationSettings;

@@ -26,6 +26,7 @@
 #include "spl/factory/FactoryError.h"
 #include "spl/io/ResReaderWriter.h"
 #include "spl/potential/CastepGeomOptimiser.h"
+#include "spl/potential/ExternalOptimiser.h"
 #include "spl/potential/LennardJones.h"
 #include "spl/potential/OptimisationSettings.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
@@ -174,6 +175,10 @@ Factory::createGeometryOptimiser(const Optimiser & options) const
     opt.reset(
         new potential::CastepGeomOptimiser(options.castep->runCommand,
             options.castep->seed, settings));
+  }
+  else if(options.external)
+  {
+    opt.reset(new potential::ExternalOptimiser(options.external->exe));
   }
 
   return opt;

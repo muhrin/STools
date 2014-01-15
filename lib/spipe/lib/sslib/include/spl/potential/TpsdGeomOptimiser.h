@@ -17,7 +17,7 @@
 
 #include <armadillo>
 
-#include "spl/potential/IGeomOptimiser.h"
+#include "spl/potential/GeomOptimiser.h"
 #include "spl/potential/IPotential.h"
 #include "spl/potential/IPotentialEvaluator.h"
 
@@ -34,7 +34,7 @@ class UnitCell;
 }
 namespace potential {
 
-class TpsdGeomOptimiser : public IGeomOptimiser
+class TpsdGeomOptimiser : public GeomOptimiser
 {
 public:
   typedef ::spl::UniquePtr< IPotential>::Type PotentialPtr;

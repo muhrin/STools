@@ -181,15 +181,14 @@ set(sslib_Header_Files__potential
   include/spl/potential/CastepGeomOptimiser.h
   include/spl/potential/CastepRun.h
   include/spl/potential/CombiningRules.h
-  include/spl/potential/FixedLatticeShapeConstraint.h
+  include/spl/potential/ExternalOptimiser.h
   include/spl/potential/GenericPotentialEvaluator.h
-  include/spl/potential/IGeomOptimiser.h
+  include/spl/potential/GeomOptimiser.h
   include/spl/potential/IParameterisable.h
   include/spl/potential/IPotential.h
   include/spl/potential/IPotentialEvaluator.h
   include/spl/potential/LennardJones.h
   include/spl/potential/LennardJonesData.h
-  include/spl/potential/OptimisationConstraint.h
   include/spl/potential/OptimisationSettings.h
   include/spl/potential/PotentialData.h
   include/spl/potential/StructureProperties.h

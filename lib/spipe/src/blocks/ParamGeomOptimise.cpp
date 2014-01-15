@@ -16,7 +16,7 @@
 #include <spl/SSLibAssert.h> // TEMP !
 #include <spl/common/Structure.h>
 #include <spl/potential/PotentialData.h>
-#include <spl/potential/IGeomOptimiser.h>
+#include <spl/potential/GeomOptimiser.h>
 #include <spl/potential/IParameterisable.h>
 #include <spl/potential/IPotential.h>
 

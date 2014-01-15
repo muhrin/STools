@@ -30,7 +30,7 @@
 namespace spl {
 namespace potential {
 class IParameterisable;
-class IGeomOptimiser;
+class GeomOptimiser;
 }
 }
 

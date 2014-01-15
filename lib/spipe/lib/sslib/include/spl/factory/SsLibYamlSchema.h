@@ -154,16 +154,28 @@ SCHEMER_MAP(CastepSchema, Castep)
   element("consistent", &Castep::numSelfConsistent)->defaultValue(2);
 }
 
+struct ExternalOptimiser
+{
+  std::string exe;
+};
+
+SCHEMER_MAP(ExternalOptimiserType, ExternalOptimiser)
+{
+  element("exe", &ExternalOptimiser::exe);
+}
+
 struct Optimiser
 {
-  boost::optional< OptimiserWithPotentialSettings> tpsd;
   boost::optional< Castep> castep;
+  boost::optional< ExternalOptimiser> external;
+  boost::optional< OptimiserWithPotentialSettings> tpsd;
 };
 
 SCHEMER_MAP(OptimiserSchema, Optimiser)
 {
-  element("tpsd", &Optimiser::tpsd);
   element("castep", &Optimiser::castep);
+  element("external", &Optimiser::external);
+  element("tpsd", &Optimiser::tpsd);
 }
 
 // STRUCTURE //////////////////////////////////////

@@ -22,9 +22,11 @@
 namespace spl {
 namespace utility {
 
-  
-std::string generateUniqueName(const size_t randPostfixLength = 4);
-std::string generateUniqueName(const ::std::string & prefix, const size_t randPostfixLength = 4);
+std::string
+generateUniqueName(const size_t randPostfixLength = 4);
+std::string
+generateUniqueName(const ::std::string & prefix,
+    const size_t randPostfixLength = 4);
 
 }
 }

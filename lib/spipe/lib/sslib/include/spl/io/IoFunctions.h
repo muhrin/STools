@@ -17,39 +17,39 @@
 
 #include <boost/filesystem.hpp>
 
-
 // FORWARD DECLARES ////////////////////////////////
 
 // DEFINES ////////////////////////////////////////
-
 
 // FUNCTIONS ////////////////////////////////////////
 
 namespace spl {
 namespace io {
-class StructureReadWriteManager;
 
+bool
+getWildcardPaths(std::string wildString,
+    std::vector< boost::filesystem::path> & outPaths);
 
-bool getWildcardPaths(
-  ::std::string wildString,
-  ::std::vector< ::boost::filesystem::path> & outPaths
-);
+bool
+getWildcardPaths(std::string wildString,
+    std::vector< boost::filesystem::path> & outPaths,
+    const boost::filesystem::path & searchFolder);
 
-bool getWildcardPaths(
-  ::std::string wildString,
-  ::std::vector< ::boost::filesystem::path> & outPaths,
-  const ::boost::filesystem::path & searchFolder
-);
+void
+escapeCharacters(std::string & regex);
 
-void escapeCharacters(::std::string & regex);
+bool
+buildWildcardRegex(std::string & pattern);
 
-bool buildWildcardRegex(::std::string & pattern);
+int
+getPrecision(const double num, const unsigned int digitsAfterDecimal);
 
-int getPrecision(const double num, const unsigned int digitsAfterDecimal);
+void
+writeToStream(std::ostream & out, const double num,
+    const unsigned digitsAfterDecimal);
 
-void writeToStream(::std::ostream & out, const double num, const unsigned digitsAfterDecimal);
-
-::std::string toString(const double num, const unsigned digitsAfterDecimal);
+::std::string
+toString(const double num, const unsigned digitsAfterDecimal);
 
 }
 }

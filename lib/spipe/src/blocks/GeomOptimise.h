@@ -17,7 +17,7 @@
 
 #include <pipelib/pipelib.h>
 
-#include <spl/potential/IGeomOptimiser.h>
+#include <spl/potential/GeomOptimiser.h>
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/potential/PotentialData.h>
 #include <spl/potential/Types.h>
@@ -60,7 +60,7 @@ public:
   // End from PipeBlock ///////////////////////
 
 protected:
-  ::spl::potential::IGeomOptimiser &
+  ::spl::potential::GeomOptimiser &
   getOptimiser();
   ::spipe::utility::DataTableSupport &
   getTableSupport();
