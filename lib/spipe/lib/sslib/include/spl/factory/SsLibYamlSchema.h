@@ -189,18 +189,6 @@ SCHEMER_MAP(AtomsDataSchema, AtomsData)
   element< AtomSpeciesCountScalar>("spec", &AtomsData::species);
 }
 
-struct Structure
-{
-  typedef boost::variant< std::vector< std::string>, AtomsData> Variant;
-  std::vector< Variant> atoms;
-};
-
-SCHEMER_MAP(StructureSchema, Structure)
-{
-  //typedef schemer::SchemaListMap<schemer::List<>>
-  //element("atoms", &Structure::atoms);
-}
-
 // STRUCTURE BUILDER //////////////////////////////
 
 namespace builder {
