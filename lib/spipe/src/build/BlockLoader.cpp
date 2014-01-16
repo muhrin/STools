@@ -12,6 +12,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <spl/SSLibConfig.h>
+
 #include "factory/YamlSchema.h"
 
 // NAMESPACES ////////////////////////////////
@@ -67,10 +69,12 @@ BlockLoader::BlockLoader()
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::FindSymmetryGroupSchema>(
               myBlockFactory)));
+#ifdef SPL_WITH_CGAL
   registerCreator("keepStableCompositions",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::KeepStableCompositionsSchema>(
               myBlockFactory)));
+#endif
   registerCreator("keepTopN",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::KeepTopNSchema>(
