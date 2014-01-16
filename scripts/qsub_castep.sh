@@ -10,19 +10,24 @@ fi
 
 declare -r REMOTE_HOST=$1
 declare -r SEED=$2
-declare -r JOB_FILE=$3
+declare -r JOB_FILE_ORIG=$3
 declare -r REMOTE_DIR=$4
 
-# Interval between checking if job is finished
+# Interval between checking if job is finished (in seconds)
 declare -r JOB_POLL_INTERVAL=60
 
 declare -r CELL_FILE=${SEED}.cell
 declare -r PARAM_FILE=${SEED}.param
-declare -r CELL_OUT_FILE=${SEED}-out.cell
+declare -r JOB_FILE=${SEED}.job
 
 declare -r RAND_FOLDER=`strings /dev/urandom | tr -dc [:alnum:] | head -c8`
 declare -r WORK_DIR=$REMOTE_DIR/$RAND_FOLDER
 
+
+# Set up the job file for the run
+sed "s/REPLACE_SEED/${SEED}/" $JOB_FILE_ORIG > ${JOB_FILE}
+
+# Make the remote directory and copy over the work files
 ssh $REMOTE_HOST mkdir -p $WORK_DIR
 scp $CELL_FILE $PARAM_FILE $JOB_FILE $REMOTE_HOST:$WORK_DIR
 
@@ -41,9 +46,10 @@ do
   fi
 done
 
-scp $REMOTE_HOST:$WORK_DIR/$SEED\* . > /dev/null
+# Copy everything back over
+scp $REMOTE_HOST:$WORK_DIR/$SEED\* .
 
-# Delete the working directory
+# Delete the remote working directory
 ssh $REMOTE_HOST "if [ -d \"$WORK_DIR\" ]; then rm -r $WORK_DIR; fi"
 
 

@@ -10,6 +10,9 @@
 Debug
 Release
 
+# Vim temporary files
+*.swp
+
 # CMake build files
 #CMakeLocal.txt
 #CMakeFiles

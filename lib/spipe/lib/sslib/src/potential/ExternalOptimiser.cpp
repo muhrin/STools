@@ -16,6 +16,7 @@
 
 #include <schemer/Schemer.h>
 
+#include <spl/io/BoostFilesystem.h>
 #include <spl/os/Process.h>
 #include <spl/potential/OptimisationSettings.h>
 #include <spl/utility/UtilFunctions.h>
@@ -90,23 +91,24 @@ ExternalOptimiser::optimise(common::Structure & structure,
     OptimisationData & data, const OptimisationSettings & options) const
 {
   const std::string outputStem = utility::generateUniqueName(10);
-  const std::string settingsFile = outputStem + ".yaml";
-  const std::string strFile = outputStem + ".res";
+  // These will automatically be deleted when they go out of scope
+  const io::ScopedFile settingsFile(outputStem + ".yaml");
+  const io::ScopedFile strFile(outputStem + ".res");
 
   // Write the settings and the structure file
-  writeSettings(settingsFile, options);
-  myResReaderWriter.writeStructure(structure, io::ResourceLocator(strFile));
+  writeSettings(settingsFile.get().string(), options);
+  myResReaderWriter.writeStructure(structure, io::ResourceLocator(strFile.get()));
 
   // Set up cargs to process: [options file] [structure file]
   std::vector< std::string> args;
-  args.push_back(settingsFile);
-  args.push_back(strFile);
+  args.push_back(settingsFile.get().string());
+  args.push_back(strFile.get().string());
 
   if(os::runBlocking(myRunCommand, args) != 0)
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR);
 
   OptResults results;
-  if(!readResults(settingsFile, &results) || !results.successful)
+  if(!readResults(settingsFile.get().string(), &results) || !results.successful)
     return OptimisationOutcome::failure(OptimisationError::INTERNAL_ERROR);
 
   data.internalEnergy = results.finalInternalEnergy;
@@ -116,7 +118,7 @@ ExternalOptimiser::optimise(common::Structure & structure,
 
   // Copy over the new structure
   common::StructurePtr newStructure = myResReaderWriter.readStructure(
-      io::ResourceLocator(strFile));
+      io::ResourceLocator(strFile.get()));
   structure = *newStructure;
 
   return OptimisationOutcome::success();
@@ -143,7 +145,7 @@ ExternalOptimiser::writeSettings(const std::string & filename,
   std::ofstream settingsFile(filename.c_str());
   if(settingsFile.is_open())
   {
-    settingsFile << settingsNode;
+    settingsFile << settingsNode << "\n";
     settingsFile.close();
   }
 }

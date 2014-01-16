@@ -27,36 +27,50 @@
 namespace spl {
 namespace io {
 
+class ScopedFile
+{
+public:
+  explicit
+  ScopedFile(const std::string & path);
+  explicit
+  ScopedFile(const boost::filesystem::path & path);
+  ~ScopedFile();
+  const boost::filesystem::path &
+  get() const;
+private:
+  const boost::filesystem::path myPath;
+};
+
 // Return path when appended to a_From will resolve to same as a_To
 ::boost::filesystem::path
-make_relative(::boost::filesystem::path a_From, ::boost::filesystem::path a_To);
+make_relative(boost::filesystem::path a_From, boost::filesystem::path a_To);
 
 ::std::string
-stemString(const ::boost::filesystem::path & path);
+stemString(const boost::filesystem::path & path);
 
 ::std::string
-leafString(const ::boost::filesystem::path & path);
+leafString(const boost::filesystem::path & path);
 
 ::boost::filesystem::path
-append(::boost::filesystem::path path,
-    const ::boost::filesystem::path::iterator & begin,
-    const ::boost::filesystem::path::iterator & end);
+append(boost::filesystem::path path,
+    const boost::filesystem::path::iterator & begin,
+    const boost::filesystem::path::iterator & end);
 
 ::boost::filesystem::path &
-appendTo(::boost::filesystem::path & path,
-    ::boost::filesystem::path::iterator begin,
-    const ::boost::filesystem::path::iterator & end);
+appendTo(boost::filesystem::path & path,
+    boost::filesystem::path::iterator begin,
+    const boost::filesystem::path::iterator & end);
 
 ::boost::filesystem::path
-absolute(const ::boost::filesystem::path & p);
+absolute(const boost::filesystem::path & p);
 bool
-isAbsolute(const ::boost::filesystem::path & toCheck);
+isAbsolute(const boost::filesystem::path & toCheck);
 
 bool
-createFile(const ::boost::filesystem::path & toCreate);
+createFile(const boost::filesystem::path & toCreate);
 
 bool
-createAndChangeCurrentPath(const ::boost::filesystem::path & path);
+createAndChangeCurrentPath(const boost::filesystem::path & path);
 
 }
 }
