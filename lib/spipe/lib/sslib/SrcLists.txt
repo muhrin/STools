@@ -85,7 +85,7 @@ set(sslib_Source_Files__io
   src/io/Parsing.cpp
   src/io/ResourceLocator.cpp
   src/io/ResReaderWriter.cpp
-  src/io/SslibReaderWriter.cpp
+  src/io/SplReaderWriter.cpp
   src/io/StructureYamlGenerator.cpp
   src/io/StructureReadWriteManager.cpp
   src/io/IoFunctions.cpp

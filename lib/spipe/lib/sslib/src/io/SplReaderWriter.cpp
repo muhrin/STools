@@ -1,12 +1,12 @@
 /*
- * ResReaderWriter.cpp
+ * SplReaderWriter.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
  */
 
 // INCLUDES //////////////////////////////////
-#include "spl/io/SslibReaderWriter.h"
+#include "spl/io/SplReaderWriter.h"
 
 #include <iostream>
 #include <iomanip>
@@ -44,11 +44,11 @@
 namespace spl {
 namespace io {
 
-namespace fs = ::boost::filesystem;
+namespace fs = boost::filesystem;
 namespace properties = common::structure_properties;
 
-const unsigned int SslibReaderWriter::DIGITS_AFTER_DECIMAL = 8;
-const ::std::string SslibReaderWriter::DEFAULT_EXTENSION = "spl";
+const unsigned int SplReaderWriter::DIGITS_AFTER_DECIMAL = 8;
+const std::string SplReaderWriter::DEFAULT_EXTENSION = "yaml";
 
 namespace kw {
 static const std::string STRUCTURE = "structure";
@@ -58,7 +58,7 @@ static const std::string STRUCTURES = "structures";
 static const StructureSchema STRUCTURE_SCHEMA;
 
 void
-SslibReaderWriter::writeStructure(common::Structure & str,
+SplReaderWriter::writeStructure(common::Structure & str,
     const ResourceLocator & locator) const
 {
   const fs::path filepath(locator.path());
@@ -69,16 +69,14 @@ SslibReaderWriter::writeStructure(common::Structure & str,
 
   const fs::path dir = filepath.parent_path();
   if(!dir.empty() && !exists(dir))
-  {
     create_directories(dir);
-  }
 
   // First open and parse the file to get the current contents (if any)
   YAML::Node doc;
   fs::fstream strFile;
   if(fs::exists(filepath))
   {
-    strFile.open(filepath, ::std::ios_base::in | ::std::ios_base::out);
+    strFile.open(filepath, std::ios_base::in | std::ios_base::out);
     try
     {
       doc = YAML::Load(strFile);
@@ -89,17 +87,17 @@ SslibReaderWriter::writeStructure(common::Structure & str,
     }
     // Go back to the start of the file
     strFile.clear(); // Clear the EoF flag
-    strFile.seekg(0, ::std::ios::beg);
+    strFile.seekg(0, std::ios::beg);
   }
   else
   {
-    strFile.open(filepath, ::std::ios_base::out);
+    strFile.open(filepath, std::ios_base::out);
   }
 
   ResourceLocator uniqueLoc = locator;
   if(uniqueLoc.id().empty())
   {
-    ::std::string newId = str.getName();
+    std::string newId = str.getName();
     if(newId.empty())
     {
       newId = utility::generateUniqueName();
@@ -115,7 +113,7 @@ SslibReaderWriter::writeStructure(common::Structure & str,
   {
     YAML::Emitter out;
     out << doc;
-    strFile << out.c_str() << ::std::endl;
+    strFile << out.c_str() << std::endl;
     strFile.close();
 
     str.setProperty(properties::io::LAST_ABS_FILE_PATH, uniqueLoc);
@@ -123,7 +121,7 @@ SslibReaderWriter::writeStructure(common::Structure & str,
 }
 
 common::types::StructurePtr
-SslibReaderWriter::readStructure(const ResourceLocator & locator) const
+SplReaderWriter::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const io::StructureYamlGenerator generator;
@@ -140,7 +138,7 @@ SslibReaderWriter::readStructure(const ResourceLocator & locator) const
     return structure;
   }
 
-  ::std::string locatorId = locator.id();
+  std::string locatorId = locator.id();
   if(locatorId.empty())
   {
     // No id, so assume that the file contains only one structure and
@@ -148,7 +146,7 @@ SslibReaderWriter::readStructure(const ResourceLocator & locator) const
     if(!doc[kw::STRUCTURE])
       return structure;
 
-    locatorId = doc[kw::STRUCTURE].begin()->first.as< ::std::string>();
+    locatorId = doc[kw::STRUCTURE].begin()->first.as< std::string>();
   }
 
   if(!locatorId.empty())
@@ -179,7 +177,7 @@ SslibReaderWriter::readStructure(const ResourceLocator & locator) const
 }
 
 size_t
-SslibReaderWriter::readStructures(StructuresContainer & outStructures,
+SplReaderWriter::readStructures(StructuresContainer & outStructures,
     const ResourceLocator & locator) const
 {
   size_t numLoaded = 0;
@@ -199,12 +197,12 @@ SslibReaderWriter::readStructures(StructuresContainer & outStructures,
     }
 
     common::types::StructurePtr structure;
-    ::std::string structureId;
+    std::string structureId;
 
     if(doc[kw::STRUCTURE] && doc[kw::STRUCTURE].IsMap())
     {
       const YAML::Node::const_iterator it = doc[kw::STRUCTURE].begin();
-      structureId = it->first.as< ::std::string>();
+      structureId = it->first.as< std::string>();
       Structure structureInfo;
       if(STRUCTURE_SCHEMA.nodeToValue(it->second, &structureInfo))
         structure = generator.generateStructure(structureInfo);
@@ -223,7 +221,7 @@ SslibReaderWriter::readStructures(StructuresContainer & outStructures,
       for(YAML::const_iterator it = doc[kw::STRUCTURES].begin(), end =
           doc[kw::STRUCTURES].end(); it != end; ++it)
       {
-        structureId = it->first.as< ::std::string>();
+        structureId = it->first.as< std::string>();
         Structure structureInfo;
         if(STRUCTURE_SCHEMA.nodeToValue(it->second, &structureInfo))
           structure = generator.generateStructure(structureInfo);
@@ -253,16 +251,17 @@ SslibReaderWriter::readStructures(StructuresContainer & outStructures,
 }
 
 ::std::vector< std::string>
-SslibReaderWriter::getSupportedFileExtensions() const
+SplReaderWriter::getSupportedFileExtensions() const
 {
-  ::std::vector< ::std::string> exts;
+  std::vector< std::string> exts;
+  exts.push_back("yaml");
   exts.push_back("spl");
   exts.push_back("sslib");
   return exts;
 }
 
 bool
-SslibReaderWriter::multiStructureSupport() const
+SplReaderWriter::multiStructureSupport() const
 {
   return true;
 }

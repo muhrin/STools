@@ -92,7 +92,7 @@ ExternalOptimiser::optimise(common::Structure & structure,
 {
   const std::string outputStem = utility::generateUniqueName(10);
   // These will automatically be deleted when they go out of scope
-  const io::ScopedFile settingsFile(outputStem + ".yaml");
+  const io::ScopedFile settingsFile(outputStem + "_opt.yaml");
   const io::ScopedFile strFile(outputStem + ".res");
 
   // Write the settings and the structure file

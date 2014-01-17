@@ -20,7 +20,7 @@
 #include <spl/io/CellReaderWriter.h>
 #include <spl/io/ResourceLocator.h>
 #include <spl/io/ResReaderWriter.h>
-#include <spl/io/SslibReaderWriter.h>
+#include <spl/io/SplReaderWriter.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/utility/StableComparison.h>
 
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(ReaderWriterTest)
   // Set up all the readers/writers we want to test
   ssio::StructureReadWriteManager rwMan;
   rwMan.insert(::spl::makeUniquePtr(new ssio::ResReaderWriter()));
-  rwMan.insert(::spl::makeUniquePtr(new ssio::SslibReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::SplReaderWriter()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::CellReaderWriter()));
 
   // Set up the structure to write

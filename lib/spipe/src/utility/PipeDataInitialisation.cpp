@@ -13,7 +13,7 @@
 #include <spl/io/CellReaderWriter.h>
 #include <spl/io/StructureReadWriteManager.h>
 #include <spl/io/ResReaderWriter.h>
-#include <spl/io/SslibReaderWriter.h>
+#include <spl/io/SplReaderWriter.h>
 #include <spl/io/XyzReaderWriter.h>
 
 // NAMESPACES ////////////////////////////////
@@ -30,9 +30,9 @@ void initStructureRwManDefault(ssio::StructureReadWriteManager & rwMan)
   rwMan.insert(::spl::makeUniquePtr(new ssio::CastepReader()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::CellReaderWriter()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::ResReaderWriter()));
-  rwMan.insert(::spl::makeUniquePtr(new ssio::SslibReaderWriter()));
+  rwMan.insert(::spl::makeUniquePtr(new ssio::SplReaderWriter()));
   rwMan.insert(::spl::makeUniquePtr(new ssio::XyzReaderWriter()));
-  rwMan.setDefaultWriter(ssio::SslibReaderWriter::DEFAULT_EXTENSION);
+  rwMan.setDefaultWriter(ssio::SplReaderWriter::DEFAULT_EXTENSION);
 }
 
 

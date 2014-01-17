@@ -138,7 +138,7 @@ set(sslib_Header_Files__io
   include/spl/io/Parsing.h
   include/spl/io/ResourceLocator.h
   include/spl/io/ResReaderWriter.h
-  include/spl/io/SslibReaderWriter.h
+  include/spl/io/SplReaderWriter.h
   include/spl/io/StructureSchema.h
   include/spl/io/StructureYamlGenerator.h
   include/spl/io/StructureReadWriteManager.h
@@ -205,7 +205,6 @@ set(sslib_Header_Files__utility
   include/spl/utility/Armadillo.h
   include/spl/utility/DistanceMatrixComparator.h
   include/spl/utility/EdgeMap.h
-  include/spl/utility/Enum.h
   include/spl/utility/GenericBufferedComparator.h
   include/spl/utility/HeterogeneousMap.h
   include/spl/utility/HeterogeneousMapEx.h

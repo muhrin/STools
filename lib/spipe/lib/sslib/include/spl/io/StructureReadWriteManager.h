@@ -38,64 +38,78 @@ class ResourceLocator;
 }
 }
 
-
 namespace spl {
 namespace io {
 
-class StructureReadWriteManager : ::boost::noncopyable
+class StructureReadWriteManager : boost::noncopyable
 {
-  typedef ::std::map< ::std::string, IStructureWriter *> WritersMap;
-  typedef ::std::map< ::std::string, IStructureReader *> ReadersMap;
+  typedef std::map< std::string, IStructureWriter *> WritersMap;
+  typedef std::map< std::string, IStructureReader *> ReadersMap;
 public:
 
-  typedef UniquePtr<IStructureWriter>::Type WriterPtr;
-  typedef UniquePtr<IStructureReader>::Type ReaderPtr;
+  typedef UniquePtr< IStructureWriter>::Type WriterPtr;
+  typedef UniquePtr< IStructureReader>::Type ReaderPtr;
   typedef WritersMap::iterator WritersIterator;
   typedef WritersMap::const_iterator WritersConstIterator;
   typedef ReadersMap::iterator ReadersIterator;
   typedef ReadersMap::const_iterator ReadersConstIterator;
-  typedef ::boost::iterator_range<WritersIterator> WritersRange;
-  typedef ::boost::iterator_range<WritersConstIterator> WritersConstRange;
-  typedef ::boost::iterator_range<ReadersIterator> ReadersRange;
-  typedef ::boost::iterator_range<ReadersConstIterator> ReadersConstRange;
+  typedef boost::iterator_range< WritersIterator> WritersRange;
+  typedef boost::iterator_range< WritersConstIterator> WritersConstRange;
+  typedef boost::iterator_range< ReadersIterator> ReadersRange;
+  typedef boost::iterator_range< ReadersConstIterator> ReadersConstRange;
 
-  WritersIterator beginWriters();
-  WritersConstIterator beginWriters() const;
-  WritersIterator endWriters();
-  WritersConstIterator endWriters() const;
-  WritersRange writers();
-  WritersConstRange writers() const;
-  size_t numWriters() const;
+  WritersIterator
+  beginWriters();
+  WritersConstIterator
+  beginWriters() const;
+  WritersIterator
+  endWriters();
+  WritersConstIterator
+  endWriters() const;
+  WritersRange
+  writers();
+  WritersConstRange
+  writers() const;
+  size_t
+  numWriters() const;
 
-  ReadersIterator beginReaders();
-  ReadersConstIterator beginReaders() const;
-  ReadersIterator endReaders();
-  ReadersConstIterator endReaders() const;
-  ReadersRange readers();
-  ReadersConstRange readers() const;
-  size_t numReaders() const;
+  ReadersIterator
+  beginReaders();
+  ReadersConstIterator
+  beginReaders() const;
+  ReadersIterator
+  endReaders();
+  ReadersConstIterator
+  endReaders() const;
+  ReadersRange
+  readers();
+  ReadersConstRange
+  readers() const;
+  size_t
+  numReaders() const;
 
-  template <class ReaderOrWriter>
-  ReaderOrWriter & insert(SSLIB_UNIQUE_PTR(ReaderOrWriter) readerOrWriter);
-  void insertReader(ReaderPtr reader);
-  void insertWriter(WriterPtr writer);
+  template< class ReaderOrWriter>
+    ReaderOrWriter &
+    insert(SSLIB_UNIQUE_PTR(ReaderOrWriter)readerOrWriter);
+    void insertReader(ReaderPtr reader);
+    void insertWriter(WriterPtr writer);
 
-  void registerWriter(IStructureWriter & writer);
-  void deregisterWriter(IStructureWriter & writer);
+    void registerWriter(IStructureWriter & writer);
+    void deregisterWriter(IStructureWriter & writer);
 
-  void registerReader(IStructureReader & reader);
-  void deregisterReader(IStructureReader & reader);
+    void registerReader(IStructureReader & reader);
+    void deregisterReader(IStructureReader & reader);
 
-  bool writeStructure(
+    bool writeStructure(
     common::Structure & str,
     ResourceLocator locator) const;
 
-  bool writeStructure(
+    bool writeStructure(
     common::Structure & str,
     ResourceLocator locator,
-    const ::std::string & fileType) const;
+    const std::string & fileType) const;
 
-  common::types::StructurePtr readStructure(const ResourceLocator & locator) const;
+    common::types::StructurePtr readStructure(const ResourceLocator & locator)const;
 
   size_t readStructures(
     StructuresContainer & outStructures,
@@ -103,27 +117,27 @@ public:
     const int maxDepth = 1
   ) const;
 
-  const IStructureWriter * getWriter(const ::std::string & extension) const;
+  const IStructureWriter * getWriter(const std::string & extension) const;
 
-  bool setDefaultWriter(const ::std::string & extension);
+  bool setDefaultWriter(const std::string & extension);
   const IStructureWriter * getDefaultWriter() const;
 
 private:
-  typedef ::boost::ptr_vector<IStructureWriter> WritersStore;
-  typedef ::boost::ptr_vector<IStructureReader> ReadersStore;
+  typedef boost::ptr_vector<IStructureWriter> WritersStore;
+  typedef boost::ptr_vector<IStructureReader> ReadersStore;
 
-  bool getExtension(::std::string & ext, const ResourceLocator & locator) const;
+  bool getExtension(std::string & ext, const ResourceLocator & locator) const;
 
   size_t doReadAllStructuresFromPath(
     StructuresContainer & outStructures,
-    const ::boost::filesystem::path & path,
+    const boost::filesystem::path & path,
     const size_t maxDepth,
     const size_t currentDepth = 0) const;
 
   void postRead(common::Structure & structure, const ResourceLocator & locator) const;
   void postWrite(common::Structure & structure, const ResourceLocator & locator) const;
 
-  ::std::string myDefaultWriteExtension;
+  std::string myDefaultWriteExtension;
 
   WritersMap myWriters;
   ReadersMap myReaders;
@@ -132,16 +146,15 @@ private:
   ReadersStore myReadersStore;
 
 #ifdef SSLIB_ENABLE_THREAD_AWARE
-  // TODO: Check if ::std::vector is thread safe, otherwise need mutexes for
+  // TODO: Check if std::vector is thread safe, otherwise need mutexes for
   // inserting/removing readers and writers
   // TODO: Currently we lock for all read and writes but we should be locking
   // only for read and writes to the same file
-  mutable ::boost::mutex myRwMutex;
+  mutable boost::mutex myRwMutex;
 #endif
 };
 
-}
-}
+}}
 
 #include "spl/io/detail/StructureReadWriteManager.h"
 

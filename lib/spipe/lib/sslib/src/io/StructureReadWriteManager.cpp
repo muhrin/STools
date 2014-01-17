@@ -22,7 +22,7 @@
 namespace spl {
 namespace io {
 
-namespace fs = ::boost::filesystem;
+namespace fs = boost::filesystem;
 namespace properties = common::structure_properties;
 
 StructureReadWriteManager::WritersIterator
@@ -127,7 +127,7 @@ StructureReadWriteManager::insertReader(
 void
 StructureReadWriteManager::registerWriter(spl::io::IStructureWriter &writer)
 {
-  BOOST_FOREACH(const ::std::string & ext, writer.getSupportedFileExtensions())
+  BOOST_FOREACH(const std::string & ext, writer.getSupportedFileExtensions())
   {
     myWriters.insert(WritersMap::value_type(ext, &writer));
   }
@@ -136,7 +136,7 @@ StructureReadWriteManager::registerWriter(spl::io::IStructureWriter &writer)
 void
 StructureReadWriteManager::deregisterWriter(spl::io::IStructureWriter &writer)
 {
-  using ::std::string;
+  using std::string;
 
   for(WritersMap::iterator it = myWriters.begin(), end = myWriters.end();
       it != end; /*increment done in loop*/)
@@ -151,7 +151,7 @@ StructureReadWriteManager::deregisterWriter(spl::io::IStructureWriter &writer)
 void
 StructureReadWriteManager::registerReader(IStructureReader & reader)
 {
-  BOOST_FOREACH(const ::std::string & ext, reader.getSupportedFileExtensions())
+  BOOST_FOREACH(const std::string & ext, reader.getSupportedFileExtensions())
   {
     myReaders.insert(ReadersMap::value_type(ext, &reader));
   }
@@ -171,11 +171,11 @@ StructureReadWriteManager::deregisterReader(IStructureReader & reader)
 }
 
 bool
-StructureReadWriteManager::writeStructure(::spl::common::Structure & str,
+StructureReadWriteManager::writeStructure(spl::common::Structure & str,
     ResourceLocator locator) const
 {
   // TODO: Add status return value to this method
-  ::std::string ext;
+  std::string ext;
   if(!getExtension(ext, locator))
   {
     // No extension: try default writer
@@ -193,7 +193,7 @@ StructureReadWriteManager::writeStructure(::spl::common::Structure & str,
 
 bool
 StructureReadWriteManager::writeStructure(common::Structure & str,
-    ResourceLocator locator, const ::std::string & fileType) const
+    ResourceLocator locator, const std::string & fileType) const
 {
   // TODO: Add status return value to this method
   const WritersMap::const_iterator it = myWriters.find(fileType);
@@ -205,7 +205,7 @@ StructureReadWriteManager::writeStructure(common::Structure & str,
     locator.clearId();
 
 #ifdef SSLIB_ENABLE_THREAD_AWARE
-  ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+  boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
   // Finally pass it on the the correct writer
@@ -224,7 +224,7 @@ StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
 
   common::types::StructurePtr structure;
 
-  ::std::string ext;
+  std::string ext;
   if(!getExtension(ext, locator))
     return structure;
 
@@ -234,7 +234,7 @@ StructureReadWriteManager::readStructure(const ResourceLocator & locator) const
     return structure; /*unknown extension*/
 
 #ifdef SSLIB_ENABLE_THREAD_AWARE
-  ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+  boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
   // Finally pass it on the the correct reader
@@ -256,7 +256,7 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
 
   if(fs::is_regular_file(locator.path()))
   {
-    ::std::string ext;
+    std::string ext;
     if(!getExtension(ext, locator))
       return 0;
 
@@ -266,7 +266,7 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
       return 0; /*unknown extension*/
 
 #ifdef SSLIB_ENABLE_THREAD_AWARE
-    ::boost::lock_guard< ::boost::mutex> guard(myRwMutex);
+    boost::lock_guard< boost::mutex> guard(myRwMutex);
 #endif
 
     // Finally pass it on the the correct reader
@@ -291,7 +291,7 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
 }
 
 const IStructureWriter *
-StructureReadWriteManager::getWriter(const ::std::string & ext) const
+StructureReadWriteManager::getWriter(const std::string & ext) const
 {
   const WritersMap::const_iterator it = myWriters.find(ext);
 
@@ -302,7 +302,7 @@ StructureReadWriteManager::getWriter(const ::std::string & ext) const
 }
 
 bool
-StructureReadWriteManager::setDefaultWriter(const ::std::string & extension)
+StructureReadWriteManager::setDefaultWriter(const std::string & extension)
 {
   myDefaultWriteExtension = extension;
 
@@ -326,7 +326,7 @@ StructureReadWriteManager::getDefaultWriter() const
 }
 
 bool
-StructureReadWriteManager::getExtension(::std::string & ext,
+StructureReadWriteManager::getExtension(std::string & ext,
     const ResourceLocator & locator) const
 {
   // Get the extension
@@ -345,7 +345,7 @@ StructureReadWriteManager::getExtension(::std::string & ext,
 
 size_t
 StructureReadWriteManager::doReadAllStructuresFromPath(
-    StructuresContainer & outStructures, const ::boost::filesystem::path & path,
+    StructuresContainer & outStructures, const boost::filesystem::path & path,
     const size_t maxDepth, const size_t currentDepth) const
 {
   // Preconditions:
@@ -356,7 +356,7 @@ StructureReadWriteManager::doReadAllStructuresFromPath(
 
   size_t numRead = 0;
 
-  BOOST_FOREACH(const fs::path & entry, ::std::make_pair(fs::directory_iterator(path), fs::directory_iterator()))
+  BOOST_FOREACH(const fs::path & entry, std::make_pair(fs::directory_iterator(path), fs::directory_iterator()))
   {
     if(fs::is_regular_file(entry))
     {
@@ -379,7 +379,7 @@ StructureReadWriteManager::postRead(common::Structure & structure,
   // If the structure doesn't have a name, set it to the locator
   if(structure.getName().empty())
   {
-    ::std::string name = io::stemString(locator.path());
+    std::string name = io::stemString(locator.path());
     if(!locator.id().empty())
       name += "-" + locator.id();
     structure.setName(name);
