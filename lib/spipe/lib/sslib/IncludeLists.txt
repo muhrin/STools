@@ -20,7 +20,6 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h
   include/spl/analysis/VectorAnchorArrangementOutputter.h
-  include/spl/analysis/VoronoiMap.h
   include/spl/analysis/VoronoiEdgeTracer.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
@@ -67,6 +66,8 @@ set(sslib_Header_Files__build_cell
   include/spl/build_cell/SymmetryFunctions.h
   include/spl/build_cell/SymmetryGroup.h
   include/spl/build_cell/SymmetryGroupBuilder.h
+  include/spl/build_cell/VoronoiSlabGenerator.h
+  include/spl/build_cell/VoronoiSlabRegions.h
 )
 source_group("Header Files\\build_cell" FILES ${sslib_Header_Files__build_cell})
 

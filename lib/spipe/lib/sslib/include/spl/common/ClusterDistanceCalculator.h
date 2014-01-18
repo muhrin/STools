@@ -44,7 +44,7 @@ public:
     const double distSq = ::arma::dot(dr, dr);
 
     if(distSq < cutoffSq)
-      outDistances.push_back(sqrt(distSq));
+      outDistances.push_back(std::sqrt(distSq));
 
     return true;
   }

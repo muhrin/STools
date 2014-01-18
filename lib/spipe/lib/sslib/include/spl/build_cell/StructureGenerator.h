@@ -28,17 +28,18 @@ class GenerationSettings;
 class StructureGenerator
 {
 public:
-  virtual ~StructureGenerator() {}
+  virtual
+  ~StructureGenerator()
+  {
+  }
 
-  virtual GenerationOutcome generateStructure(
-    common::StructurePtr & structureOut,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) = 0;
-  virtual GenerationOutcome generateStructure(
-    common::StructurePtr & structureOut,
-    const common::AtomSpeciesDatabase & speciesDb,
-    const GenerationSettings & info
-  ) = 0;
+  virtual GenerationOutcome
+  generateStructure(common::StructurePtr & structureOut,
+      const common::AtomSpeciesDatabase & speciesDb) = 0;
+  virtual GenerationOutcome
+  generateStructure(common::StructurePtr & structureOut,
+      const common::AtomSpeciesDatabase & speciesDb,
+      const GenerationSettings & info) = 0;
 };
 
 }

@@ -53,7 +53,8 @@ template< typename T>
 
 BlockLoader::BlockLoader()
 {
-  registerCreator("buildStructures",
+  // TODO: Move this element
+  registerCreator("generateStructures",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::BuildStructuresSchema>(
               myBlockFactory)));

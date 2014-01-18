@@ -21,10 +21,13 @@
 #include "spl/build_cell/AtomsGroup.h"
 #include "spl/build_cell/PointGroups.h"
 #include "spl/build_cell/RandomUnitCellGenerator.h"
+#include "spl/build_cell/VoronoiSlabGenerator.h"
+#include "spl/build_cell/VoronoiSlabRegions.h"
 #include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/factory/FactoryError.h"
 #include "spl/io/ResReaderWriter.h"
+#include "spl/math/Matrix.h"
 #include "spl/potential/CastepGeomOptimiser.h"
 #include "spl/potential/ExternalOptimiser.h"
 #include "spl/potential/LennardJones.h"
@@ -384,7 +387,55 @@ Factory::createStructureGenerator(
 
   if(options.builder)
     generator = createStructureBuilder(*options.builder);
+  else if(options.voronoiSlab)
+    generator = createVoronoiSlabGenerator(*options.voronoiSlab);
 
+  return generator;
+}
+
+UniquePtr< build_cell::VoronoiSlabGenerator>::Type
+Factory::createVoronoiSlabGenerator(
+    const builder::VoronoiSlabGenerator & options) const
+{
+  UniquePtr< build_cell::VoronoiSlabGenerator>::Type generator(
+      new build_cell::VoronoiSlabGenerator());
+
+  BOOST_FOREACH(const builder::VoronoiSlab & s, options.slabs)
+  {
+    arma::mat44 transform;
+    transform.eye();
+    if(s.pos)
+      math::setTranslation(transform, *s.pos);
+    if(s.rot)
+      math::setRotation(transform, *s.rot);
+
+    build_cell::VoronoiSlabGenerator::Slab slab(transform);
+
+    // Create the regions for the slab
+    BOOST_FOREACH(const builder::VoronoiSlabRegion & r, s.regions)
+    {
+      UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion>::Type region;
+      if(r.lattice)
+      {
+        std::vector< arma::vec2> boundary;
+        BOOST_FOREACH(const arma::rowvec2 & bound, r.lattice->boundary)
+          boundary.push_back(bound.t());
+
+        arma::vec2 lattice[2];
+        lattice[0] = r.lattice->lattice[0].t();
+        lattice[1] = r.lattice->lattice[1].t();
+
+        region.reset(
+            new build_cell::LatticeRegion(boundary, lattice[0], lattice[1],
+                r.lattice->basis));
+      }
+
+      if(region.get())
+        slab.addRegion(region);
+    }
+
+    generator->addSlab(slab);
+  }
   return generator;
 }
 

@@ -12,7 +12,6 @@ set(sslib_Source_Files__analysis
   src/analysis/SpaceGroup.cpp
   src/analysis/StructureConvexHullInfoSupplier.cpp
   src/analysis/StructureTriangulation.cpp
-  src/analysis/VoronoiMap.cpp
 )
 source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
 
@@ -36,6 +35,8 @@ set(sslib_Source_Files__build_cell
   src/build_cell/SymmetryFunctions.cpp
   src/build_cell/SymmetryGroup.cpp
   src/build_cell/SymmetryGroupBuilder.cpp
+  src/build_cell/VoronoiSlabGenerator.cpp
+  src/build_cell/VoronoiSlabRegions.cpp
 )
 source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
 

@@ -51,7 +51,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
 {
   // Try to construct a structure generator
   ssbc::IStructureGeneratorPtr generator(
-      mySplFactory.createStructureBuilder(options));
+      mySplFactory.createStructureGenerator(options.generator));
   if(!generator.get())
     return false;
 

@@ -33,15 +33,16 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 namespace blocks {
 
-struct BuildStructures : public spl::factory::builder::Builder
+struct BuildStructures
 {
   int num;
+  spl::factory::builder::StructureGenerator generator;
 };
 
 SCHEMER_MAP(BuildStructuresSchema, BuildStructures)
 {
-  extends< spl::factory::builder::BuilderSchema>();
   element("num", &BuildStructures::num)->defaultValue(1);
+  element("generator", &BuildStructures::generator);
 };
 
 struct Clone

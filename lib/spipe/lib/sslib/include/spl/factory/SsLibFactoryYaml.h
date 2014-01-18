@@ -34,6 +34,9 @@
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spl {
+namespace build_cell {
+class VoronoiSlabGenerator;
+}
 namespace common {
 class AtomSpeciesDatabase;
 }
@@ -79,6 +82,9 @@ public:
 
   build_cell::IStructureGeneratorPtr
   createStructureGenerator(const builder::StructureGenerator & options) const;
+
+  UniquePtr< build_cell::VoronoiSlabGenerator>::Type
+  createVoronoiSlabGenerator(const builder::VoronoiSlabGenerator & options) const;
 
   const GenShapeFactory &
   getShapeFactory() const;
