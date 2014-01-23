@@ -110,7 +110,14 @@ template< typename T>
       return false;
 
     std::stringstream ss(node.Scalar());
-    ss >> rhs;
+    try
+    {
+      ss >> rhs;
+    }
+    catch(const std::logic_error & /*e*/)
+    {
+      return false;
+    }
 
     return true;
   }

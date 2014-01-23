@@ -175,6 +175,14 @@ SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
   element< io::BlockLoaderType>("pipe", &SearchStoichiometries::pipe);
 }
 
+struct SeparateAtoms
+{
+};
+
+SCHEMER_MAP(SeparateAtomsType, SeparateAtoms)
+{
+}
+
 struct SweepPotentialParams
 {
   std::vector< std::string> range;

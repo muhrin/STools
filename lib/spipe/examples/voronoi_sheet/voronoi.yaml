@@ -1,0 +1,40 @@
+
+rngSeed:
+  123
+
+
+generateStructures:
+  generator:
+    voronoiSlab:
+      slabs:
+        - regions:
+           - basis:
+               ordered: [B, N]
+             lattice:
+              boundary: [0 0, 0 5, 30 5, 30 0]
+              lattice: [2.484 0, 1.2425 2.1371]
+           - basis:
+               ordered: [B, N, C]
+             random:
+              boundary: [0 5, 0 10.8, 30 10.8, 30 5]
+              numPoints: 50
+              minsep: 2.2
+           - basis:
+               ordered: [C]
+             lattice:
+              boundary: [0 10.8, 0 15.8, 30 15.8, 30 10.8]
+              lattice: [0 2.484, 2.1371 1.2425]
+
+separateAtoms:
+
+writeStructures:
+  format: xyz
+
+engine:
+  serial:
+
+
+run: generateStructures | separateAtoms | writeStructures
+     
+
+

@@ -86,15 +86,33 @@ template< typename T>
       myUpper = x0 < x1 ? x1 : x0;
     }
 
+    bool
+    expand(const T & x)
+    {
+      if(x < myLower)
+      {
+        myLower = x;
+        return true;
+      }
+
+      if(x > myUpper)
+      {
+        myUpper = x;
+        return true;
+      }
+      return false;
+    }
+
     bool operator < (const MinMax & rhs) const
     {
       if(myLower < rhs.myLower)
-      return true;
+        return true;
       if(rhs.myLower < myLower)
-      return false;
+        return false;
 
       if(myUpper < rhs.myUpper)
-      return true;
+        return true;
+
       return false;
     }
 

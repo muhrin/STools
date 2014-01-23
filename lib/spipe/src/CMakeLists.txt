@@ -17,6 +17,7 @@ set(spipe_Header_Files__blocks
   blocks/RemoveDuplicates.h
   blocks/RunPotentialParamsQueue.h
   blocks/SearchStoichiometries.h
+  blocks/SeparateAtoms.h
   blocks/SweepPotentialParams.h
   blocks/WriteStructures.h
 )
@@ -37,6 +38,7 @@ set(spipe_Source_Files__blocks
   blocks/RemoveDuplicates.cpp
   blocks/RunPotentialParamsQueue.cpp
   blocks/SearchStoichiometries.cpp
+  blocks/SeparateAtoms.cpp
   blocks/SweepPotentialParams.cpp
   blocks/WriteStructures.cpp
 )

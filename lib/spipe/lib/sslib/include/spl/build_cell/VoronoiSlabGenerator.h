@@ -22,9 +22,10 @@
 #include <armadillo>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-//#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Voronoi_diagram_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
 #include <CGAL/Polygon_2.h>
@@ -61,11 +62,26 @@ private:
 class VoronoiSlabGenerator::Slab
 {
   typedef CGAL::Exact_predicates_exact_constructions_kernel K;
-  typedef CGAL::Delaunay_triangulation_2< K> Delaunay;
+public:
+  struct SiteInfo
+  {
+    bool fixed;
+    boost::optional< double> minsep;
+    const VoronoiSlabGenerator::SlabRegion * generatedBy;
+  };
+
+private:
+  typedef CGAL::Triangulation_vertex_base_with_info_2<SiteInfo, K> Vb;
+  typedef CGAL::Triangulation_data_structure_2<Vb> Tds;
+
+public:
+  typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
+
+private:
   typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
   typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
       Delaunay> AP;
-  typedef std::pair< arma::vec2, bool> Site;
+
 public:
   typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
@@ -78,6 +94,14 @@ public:
   addRegion(UniquePtr< SlabRegion>::Type & region);
 private:
   typedef boost::ptr_vector< VoronoiSlabGenerator::SlabRegion> SlabRegions;
+  typedef std::map< const Delaunay::Vertex_handle, bool> VertexInfo;
+
+  void
+  refineTriangulation(Delaunay * const dg) const;
+  bool
+  separatePoints(Delaunay * const dg) const;
+  void
+  spreadAngles(Delaunay * const dg) const;
 
   arma::mat44 myTransform;
   SlabRegions myRegions;
@@ -88,17 +112,23 @@ class VoronoiSlabGenerator::SlabRegion
 protected:
   typedef CGAL::Exact_predicates_exact_constructions_kernel K;
   typedef CGAL::Polygon_2< K> Boundary;
-  typedef VoronoiSlabGenerator::Slab::Voronoi Voronoi;
   typedef std::pair< arma::vec2, bool> Site;
 
 public:
-  SlabRegion(const std::vector< arma::vec2> & boundary)
+  typedef VoronoiSlabGenerator::Slab::Delaunay Delaunay;
+  typedef VoronoiSlabGenerator::Slab::Voronoi Voronoi;
+  class Basis;
+
+  SlabRegion(const std::vector< arma::vec2> & boundary,
+      UniquePtr< Basis>::Type & basis) :
+      myBasis(basis)
   {
     BOOST_FOREACH(const arma::vec2 & r, boundary)
       myBoundary.push_back(utility::toCgalPoint< K>(r));
     SSLIB_ASSERT(!myBoundary.is_empty());
     SSLIB_ASSERT(myBoundary.is_simple());
   }
+  SlabRegion(const SlabRegion & toCopy);
   virtual
   ~SlabRegion()
   {
@@ -113,19 +143,41 @@ public:
   bool
   withinBoundary(const arma::vec2 & r) const
   {
-    return getBoundary().bounded_side(K::Point_2(r(0), r(1)))
-        != CGAL::ON_UNBOUNDED_SIDE;
+    return withinBoundary(utility::toCgalPoint< K>(r));
+  }
+  bool
+  withinBoundary(const Voronoi::Point_2 & r) const
+  {
+    return getBoundary().bounded_side(r) != CGAL::ON_UNBOUNDED_SIDE;
   }
 
   virtual void
-  generateSites(std::vector< Site> * const points) const = 0;
+  generateSites(Delaunay * const dg) const = 0;
   virtual void
   generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
-      std::vector< common::Atom> * const atoms) const = 0;
+      std::vector< common::Atom> * const atoms) const;
   virtual std::auto_ptr< SlabRegion>
   clone() const = 0;
 private:
   Boundary myBoundary;
+  UniquePtr< Basis>::Type myBasis;
+};
+
+class VoronoiSlabGenerator::SlabRegion::Basis
+{
+public:
+  typedef VoronoiSlabGenerator::SlabRegion::Voronoi Voronoi;
+
+  virtual
+  ~Basis()
+  {
+  }
+
+  virtual bool
+  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
+      std::vector< common::Atom> * const atoms) const = 0;
+  virtual UniquePtr< Basis>::Type
+  clone() const = 0;
 };
 
 }

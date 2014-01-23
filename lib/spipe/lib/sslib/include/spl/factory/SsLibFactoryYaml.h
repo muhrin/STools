@@ -21,6 +21,7 @@
 #include "spl/build_cell/BuildCellFwd.h"
 #include "spl/build_cell/StructureBuilder.h"
 #include "spl/build_cell/StructureGenerator.h"
+#include "spl/build_cell/VoronoiSlabGenerator.h"
 #include "spl/factory/FactoryFwd.h"
 #include "spl/factory/GenShapeFactory.h"
 #include "spl/factory/SsLibYamlSchema.h"
@@ -46,7 +47,7 @@ class OptimisationSettings;
 
 namespace factory {
 
-class Factory : ::boost::noncopyable
+class Factory : boost::noncopyable
 {
 public:
   typedef UniquePtr< potential::GeomOptimiser>::Type GeomOptimiserPtr;
@@ -82,14 +83,20 @@ public:
 
   build_cell::IStructureGeneratorPtr
   createStructureGenerator(const builder::StructureGenerator & options) const;
-
+#ifdef SPL_WITH_CGAL
   UniquePtr< build_cell::VoronoiSlabGenerator>::Type
   createVoronoiSlabGenerator(const builder::VoronoiSlabGenerator & options) const;
+#endif // SPL_WITH_CGAL
 
   const GenShapeFactory &
   getShapeFactory() const;
 
 private:
+#ifdef SPL_WITH_CGAL
+  UniquePtr<build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
+  createVoronoiSlabRegionBasis(const builder::VoronoiSlabRegionBasis & options) const;
+#endif // SPL_WITH_CGAL
+
   const GenShapeFactory myShapeFactory;
 };
 

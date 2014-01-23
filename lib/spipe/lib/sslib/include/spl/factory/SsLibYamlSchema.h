@@ -30,7 +30,6 @@ namespace spl {
 namespace factory {
 
 // SIMPLE SCHEMA TYPES //////////////////////////////////////
-
 typedef schemer::Scalar< yaml::VecAsString< std::string>::Type> StringsVector;
 typedef schemer::Scalar< yaml::ArmaTriangularMat> TriangularMatrix;
 typedef schemer::Scalar< arma::rowvec2> Rowvec2;
@@ -38,7 +37,6 @@ typedef schemer::Scalar< arma::rowvec3> Rowvec3;
 typedef schemer::Scalar< arma::rowvec4> Rowvec4;
 typedef schemer::Scalar< AtomSpeciesCount> AtomSpeciesCountScalar;
 typedef schemer::Scalar< yaml::VecAsString< utility::Range< double> >::Type> DoubleRanges;
-typedef schemer::List< Rowvec2> Boundary;
 
 struct MinMax
 {
@@ -380,7 +378,7 @@ SCHEMER_MAP(BuilderSchema, Builder)
   element("atomsRadius", &Builder::atomsRadius);
   element("cluster", &Builder::cluster)->defaultValue(false);
   element< SimpleAtomList>("atoms", &Builder::atoms);
-  element< schemer::List< AtomsGroupSchema> >("groups", &Builder::groups);
+  element("groups", &Builder::groups);
   element("genShape", &Builder::genShape);
   element("unitCell", &Builder::unitCellBuilder);
   element("symmetry", &Builder::symmetry);
@@ -388,11 +386,23 @@ SCHEMER_MAP(BuilderSchema, Builder)
   element("overlap", &Builder::overlap);
 }
 
+struct VoronoiSlabRegionBasis
+{
+  boost::optional< std::vector< std::string> > ordered;
+  boost::optional< std::map< std::string, int> > random;
+};
+
+SCHEMER_MAP(VoronoiSlabRegionBasisType, VoronoiSlabRegionBasis)
+{
+  element("ordered", &VoronoiSlabRegionBasis::ordered);
+  element("random", &VoronoiSlabRegionBasis::random);
+}
+
 struct VoronoiSlabLatticeRegion
 {
   std::vector< arma::rowvec2> boundary;
   std::vector< arma::rowvec2> lattice;
-  std::vector< std::string> basis;
+  boost::optional< arma::rowvec2> startPoint;
 };
 
 SCHEMER_LIST(Lattice2DType, Rowvec2)
@@ -402,19 +412,39 @@ SCHEMER_LIST(Lattice2DType, Rowvec2)
 
 SCHEMER_MAP(VoronoiSlabLatticeRegionType, VoronoiSlabLatticeRegion)
 {
-  element< Boundary>("boundary", &VoronoiSlabLatticeRegion::boundary);
+  element("boundary", &VoronoiSlabLatticeRegion::boundary);
   element< Lattice2DType>("lattice", &VoronoiSlabLatticeRegion::lattice);
-  element("basis", &VoronoiSlabLatticeRegion::basis);
+  element< Rowvec2>("startPoint", &VoronoiSlabLatticeRegion::startPoint);
+}
+
+struct VoronoiSlabRandomRegion
+{
+  std::vector< arma::rowvec2> boundary;
+  int numPoints;
+  double minsep;
+  boost::optional< std::map<int, int> > polys;
+};
+
+SCHEMER_MAP(VoronoiSlabRandomRegionType, VoronoiSlabRandomRegion)
+{
+  element("boundary", &VoronoiSlabRandomRegion::boundary);
+  element("numPoints", &VoronoiSlabRandomRegion::numPoints);
+  element("minsep", &VoronoiSlabRandomRegion::minsep);
+  element("polys", &VoronoiSlabRandomRegion::polys);
 }
 
 struct VoronoiSlabRegion
 {
+  VoronoiSlabRegionBasis basis;
   boost::optional< VoronoiSlabLatticeRegion> lattice;
+  boost::optional< VoronoiSlabRandomRegion> random;
 };
 
 SCHEMER_MAP(VoronoiSlabRegionType, VoronoiSlabRegion)
 {
+  element("basis", &VoronoiSlabRegion::basis);
   element("lattice", &VoronoiSlabRegion::lattice);
+  element("random", &VoronoiSlabRegion::random);
 }
 
 struct VoronoiSlab
@@ -424,13 +454,11 @@ struct VoronoiSlab
   std::vector< VoronoiSlabRegion> regions;
 };
 
-typedef schemer::List< VoronoiSlabRegionType> RegionList;
-
 SCHEMER_MAP(VoronoiSlabType, VoronoiSlab)
 {
   element< Rowvec3>("pos", &VoronoiSlab::pos);
   element< Rowvec4>("rot", &VoronoiSlab::rot);
-  element< RegionList>("regions", &VoronoiSlab::regions);
+  element("regions", &VoronoiSlab::regions);
 }
 
 struct VoronoiSlabGenerator
@@ -438,11 +466,9 @@ struct VoronoiSlabGenerator
   std::vector< VoronoiSlab> slabs;
 };
 
-typedef schemer::List< VoronoiSlabType> SlabsList;
-
 SCHEMER_MAP(VoronoiSlabGeneratorType, VoronoiSlabGenerator)
 {
-  element< SlabsList>("slabs", &VoronoiSlabGenerator::slabs);
+  element("slabs", &VoronoiSlabGenerator::slabs);
 }
 
 struct StructureGenerator

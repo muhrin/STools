@@ -19,7 +19,7 @@
 #include <schemer/Schemer.h>
 
 // USING ////////////////////////////
-using ::std::string;
+using std::string;
 
 // CONSTANTS ////////////////////////
 static const string KEY_NAME = "name";
@@ -41,9 +41,9 @@ struct Person_t
         && phone_no == rhs.phone_no;
   }
   int age;
-  ::std::string name;
-  ::boost::optional< ::std::string> nickname;
-  ::boost::optional< int> phone_no;
+  std::string name;
+  boost::optional< std::string> nickname;
+  boost::optional< int> phone_no;
 };
 
 struct Employee_t : public Person_t
@@ -78,7 +78,7 @@ struct Test_t
   int someValue;
 };
 
-struct Test : public ::schemer::HeteroMap<Test_t>
+struct Test : public schemer::HeteroMap< Test_t>
 {
   Test()
   {
@@ -93,7 +93,7 @@ bob();
 
 BOOST_AUTO_TEST_CASE(HeteroMapTest)
 {
-  using ::std::string;
+  using std::string;
 
   // SETTINGS //
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(HeteroMapTest)
   BOOST_REQUIRE(personNode.IsMap());
   BOOST_REQUIRE(personNode[KEY_NAME].Scalar() == bob().name);
   BOOST_REQUIRE(personNode[KEY_AGE].as< int>() == bob().age);
-  BOOST_REQUIRE(personNode[KEY_NICKNAME].IsNull());
+  BOOST_REQUIRE(!personNode[KEY_NICKNAME]);
   BOOST_REQUIRE(personNode[KEY_PHONE_NO].as< int>() == bob().phone_no);
 
   Person_t p;
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(HeteroMapTest)
   BOOST_REQUIRE(bobEmployeeNode.IsMap());
   BOOST_REQUIRE(bobEmployeeNode[KEY_NAME].Scalar() == bob().name);
   BOOST_REQUIRE(bobEmployeeNode[KEY_AGE].as< int>() == bob().age);
-  BOOST_REQUIRE(bobEmployeeNode[KEY_NICKNAME].IsNull());
+  BOOST_REQUIRE(!bobEmployeeNode[KEY_NICKNAME]);
   BOOST_REQUIRE(bobEmployeeNode[KEY_PHONE_NO].as< int>() == bob().phone_no);
 
   Employee_t employee;
@@ -138,12 +138,12 @@ BOOST_AUTO_TEST_CASE(HeteroMapTest)
 
 BOOST_AUTO_TEST_CASE(MapTest)
 {
-  using ::std::string;
+  using std::string;
 
   // SETTINGS //
   typedef string Key;
   typedef int Value;
-  typedef ::std::map< Key, Value> Map;
+  typedef std::map< Key, Value> Map;
   Map ORIGINAL_MAP;
   ORIGINAL_MAP["Bob"] = 32523;
   ORIGINAL_MAP["Alice"] = 632;
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(MapTest)
 
   BOOST_FOREACH(Map::const_reference x, ORIGINAL_MAP)
   {
-    BOOST_REQUIRE(!mapNode[x.first].IsNull());
+    BOOST_REQUIRE(mapNode[x.first]);
     BOOST_REQUIRE(mapNode[x.first].as< Value>() == x.second);
   }
 
@@ -179,15 +179,40 @@ BOOST_AUTO_TEST_CASE(MapDefaultValuesTest)
   peopleNode["Firstname"] = YAML::Node();
   peopleNode["Lastname"] = YAML::Node();
 
-  ::std::map< ::std::string, ::std::string> people;
+  std::map< std::string, std::string> people;
   PersonInfo pInfo;
   pInfo.nodeToValue(peopleNode, &people, NULL);
 
   BOOST_REQUIRE(!people.empty());
-  ::std::map< ::std::string, ::std::string>::const_iterator it = people.find("Firstname");
+  std::map< std::string, std::string>::const_iterator it = people.find(
+      "Firstname");
   BOOST_REQUIRE(it->second == "Anon");
   it = people.find("Lastname");
   BOOST_REQUIRE(it->second == "Ymous");
+}
+
+typedef schemer::Map< schemer::Int, schemer::String> IdsType;
+
+BOOST_AUTO_TEST_CASE(HomoMapTest)
+{
+  typedef std::map<int, std::string> IdsMap;
+  IdsMap ids;
+  ids[54654] = "Martin";
+  ids[3867] = "Tom";
+  ids[6874321] = "Alice";
+
+  YAML::Node idsNode;
+  static const IdsType IDS_TYPE;
+  BOOST_REQUIRE(IDS_TYPE.valueToNode(ids, &idsNode));
+  BOOST_FOREACH(IdsMap::const_reference x, ids)
+  {
+    BOOST_REQUIRE(idsNode[x.first]);
+    BOOST_REQUIRE(idsNode[x.first].as< std::string>() == x.second);
+  }
+
+  std::map< int, std::string> idsFromNode;
+  BOOST_REQUIRE(IDS_TYPE.nodeToValue(idsNode, &idsFromNode));
+  BOOST_REQUIRE(ids == idsFromNode);
 }
 
 const Person_t &

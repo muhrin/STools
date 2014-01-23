@@ -46,10 +46,10 @@ endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 #
 # CGAL #
-if(SSLIB_USE_CGAL)
-  find_package(CGAL REQUIRED)
+find_package(CGAL QUIET)
+if(CGAL_FOUND)
   include( ${CGAL_USE_FILE} )
-endif(SSLIB_USE_CGAL)
+endif(CGAL_FOUND)
 
 #
 # spglib, only look if it hasn't already been found
@@ -106,16 +106,16 @@ include_directories(
 )
 
 # Include YAML if we're using it
-if(SSLIB_USE_YAML)
+if(SPL_WITH_YAML)
   include_directories(${YAML_CPP_INCLUDE_DIRS})
-endif(SSLIB_USE_YAML)
+endif(SPL_WITH_YAML)
 
 # Include CGAL if we're using it
-if(SSLIB_USE_CGAL)
+if(SPL_WITH_CGAL)
   include_directories(
     "${CGAL_INCLUDE_DIRS}"
   )
-endif(SSLIB_USE_CGAL)
+endif(SPL_WITH_CGAL)
 
 get_property(SSLIB_INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 set(SSLIB_INCLUDE_DIRS

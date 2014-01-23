@@ -73,6 +73,9 @@ public:
       blocks::SearchStoichiometries & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
+      blocks::SeparateAtoms & options) const;
+  bool
+  createBlock(BlockHandle * const blockOut,
       blocks::SweepPotentialParams & options) const;
   bool
   createBlock(BlockHandle * const blockOut,

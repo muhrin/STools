@@ -10,14 +10,16 @@
 #define SCHEMER_MAP_H
 
 // INCLUDES /////////////////////////////////////////////
-
 #include <map>
 #include <string>
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits/is_base_of.hpp>
 
 #include "schemer/detail/Type.h"
+#include "schemer/Scalar.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -32,7 +34,7 @@ template< typename T>
   };
 
 template< typename T>
-  struct StripOptional< ::boost::optional< T> >
+  struct StripOptional< boost::optional< T> >
   {
     typedef T Type;
   };
@@ -49,15 +51,19 @@ template< class T>
   class HomoMapElement;
 }
 
-template< typename EntryType>
+template< typename KeyType, typename EntryType>
   class Map : public detail::Type<
-      ::std::map< ::std::string, typename EntryType::BindingType> >
+      std::map< typename KeyType::BindingType, typename EntryType::BindingType> >
   {
     // TODO: Test this class and make sure it's doing the right thing
+    typedef typename KeyType::BindingType KeyBinding;
     typedef typename EntryType::BindingType EntryBinding;
     typedef detail::HomoMapElement< EntryType> Element;
+    BOOST_STATIC_ASSERT_MSG(
+        (boost::is_base_of< Scalar< KeyBinding>, KeyType>::value),
+        "Key must be a scalar schema type.");
   public:
-    typedef ::std::map< ::std::string, EntryBinding> BindingType;
+    typedef std::map< KeyBinding, EntryBinding> BindingType;
 
     Map();
     virtual
@@ -77,7 +83,7 @@ template< typename EntryType>
     }
 
     Element *
-    element(const ::std::string & name);
+    element(const std::string & name);
 
     virtual Map *
     clone() const;
@@ -88,8 +94,10 @@ template< typename EntryType>
     setAllowUnknownEntries(const bool allowUnknownEntries);
 
   private:
-    typedef ::std::map< const ::std::string, Element> EntriesMap;
+    typedef std::map< const KeyBinding, Element> EntriesMap;
 
+    const Scalar<KeyBinding> & myKey;
+    const EntryType & myEntry;
     EntriesMap myEntries;
     bool myAllowUnknownEntries;
   };
@@ -100,7 +108,7 @@ template< class BT>
   public:
     typedef BT BindingType;
     typedef detail::HeteroMapElementBase< BindingType> Entry;
-    typedef ::boost::ptr_map< const ::std::string, Entry> EntriesMap;
+    typedef boost::ptr_map< const std::string, Entry> EntriesMap;
     typedef typename EntriesMap::const_iterator EntryIterator;
 
     virtual
@@ -127,12 +135,12 @@ template< class BT>
     template< typename ElementType, typename MemberType>
       detail::HeteroMapElement< BindingType, MemberType,
           typename ElementType::BindingType> *
-      element(const ::std::string & name,
+      element(const std::string & name,
           MemberType (BindingType::* const member));
 
     template< typename MemberType>
       detail::HeteroMapElement< BindingType, MemberType> *
-      element(const ::std::string & name,
+      element(const std::string & name,
           MemberType (BindingType::* const member));
 
     template< typename BaseType>

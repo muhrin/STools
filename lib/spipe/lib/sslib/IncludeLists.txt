@@ -156,6 +156,7 @@ source_group("Header Files\\io\\detail" FILES ${sslib_Header_Files__io__detail})
 
 ## math
 set(sslib_Header_Files__math
+  include/spl/math/Geometry.h
   include/spl/math/LinearAlgebra.h
   include/spl/math/Matrix.h
   include/spl/math/NumberAlgorithms.h

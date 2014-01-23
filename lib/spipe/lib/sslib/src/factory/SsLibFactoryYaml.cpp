@@ -21,7 +21,6 @@
 #include "spl/build_cell/AtomsGroup.h"
 #include "spl/build_cell/PointGroups.h"
 #include "spl/build_cell/RandomUnitCellGenerator.h"
-#include "spl/build_cell/VoronoiSlabGenerator.h"
 #include "spl/build_cell/VoronoiSlabRegions.h"
 #include "spl/common/AtomSpeciesDatabase.h"
 #include "spl/common/AtomSpeciesId.h"
@@ -197,7 +196,7 @@ Factory::createOptimisationSettings(const OptimiserSettings & options) const
   settings.forceTol = options.forceTolerance;
   settings.stressTol = options.stressTolerance;
 
-  settings.pressure.reset(::arma::zeros(3, 3));
+  settings.pressure.reset(arma::zeros(3, 3));
   settings.pressure->diag().fill(options.pressure);
 
   return settings;
@@ -387,11 +386,15 @@ Factory::createStructureGenerator(
 
   if(options.builder)
     generator = createStructureBuilder(*options.builder);
+#ifdef SPL_WITH_CGAL
   else if(options.voronoiSlab)
     generator = createVoronoiSlabGenerator(*options.voronoiSlab);
+#endif // SPL_WITH_CGAL
 
   return generator;
 }
+
+#ifdef SPL_WITH_CGAL
 
 UniquePtr< build_cell::VoronoiSlabGenerator>::Type
 Factory::createVoronoiSlabGenerator(
@@ -414,20 +417,31 @@ Factory::createVoronoiSlabGenerator(
     // Create the regions for the slab
     BOOST_FOREACH(const builder::VoronoiSlabRegion & r, s.regions)
     {
+      UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type basis =
+          createVoronoiSlabRegionBasis(r.basis);
       UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion>::Type region;
       if(r.lattice)
       {
-        std::vector< arma::vec2> boundary;
+        build_cell::LatticeRegion::ConstructionInfo info;
         BOOST_FOREACH(const arma::rowvec2 & bound, r.lattice->boundary)
+          info.boundary.push_back(bound.t());
+
+        info.vecA = r.lattice->lattice[0].t();
+        info.vecB = r.lattice->lattice[1].t();
+        if(r.lattice->startPoint)
+          info.startPoint = r.lattice->startPoint->t();
+
+        region.reset(new build_cell::LatticeRegion(info, basis));
+      }
+      else if(r.random)
+      {
+        std::vector< arma::vec2> boundary;
+        BOOST_FOREACH(const arma::rowvec2 & bound, r.random->boundary)
           boundary.push_back(bound.t());
 
-        arma::vec2 lattice[2];
-        lattice[0] = r.lattice->lattice[0].t();
-        lattice[1] = r.lattice->lattice[1].t();
-
         region.reset(
-            new build_cell::LatticeRegion(boundary, lattice[0], lattice[1],
-                r.lattice->basis));
+            new build_cell::RandomRegion(boundary, r.random->numPoints,
+                r.random->minsep, basis));
       }
 
       if(region.get())
@@ -439,11 +453,30 @@ Factory::createVoronoiSlabGenerator(
   return generator;
 }
 
+#endif // SPL_WITH_CGAL
+
 const GenShapeFactory &
 Factory::getShapeFactory() const
 {
   return myShapeFactory;
 }
+
+#ifdef SPL_WITH_CGAL
+
+UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type
+Factory::createVoronoiSlabRegionBasis(
+    const builder::VoronoiSlabRegionBasis & options) const
+{
+  UniquePtr< build_cell::VoronoiSlabGenerator::SlabRegion::Basis>::Type basis;
+  if(options.ordered)
+  {
+    basis.reset(new build_cell::OrderedBasis(*options.ordered));
+  }
+
+  return basis;
+}
+
+#endif // SPL_WITH_CGAL
 
 }
 }

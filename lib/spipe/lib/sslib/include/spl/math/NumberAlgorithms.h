@@ -65,6 +65,13 @@ leastCommonMultiple(const unsigned a, const unsigned b)
   return a / greatestCommonDivisor(a, b) * b;
 }
 
+template< typename T>
+  double
+  sgn(const T val)
+  {
+    return (T(0) < val) - (val < T(0));
+  }
+
 }
 }
 

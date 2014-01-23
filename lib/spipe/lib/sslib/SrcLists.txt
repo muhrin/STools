@@ -97,6 +97,7 @@ source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
 ## math
 
 set(sslib_Source_Files__math
+  src/math/Geometry.cpp
   src/math/Matrix.cpp
   src/math/Random.cpp
   src/math/RunningStats.cpp

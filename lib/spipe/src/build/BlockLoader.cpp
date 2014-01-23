@@ -108,6 +108,10 @@ BlockLoader::BlockLoader()
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::SearchStoichiometriesSchema>(
               myBlockFactory)));
+  registerCreator("separateAtoms",
+      CreatorPtr(
+          new FactoryBlockCreator< factory::blocks::SeparateAtomsType>(
+              myBlockFactory)));
   registerCreator("sweepPotentialParams",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::SweepPotentialParamsSchema>(

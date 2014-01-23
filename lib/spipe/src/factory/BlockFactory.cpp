@@ -26,6 +26,7 @@
 #include "blocks/RemoveDuplicates.h"
 #include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/SearchStoichiometries.h"
+#include "blocks/SeparateAtoms.h"
 #include "blocks/SweepPotentialParams.h"
 #include "blocks/WriteStructures.h"
 #include "common/CommonData.h"
@@ -206,6 +207,14 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   blockOut->reset(
       new ::spipe::blocks::SearchStoichiometries(searchOptions, options.pipe));
 
+  return true;
+}
+
+bool
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    blocks::SeparateAtoms & options) const
+{
+  blockOut->reset(new ::spipe::blocks::SeparateAtoms());
   return true;
 }
 

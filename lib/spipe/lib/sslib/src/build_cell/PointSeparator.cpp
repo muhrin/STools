@@ -12,6 +12,8 @@
 #include "spl/SSLibAssert.h"
 #include "spl/common/AtomSpeciesDatabase.h"
 
+//#define DEBUG_POINT_SEPARATOR
+
 namespace spl {
 namespace build_cell {
 
@@ -37,9 +39,9 @@ SeparationData::SeparationData(const common::Structure & structure,
     const common::AtomSpeciesDatabase & db) :
     distanceCalculator(structure.getDistanceCalculator())
 {
-  typedef ::std::vector< common::AtomSpeciesId::Value> Labels;
-  typedef ::std::set< common::AtomSpeciesId::Value> Species;
-  typedef ::std::map< utility::MinMax< common::AtomSpeciesId::Value>, double> SepList;
+  typedef std::vector< common::AtomSpeciesId::Value> Labels;
+  typedef std::set< common::AtomSpeciesId::Value> Species;
+  typedef std::map< utility::MinMax< common::AtomSpeciesId::Value>, double> SepList;
 
   const size_t numPoints = structure.getNumAtoms();
   init(numPoints);
@@ -47,7 +49,7 @@ SeparationData::SeparationData(const common::Structure & structure,
 
   // Get the list of atom species in order
   Labels labels;
-  structure.getAtomSpecies(::std::back_inserter(labels));
+  structure.getAtomSpecies(std::back_inserter(labels));
 
   Species species(labels.begin(), labels.end());
   SepList sepList;
@@ -87,12 +89,12 @@ PointSeparator::PointSeparator(const size_t maxIterations,
 bool
 PointSeparator::separatePoints(SeparationData * const sepData) const
 {
-  using ::std::sqrt;
+  using std::sqrt;
 
   SSLIB_ASSERT(sepData);
 
   const FixedList & fixed = generateFixedList(*sepData);
-  const ::arma::mat minSepSqs = sepData->separations % sepData->separations;
+  const arma::mat minSepSqs = sepData->separations % sepData->separations;
 
   const size_t numPoints = sepData->points.n_cols;
   if(numPoints == 0)
@@ -101,14 +103,18 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
   double sep, sepSq, sepDiff;
   double maxOverlapFraction;
   double prefactor; // Used to adjust the displacement vector if either atom is fixed
-  ::arma::vec3 dr, sepVec;
-  ::arma::mat delta(3, numPoints);
+  arma::vec3 dr, sepVec;
+  arma::mat delta(3, numPoints);
   bool success = false;
 
   for(size_t iters = 0; iters < myMaxIterations; ++iters)
   {
     // First loop over calculating separations and checking for overlap
     maxOverlapFraction = calcMaxOverlapFraction(*sepData, minSepSqs, fixed);
+
+#ifdef DEBUG_POINT_SEPARATOR
+    std::cout << sepData->points.t() << "\n\n";
+#endif
 
     if(maxOverlapFraction < myTolerance)
     {
@@ -126,7 +132,7 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
         {
           sepVec = sepData->distanceCalculator.getVecMinImg(sepData->points.col(row),
               sepData->points.col(col));
-          sepSq = ::arma::dot(sepVec, sepVec);
+          sepSq = arma::dot(sepVec, sepVec);
           if(sepSq < minSepSqs(row, col))
           {
             if(fixed[row] || fixed[col])
@@ -172,24 +178,24 @@ PointSeparator::generateFixedList(const SeparationData & sepData) const
 
 double
 PointSeparator::calcMaxOverlapFraction(const SeparationData & sepData,
-    const ::arma::mat & minSepSqs, const FixedList & fixed) const
+    const arma::mat & minSepSqs, const FixedList & fixed) const
 {
   const size_t numPoints = sepData.points.n_cols;
 
   double sepSq, maxOverlapSq = 0.0;
   for(size_t row = 0; row < numPoints - 1; ++row)
   {
-    const ::arma::vec3 & posI = sepData.points.col(row);
+    const arma::vec3 & posI = sepData.points.col(row);
     for(size_t col = row + 1; col < numPoints; ++col)
     {
       if(!(fixed[row] && fixed[col])) // Only if they're not both fixed
       {
-        const ::arma::vec3 & posJ = sepData.points.col(col);
+        const arma::vec3 & posJ = sepData.points.col(col);
 
         sepSq = sepData.distanceCalculator.getDistSqMinImg(posI, posJ);
 
         if(sepSq < minSepSqs(row, col))
-          maxOverlapSq = ::std::max(maxOverlapSq, minSepSqs(row, col) / sepSq);
+          maxOverlapSq = std::max(maxOverlapSq, minSepSqs(row, col) / sepSq);
       }
     }
   }
@@ -197,7 +203,7 @@ PointSeparator::calcMaxOverlapFraction(const SeparationData & sepData,
   if(maxOverlapSq == 0.0)
     return 0.0;
   else
-    return 1.0 - 1.0 / ::std::sqrt(maxOverlapSq);
+    return 1.0 - 1.0 / std::sqrt(maxOverlapSq);
 }
 
 }

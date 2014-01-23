@@ -53,7 +53,7 @@ template< typename T>
       myDefault = defaultValue;
       return this;
     }
-    const ::boost::optional< BindingType>
+    const boost::optional< BindingType>
     getDefault() const
     {
       return myDefault;
@@ -97,7 +97,7 @@ template< typename T>
 
   private:
     const T myType;
-    ::boost::optional< BindingType> myDefault;
+    boost::optional< BindingType> myDefault;
     bool myRequired;
   };
 
@@ -223,15 +223,15 @@ template< class MapBindingType, typename MapBindingMemberType, typename T>
   private:
     const ElementType & myType;
     Member myMember;
-    ::boost::optional< MapBindingMemberType> myDefault;
+    boost::optional< MapBindingMemberType> myDefault;
   };
 
 template< class MapBindingType, typename MapBindingMemberType, typename T>
   class HeteroMapElement< MapBindingType,
-      ::boost::optional< MapBindingMemberType>, T> : public HeteroMapElementBase<
+      boost::optional< MapBindingMemberType>, T> : public HeteroMapElementBase<
       MapBindingType>
   {
-    typedef typename ::boost::optional< MapBindingMemberType> BindingType;
+    typedef typename boost::optional< MapBindingMemberType> BindingType;
     typedef BindingType (MapBindingType::* const Member);
     typedef detail::Type< T> ElementType;
 
@@ -309,7 +309,7 @@ template< class MapBindingType, typename MapBindingMemberType, typename T>
   private:
     const ElementType & myType;
     Member myMember;
-    ::boost::optional< MapBindingMemberType> myDefault;
+    boost::optional< MapBindingMemberType> myDefault;
   };
 
 template< class DerivedBinding, typename BaseBinding>
@@ -364,20 +364,21 @@ template< class DerivedBinding, typename BaseBinding>
     }
 
   private:
-    ::boost::scoped_ptr< HeteroMapElementBase< BaseBinding> > myEntry;
+    boost::scoped_ptr< HeteroMapElementBase< BaseBinding> > myEntry;
   };
 
 } // namespace detail
 
-template< typename T>
-  Map< T>::Map()
+template< typename KeyType, typename EntryType>
+  Map< KeyType, EntryType>::Map() :
+      myKey(getTypeInstance< KeyType>()), myEntry(
+          getTypeInstance< EntryType>()), myAllowUnknownEntries(true)
   {
-    myAllowUnknownEntries = true;
   }
 
-template< typename EntryType>
+template< typename KeyType, typename EntryType>
   bool
-  Map< EntryType>::valueToNode(const BindingType & value,
+  Map< KeyType, EntryType>::valueToNode(const BindingType & value,
       YAML::Node * const node) const
   {
     typename EntriesMap::const_iterator it;
@@ -392,18 +393,17 @@ template< typename EntryType>
       }
       else if(myAllowUnknownEntries)
       {
-        EntryType element;
         YAML::Node entryNode;
-        element.valueToNode(entry.second, &entryNode);
+        myEntry.valueToNode(entry.second, &entryNode);
         (*node)[entry.first] = entryNode;
       }
     }
     return true;
   }
 
-template< typename EntryType>
+template< typename KeyType, typename EntryType>
   bool
-  Map< EntryType>::nodeToValue(const YAML::Node & node,
+  Map< KeyType, EntryType>::nodeToValue(const YAML::Node & node,
       BindingType * const value, ParseLog * const log) const
   {
     if(!node.IsMap())
@@ -417,50 +417,58 @@ template< typename EntryType>
     for(YAML::Node::const_iterator it = node.begin(), end = node.end();
         it != end; ++it)
     {
+      typename BindingType::key_type key;
+      if(!myKey.nodeToValue(it->first, &key, log))
+      {
+        log->logError(ParseLogErrorCode::UNRECOGNISED_ELEMENT,
+            "Invalid key type: " + it->first.Scalar());
+        continue;
+      }
+
       ParseLog::PathPusher pusher(log, it->first.Scalar());
 
-      entriesIt = myEntries.find(it->first.Scalar());
+      entriesIt = myEntries.find(key);
       if(entriesIt != myEntries.end())
       {
         typename BindingType::mapped_type mappedValue;
         if(entriesIt->second.nodeToValue(it->second, &mappedValue, log))
-          (*value)[it->first.Scalar()] = mappedValue;
+          (*value)[key] = mappedValue;
       }
       else if(myAllowUnknownEntries)
       {
         typename BindingType::mapped_type mappedValue;
-        EntryType entryType;
-        if(entryType.nodeToValue(it->second, &mappedValue, log))
-          (*value)[it->first.Scalar()] = mappedValue;
+        if(myEntry.nodeToValue(it->second, &mappedValue, log))
+          (*value)[key] = mappedValue;
       }
     }
     return true;
   }
 
-template< typename EntryType>
-  typename Map< EntryType>::Element *
-  Map< EntryType>::element(const ::std::string & name)
+template< typename KeyType, typename EntryType>
+  typename Map< KeyType, EntryType>::Element *
+  Map< KeyType, EntryType>::element(const std::string & name)
   {
     return &myEntries[name];
   }
 
-template< typename T>
-  Map< T> *
-  Map< T>::clone() const
+template< typename KeyType, typename EntryType>
+  Map< KeyType, EntryType> *
+  Map< KeyType, EntryType>::clone() const
   {
-    return new Map< T>(*this);
+    return new Map< KeyType, EntryType>(*this);
   }
 
-template< typename T>
+template< typename KeyType, typename EntryType>
   bool
-  Map< T>::areUnknownEntriesAllowed() const
+  Map< KeyType, EntryType>::areUnknownEntriesAllowed() const
   {
     return myAllowUnknownEntries;
   }
 
-template< typename T>
+template< typename KeyType, typename EntryType>
   void
-  Map< T>::setAllowUnknownEntries(const bool allowUnknownEntries)
+  Map< KeyType, EntryType>::setAllowUnknownEntries(
+      const bool allowUnknownEntries)
   {
     myAllowUnknownEntries = allowUnknownEntries;
   }
@@ -520,18 +528,18 @@ template< typename BindingType>
     }
 
     // First populate all the elements we need to process so we can check them off
-    ::std::set< ::std::string> toProcess;
+    std::set< std::string> toProcess;
     BOOST_FOREACH(typename EntriesMap::const_reference entry, myEntries)
     {
       toProcess.insert(entry.first);
     }
 
     // Now go through the node checking each complete element off
-    ::std::set< ::std::string>::const_iterator process;
+    std::set< std::string>::const_iterator process;
     for(YAML::Node::const_iterator it = node.begin(), end = node.end();
         it != end; ++it)
     {
-      const ::std::string & entryName = it->first.Scalar();
+      const std::string & entryName = it->first.Scalar();
       process = toProcess.find(entryName);
       if(process != toProcess.end())
       {
@@ -548,7 +556,7 @@ template< typename BindingType>
     }
 
     // Finally see if there are any left that need processing
-    BOOST_FOREACH(const ::std::string & e, toProcess)
+    BOOST_FOREACH(const std::string & e, toProcess)
     {
       const Entry & entry = *myEntries.find(e)->second;
       if(entry.isRequired())
@@ -578,7 +586,7 @@ template< class BindingType>
   template< typename ElementType, typename MemberType>
     detail::HeteroMapElement< BindingType, MemberType,
         typename ElementType::BindingType> *
-    HeteroMap< BindingType>::element(const ::std::string & name,
+    HeteroMap< BindingType>::element(const std::string & name,
         MemberType (BindingType::* const member))
     {
       detail::HeteroMapElement< BindingType, MemberType,
@@ -597,7 +605,7 @@ template< class BindingType>
 template< class BindingType>
   template< typename MemberType>
     detail::HeteroMapElement< BindingType, MemberType> *
-    HeteroMap< BindingType>::element(const ::std::string & name,
+    HeteroMap< BindingType>::element(const std::string & name,
         MemberType (BindingType::* const member))
     {
       detail::HeteroMapElement< BindingType, MemberType> * const element =
@@ -620,7 +628,7 @@ template< class BindingType>
       typedef typename BaseType::BindingType BaseBinding;
       const BaseType base;
       BOOST_FOREACH(typename BaseType::EntriesMap::const_reference entry,
-          ::boost::make_iterator_range(base.entriesBegin(), base.entriesEnd()))
+          boost::make_iterator_range(base.entriesBegin(), base.entriesEnd()))
       {
         myEntries.insert(entry.first,
             new detail::HeteroMapBaseEntryWrapper< BindingType, BaseBinding>(

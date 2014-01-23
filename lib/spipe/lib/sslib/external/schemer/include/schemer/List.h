@@ -22,11 +22,11 @@ namespace schemer {
 
 template< class EntryType>
   class List : public detail::Type<
-      ::std::vector< typename EntryType::BindingType> >
+      std::vector< typename EntryType::BindingType> >
   {
     typedef typename EntryType::BindingType EntryBindingType;
   public:
-    typedef ::std::vector< EntryBindingType> BindingType;
+    typedef std::vector< EntryBindingType> BindingType;
 
     List();
     List(const List & toCopy);
