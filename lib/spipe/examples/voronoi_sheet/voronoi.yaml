@@ -1,7 +1,5 @@
-
 rngSeed:
-  123
-
+  223
 
 generateStructures:
   generator:
@@ -17,8 +15,13 @@ generateStructures:
                ordered: [B, N, C]
              random:
               boundary: [0 5, 0 10.8, 30 10.8, 30 5]
-              numPoints: 50
-              minsep: 2.2
+              numPoints: 30
+              minsep: 2.0
+              polyMode: fixed
+              polys:
+                5: 2
+                6: 7
+                7: 1
            - basis:
                ordered: [C]
              lattice:
@@ -34,7 +37,7 @@ engine:
   serial:
 
 
-run: generateStructures | separateAtoms | writeStructures
+run: generateStructures | writeStructures
      
 
 

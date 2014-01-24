@@ -205,6 +205,7 @@ source_group("Header Files\\potential" FILES ${sslib_Header_Files__potential})
 
 set(sslib_Header_Files__utility
   include/spl/utility/Armadillo.h
+  include/spl/utility/DataPool.h
   include/spl/utility/DistanceMatrixComparator.h
   include/spl/utility/EdgeMap.h
   include/spl/utility/GenericBufferedComparator.h
@@ -244,6 +245,7 @@ source_group("Header Files\\utility" FILES ${sslib_Header_Files__utility})
 ## utility/detail
 
 set(sslib_Header_Files__utility__detail
+  include/spl/utility/detail/DataPool.h
   include/spl/utility/detail/NamedProperty.h
   include/spl/utility/detail/TypedDataTable.h
   include/spl/utility/detail/GenericBufferedComparator.h

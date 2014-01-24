@@ -27,12 +27,12 @@ class IStructureComparator;
 namespace spl {
 namespace utility {
 
-class IBufferedComparator
+class IBufferedComparator : protected SharedHandle< size_t>::Notifiee
 {
 protected:
   typedef size_t HandleId;
 public:
-  typedef SharedHandle< HandleId, IBufferedComparator> ComparisonDataHandle;
+  typedef SharedHandle< HandleId> ComparisonDataHandle;
 
   virtual
   ~IBufferedComparator()
@@ -40,10 +40,12 @@ public:
   }
 
   virtual double
-  compareStructures(const ComparisonDataHandle & str1, const ComparisonDataHandle & str2) = 0;
+  compareStructures(const ComparisonDataHandle & str1,
+      const ComparisonDataHandle & str2) = 0;
 
   virtual bool
-  areSimilar(const ComparisonDataHandle & str1, const ComparisonDataHandle & str2) = 0;
+  areSimilar(const ComparisonDataHandle & str1,
+      const ComparisonDataHandle & str2) = 0;
 
   virtual ComparisonDataHandle
   generateComparisonData(const spl::common::Structure & structure) = 0;
@@ -51,11 +53,10 @@ public:
   getComparator() const = 0;
 
 protected:
-
   virtual void
   handleReleased(const HandleId & id) = 0;
 
-  friend class SharedHandle< HandleId, IBufferedComparator> ;
+  friend class SharedHandle< HandleId> ;
 };
 
 }

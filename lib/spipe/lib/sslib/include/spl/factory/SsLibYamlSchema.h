@@ -19,6 +19,7 @@
 
 #include <schemer/Schemer.h>
 
+#include "spl/build_cell/VoronoiSlabRegions.h"
 #include "spl/potential/CombiningRules.h"
 #include "spl/potential/TpsdGeomOptimiser.h"
 #include "spl/utility/SortedDistanceComparator.h"
@@ -417,12 +418,20 @@ SCHEMER_MAP(VoronoiSlabLatticeRegionType, VoronoiSlabLatticeRegion)
   element< Rowvec2>("startPoint", &VoronoiSlabLatticeRegion::startPoint);
 }
 
+SCHEMER_ENUM(VoronoiSlabRandomRegionPolyModeType, build_cell::RandomRegion::PolyMode::Value)
+{
+  enumeration("free", build_cell::RandomRegion::PolyMode::FREE);
+  enumeration("stochastic", build_cell::RandomRegion::PolyMode::STOCHASTIC);
+  enumeration("fixed", build_cell::RandomRegion::PolyMode::FIXED);
+}
+
 struct VoronoiSlabRandomRegion
 {
   std::vector< arma::rowvec2> boundary;
   int numPoints;
   double minsep;
-  boost::optional< std::map<int, int> > polys;
+  build_cell::RandomRegion::PolyMode::Value polyMode;
+  boost::optional< std::map< int, int> > polys;
 };
 
 SCHEMER_MAP(VoronoiSlabRandomRegionType, VoronoiSlabRandomRegion)
@@ -430,6 +439,9 @@ SCHEMER_MAP(VoronoiSlabRandomRegionType, VoronoiSlabRandomRegion)
   element("boundary", &VoronoiSlabRandomRegion::boundary);
   element("numPoints", &VoronoiSlabRandomRegion::numPoints);
   element("minsep", &VoronoiSlabRandomRegion::minsep);
+  element< VoronoiSlabRandomRegionPolyModeType>("polyMode",
+      &VoronoiSlabRandomRegion::polyMode)->defaultValue(
+      build_cell::RandomRegion::PolyMode::FREE);
   element("polys", &VoronoiSlabRandomRegion::polys);
 }
 

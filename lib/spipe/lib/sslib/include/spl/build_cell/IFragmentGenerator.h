@@ -26,43 +26,48 @@ namespace build_cell {
 class StructureBuild;
 class StructureContents;
 
-class FragmentGenerator
+class FragmentGenerator : utility::SharedHandle< ptrdiff_t>::Notifiee
 {
 protected:
   typedef ptrdiff_t GenerationTicketId;
 public:
-  typedef utility::SharedHandle<GenerationTicketId, FragmentGenerator> GenerationTicket;
+  typedef utility::SharedHandle< GenerationTicketId> GenerationTicket;
 
-  virtual ~FragmentGenerator() {}
+  virtual
+  ~FragmentGenerator()
+  {
+  }
 
-  virtual GenerationOutcome generateFragment(
-    StructureBuild & build,
-    const GenerationTicket ticket,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) const = 0;
+  virtual GenerationOutcome
+  generateFragment(StructureBuild & build, const GenerationTicket ticket,
+      const common::AtomSpeciesDatabase & speciesDb) const = 0;
 
-  virtual GenerationTicket getTicket() = 0;
-  virtual StructureContents getGenerationContents(
-    const GenerationTicket ticket,
-    const common::AtomSpeciesDatabase & speciesDb
-  ) const = 0;
+  virtual GenerationTicket
+  getTicket() = 0;
+  virtual StructureContents
+  getGenerationContents(const GenerationTicket ticket,
+      const common::AtomSpeciesDatabase & speciesDb) const = 0;
 
-  virtual void handleReleased(const GenerationTicketId & id) = 0;
+  virtual void
+  handleReleased(const GenerationTicketId & id) = 0;
 
-  virtual void setGenerationSettings(const GenerationSettings & settings) = 0;
-  virtual void clearGenerationSettings() = 0;
+  virtual void
+  setGenerationSettings(const GenerationSettings & settings) = 0;
+  virtual void
+  clearGenerationSettings() = 0;
 
-  virtual IFragmentGeneratorPtr clone() const = 0;
+  virtual IFragmentGeneratorPtr
+  clone() const = 0;
 };
 
 // Support for boost ptr_container copy construction.
-inline FragmentGenerator * new_clone(const FragmentGenerator & toClone)
+inline FragmentGenerator *
+new_clone(const FragmentGenerator & toClone)
 {
   return toClone.clone().release();
 }
 
 }
 }
-
 
 #endif /* FRAGMENT_GENERATOR_H */

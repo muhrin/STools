@@ -15,35 +15,47 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
 namespace spl {
 namespace utility {
 
-template <typename Id, class Notifiee>
-class SharedHandle
-{
-  BOOST_CONCEPT_ASSERT((::boost::CopyConstructible<Id>));
-public:
-  typedef Id IdType;
+template< typename Id>
+  class SharedHandle
+  {
+    BOOST_CONCEPT_ASSERT((boost::CopyConstructible<Id>));
+  public:
+    typedef Id IdType;
+    class Notifiee;
 
-  SharedHandle();
-  SharedHandle(const Id id, Notifiee * notifiee = NULL);
-  SharedHandle(const SharedHandle & other);
-  ~SharedHandle();
+    SharedHandle();
+    SharedHandle(const Id id, Notifiee * const notifiee = NULL);
+    SharedHandle(const SharedHandle & other);
+    ~SharedHandle();
 
-  SharedHandle & operator =(const SharedHandle & rhs);
-  bool operator ==(const SharedHandle & rhs) const;
+    SharedHandle & operator =(const SharedHandle & rhs);
+    bool operator ==(const SharedHandle & rhs) const;
 
-  const Id & getId() const;
-  bool valid() const;
-  void release();
+    const Id & getId() const;
+    bool valid() const;
+    void release();
 
-private:
-  typedef ::boost::shared_ptr<Id> IdPtr;
+  private:
+    typedef boost::shared_ptr<Id> IdPtr;
 
-  IdPtr myId;
-  Notifiee * myNotifiee;
-};
+    IdPtr myId;
+    Notifiee * myNotifiee;
+  };
+
+template< typename T>
+  class SharedHandle< T>::Notifiee
+  {
+  public:
+    virtual
+    ~Notifiee()
+    {
+    }
+    virtual void
+    handleReleased(const T & id) = 0;
+  };
 
 }
 }

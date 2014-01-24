@@ -13,6 +13,7 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <map>
 #include <vector>
 #include <set>
 
@@ -33,6 +34,8 @@
 #include "spl/SSLibAssert.h"
 #include "spl/build_cell/StructureGenerator.h"
 #include "spl/utility/Armadillo.h"
+#include "spl/utility/DataPool.h"
+#include "spl/utility/SharedHandle.h"
 
 // FORWARD DECLARES //////////////////////////
 
@@ -44,6 +47,7 @@ class VoronoiSlabGenerator : public StructureGenerator
 public:
   class Slab;
   class SlabRegion;
+  static const int MAX_ITERATIONS;
 
   virtual GenerationOutcome
   generateStructure(common::StructurePtr & structureOut,
@@ -71,8 +75,8 @@ public:
   };
 
 private:
-  typedef CGAL::Triangulation_vertex_base_with_info_2<SiteInfo, K> Vb;
-  typedef CGAL::Triangulation_data_structure_2<Vb> Tds;
+  typedef CGAL::Triangulation_vertex_base_with_info_2< SiteInfo, K> Vb;
+  typedef CGAL::Triangulation_data_structure_2< Vb> Tds;
 
 public:
   typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
@@ -81,6 +85,8 @@ private:
   typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
   typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
       Delaunay> AP;
+  typedef utility::SharedHandle< size_t> RegionTicket;
+  typedef std::map< const VoronoiSlabGenerator::SlabRegion *, RegionTicket> RegionTickets;
 
 public:
   typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
@@ -96,12 +102,12 @@ private:
   typedef boost::ptr_vector< VoronoiSlabGenerator::SlabRegion> SlabRegions;
   typedef std::map< const Delaunay::Vertex_handle, bool> VertexInfo;
 
-  void
-  refineTriangulation(Delaunay * const dg) const;
+  bool
+  refineTriangulation(const RegionTickets & tickets, Delaunay * const dg) const;
   bool
   separatePoints(Delaunay * const dg) const;
   void
-  spreadAngles(Delaunay * const dg) const;
+  reduceEdges(Delaunay * const dg) const;
 
   arma::mat44 myTransform;
   SlabRegions myRegions;
@@ -117,17 +123,11 @@ protected:
 public:
   typedef VoronoiSlabGenerator::Slab::Delaunay Delaunay;
   typedef VoronoiSlabGenerator::Slab::Voronoi Voronoi;
+  typedef utility::SharedHandle< size_t> Ticket;
   class Basis;
 
   SlabRegion(const std::vector< arma::vec2> & boundary,
-      UniquePtr< Basis>::Type & basis) :
-      myBasis(basis)
-  {
-    BOOST_FOREACH(const arma::vec2 & r, boundary)
-      myBoundary.push_back(utility::toCgalPoint< K>(r));
-    SSLIB_ASSERT(!myBoundary.is_empty());
-    SSLIB_ASSERT(myBoundary.is_simple());
-  }
+      UniquePtr< Basis>::Type & basis);
   SlabRegion(const SlabRegion & toCopy);
   virtual
   ~SlabRegion()
@@ -135,30 +135,37 @@ public:
   }
 
   const Boundary &
-  getBoundary() const
-  {
-    return myBoundary;
-  }
+  getBoundary() const;
 
   bool
-  withinBoundary(const arma::vec2 & r) const
-  {
-    return withinBoundary(utility::toCgalPoint< K>(r));
-  }
+  withinBoundary(const arma::vec2 & r) const;
   bool
-  withinBoundary(const Voronoi::Point_2 & r) const
-  {
-    return getBoundary().bounded_side(r) != CGAL::ON_UNBOUNDED_SIDE;
-  }
+  withinBoundary(const Voronoi::Point_2 & r) const;
 
-  virtual void
+  virtual Ticket
   generateSites(Delaunay * const dg) const = 0;
-  virtual void
-  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
-      std::vector< common::Atom> * const atoms) const;
+  virtual bool
+  refine(const Ticket & ticket,
+      const std::set< Delaunay::Vertex_handle> & vertices,
+      Delaunay * const dg) const
+  {
+    return true;
+  }
+  virtual bool
+  good(const Ticket & ticket,
+      const std::set< Delaunay::Vertex_handle> & vertices,
+      const Delaunay & dg) const
+  {
+    return true;
+  }
   virtual std::auto_ptr< SlabRegion>
   clone() const = 0;
+
+  void
+  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
+      std::vector< common::Atom> * const atoms) const;
 private:
+
   Boundary myBoundary;
   UniquePtr< Basis>::Type myBasis;
 };
@@ -179,6 +186,29 @@ public:
   virtual UniquePtr< Basis>::Type
   clone() const = 0;
 };
+
+namespace detail {
+template< typename DG>
+  bool
+  isBoundaryVertex(const DG & dg, const typename DG::Vertex_handle vtx)
+  {
+    const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
+    if(start.is_empty())
+      return false;
+
+    typename DG::Vertex_circulator cl = start;
+    do
+    {
+      if(dg.is_infinite(cl))
+        return true;
+      ++cl;
+    }
+    while(cl != start);
+
+    return false;
+  }
+
+} // namespace detail
 
 }
 }

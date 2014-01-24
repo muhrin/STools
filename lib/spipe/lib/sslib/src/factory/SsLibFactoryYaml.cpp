@@ -435,13 +435,18 @@ Factory::createVoronoiSlabGenerator(
       }
       else if(r.random)
       {
+        UniquePtr< build_cell::RandomRegion>::Type random;
         std::vector< arma::vec2> boundary;
         BOOST_FOREACH(const arma::rowvec2 & bound, r.random->boundary)
           boundary.push_back(bound.t());
 
-        region.reset(
+        random.reset(
             new build_cell::RandomRegion(boundary, r.random->numPoints,
                 r.random->minsep, basis));
+        if(r.random->polys)
+          random->setPolys(r.random->polyMode, *r.random->polys);
+
+        region = random;
       }
 
       if(region.get())

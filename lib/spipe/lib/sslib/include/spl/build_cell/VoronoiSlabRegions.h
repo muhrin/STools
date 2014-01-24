@@ -13,12 +13,14 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <map>
 #include <vector>
 
 #include <boost/optional.hpp>
 
 #include "spl/build_cell/VoronoiSlabGenerator.h"
 
+#include "spl/utility/DataPool.h"
 #include "spl/utility/Range.h"
 
 // FORWARD DECLARES //////////////////////////
@@ -44,7 +46,7 @@ public:
   LatticeRegion(const ConstructionInfo & info, UniquePtr< Basis>::Type & basis);
   LatticeRegion(const LatticeRegion & toCopy);
 
-  virtual void
+  virtual Ticket
   generateSites(Delaunay * const dg) const;
   virtual std::auto_ptr< SlabRegion>
   clone() const;
@@ -73,15 +75,52 @@ private:
 class RandomRegion : public VoronoiSlabGenerator::SlabRegion
 {
 public:
+  typedef std::map< int, int> PolygonNumbers;
+  struct PolyMode
+  {
+    enum Value
+    {
+      FREE, STOCHASTIC, FIXED
+    };
+  };
+
   RandomRegion(const std::vector< arma::vec2> & boundary, const int numPoints,
       const double minsep, UniquePtr< Basis>::Type & basis);
-  virtual void
+
+  virtual Ticket
   generateSites(Delaunay * const dg) const;
+  virtual bool
+  refine(const Ticket & ticket,
+      const std::set< Delaunay::Vertex_handle> & vertices,
+      Delaunay * const dg) const;
+  virtual bool
+  good(const Ticket & ticket,
+      const std::set< Delaunay::Vertex_handle> & vertices,
+      const Delaunay & dg) const;
   virtual std::auto_ptr< SlabRegion>
   clone() const;
+
+  void
+  setPolys(const PolyMode::Value mode);
+  void
+  setPolys(const PolyMode::Value mode, const PolygonNumbers & numbers);
+
 private:
+  void
+  generateSites(const size_t num, Delaunay * const dg) const;
+  PolygonNumbers
+  measurePolyNumbers(const Delaunay & dg,
+      const std::set< Delaunay::Vertex_handle> & vertices) const;
+  PolygonNumbers
+  getPolyDiffs(const Delaunay & dg,
+      const std::set< Delaunay::Vertex_handle> & vertices,
+      const PolygonNumbers & target) const;
+
   const int myNumPoints;
   const double myMinsep;
+  PolyMode::Value myPolyMode;
+  PolygonNumbers myPolyNumbers;
+  mutable utility::DataPool< PolygonNumbers> myPolyPool;
 };
 
 class OrderedBasis : public VoronoiSlabGenerator::SlabRegion::Basis

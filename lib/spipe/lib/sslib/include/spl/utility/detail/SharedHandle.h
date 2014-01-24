@@ -17,40 +17,33 @@
 namespace spl {
 namespace utility {
 
-template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee>::SharedHandle():
+template <typename Id>
+SharedHandle<Id>::SharedHandle():
 myNotifiee(NULL)
 {}
 
 
-template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee>::SharedHandle(const Id id, Notifiee * notifiee):
+template <typename Id>
+SharedHandle<Id>::SharedHandle(const Id id, Notifiee * notifiee):
 myId(new Id(id)),
 myNotifiee(notifiee)
 {}
 
-template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee>::SharedHandle(const SharedHandle & other):
+template <typename Id>
+SharedHandle<Id>::SharedHandle(const SharedHandle & other):
 myId(other.myId),
 myNotifiee(other.myNotifiee)
 {}
 
-template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee>::~SharedHandle()
+template <typename Id>
+SharedHandle<Id>::~SharedHandle()
 {
-  // Are we the last handle of this type
-  if(myId.use_count() == 1)
-  {
-    Id id(*myId);
-    myId.reset();
-    if(myNotifiee)
-      myNotifiee->handleReleased(id);
-  }
+  release();
 }
 
-template <typename Id, class Notifiee>
-SharedHandle<Id, Notifiee> &
-SharedHandle<Id, Notifiee>::operator =(const SharedHandle & rhs)
+template <typename Id>
+SharedHandle<Id> &
+SharedHandle<Id>::operator =(const SharedHandle & rhs)
 {
   if(*this == rhs)
     return *this;
@@ -63,8 +56,8 @@ SharedHandle<Id, Notifiee>::operator =(const SharedHandle & rhs)
   return *this;
 }
 
-template <typename Id, class Notifiee>
-bool SharedHandle<Id, Notifiee>::operator ==(const SharedHandle & rhs) const
+template <typename Id>
+bool SharedHandle<Id>::operator ==(const SharedHandle & rhs) const
 {
   if(!valid() && !rhs.valid()) // If both invalid then they are same
     return true;
@@ -75,20 +68,20 @@ bool SharedHandle<Id, Notifiee>::operator ==(const SharedHandle & rhs) const
   return (*myId.get() == *rhs.myId.get()) && (myNotifiee == rhs.myNotifiee);
 }
 
-template <typename Id, class Notifiee>
-const Id & SharedHandle<Id, Notifiee>::getId() const
+template <typename Id>
+const Id & SharedHandle<Id>::getId() const
 {
   return *myId.get();
 }
 
-template <typename Id, class Notifiee>
-bool SharedHandle<Id, Notifiee>::valid() const
+template <typename Id>
+bool SharedHandle<Id>::valid() const
 {
   return myId.use_count() > 0;
 }
 
-template <typename Id, class Notifiee>
-void SharedHandle<Id, Notifiee>::release()
+template <typename Id>
+void SharedHandle<Id>::release()
 {
   // Are we the last handle of this type
   if(myId.use_count() == 1)

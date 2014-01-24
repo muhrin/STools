@@ -12,14 +12,17 @@
 
 #include <boost/range/iterator_range.hpp>
 
+#include <CGAL/centroid.h>
+
 #include "spl/build_cell/PointSeparator.h"
-#include "spl/common/AtomSpeciesDatabase.h" // TODO: Remove
 #include "spl/common/ClusterDistanceCalculator.h" // TODO: Remove
 #include "spl/common/Structure.h"
 #include "spl/math/Matrix.h"
 
 namespace spl {
 namespace build_cell {
+
+const int VoronoiSlabGenerator::MAX_ITERATIONS = 10000;
 
 GenerationOutcome
 VoronoiSlabGenerator::generateStructure(common::StructurePtr & structure,
@@ -62,15 +65,15 @@ VoronoiSlabGenerator::Slab::generateSlab(
     common::Structure * const structure) const
 {
   Delaunay dg;
+  RegionTickets tickets;
   BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
-    region.generateSites(&dg);
-
-  refineTriangulation(&dg);
-  BOOST_FOREACH(const Delaunay::Vertex & vtx,
-      boost::make_iterator_range(dg.vertices_begin(), dg.vertices_end()))
   {
-    std::cout << vtx.point() << "\n";
+    RegionTicket ticket = region.generateSites(&dg);
+    if(ticket.valid())
+      tickets[&region] = ticket;
   }
+
+  refineTriangulation(tickets, &dg);
   Voronoi vd(dg);
 
   std::set< Voronoi::Vertex_handle> allVertices(vd.vertices_begin(),
@@ -111,93 +114,69 @@ VoronoiSlabGenerator::Slab::addRegion(UniquePtr< SlabRegion>::Type & region)
   myRegions.push_back(region);
 }
 
-void
-VoronoiSlabGenerator::Slab::refineTriangulation(Delaunay * const dg) const
+bool
+VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
+    Delaunay * const dg) const
 {
-  typedef std::vector< std::pair< Delaunay::Point, SiteInfo> > NewVertices;
-  std::set< Delaunay::Vertex_handle> vertices;
-  for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
-      dg->vertices_end(); it != end; ++it)
-    vertices.insert(it);
+  typedef std::set< Delaunay::Vertex_handle> RegionSites;
+  typedef std::map< const SlabRegion *, RegionSites> UpdateRegions;
 
-  bool changedDg;
-  do
+  std::vector< Delaunay::Vertex_handle> toRemove;
+  UpdateRegions updateRegions;
+  bool regionsGood;
+
+  for(int i = 0; i < MAX_ITERATIONS; ++i)
   {
-    changedDg = false;
-    NewVertices toInsert;
-    for(std::set< Delaunay::Vertex_handle>::iterator it = vertices.begin();
-        it != vertices.end(); /*increment in loop*/)
-    {
-      std::set< Delaunay::Vertex_handle>::iterator next = it;
-      ++next;
-
-      bool isBoundary = false;
-      const Delaunay::Vertex_circulator start = dg->incident_vertices(*it);
-      Delaunay::Vertex_circulator cl = start;
-      do
-      {
-        if(dg->is_infinite(cl))
-          isBoundary = true;
-      }
-      while(!isBoundary && cl != start);
-
-      if(!isBoundary && !(*it)->info().fixed)
-      {
-        if((*it)->degree() < 5)
-        {
-          vertices.erase(*it);
-          dg->remove(*it);
-          changedDg = true;
-        }
-        else if((*it)->degree() > 7)
-        {
-          Delaunay::Point pt(CGAL::to_double((*it)->point().x()),
-              CGAL::to_double((*it)->point().y() + 0.1));
-          toInsert.push_back(std::make_pair(pt, (*it)->info()));
-        }
-      }
-      it = next;
-    }
-
-    BOOST_FOREACH(NewVertices::const_reference pt, toInsert)
-    {
-      Delaunay::Vertex_handle vtx = dg->insert(pt.first);
-      vtx->info() = pt.second;
-      vertices.insert(vtx);
-    }
-
-    spreadAngles(dg);
+    // Fix up the triangulation
     separatePoints(dg);
-    if(!toInsert.empty())
-    {
+    reduceEdges(dg);
 
-//      BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
-//      {
-//        std::vector< Delaunay::Vertex_handle> toRemove;
-//        for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
-//            dg->vertices_end(); it != end; ++it)
-//        {
-//          if(it->info().generatedBy == &region
-//              && !region.withinBoundary(it->point()))
-//            toRemove.push_back(it);
-//        }
-//        BOOST_FOREACH(Delaunay::Vertex_handle & vtx, toRemove)
-//        {
-//          vertices.erase(vtx);
-//          dg->remove(vtx);
-//        }
-//      }
-
-      changedDg = true;
-    }
-    BOOST_FOREACH(const Delaunay::Vertex & vtx,
-        boost::make_iterator_range(dg->vertices_begin(), dg->vertices_end()))
+    // Find out which region each site belongs to and delete any that have
+    // strayed out
+    BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
     {
-      std::cout << vtx.point() << "\n";
+      const bool haveTicket = tickets.find(&region) != tickets.end();
+      toRemove.clear();
+      for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
+          dg->vertices_end(); it != end; ++it)
+      {
+        if(it->info().generatedBy == &region)
+        {
+          if(!region.withinBoundary(it->point()))
+            toRemove.push_back(it);
+          else if(haveTicket)
+            updateRegions[&region].insert(it);
+        }
+      }
+      BOOST_FOREACH(Delaunay::Vertex_handle & vtx, toRemove)
+        dg->remove(vtx);
     }
-    std::cout << "\n\n";
+
+    // Check each site that provided a ticket to see if it's happy with the
+    // current state of the region
+    regionsGood = true;
+    BOOST_FOREACH(UpdateRegions::reference update, updateRegions)
+    {
+      if(!update.first->good(tickets.find(update.first)->second, update.second,
+          *dg))
+      {
+        regionsGood = false;
+        break;
+      }
+    }
+    if(regionsGood)
+      break;
+
+    // Regions need more refinement
+    BOOST_FOREACH(UpdateRegions::reference update, updateRegions)
+    {
+      update.first->refine(tickets.find(update.first)->second, update.second,
+          dg);
+      update.second.clear();
+    }
   }
-  while(changedDg);
+
+  return regionsGood;
 }
 
 bool
@@ -223,8 +202,7 @@ VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
     {
       for(size_t i = 0; i < dg->number_of_vertices(); ++i)
       {
-        double sep = std::max(sepData.separations(idx, i),
-            *x.info().minsep);
+        double sep = std::max(sepData.separations(idx, i), *x.info().minsep);
         sepData.separations(i, idx) = sepData.separations(idx, i) = sep;
       }
     }
@@ -250,14 +228,13 @@ VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
 }
 
 void
-VoronoiSlabGenerator::Slab::spreadAngles(Delaunay * const dg) const
+VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
 {
-  typedef std::map< Delaunay::Vertex_handle, arma::vec2> Forces;
+  typedef std::map< Delaunay::Vertex_handle, K::Vector_2> Forces;
 
-  static const double FORCE_FACTOR = 0.1;
+  static const double FORCE_FACTOR = 0.5;
 
   Forces forces;
-  std::pair< Forces::iterator, bool> forcesRet;
   double maxForceSq;
 
   do
@@ -267,84 +244,72 @@ VoronoiSlabGenerator::Slab::spreadAngles(Delaunay * const dg) const
     for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
         dg->vertices_end(); it != end; ++it)
     {
-      const K::Point_2 x0 = it->point();
-      arma::vec2 r1, r2, r1Perp, r2Perp, df;
-      double forceConstant, angle;
+      if(it->info().fixed || it->degree() < 3 || detail::isBoundaryVertex(*dg, it))
+        continue;
+
+      const K::Point_2 p0 = it->point();
+      K::Vector_2 f(0.0, 0.0), r;
 
       const Delaunay::Vertex_circulator start = it->incident_vertices();
-      Delaunay::Vertex_circulator cl1 = start, cl2 = start;
+      Delaunay::Vertex_circulator cl = start;
       if(start.is_empty())
         continue;
-      ++cl2;
+
+      // Build up the list of points that make up the polygon surrounding this vertex
+      std::vector< K::Point_2> poly;
       do
       {
-        if(!(cl1->info().fixed && cl2->info().fixed)
-            && !(dg->is_infinite(cl1) || dg->is_infinite(cl2)))
-        {
-          r1 = utility::toArma(cl1->point() - x0);
-          r1 = r1 / std::sqrt(arma::dot(r1, r1));
-
-          r2 = utility::toArma(cl2->point() - x0);
-          r2 = r2 / std::sqrt(arma::dot(r2, r2));
-
-          angle = std::abs(std::acos(arma::dot(r1, r2)));
-
-          //std::cout << r1 << r2 << angle << "\n";
-
-          // Counterclockwise
-          r1Perp(0) = -r1(1);
-          r1Perp(1) = r1(0);
-          // Clockwise
-          r2Perp(0) = r2(1);
-          r2Perp(1) = -r2(0);
-
-          forceConstant =
-              cl1->info().fixed || cl2->info().fixed ?
-                  FORCE_FACTOR : 0.5 * FORCE_FACTOR;
-
-          if(!cl1->info().fixed)
-          {
-            df = forceConstant * angle * r1Perp;
-            forcesRet = forces.insert(
-                std::pair< Delaunay::Vertex_handle, arma::vec2>(cl1, df));
-            if(!forcesRet.second)
-              forcesRet.first->second += df;
-          }
-          if(!cl2->info().fixed)
-          {
-            df = forceConstant * angle * r2Perp;
-            forcesRet = forces.insert(
-                std::pair< Delaunay::Vertex_handle, arma::vec2>(cl2, df));
-            if(!forcesRet.second)
-              forcesRet.first->second += df;
-          }
-        }
-        ++cl1;
-        ++cl2;
+        poly.push_back(cl->point());
+        ++cl;
       }
-      while(cl1 != start);
+      while(cl != start);
+
+      forces[it] = FORCE_FACTOR
+          * (CGAL::centroid(poly.begin(), poly.end()) - p0);
     }
     // Now apply all the forces
     maxForceSq = 0.0;
     BOOST_FOREACH(Forces::const_reference f, forces)
     {
-      maxForceSq = std::max(maxForceSq, arma::dot(f.second, f.second));
-      dg->move(f.first, f.first->point() + utility::toCgalVec< K>(f.second));
+      maxForceSq = std::max(maxForceSq,
+          CGAL::to_double(f.second.squared_length()));
+      dg->move(f.first, f.first->point() + f.second);
     }
   }
-  while(maxForceSq > 0.001);
+  while(maxForceSq > 0.0001);
 }
 
-VoronoiSlabGenerator::SlabRegion *
-new_clone(const VoronoiSlabGenerator::SlabRegion & region)
+VoronoiSlabGenerator::SlabRegion::SlabRegion(
+    const std::vector< arma::vec2> & boundary, UniquePtr< Basis>::Type & basis) :
+    myBasis(basis)
 {
-  return region.clone().release();
+  BOOST_FOREACH(const arma::vec2 & r, boundary)
+    myBoundary.push_back(utility::toCgalPoint< K>(r));
+  SSLIB_ASSERT(!myBoundary.is_empty());
+  SSLIB_ASSERT(myBoundary.is_simple());
 }
 
 VoronoiSlabGenerator::SlabRegion::SlabRegion(const SlabRegion & toCopy) :
     myBoundary(toCopy.myBoundary), myBasis(toCopy.myBasis->clone())
 {
+}
 
+const VoronoiSlabGenerator::SlabRegion::Boundary &
+VoronoiSlabGenerator::SlabRegion::getBoundary() const
+{
+  return myBoundary;
+}
+
+bool
+VoronoiSlabGenerator::SlabRegion::withinBoundary(const arma::vec2 & r) const
+{
+  return withinBoundary(utility::toCgalPoint< K>(r));
+}
+bool
+VoronoiSlabGenerator::SlabRegion::withinBoundary(
+    const Voronoi::Point_2 & r) const
+{
+  return getBoundary().bounded_side(r) != CGAL::ON_UNBOUNDED_SIDE;
 }
 
 void
@@ -353,6 +318,12 @@ VoronoiSlabGenerator::SlabRegion::generateAtoms(const Voronoi & vd,
     std::vector< common::Atom> * const atoms) const
 {
   myBasis->generateAtoms(vd, vertices, atoms);
+}
+
+VoronoiSlabGenerator::SlabRegion *
+new_clone(const VoronoiSlabGenerator::SlabRegion & region)
+{
+  return region.clone().release();
 }
 
 } // namespace build_cell
