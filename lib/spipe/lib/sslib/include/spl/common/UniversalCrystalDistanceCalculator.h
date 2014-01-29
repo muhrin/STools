@@ -23,25 +23,26 @@ class UniversalCrystalDistanceCalculator : public DistanceCalculator,
 public:
 
   explicit
-  UniversalCrystalDistanceCalculator(Structure & structure);
-  virtual ~UniversalCrystalDistanceCalculator();
+  UniversalCrystalDistanceCalculator(UnitCell * const unitCell);
+  virtual
+  ~UniversalCrystalDistanceCalculator();
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;
 
-  virtual ::arma::vec3
-  getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+  virtual arma::vec3
+  getVecMinImg(const arma::vec3 & a, const arma::vec3 & b,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool
-  getDistsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< double> & outDistances,
+  getDistsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< double> & outDistances,
       const size_t maxDistances = DistanceCalculator::DEFAULT_MAX_OUTPUTS,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
   virtual bool
-  getVecsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< ::arma::vec3> & outVectors,
+  getVecsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< arma::vec3> & outVectors,
       const size_t maxVectors = DistanceCalculator::DEFAULT_MAX_OUTPUTS,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const;
 
@@ -57,26 +58,26 @@ private:
     void
     update(const UnitCell & cell);
 
-    ::arma::vec3 A;
-    ::arma::vec3 B;
-    ::arma::vec3 C;
+    arma::vec3 A;
+    arma::vec3 B;
+    arma::vec3 C;
 
-    ::arma::vec3 aCrossB;
-    ::arma::vec3 bCrossC;
-    ::arma::vec3 aCrossC;
+    arma::vec3 aCrossB;
+    arma::vec3 bCrossC;
+    arma::vec3 aCrossC;
 
     double aCrossBLen;
     double bCrossCLen;
     double aCrossCLen;
 
-    ::arma::vec3 aCrossBHat;
-    ::arma::vec3 bCrossCHat;
-    ::arma::vec3 aCrossCHat;
+    arma::vec3 aCrossBHat;
+    arma::vec3 bCrossCHat;
+    arma::vec3 aCrossCHat;
   };
 
   double
-  getNumPlaneRepetitionsToBoundSphere(const ::arma::vec3 & planeVec1,
-      const ::arma::vec3 & planeVec2, const double radius) const;
+  getNumPlaneRepetitionsToBoundSphere(const arma::vec3 & planeVec1,
+      const arma::vec3 & planeVec2, const double radius) const;
   inline double
   getNumPlaneRepetitionsToBoundSphere(const double radius, const double volume,
       const double crossLen) const
@@ -96,7 +97,7 @@ private:
   Cache myCache;
 };
 
-}
-} // Close the namespace
+} // namespace common
+} // namespace spl
 
 #endif /* UNIVERSAL_CRYSTAL_DISTANCE_CALCULATOR_H */

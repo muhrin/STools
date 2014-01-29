@@ -15,21 +15,19 @@
 
 #include "spl/SSLibAssert.h"
 #include "spl/common/Atom.h"
-#include "spl/common/Types.h"
 
 namespace spl {
 namespace common {
 
-class Structure;
+class UnitCell;
 
 class DistanceCalculator : private boost::noncopyable
 {
 public:
-  static const size_t DEFAULT_MAX_OUTPUTS;
-  static const unsigned int DEFAULT_MAX_CELL_MULTIPLES;
+  static const size_t DEFAULT_MAX_OUTPUTS = 10000;
+  // The maximum number of cell multiples to consider in each cell vector direction
+  static const unsigned int DEFAULT_MAX_CELL_MULTIPLES = 100;
 
-  explicit
-  DistanceCalculator(Structure & structure);
   virtual
   ~DistanceCalculator()
   {
@@ -150,8 +148,6 @@ protected:
     }
     return capped;
   }
-
-  Structure & myStructure;
 };
 
 } // namespace common

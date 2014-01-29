@@ -23,15 +23,15 @@ namespace spl {
 namespace common {
 
 class OrthoCellDistanceCalculator : public DistanceCalculator,
-  UnitCell::UnitCellListener
+    UnitCell::UnitCellListener
 {
 public:
-
   static const double VALID_ANGLE_TOLERANCE;
 
   explicit
-  OrthoCellDistanceCalculator(Structure & structure);
-  virtual ~OrthoCellDistanceCalculator();
+  OrthoCellDistanceCalculator(UnitCell * const unitCell);
+  virtual
+  ~OrthoCellDistanceCalculator();
 
   using DistanceCalculator::getDistsBetween;
   using DistanceCalculator::getVecsBetween;

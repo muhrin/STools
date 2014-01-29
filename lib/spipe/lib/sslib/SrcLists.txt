@@ -49,7 +49,6 @@ set(sslib_Source_Files__common
   src/common/AtomSpeciesDatabase.cpp
   src/common/AtomSpeciesInfo.cpp
   src/common/Constants.cpp
-  src/common/DistanceCalculator.cpp
   src/common/DistanceCalculatorDelegator.cpp
   src/common/OrthoCellDistanceCalculator.cpp
   src/common/ReferenceDistanceCalculator.cpp

@@ -17,8 +17,7 @@ namespace spl {
 namespace common {
 
 DistanceCalculatorDelegator::DistanceCalculatorDelegator(Structure & structure) :
-    DistanceCalculator(structure), myDelegate(
-        new ClusterDistanceCalculator(structure)), myDelegateType(
+    myStructure(structure), myDelegate(new ClusterDistanceCalculator()), myDelegateType(
         CalculatorType::CLUSTER)
 {
   // WARNING: Don't use structure here as it won't be initialised!!
@@ -61,17 +60,19 @@ DistanceCalculatorDelegator::setDelegate(const CalculatorType::Value calcType)
   {
     if(calcType == CalculatorType::CLUSTER)
     {
-      myDelegate.reset(new ClusterDistanceCalculator(myStructure));
+      myDelegate.reset(new ClusterDistanceCalculator());
       delegateChanged = true;
     }
     else if(calcType == CalculatorType::UNIVERSAL_CRYSTAL)
     {
-      myDelegate.reset(new UniversalCrystalDistanceCalculator(myStructure));
+      myDelegate.reset(
+          new UniversalCrystalDistanceCalculator(myStructure.getUnitCell()));
       delegateChanged = true;
     }
     else if(calcType == CalculatorType::ORTHO_CELL)
     {
-      myDelegate.reset(new OrthoCellDistanceCalculator(myStructure));
+      myDelegate.reset(
+          new OrthoCellDistanceCalculator(myStructure.getUnitCell()));
       delegateChanged = true;
     }
     myDelegateType = calcType;

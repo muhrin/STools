@@ -19,29 +19,22 @@ namespace common {
 class ClusterDistanceCalculator : public DistanceCalculator
 {
 public:
-
-  explicit
-  ClusterDistanceCalculator(Structure & structure) :
-      DistanceCalculator(structure)
-  {
-  }
-
-  virtual inline ::arma::vec3
-  getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+  virtual inline arma::vec3
+  getVecMinImg(const arma::vec3 & a, const arma::vec3 & b,
       const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
   {
     return b - a;
   }
 
   virtual bool
-  getDistsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< double> & outDistances,
+  getDistsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< double> & outDistances,
       const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
       const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
   {
     const double cutoffSq = cutoff * cutoff;
-    const ::arma::vec dr = b - a;
-    const double distSq = ::arma::dot(dr, dr);
+    const arma::vec dr = b - a;
+    const double distSq = arma::dot(dr, dr);
 
     if(distSq < cutoffSq)
       outDistances.push_back(std::sqrt(distSq));
@@ -50,15 +43,15 @@ public:
   }
 
   virtual inline bool
-  getVecsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< ::arma::vec3> & outVectors,
+  getVecsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< arma::vec3> & outVectors,
       const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
       const unsigned int /* maxCellMultiples */= DEFAULT_MAX_CELL_MULTIPLES) const
   {
     const double cutoffSq = cutoff * cutoff;
-    const ::arma::vec dr = b - a;
+    const arma::vec dr = b - a;
 
-    if(::arma::dot(dr, dr) < cutoffSq)
+    if(arma::dot(dr, dr) < cutoffSq)
       outVectors.push_back(dr);
 
     return true;
@@ -67,7 +60,7 @@ public:
   virtual inline bool
   isValid() const
   {
-    return myStructure.getUnitCell() == NULL;
+    return true;
   }
 };
 

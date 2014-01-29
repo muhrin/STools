@@ -24,6 +24,7 @@ namespace common {
 // FORWARD DECLARES ///////////////////////////
 class Atom;
 class Structure;
+class UnitCell;
 
 class DistanceCalculatorDelegator : public DistanceCalculator
 {
@@ -33,7 +34,7 @@ public:
   // From DistanceCalculator /////////////////////
 
   virtual inline double
-  getDistMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+  getDistMinImg(const arma::vec3 & a, const arma::vec3 & b,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
     return myDelegate->getDistMinImg(a, b, maxCellMultiples);
@@ -47,7 +48,7 @@ public:
   }
 
   virtual inline double
-  getDistSqMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+  getDistSqMinImg(const arma::vec3 & a, const arma::vec3 & b,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
     return myDelegate->getDistSqMinImg(a, b, maxCellMultiples);
@@ -61,8 +62,8 @@ public:
   }
 
   virtual inline bool
-  getDistsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< double> & outDistances,
+  getDistsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< double> & outDistances,
       const size_t maxDistances = DEFAULT_MAX_OUTPUTS,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
@@ -72,7 +73,7 @@ public:
 
   virtual inline bool
   getDistsBetween(const Atom & atom1, const Atom & atom2, const double cutoff,
-      ::std::vector< double> & outDistances, const size_t maxDistances =
+      std::vector< double> & outDistances, const size_t maxDistances =
           DEFAULT_MAX_OUTPUTS, const unsigned int maxCellMultiples =
           DEFAULT_MAX_CELL_MULTIPLES) const
   {
@@ -80,14 +81,14 @@ public:
         maxDistances, maxCellMultiples);
   }
 
-  virtual ::arma::vec3
-  getVecMinImg(const ::arma::vec3 & a, const ::arma::vec3 & b,
+  virtual arma::vec3
+  getVecMinImg(const arma::vec3 & a, const arma::vec3 & b,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
     return myDelegate->getVecMinImg(a, b, maxCellMultiples);
   }
 
-  virtual ::arma::vec3
+  virtual arma::vec3
   getVecMinImg(const Atom & atom1, const Atom & atom2,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
@@ -95,8 +96,8 @@ public:
   }
 
   virtual bool
-  getVecsBetween(const ::arma::vec3 & a, const ::arma::vec3 & b,
-      const double cutoff, ::std::vector< ::arma::vec3> & outVectors,
+  getVecsBetween(const arma::vec3 & a, const arma::vec3 & b,
+      const double cutoff, std::vector< arma::vec3> & outVectors,
       const size_t maxVectors = DEFAULT_MAX_OUTPUTS,
       const unsigned int maxCellMultiples = DEFAULT_MAX_CELL_MULTIPLES) const
   {
@@ -106,7 +107,7 @@ public:
 
   virtual bool
   getVecsBetween(const Atom & atom1, const Atom & atom2, const double cutoff,
-      ::std::vector< ::arma::vec3> & outVectors, const size_t maxVectors =
+      std::vector< arma::vec3> & outVectors, const size_t maxVectors =
           DEFAULT_MAX_OUTPUTS, const unsigned int maxCellMultiples =
           DEFAULT_MAX_CELL_MULTIPLES) const
   {
@@ -140,7 +141,8 @@ private:
   bool
   setDelegate(const CalculatorType::Value calcType);
 
-  DistanceCalculatorPtr myDelegate;
+  Structure & myStructure;
+  spl::UniquePtr<DistanceCalculator>::Type myDelegate;
   CalculatorType::Value myDelegateType;
 };
 

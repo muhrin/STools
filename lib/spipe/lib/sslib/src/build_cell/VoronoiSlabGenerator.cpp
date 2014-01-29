@@ -154,8 +154,7 @@ bool
 VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
 {
   // TEMPORARY, CONVERT TO 3D
-  static common::Structure LAME_TEMP_STRUCTURE;
-  static const common::ClusterDistanceCalculator DIST_CALC(LAME_TEMP_STRUCTURE);
+  static const common::ClusterDistanceCalculator DIST_CALC;
   SeparationData sepData(dg->number_of_vertices(), DIST_CALC);
 
   sepData.separations.fill(0.0);

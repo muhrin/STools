@@ -23,12 +23,12 @@ namespace common {
 
 const double OrthoCellDistanceCalculator::VALID_ANGLE_TOLERANCE = 1e-10;
 
-OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(Structure & structure) :
-    DistanceCalculator(structure), myUnitCell(NULL)
+OrthoCellDistanceCalculator::OrthoCellDistanceCalculator(UnitCell * const unitCell):
+    myUnitCell(NULL)
 {
-  SSLIB_ASSERT(structure.getUnitCell());
+  SSLIB_ASSERT(unitCell);
 
-  setUnitCell(structure.getUnitCell());
+  setUnitCell(unitCell);
 }
 
 OrthoCellDistanceCalculator::~OrthoCellDistanceCalculator()

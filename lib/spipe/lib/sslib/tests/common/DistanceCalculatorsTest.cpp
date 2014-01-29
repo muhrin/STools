@@ -29,10 +29,10 @@
 
 //#define DIST_TEST_MANUAL_DEBUG
 
-namespace ssbc = ::spl::build_cell;
-namespace ssc = ::spl::common;
-namespace ssm = ::spl::math;
-namespace ssu = ::spl::utility;
+namespace ssbc = spl::build_cell;
+namespace ssc = spl::common;
+namespace ssm = spl::math;
+namespace ssu = spl::utility;
 
 BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 {
@@ -51,9 +51,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
   // Timers
   time_t t0, t1, tOrtho = 0, tUniv = 0;
   double cutoff;
-  ::std::vector< double> referenceDists, orthoDist, univDist;
-  ::std::vector< ::arma::vec3> referenceVecs, orthoVecs, univVecs;
-  ::arma::vec3 orthoSum, univSum, referenceSum;
+  std::vector< double> referenceDists, orthoDist, univDist;
+  std::vector< arma::vec3> referenceVecs, orthoVecs, univVecs;
+  arma::vec3 orthoSum, univSum, referenceSum;
   for(size_t attempt = 0; attempt < numAttempts; ++attempt)
   {
     referenceDists.clear();
@@ -73,9 +73,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
       structure.newAtom("C1").setPosition(
           structure.getUnitCell()->randomPoint());
 
-    ssc::OrthoCellDistanceCalculator orthoCalc(structure);
-    ssc::UniversalCrystalDistanceCalculator univCalc(structure);
-    ssc::ReferenceDistanceCalculator referenceCalc(structure);
+    ssc::OrthoCellDistanceCalculator orthoCalc(structure.getUnitCell());
+    ssc::UniversalCrystalDistanceCalculator univCalc(structure.getUnitCell());
+    ssc::ReferenceDistanceCalculator referenceCalc(*structure.getUnitCell());
 
     BOOST_REQUIRE(orthoCalc.isValid());
     BOOST_REQUIRE(univCalc.isValid());
@@ -130,17 +130,17 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
 #ifdef DIST_TEST_MANUAL_DEBUG
     if(orthoVecs.size() != univVecs.size() || orthoVecs.size() != univVecs.size())
-    ::std::cout << "Vector size mismatch.\n";
+    std::cout << "Vector size mismatch.\n";
 #endif
 
     BOOST_REQUIRE(orthoVecs.size() == referenceVecs.size());
     BOOST_REQUIRE(univVecs.size() == referenceVecs.size());
 
-    ::std::sort(orthoDist.begin(), orthoDist.end());
-    ::std::sort(univDist.begin(), univDist.end());
-    ::std::sort(referenceDists.begin(), referenceDists.end());
+    std::sort(orthoDist.begin(), orthoDist.end());
+    std::sort(univDist.begin(), univDist.end());
+    std::sort(referenceDists.begin(), referenceDists.end());
 
-    const size_t numElements = ::std::min(orthoDist.size(), univDist.size());
+    const size_t numElements = std::min(orthoDist.size(), univDist.size());
 
     referenceSum.zeros();
     univSum.zeros();
@@ -153,9 +153,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
 #ifdef DIST_TEST_MANUAL_DEBUG
       if(!ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance))
-      ::std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << ::std::endl;
+      std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << std::endl;
       if(!ssu::stable::eq(univDist[i], referenceDists[i], tolerance))
-      ::std::cout << "Diff. in distance (universal - reference)" << univDist[i] - referenceDists[i] << ::std::endl;
+      std::cout << "Diff. in distance (universal - reference)" << univDist[i] - referenceDists[i] << std::endl;
 #endif
 
       BOOST_REQUIRE(
@@ -168,9 +168,9 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 
 #ifdef DIST_TEST_MANUAL_DEBUG
       if(!ssu::stable::eq(orthoSum(i), referenceSum(i), 3e-9))
-      ::std::cout << "Diff: " << orthoSum(i) - referenceSum(i) << ::std::endl;
+      std::cout << "Diff: " << orthoSum(i) - referenceSum(i) << std::endl;
       if(!ssu::stable::eq(univSum(i), referenceSum(i), 3e-9))
-      ::std::cout << "Diff: " << univSum(i) - referenceSum(i) << ::std::endl;
+      std::cout << "Diff: " << univSum(i) - referenceSum(i) << std::endl;
 #endif
 
       BOOST_REQUIRE(ssu::stable::eq(orthoSum(i), referenceSum(i), 3e-9));
@@ -179,13 +179,15 @@ BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
   }
 
 #ifdef DIST_TEST_MANUAL_DEBUG
-  ::std::cout << "Univ. took: " << tUniv << ::std::endl;
-  ::std::cout << "Ortho took: " << tOrtho << ::std::endl;
+  std::cout << "Univ. took: " << tUniv << std::endl;
+  std::cout << "Ortho took: " << tOrtho << std::endl;
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 {
+  using std::sqrt;
+
   // SETTINGS ////////////////
   const double cellDim = 1;
   const double tolerance = 1e-13;
@@ -198,13 +200,13 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 #endif
   const size_t numAttempts = 100;
 
-  ::ssbc::RandomUnitCellGenerator randomCell;
+  ssbc::RandomUnitCellGenerator randomCell;
 
   double cutoff;
-  ::std::vector< double> referenceDists, univDist;
-  ::std::vector< ::arma::vec3> referenceVecs, univVecs;
-  ::arma::vec3 referenceSum, univSum;
-  ::arma::vec3 A, B, C;
+  std::vector< double> referenceDists, univDist;
+  std::vector< arma::vec3> referenceVecs, univVecs;
+  arma::vec3 referenceSum, univSum;
+  arma::vec3 A, B, C;
   for(size_t attempt = 0; attempt < numAttempts; ++attempt)
   {
     referenceDists.clear();
@@ -223,8 +225,8 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
       structure.newAtom("C1").setPosition(
           structure.getUnitCell()->randomPoint());
 
-    ssc::UniversalCrystalDistanceCalculator univCalc(structure);
-    ssc::ReferenceDistanceCalculator referenceCalc(structure);
+    ssc::UniversalCrystalDistanceCalculator univCalc(structure.getUnitCell());
+    ssc::ReferenceDistanceCalculator referenceCalc(*structure.getUnitCell());
 
     BOOST_REQUIRE(univCalc.isValid());
     BOOST_REQUIRE(referenceCalc.isValid());
@@ -247,22 +249,21 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
     referenceDists.reserve(referenceVecs.size());
     for(size_t i = 0; i < referenceVecs.size(); ++i)
     {
-      referenceDists[i] = sqrt(::arma::dot(referenceVecs[i], referenceVecs[i]));
+      referenceDists[i] = sqrt(arma::dot(referenceVecs[i], referenceVecs[i]));
     }
 
 #ifdef DIST_TEST_MANUAL_DEBUG
     if(referenceVecs.size() != univVecs.size() || referenceDists.size() != univDist.size())
-    ::std::cout << "Vector size mismatch.\n";
+    std::cout << "Vector size mismatch.\n";
 #endif
 
     BOOST_REQUIRE(referenceDists.size() == univDist.size());
     BOOST_REQUIRE(referenceVecs.size() == univVecs.size());
 
-    ::std::sort(referenceDists.begin(), referenceDists.end());
-    ::std::sort(univDist.begin(), univDist.end());
+    std::sort(referenceDists.begin(), referenceDists.end());
+    std::sort(univDist.begin(), univDist.end());
 
-    const size_t numElements = ::std::min(referenceDists.size(),
-        univDist.size());
+    const size_t numElements = std::min(referenceDists.size(), univDist.size());
 
     univSum.zeros();
     referenceSum.zeros();
@@ -273,7 +274,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 
 #ifdef DIST_TEST_MANUAL_DEBUG
       if(!ssu::stable::eq(referenceDists[i], univDist[i], tolerance))
-      ::std::cout << "Diff in distance (refernce - universal): " << referenceDists[i] - univDist[i] << ::std::endl;
+      std::cout << "Diff in distance (refernce - universal): " << referenceDists[i] - univDist[i] << std::endl;
 #endif
 
       BOOST_REQUIRE(ssu::stable::eq(referenceDists[i], univDist[i], tolerance));
@@ -284,7 +285,7 @@ BOOST_AUTO_TEST_CASE(NonOrthogonalComparison)
 
 #ifdef DIST_TEST_MANUAL_DEBUG
       if(!ssu::stable::eq(referenceSum(i), univSum(i), 3e-9))
-      ::std::cout << "Diff. in vector sum: (refernce - universal)" << referenceSum(i) - univSum(i) << ::std::endl;
+      std::cout << "Diff. in vector sum: (refernce - universal)" << referenceSum(i) - univSum(i) << std::endl;
 #endif
 
       BOOST_REQUIRE(ssu::stable::eq(referenceSum(i), univSum(i), 3e-9));
@@ -301,8 +302,8 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   const double cutoffDist = 5.00;
 
   ssc::Structure structure;
-  const ssc::UnitCell cell(cellDim, cellDim, 3.1032310973902493, 89.9999999999, 90.0,
-      90.0);
+  const ssc::UnitCell cell(cellDim, cellDim, 3.1032310973902493, 89.9999999999,
+      90.0, 90.0);
 
   structure.setUnitCell(cell);
 
@@ -316,15 +317,15 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   structure.newAtom("Na").setPosition(-1.3834008907850099, -0.77711917814879217,
       0.029117512324985273);
 
-  ssc::ReferenceDistanceCalculator referenceCalc(structure);
-  ssc::OrthoCellDistanceCalculator orthoCalc(structure);
-  ssc::UniversalCrystalDistanceCalculator univCalc(structure);
+  ssc::ReferenceDistanceCalculator referenceCalc(*structure.getUnitCell());
+  ssc::OrthoCellDistanceCalculator orthoCalc(structure.getUnitCell());
+  ssc::UniversalCrystalDistanceCalculator univCalc(structure.getUnitCell());
 
   BOOST_REQUIRE(referenceCalc.isValid());
   BOOST_REQUIRE(orthoCalc.isValid());
   BOOST_REQUIRE(univCalc.isValid());
 
-  ::std::vector< double> orthoDist, univDist, referenceDists;
+  std::vector< double> orthoDist, univDist, referenceDists;
 
   for(size_t i = 0; i < numAtoms; ++i)
   {
@@ -343,19 +344,19 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
   BOOST_REQUIRE(univDist.size() == referenceDists.size());
 
   // Sort all the distances
-  ::std::sort(referenceDists.begin(), referenceDists.end());
-  ::std::sort(orthoDist.begin(), orthoDist.end());
-  ::std::sort(univDist.begin(), univDist.end());
+  std::sort(referenceDists.begin(), referenceDists.end());
+  std::sort(orthoDist.begin(), orthoDist.end());
+  std::sort(univDist.begin(), univDist.end());
 
-  const size_t numElements = ::std::min(orthoDist.size(), univDist.size());
+  const size_t numElements = std::min(orthoDist.size(), univDist.size());
 
   for(size_t i = 0; i < numElements; ++i)
   {
 #ifdef DIST_TEST_MANUAL_DEBUG
     if(!ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance))
-    ::std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << ::std::endl;
+    std::cout << "Diff. in distance (ortho - reference): " << orthoDist[i] - referenceDists[i] << std::endl;
     if(!ssu::stable::eq(univDist[i], referenceDists[i], tolerance))
-    ::std::cout << "Diff. in distance (univ - reference): " << univDist[i] - referenceDists[i] << ::std::endl;
+    std::cout << "Diff. in distance (univ - reference): " << univDist[i] - referenceDists[i] << std::endl;
 #endif
     BOOST_REQUIRE(ssu::stable::eq(orthoDist[i], referenceDists[i], tolerance));
     BOOST_REQUIRE(ssu::stable::eq(univDist[i], referenceDists[i], tolerance));
