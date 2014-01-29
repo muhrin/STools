@@ -33,6 +33,7 @@ namespace build_cell {
 
 class LatticeRegion : public VoronoiSlabGenerator::SlabRegion
 {
+  typedef VoronoiSlabGenerator::SlabRegion::K K;
 public:
   struct ConstructionInfo
   {
@@ -74,6 +75,7 @@ private:
 
 class RandomRegion : public VoronoiSlabGenerator::SlabRegion
 {
+  typedef VoronoiSlabGenerator::SlabRegion::K K;
 public:
   typedef std::map< int, int> PolygonNumbers;
   struct PolyMode
@@ -125,21 +127,23 @@ private:
 
 class OrderedBasis : public VoronoiSlabGenerator::SlabRegion::Basis
 {
+  typedef VoronoiSlabGenerator::SlabRegion::Delaunay Delaunay;
 public:
   explicit
   OrderedBasis(const std::vector< std::string> & species);
 
   virtual bool
-  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
+  generateAtoms(const Delaunay & dg,
+      const std::set< Delaunay::Face_handle> & faces,
       std::vector< common::Atom> * const atoms) const;
 
   virtual UniquePtr< Basis>::Type
   clone() const;
 private:
   void
-  placeAtoms(const size_t basisIdx,
-      const std::set< Voronoi::Vertex_handle>::iterator & it,
-      std::set< Voronoi::Vertex_handle> * const vertices,
+  placeAtoms(const Delaunay & dg, const size_t basisIdx,
+      const std::set< Delaunay::Face_handle>::const_iterator & it,
+      std::set< Delaunay::Face_handle> * const faces,
       std::vector< common::Atom> * const atoms) const;
 
   std::vector< std::string> mySpecies;

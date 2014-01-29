@@ -74,36 +74,7 @@ VoronoiSlabGenerator::Slab::generateSlab(
   }
 
   refineTriangulation(tickets, &dg);
-  Voronoi vd(dg);
-
-  std::set< Voronoi::Vertex_handle> allVertices(vd.vertices_begin(),
-      vd.vertices_end());
-  std::vector< common::Atom> atoms;
-  BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
-  {
-    std::set< Voronoi::Vertex_handle> regionVertices;
-    for(std::set< Voronoi::Vertex_handle>::iterator it = allVertices.begin(),
-        end = allVertices.end(); it != end; /*increment in body*/)
-    {
-      std::set< Voronoi::Vertex_handle>::iterator next = it;
-      ++next;
-      if((*it)->is_valid())
-      {
-        if(region.withinBoundary((*it)->point()))
-        {
-          regionVertices.insert(*it);
-          allVertices.erase(it);
-        }
-      }
-      // Move on the iterator
-      it = next;
-    }
-    region.generateAtoms(vd, regionVertices, &atoms);
-  }
-
-  BOOST_FOREACH(const common::Atom & atom, atoms)
-    structure->newAtom(atom).setPosition(
-        math::transformCopy(atom.getPosition(), myTransform));
+  generateAtoms(dg, structure);
 
   return true;
 }
@@ -219,7 +190,7 @@ VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
   for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
       dg->vertices_end(); it != end; ++it)
   {
-    dg->move(it,
+    dg->move_if_no_collision(it,
         Delaunay::Point(sepData.points(0, idx), sepData.points(1, idx)));
     ++idx;
   }
@@ -244,7 +215,8 @@ VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
     for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
         dg->vertices_end(); it != end; ++it)
     {
-      if(it->info().fixed || it->degree() < 3 || detail::isBoundaryVertex(*dg, it))
+      if(it->info().fixed || it->degree() < 3
+          || detail::isBoundaryVertex(*dg, it))
         continue;
 
       const K::Point_2 p0 = it->point();
@@ -273,10 +245,51 @@ VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
     {
       maxForceSq = std::max(maxForceSq,
           CGAL::to_double(f.second.squared_length()));
-      dg->move(f.first, f.first->point() + f.second);
+      dg->move_if_no_collision(f.first, f.first->point() + f.second);
     }
   }
   while(maxForceSq > 0.0001);
+}
+
+void
+VoronoiSlabGenerator::Slab::generateAtoms(const Delaunay & dg,
+    common::Structure * const structure) const
+{
+  typedef std::set< Delaunay::Face_handle> FacesSet;
+  typedef std::list< Delaunay::Face_handle> FacesList;
+
+  FacesList allFaces;
+  for(Delaunay::Face_iterator it = dg.faces_begin(), end = dg.faces_end();
+      it != end; ++it)
+    allFaces.push_back(it);
+
+  std::vector< common::Atom> atoms;
+  BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
+  {
+    FacesSet regionFaces;
+    for(FacesList::iterator it = allFaces.begin(), end = allFaces.end();
+        it != end; /*increment in body*/)
+    {
+      FacesList::iterator next = it;
+      ++next;
+      Delaunay::Face_handle & face = *it;
+      if(face->is_valid())
+      {
+        if(region.withinBoundary(dg.dual(face)))
+        {
+          regionFaces.insert(face);
+          allFaces.erase(it);
+        }
+      }
+      // Move on the iterator
+      it = next;
+    }
+    region.generateAtoms(dg, regionFaces, &atoms);
+  }
+
+  BOOST_FOREACH(const common::Atom & atom, atoms)
+    structure->newAtom(atom).setPosition(
+        math::transformCopy(atom.getPosition(), myTransform));
 }
 
 VoronoiSlabGenerator::SlabRegion::SlabRegion(
@@ -307,17 +320,17 @@ VoronoiSlabGenerator::SlabRegion::withinBoundary(const arma::vec2 & r) const
 }
 bool
 VoronoiSlabGenerator::SlabRegion::withinBoundary(
-    const Voronoi::Point_2 & r) const
+    const Delaunay::Point & r) const
 {
   return getBoundary().bounded_side(r) != CGAL::ON_UNBOUNDED_SIDE;
 }
 
 void
-VoronoiSlabGenerator::SlabRegion::generateAtoms(const Voronoi & vd,
-    std::set< Voronoi::Vertex_handle> vertices,
+VoronoiSlabGenerator::SlabRegion::generateAtoms(const Delaunay & dg,
+    const std::set< Delaunay::Face_handle> & faces,
     std::vector< common::Atom> * const atoms) const
 {
-  myBasis->generateAtoms(vd, vertices, atoms);
+  myBasis->generateAtoms(dg, faces, atoms);
 }
 
 VoronoiSlabGenerator::SlabRegion *

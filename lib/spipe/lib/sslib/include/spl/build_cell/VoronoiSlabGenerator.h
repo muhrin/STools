@@ -29,6 +29,9 @@
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
+#include <CGAL/Periodic_2_triangulation_vertex_base_2.h>
+#include <CGAL/Periodic_2_triangulation_traits_2.h>
+#include <CGAL/Periodic_2_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_2.h>
 
 #include "spl/SSLibAssert.h"
@@ -65,7 +68,6 @@ private:
 
 class VoronoiSlabGenerator::Slab
 {
-  typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 public:
   struct SiteInfo
   {
@@ -74,22 +76,31 @@ public:
     const VoronoiSlabGenerator::SlabRegion * generatedBy;
   };
 
+  typedef CGAL::Exact_predicates_exact_constructions_kernel K;
+
 private:
   typedef CGAL::Triangulation_vertex_base_with_info_2< SiteInfo, K> Vb;
   typedef CGAL::Triangulation_data_structure_2< Vb> Tds;
 
+  typedef CGAL::Periodic_2_triangulation_vertex_base_2< K, Vb> PVb;
+  typedef CGAL::Triangulation_data_structure_2< PVb,
+      CGAL::Periodic_2_triangulation_face_base_2< K> > PTds;
+  typedef CGAL::Periodic_2_triangulation_traits_2< K> GT;
+
 public:
-  typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
+
+  //typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
+  typedef CGAL::Periodic_2_Delaunay_triangulation_2< GT, PTds> Delaunay;
 
 private:
-  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
-  typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
-      Delaunay> AP;
+//  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
+//  typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
+//      Delaunay> AP;
   typedef utility::SharedHandle< size_t> RegionTicket;
   typedef std::map< const VoronoiSlabGenerator::SlabRegion *, RegionTicket> RegionTickets;
 
 public:
-  typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
+  //typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
   Slab();
   Slab(const arma::mat44 & transform);
@@ -108,6 +119,8 @@ private:
   separatePoints(Delaunay * const dg) const;
   void
   reduceEdges(Delaunay * const dg) const;
+  void
+  generateAtoms(const Delaunay & dg, common::Structure * const structure) const;
 
   arma::mat44 myTransform;
   SlabRegions myRegions;
@@ -122,7 +135,6 @@ protected:
 
 public:
   typedef VoronoiSlabGenerator::Slab::Delaunay Delaunay;
-  typedef VoronoiSlabGenerator::Slab::Voronoi Voronoi;
   typedef utility::SharedHandle< size_t> Ticket;
   class Basis;
 
@@ -140,7 +152,7 @@ public:
   bool
   withinBoundary(const arma::vec2 & r) const;
   bool
-  withinBoundary(const Voronoi::Point_2 & r) const;
+  withinBoundary(const Delaunay::Point & r) const;
 
   virtual Ticket
   generateSites(Delaunay * const dg) const = 0;
@@ -162,7 +174,8 @@ public:
   clone() const = 0;
 
   void
-  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
+  generateAtoms(const Delaunay & dg,
+      const std::set< Delaunay::Face_handle> & faces,
       std::vector< common::Atom> * const atoms) const;
 private:
 
@@ -173,15 +186,14 @@ private:
 class VoronoiSlabGenerator::SlabRegion::Basis
 {
 public:
-  typedef VoronoiSlabGenerator::SlabRegion::Voronoi Voronoi;
-
   virtual
   ~Basis()
   {
   }
 
   virtual bool
-  generateAtoms(const Voronoi & vd, std::set< Voronoi::Vertex_handle> vertices,
+  generateAtoms(const Delaunay & dg,
+      const std::set< Delaunay::Face_handle> & faces,
       std::vector< common::Atom> * const atoms) const = 0;
   virtual UniquePtr< Basis>::Type
   clone() const = 0;
@@ -192,7 +204,8 @@ template< typename DG>
   bool
   isBoundaryVertex(const DG & dg, const typename DG::Vertex_handle vtx)
   {
-    const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
+    //const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
+    const typename DG::Vertex_circulator start = dg.adjacent_vertices(vtx);
     if(start.is_empty())
       return false;
 
