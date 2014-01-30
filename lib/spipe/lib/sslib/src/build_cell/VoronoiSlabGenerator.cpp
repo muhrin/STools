@@ -15,24 +15,31 @@
 #include <CGAL/centroid.h>
 
 #include "spl/build_cell/PointSeparator.h"
-#include "spl/common/ClusterDistanceCalculator.h" // TODO: Remove
 #include "spl/common/Structure.h"
 #include "spl/math/Matrix.h"
+#include "spl/utility/Armadillo.h"
 
 namespace spl {
 namespace build_cell {
 
 const int VoronoiSlabGenerator::MAX_ITERATIONS = 10000;
 
+VoronoiSlabGenerator::VoronoiSlabGenerator(const common::UnitCell & unitCell) :
+    myUnitCell(unitCell)
+{
+}
+
 GenerationOutcome
 VoronoiSlabGenerator::generateStructure(common::StructurePtr & structure,
     const common::AtomSpeciesDatabase & speciesDb)
 {
   structure.reset(new common::Structure());
+  if(myUnitCell)
+    structure->setUnitCell(*myUnitCell);
+
   BOOST_FOREACH(const Slab & slab, mySlabs)
-  {
     slab.generateSlab(structure.get());
-  }
+
   return GenerationOutcome::success();
 }
 
@@ -51,12 +58,12 @@ VoronoiSlabGenerator::addSlab(const Slab & slab)
 }
 
 VoronoiSlabGenerator::Slab::Slab() :
-    myTransform(arma::eye(4, 4))
+    myTransform(arma::eye(4, 4)), mySaveTriangulation(false)
 {
 }
 
 VoronoiSlabGenerator::Slab::Slab(const arma::mat44 & transform) :
-    myTransform(transform)
+    myTransform(transform), mySaveTriangulation(false)
 {
 }
 
@@ -64,7 +71,10 @@ bool
 VoronoiSlabGenerator::Slab::generateSlab(
     common::Structure * const structure) const
 {
+  SSLIB_ASSERT(structure);
+
   Delaunay dg;
+  // Create the triangulation
   RegionTickets tickets;
   BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
   {
@@ -73,8 +83,23 @@ VoronoiSlabGenerator::Slab::generateSlab(
       tickets[&region] = ticket;
   }
 
-  refineTriangulation(tickets, &dg);
+  refineTriangulation(structure->getDistanceCalculator(),
+      structure->getUnitCell(), tickets, &dg);
   generateAtoms(dg, structure);
+
+  if(mySaveTriangulation)
+  {
+    std::string trianFile = structure->getName();
+    if(trianFile.empty())
+      trianFile = "trian";
+    trianFile += ".dat";
+    std::ofstream trianOut(trianFile.c_str());
+    if(trianOut.is_open())
+    {
+      trianOut << dg;
+      trianOut.close();
+    }
+  }
 
   return true;
 }
@@ -85,8 +110,16 @@ VoronoiSlabGenerator::Slab::addRegion(UniquePtr< SlabRegion>::Type & region)
   myRegions.push_back(region);
 }
 
+void
+VoronoiSlabGenerator::Slab::setSaveTriangulation(const bool save)
+{
+  mySaveTriangulation = save;
+}
+
 bool
-VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
+VoronoiSlabGenerator::Slab::refineTriangulation(
+    const common::DistanceCalculator & distCalc,
+    const common::UnitCell * const unitCell, const RegionTickets & tickets,
     Delaunay * const dg) const
 {
   typedef std::set< Delaunay::Vertex_handle> RegionSites;
@@ -94,12 +127,12 @@ VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
 
   std::vector< Delaunay::Vertex_handle> toRemove;
   UpdateRegions updateRegions;
-  bool regionsGood;
+  bool allRegionsGood;
 
   for(int i = 0; i < MAX_ITERATIONS; ++i)
   {
     // Fix up the triangulation
-    separatePoints(dg);
+    separatePoints(distCalc, unitCell, dg);
     reduceEdges(dg);
 
     // Find out which region each site belongs to and delete any that have
@@ -115,8 +148,8 @@ VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
         {
           if(!region.withinBoundary(it->point()))
             toRemove.push_back(it);
-          else if(haveTicket)
-            updateRegions[&region].insert(it);
+//          else if(haveTicket)
+//            updateRegions[&region].insert(it);
         }
       }
       BOOST_FOREACH(Delaunay::Vertex_handle & vtx, toRemove)
@@ -125,17 +158,17 @@ VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
 
     // Check each site that provided a ticket to see if it's happy with the
     // current state of the region
-    regionsGood = true;
+    allRegionsGood = true;
     BOOST_FOREACH(UpdateRegions::reference update, updateRegions)
     {
       if(!update.first->good(tickets.find(update.first)->second, update.second,
           *dg))
       {
-        regionsGood = false;
+        allRegionsGood = false;
         break;
       }
     }
-    if(regionsGood)
+    if(allRegionsGood)
       break;
 
     // Regions need more refinement
@@ -147,15 +180,15 @@ VoronoiSlabGenerator::Slab::refineTriangulation(const RegionTickets & tickets,
     }
   }
 
-  return regionsGood;
+  return allRegionsGood;
 }
 
 bool
-VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
+VoronoiSlabGenerator::Slab::separatePoints(
+    const common::DistanceCalculator & distCalc,
+    const common::UnitCell * const unitCell, Delaunay * const dg) const
 {
-  // TEMPORARY, CONVERT TO 3D
-  static const common::ClusterDistanceCalculator DIST_CALC;
-  SeparationData sepData(dg->number_of_vertices(), DIST_CALC);
+  SeparationData sepData(dg->number_of_vertices(), distCalc);
 
   sepData.separations.fill(0.0);
   sepData.points.row(2).fill(0.0); // Set all z values to 0
@@ -179,6 +212,9 @@ VoronoiSlabGenerator::Slab::separatePoints(Delaunay * const dg) const
 
     ++idx;
   }
+
+  if(unitCell)
+    unitCell->wrapVecsInplace(sepData.points);
 
   static const PointSeparator POINT_SEPARATOR(1000, 0.1);
   const bool result = POINT_SEPARATOR.separatePoints(&sepData);

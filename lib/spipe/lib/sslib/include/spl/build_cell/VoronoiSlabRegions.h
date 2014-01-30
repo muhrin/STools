@@ -41,9 +41,9 @@ public:
     arma::vec2 vecA;
     arma::vec2 vecB;
     boost::optional< arma::vec2> startPoint;
+    boost::optional< bool> fixPoints;
   };
 
-  explicit
   LatticeRegion(const ConstructionInfo & info, UniquePtr< Basis>::Type & basis);
   LatticeRegion(const LatticeRegion & toCopy);
 
@@ -71,6 +71,7 @@ private:
 
   arma::vec2 myLattice[2];
   boost::optional< arma::vec2> myStartPoint;
+  bool myFixPoints;
 };
 
 class RandomRegion : public VoronoiSlabGenerator::SlabRegion

@@ -22,8 +22,7 @@ namespace spl {
 namespace analysis {
 
 template< typename LabelType>
-  AnchorArrangement< LabelType>::AnchorArrangement(
-      EdgeTracer & edgeTracer) :
+  AnchorArrangement< LabelType>::AnchorArrangement(EdgeTracer & edgeTracer) :
       tracer_(edgeTracer)
   {
     init();
@@ -58,10 +57,10 @@ template< typename LabelType>
   }
 
 template< typename LabelType>
-  ::arma::mat
+  arma::mat
   AnchorArrangement< LabelType>::getPointPositions() const
   {
-    ::arma::mat pos(2, numPoints());
+    arma::mat pos(2, numPoints());
     for(size_t i = 0; i < numPoints(); ++i)
       pos.col(i) = points_[i].getPos();
     return pos;
@@ -69,7 +68,7 @@ template< typename LabelType>
 
 template< typename LabelType>
   void
-  AnchorArrangement< LabelType>::setPointPositions(const ::arma::mat & pos)
+  AnchorArrangement< LabelType>::setPointPositions(const arma::mat & pos)
   {
     for(size_t i = 0; i < numPoints(); ++i)
       points_[i].setPos(pos.col(i));
@@ -84,56 +83,59 @@ template< typename LabelType>
   }
 
 template< typename LabelType>
-const typename AnchorArrangement< LabelType>::Arrangement &
-AnchorArrangement< LabelType>::getCgalArrangement() const
-{
-  return tracer_.getArrangement();
-}
-
-template< typename LabelType>
-::boost::optional<double>
-AnchorArrangement< LabelType>::getFaceAnchorArea(
-    const typename Arrangement::Face & face) const
-{
-  typedef typename Arrangement::Geometry_traits_2::Kernel Kernel;
-
-  if(face.is_unbounded() || face.is_fictitious())
-    return ::boost::optional<double>();
-
-  const typename ::CGAL::Polygon_2<Kernel> poly = getFacePolygon(face);
-  return ::std::abs(::CGAL::to_double(poly.area()));
-}
-
-template< typename LabelType>
-typename AnchorArrangement< LabelType>::FacePolygon
-AnchorArrangement< LabelType>::getFacePolygon(const typename Arrangement::Face & face) const
-{
-  SSLIB_ASSERT(!face.is_unbounded());
-  SSLIB_ASSERT(!face.is_fictitious());
-
-  typedef typename Arrangement::Geometry_traits_2::Kernel Kernel;
-
-  FacePolygon poly;
-
-  const typename Arrangement::Ccb_halfedge_const_circulator first = face.outer_ccb();
-  typename Arrangement::Ccb_halfedge_const_circulator cl = first;
-  const AnchorPoint * anchor;
-  do
+  const typename AnchorArrangement< LabelType>::Arrangement &
+  AnchorArrangement< LabelType>::getCgalArrangement() const
   {
-    anchor = cl->source()->data().anchor;
-    const ::arma::vec2 & anchorPos = anchor->getPos();
-    poly.push_back(typename Kernel::Point_2(anchorPos(0), anchorPos(1)));
-    ++cl;
-  } while(cl != first);
-  return poly;
-}
+    return tracer_.getArrangement();
+  }
+
+template< typename LabelType>
+  ::boost::optional< double>
+  AnchorArrangement< LabelType>::getFaceAnchorArea(
+      const typename Arrangement::Face & face) const
+  {
+    typedef typename Arrangement::Geometry_traits_2::Kernel Kernel;
+
+    if(face.is_unbounded() || face.is_fictitious())
+      return boost::optional< double>();
+
+    const typename CGAL::Polygon_2< Kernel> poly = getFacePolygon(face);
+    return std::fabs(CGAL::to_double(poly.area()));
+  }
+
+template< typename LabelType>
+  typename AnchorArrangement< LabelType>::FacePolygon
+  AnchorArrangement< LabelType>::getFacePolygon(
+      const typename Arrangement::Face & face) const
+  {
+    SSLIB_ASSERT(!face.is_unbounded());
+    SSLIB_ASSERT(!face.is_fictitious());
+
+    typedef typename Arrangement::Geometry_traits_2::Kernel Kernel;
+
+    FacePolygon poly;
+
+    const typename Arrangement::Ccb_halfedge_const_circulator first =
+        face.outer_ccb();
+    typename Arrangement::Ccb_halfedge_const_circulator cl = first;
+    const AnchorPoint * anchor;
+    do
+    {
+      anchor = cl->source()->data().anchor;
+      const arma::vec2 & anchorPos = anchor->getPos();
+      poly.push_back(typename Kernel::Point_2(anchorPos(0), anchorPos(1)));
+      ++cl;
+    }
+    while(cl != first);
+    return poly;
+  }
 
 template< typename LabelType>
   void
   AnchorArrangement< LabelType>::init()
   {
-    using ::std::pair;
-    using ::std::make_pair;
+    using std::pair;
+    using std::make_pair;
 
     generateArrangementVertices();
   }
@@ -144,14 +146,15 @@ template< typename LabelType>
   {
     Arrangement & arrangement = tracer_.getArrangement();
 
-    ::arma::vec2 pt;
+    arma::vec2 pt;
     for(typename Arrangement::Vertex_iterator it = arrangement.vertices_begin(),
         end = arrangement.vertices_end(); it != end; ++it)
     {
-      pt(0) = ::CGAL::to_double(it->point()[0]);
-      pt(1) = ::CGAL::to_double(it->point()[1]);
+      pt(0) = CGAL::to_double(it->point()[0]);
+      pt(1) = CGAL::to_double(it->point()[1]);
 
-      points_.push_back(new AnchorPoint(points_.size(), pt, it->data().maxDisplacement));
+      points_.push_back(
+          new AnchorPoint(points_.size(), pt, it->data().maxDisplacement));
       it->data().anchor = &points_.back();
     }
   }

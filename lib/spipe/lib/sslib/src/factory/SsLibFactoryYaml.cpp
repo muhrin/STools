@@ -400,8 +400,16 @@ UniquePtr< build_cell::VoronoiSlabGenerator>::Type
 Factory::createVoronoiSlabGenerator(
     const builder::VoronoiSlabGenerator & options) const
 {
-  UniquePtr< build_cell::VoronoiSlabGenerator>::Type generator(
-      new build_cell::VoronoiSlabGenerator());
+  UniquePtr< build_cell::VoronoiSlabGenerator>::Type generator;
+  if(options.unitCell)
+  {
+    double abc[6];
+    std::copy(options.unitCell->abc.begin(), options.unitCell->abc.end(), abc);
+    generator.reset(
+        new build_cell::VoronoiSlabGenerator(common::UnitCell(abc)));
+  }
+  else
+    generator.reset(new build_cell::VoronoiSlabGenerator());
 
   BOOST_FOREACH(const builder::VoronoiSlab & s, options.slabs)
   {
@@ -413,6 +421,8 @@ Factory::createVoronoiSlabGenerator(
       math::setRotation(transform, *s.rot);
 
     build_cell::VoronoiSlabGenerator::Slab slab(transform);
+    if(s.debugSaveTriangulation && *s.debugSaveTriangulation)
+      slab.setSaveTriangulation(true);
 
     // Create the regions for the slab
     BOOST_FOREACH(const builder::VoronoiSlabRegion & r, s.regions)
@@ -430,6 +440,7 @@ Factory::createVoronoiSlabGenerator(
         info.vecB = r.lattice->lattice[1].t();
         if(r.lattice->startPoint)
           info.startPoint = r.lattice->startPoint->t();
+        info.fixPoints = r.lattice->fixPoints;
 
         region.reset(new build_cell::LatticeRegion(info, basis));
       }

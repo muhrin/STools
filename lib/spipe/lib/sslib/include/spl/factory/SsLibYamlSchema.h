@@ -176,6 +176,21 @@ SCHEMER_MAP(OptimiserSchema, Optimiser)
 }
 
 // STRUCTURE //////////////////////////////////////
+struct UnitCell
+{
+  std::vector< double> abc;
+};
+
+SCHEMER_LIST(LatticeParams, schemer::Scalar<double>)
+{
+  length(6);
+}
+
+SCHEMER_MAP(UnitCellSchema, UnitCell)
+{
+  element< LatticeParams>("abc", &UnitCell::abc);
+}
+
 struct AtomsData
 {
   AtomSpeciesCount species;
@@ -404,6 +419,7 @@ struct VoronoiSlabLatticeRegion
   std::vector< arma::rowvec2> boundary;
   std::vector< arma::rowvec2> lattice;
   boost::optional< arma::rowvec2> startPoint;
+  bool fixPoints;
 };
 
 SCHEMER_LIST(Lattice2DType, Rowvec2)
@@ -416,6 +432,7 @@ SCHEMER_MAP(VoronoiSlabLatticeRegionType, VoronoiSlabLatticeRegion)
   element("boundary", &VoronoiSlabLatticeRegion::boundary);
   element< Lattice2DType>("lattice", &VoronoiSlabLatticeRegion::lattice);
   element< Rowvec2>("startPoint", &VoronoiSlabLatticeRegion::startPoint);
+  element("fixPoints", &VoronoiSlabLatticeRegion::fixPoints)->defaultValue(true);
 }
 
 SCHEMER_ENUM(VoronoiSlabRandomRegionPolyModeType, build_cell::RandomRegion::PolyMode::Value)
@@ -464,6 +481,7 @@ struct VoronoiSlab
   boost::optional< arma::rowvec3> pos;
   boost::optional< arma::rowvec4> rot;
   std::vector< VoronoiSlabRegion> regions;
+  boost::optional< bool> debugSaveTriangulation;
 };
 
 SCHEMER_MAP(VoronoiSlabType, VoronoiSlab)
@@ -471,16 +489,19 @@ SCHEMER_MAP(VoronoiSlabType, VoronoiSlab)
   element< Rowvec3>("pos", &VoronoiSlab::pos);
   element< Rowvec4>("rot", &VoronoiSlab::rot);
   element("regions", &VoronoiSlab::regions);
+  element("debugSaveTriangulation", &VoronoiSlab::debugSaveTriangulation);
 }
 
 struct VoronoiSlabGenerator
 {
   std::vector< VoronoiSlab> slabs;
+  boost::optional< UnitCell> unitCell;
 };
 
 SCHEMER_MAP(VoronoiSlabGeneratorType, VoronoiSlabGenerator)
 {
   element("slabs", &VoronoiSlabGenerator::slabs);
+  element("unitCell", &VoronoiSlabGenerator::unitCell);
 }
 
 struct StructureGenerator
@@ -522,23 +543,6 @@ struct Comparator
 SCHEMER_MAP(ComparatorSchema, Comparator)
 {
   element("sortedDist", &Comparator::sortedDist);
-}
-
-// UNIT CELL //////////////////////////////////////////
-
-struct UnitCell
-{
-  std::vector< double> abc;
-};
-
-SCHEMER_LIST(LatticeParams, schemer::Scalar<double>)
-{
-  length(6);
-}
-
-SCHEMER_MAP(UnitCellSchema, UnitCell)
-{
-  element< LatticeParams>("abc", &UnitCell::abc);
 }
 
 }

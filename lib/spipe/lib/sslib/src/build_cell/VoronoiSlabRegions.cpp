@@ -25,7 +25,8 @@ using arma::endr;
 
 LatticeRegion::LatticeRegion(const ConstructionInfo & info,
     UniquePtr< Basis>::Type & basis) :
-    SlabRegion(info.boundary, basis), myStartPoint(info.startPoint)
+    SlabRegion(info.boundary, basis), myStartPoint(info.startPoint),
+    myFixPoints(info.fixPoints ? *info.fixPoints : true)
 {
   myLattice[0] = info.vecA;
   myLattice[1] = info.vecB;
@@ -33,7 +34,7 @@ LatticeRegion::LatticeRegion(const ConstructionInfo & info,
 
 LatticeRegion::LatticeRegion(const LatticeRegion & toCopy) :
     SlabRegion(toCopy), myLattice(toCopy.myLattice), myStartPoint(
-        toCopy.myStartPoint)
+        toCopy.myStartPoint), myFixPoints(toCopy.myFixPoints)
 {
 }
 
@@ -93,8 +94,8 @@ LatticeRegion::getLatticeMultiples(const arma::vec2 & r0,
     const double numMultiples = getLatticeVecMultiple(r0, latticeVecP, pLine,
         math::Line2(boxPt, boxPt + latticeVecQ));
 
-    x0 = min(x0, static_cast< int>(numMultiples));
-    x1 = max(x1, static_cast< int>(numMultiples));
+    x0 = min(x0, static_cast< int>(math::roundAwayFromZero(numMultiples)));
+    x1 = max(x1, static_cast< int>(math::roundAwayFromZero(numMultiples)));
   }
   { // top left
     boxPt << bbox.xmin() << endr << bbox.ymax();
@@ -102,8 +103,8 @@ LatticeRegion::getLatticeMultiples(const arma::vec2 & r0,
     const double numMultiples = getLatticeVecMultiple(r0, latticeVecP, pLine,
         math::Line2(boxPt, boxPt + latticeVecQ));
 
-    x0 = min(x0, static_cast< int>(numMultiples));
-    x1 = max(x1, static_cast< int>(numMultiples));
+    x0 = min(x0, static_cast< int>(math::roundAwayFromZero(numMultiples)));
+    x1 = max(x1, static_cast< int>(math::roundAwayFromZero(numMultiples)));
   }
   { // top right
     boxPt << bbox.xmax() << endr << bbox.ymax();
@@ -111,8 +112,8 @@ LatticeRegion::getLatticeMultiples(const arma::vec2 & r0,
     const double numMultiples = getLatticeVecMultiple(r0, latticeVecP, pLine,
         math::Line2(boxPt, boxPt + latticeVecQ));
 
-    x0 = min(x0, static_cast< int>(numMultiples));
-    x1 = max(x1, static_cast< int>(numMultiples));
+    x0 = min(x0, static_cast< int>(math::roundAwayFromZero(numMultiples)));
+    x1 = max(x1, static_cast< int>(math::roundAwayFromZero(numMultiples)));
   }
   { // bottom right
     boxPt << bbox.xmax() << endr << bbox.ymin();
@@ -120,8 +121,8 @@ LatticeRegion::getLatticeMultiples(const arma::vec2 & r0,
     const double numMultiples = getLatticeVecMultiple(r0, latticeVecP, pLine,
         math::Line2(boxPt, boxPt + latticeVecQ));
 
-    x0 = min(x0, static_cast< int>(numMultiples));
-    x1 = max(x1, static_cast< int>(numMultiples));
+    x0 = min(x0, static_cast< int>(math::roundAwayFromZero(numMultiples)));
+    x1 = max(x1, static_cast< int>(math::roundAwayFromZero(numMultiples)));
   }
 
   return LatticeMultiples(x0, x1);
@@ -155,7 +156,7 @@ LatticeRegion::generateLine(const arma::vec2 & r0, const arma::vec2 & dr,
     if(inBBox(r, box) && withinBoundary(r))
     {
       Delaunay::Vertex_handle vtx = dg->insert(utility::toCgalPoint< K>(r));
-      vtx->info().fixed = true;
+      vtx->info().fixed = myFixPoints;
       vtx->info().generatedBy = this;
     }
   }

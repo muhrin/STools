@@ -72,6 +72,13 @@ template< typename T>
     return (T(0) < val) - (val < T(0));
   }
 
+template< typename T>
+  T
+  roundAwayFromZero(const T val)
+  {
+    return sgn(val) * std::ceil(std::fabs(val));
+  }
+
 }
 }
 

@@ -36,13 +36,15 @@
 
 #include "spl/SSLibAssert.h"
 #include "spl/build_cell/StructureGenerator.h"
-#include "spl/utility/Armadillo.h"
-#include "spl/utility/DataPool.h"
+#include "spl/common/UnitCell.h"
 #include "spl/utility/SharedHandle.h"
 
 // FORWARD DECLARES //////////////////////////
 
 namespace spl {
+namespace common {
+class DistanceCalculator;
+}
 namespace build_cell {
 
 class VoronoiSlabGenerator : public StructureGenerator
@@ -51,6 +53,11 @@ public:
   class Slab;
   class SlabRegion;
   static const int MAX_ITERATIONS;
+
+  VoronoiSlabGenerator()
+  {
+  }
+  VoronoiSlabGenerator(const common::UnitCell & unitCell);
 
   virtual GenerationOutcome
   generateStructure(common::StructurePtr & structureOut,
@@ -63,6 +70,7 @@ public:
   void
   addSlab(const Slab & slab);
 private:
+  boost::optional< common::UnitCell> myUnitCell;
   std::vector< Slab> mySlabs;
 };
 
@@ -88,9 +96,8 @@ private:
   typedef CGAL::Periodic_2_triangulation_traits_2< K> GT;
 
 public:
-
-  //typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
-  typedef CGAL::Periodic_2_Delaunay_triangulation_2< GT, PTds> Delaunay;
+  typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
+  //typedef CGAL::Periodic_2_Delaunay_triangulation_2< GT, PTds> Delaunay;
 
 private:
 //  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
@@ -109,14 +116,19 @@ public:
   generateSlab(common::Structure * const structure) const;
   void
   addRegion(UniquePtr< SlabRegion>::Type & region);
+  void
+  setSaveTriangulation(const bool save);
 private:
   typedef boost::ptr_vector< VoronoiSlabGenerator::SlabRegion> SlabRegions;
   typedef std::map< const Delaunay::Vertex_handle, bool> VertexInfo;
 
   bool
-  refineTriangulation(const RegionTickets & tickets, Delaunay * const dg) const;
+  refineTriangulation(const common::DistanceCalculator & distCalc,
+      const common::UnitCell * const unitCell, const RegionTickets & tickets,
+      Delaunay * const dg) const;
   bool
-  separatePoints(Delaunay * const dg) const;
+  separatePoints(const common::DistanceCalculator & distCalc,
+      const common::UnitCell * const unitCell, Delaunay * const dg) const;
   void
   reduceEdges(Delaunay * const dg) const;
   void
@@ -124,6 +136,7 @@ private:
 
   arma::mat44 myTransform;
   SlabRegions myRegions;
+  bool mySaveTriangulation;
 };
 
 class VoronoiSlabGenerator::SlabRegion
@@ -205,7 +218,7 @@ template< typename DG>
   isBoundaryVertex(const DG & dg, const typename DG::Vertex_handle vtx)
   {
     //const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
-    const typename DG::Vertex_circulator start = dg.adjacent_vertices(vtx);
+    const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
     if(start.is_empty())
       return false;
 
