@@ -18,6 +18,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "spl/common/AtomSpeciesId.h"
+#include "spl/common/Types.h"
 #include "spl/OptionalTypes.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
@@ -25,19 +26,19 @@
 namespace spl {
 namespace common {
 
-class AtomSpeciesDatabase : ::boost::noncopyable
+class AtomSpeciesDatabase
 {
 public:
   AtomSpeciesDatabase();
 
   void
-  setAll(AtomSpeciesId::Value id, const ::std::string & name,
+  setAll(AtomSpeciesId::Value id, const std::string & name,
       const double radius);
 
-  const ::std::string *
+  const std::string *
   getName(const AtomSpeciesId::Value id) const;
   void
-  setName(const AtomSpeciesId::Value id, const ::std::string & name);
+  setName(const AtomSpeciesId::Value id, const std::string & name);
 
   OptionalDouble
   getRadius(const AtomSpeciesId::Value id) const;
@@ -45,15 +46,14 @@ public:
   setRadius(const AtomSpeciesId::Value id, const double radius);
 
   OptionalDouble
-  getSpeciesPairDistance(AtomSpeciesId::Value s1, AtomSpeciesId::Value s2) const;
+  getSpeciesPairDistance(const SpeciesPair & pair) const;
   void
-  setSpeciesPairDistance(const AtomSpeciesId::Value & s1,
-      const AtomSpeciesId::Value & s2, const double dist);
+  setSpeciesPairDistance(const SpeciesPair & pair, const double dist);
 
 protected:
-  typedef ::std::map< AtomSpeciesId::Value, ::std::string> SpeciesString;
-  typedef ::std::map< AtomSpeciesId::Value, double> SpeciesDouble;
-  typedef ::std::map< AtomSpeciesId::Value, SpeciesDouble> SpeciesPairDistances;
+  typedef std::map< AtomSpeciesId::Value, std::string> SpeciesString;
+  typedef std::map< AtomSpeciesId::Value, double> SpeciesDouble;
+  typedef std::map< SpeciesPair, double> SpeciesPairDistances;
 
   SpeciesString myNames;
   SpeciesDouble myRadii;

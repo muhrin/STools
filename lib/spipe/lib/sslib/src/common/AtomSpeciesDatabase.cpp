@@ -76,26 +76,19 @@ AtomSpeciesDatabase::setRadius(const AtomSpeciesId::Value id,
 }
 
 OptionalDouble
-AtomSpeciesDatabase::getSpeciesPairDistance(AtomSpeciesId::Value s1,
-    AtomSpeciesId::Value s2) const
+AtomSpeciesDatabase::getSpeciesPairDistance(const SpeciesPair & pair) const
 {
-  if(s1 < s2)
-    ::std::swap(s1, s2);
-
   // Try getting the most specific from the species pairs
-  const SpeciesPairDistances::const_iterator it = mySpeciesPairDistances.find(s1);
+  const SpeciesPairDistances::const_iterator it = mySpeciesPairDistances.find(
+      pair);
   if(it != mySpeciesPairDistances.end())
-  {
-    const SpeciesDouble::const_iterator it2 = it->second.find(s2);
-    if(it2 != it->second.end())
-      return it2->second;
-  }
+    return it->second;
 
   // Try r1 + r2
-  const SpeciesDouble::const_iterator radiiIt1 = myRadii.find(s1);
+  const SpeciesDouble::const_iterator radiiIt1 = myRadii.find(pair.first());
   if(radiiIt1 != myRadii.end())
   {
-    const SpeciesDouble::const_iterator radiiIt2 = myRadii.find(s2);
+    const SpeciesDouble::const_iterator radiiIt2 = myRadii.find(pair.second());
     if(radiiIt2 != myRadii.end())
       return radiiIt1->second + radiiIt2->second;
   }
@@ -104,13 +97,10 @@ AtomSpeciesDatabase::getSpeciesPairDistance(AtomSpeciesId::Value s1,
 }
 
 void
-AtomSpeciesDatabase::setSpeciesPairDistance(const AtomSpeciesId::Value & s1,
-    const AtomSpeciesId::Value & s2, const double dist)
+AtomSpeciesDatabase::setSpeciesPairDistance(const SpeciesPair & pair,
+    const double dist)
 {
-  if(s1 < s2)
-    mySpeciesPairDistances[s1][s2] = dist;
-  else
-    mySpeciesPairDistances[s2][s1] = dist;
+  mySpeciesPairDistances[pair] = dist;
 }
 
 void

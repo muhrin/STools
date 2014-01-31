@@ -64,6 +64,12 @@ main(const int argc, char * argv[])
   if(result != 0)
     return result;
 
+  if(!boost::filesystem::exists(in.input))
+  {
+    std::cerr << "Error: file " << in.input << " does not exist\n";
+    return 1;
+  }
+
   YAML::Node pipeNode;
   result = utility::parseYaml(pipeNode, in.input);
   if(result != 0)

@@ -44,7 +44,7 @@ struct SeparationData
   template <typename Label>
   void
   setSeparationsFromLabels(const ::std::vector<Label> & pointLabels,
-      ::std::map< utility::MinMax<Label>, double> & sepList);
+      ::std::map< utility::OrderedPair<Label>, double> & sepList);
 
   const common::DistanceCalculator & distanceCalculator;
   Points points;

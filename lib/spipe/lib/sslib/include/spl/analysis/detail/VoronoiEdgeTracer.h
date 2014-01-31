@@ -438,8 +438,8 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
             {
               SplitVertex sv;
 
-              zone.first = edge.lower();
-              zone.second = (edge.upper() + 1) % degree;
+              zone.first = edge.first();
+              zone.second = (edge.second() + 1) % degree;
 
               if(edgeVertexIndices[zone.first] == -1)
               {
@@ -461,8 +461,8 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
               SplitVertex sv;
 
               // Move on to the next zone
-              zone.first = (edge.lower() + 1) % degree;
-              zone.second = edge.upper();
+              zone.first = (edge.first() + 1) % degree;
+              zone.second = edge.second();
 
               if(edgeVertexIndices[zone.first] == -1)
               {
@@ -708,13 +708,13 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     // Perform edge collision detection
     BOOST_FOREACH(typename Edges::const_reference entry, edges_)
     {
-      for(size_t i = entry.first.lower(); i <= entry.first.upper(); ++i)
+      for(size_t i = entry.first.first(); i <= entry.first.second(); ++i)
       {
         // Sweep the edge square
         // bottom left to bottom right
-        collisionMatrix[entry.first.upper()][i].push_back(entry);
+        collisionMatrix[entry.first.second()][i].push_back(entry);
         // top left to bottom right
-        collisionMatrix[i][entry.first.lower()].push_back(entry);
+        collisionMatrix[i][entry.first.first()].push_back(entry);
       }
     }
 

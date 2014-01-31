@@ -39,12 +39,12 @@ namespace spipe {
 namespace factory {
 
 // Alias for accessing keywords namespace
-namespace ssf = ::spl::factory;
-namespace spb = ::spipe::blocks;
-namespace ssbc = ::spl::build_cell;
-namespace ssio = ::spl::io;
-namespace ssp = ::spl::potential;
-namespace ssu = ::spl::utility;
+namespace ssf = spl::factory;
+namespace spb = spipe::blocks;
+namespace ssbc = spl::build_cell;
+namespace ssio = spl::io;
+namespace ssp = spl::potential;
+namespace ssu = spl::utility;
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
@@ -80,12 +80,17 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   if(!mySplFactory.getShapeFactory().createShape(genShape, options.genShape))
     return false;
 
-  ::spipe::blocks::CutAndPaste::Settings settings;
+  spipe::blocks::CutAndPaste::Settings settings;
   settings.paste = options.paste;
   settings.separate = options.separate;
   settings.fixUntouched = options.fixUntouched;
 
-  blockOut->reset(new ::spipe::blocks::CutAndPaste(genShape, settings));
+  spl::UniquePtr< spipe::blocks::CutAndPaste>::Type cutAndPaste(
+      new spipe::blocks::CutAndPaste(genShape, settings));
+  if(options.pairDistances)
+    cutAndPaste->setPairDistances(*options.pairDistances);
+
+  blockOut->reset(cutAndPaste.release());
   return true;
 }
 
@@ -93,7 +98,7 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::FindSymmetryGroup & options) const
 {
-  blockOut->reset(new ::spipe::blocks::FindSymmetryGroup());
+  blockOut->reset(new spipe::blocks::FindSymmetryGroup());
   return true;
 }
 
@@ -102,8 +107,7 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::KeepStableCompositions & options) const
 {
-  blockOut->reset(
-      new ::spipe::blocks::KeepStableCompositions(options.writeHull));
+  blockOut->reset(new spipe::blocks::KeepStableCompositions(options.writeHull));
   return true;
 }
 #endif
@@ -112,7 +116,7 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::KeepTopN & options) const
 {
-  blockOut->reset(new ::spipe::blocks::KeepTopN(options.num));
+  blockOut->reset(new spipe::blocks::KeepTopN(options.num));
   return true;
 }
 
@@ -120,15 +124,15 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::KeepWithinXPercent & options) const
 {
-  blockOut->reset(new ::spipe::blocks::KeepWithinXPercent(options.percent));
+  blockOut->reset(new spipe::blocks::KeepWithinXPercent(options.percent));
   return false;
 }
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
-    const ::std::string & toLoad) const
+    const std::string & toLoad) const
 {
-  blockOut->reset(new ::spipe::blocks::LoadStructures(toLoad));
+  blockOut->reset(new spipe::blocks::LoadStructures(toLoad));
   return true;
 }
 
@@ -136,7 +140,7 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     const blocks::NiggliReduce & options) const
 {
-  blockOut->reset(new ::spipe::blocks::NiggliReduce());
+  blockOut->reset(new spipe::blocks::NiggliReduce());
   return true;
 }
 
@@ -157,11 +161,11 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
 
   if(potentialIsParameterisable)
     blockOut->reset(
-        new ::spipe::blocks::ParamGeomOptimise(optimiser, settings,
+        new spipe::blocks::ParamGeomOptimise(optimiser, settings,
             options.writeSummary));
   else
     blockOut->reset(
-        new ::spipe::blocks::GeomOptimise(optimiser, settings,
+        new spipe::blocks::GeomOptimise(optimiser, settings,
             options.writeSummary));
 
   return true;
@@ -176,7 +180,7 @@ BlockFactory::createBlock(BlockHandle * blockOut,
   if(!comparator.get())
     return false;
 
-  blockOut->reset(new ::spipe::blocks::RemoveDuplicates(comparator));
+  blockOut->reset(new spipe::blocks::RemoveDuplicates(comparator));
   return true;
 }
 
@@ -188,7 +192,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
     return false;
 
   blockOut->reset(
-      new ::spipe::blocks::RunPotentialParamsQueue(&options.paramsQueueFile,
+      new spipe::blocks::RunPotentialParamsQueue(&options.paramsQueueFile,
           &options.paramsDoneFile, options.pipe));
   return true;
 }
@@ -200,12 +204,12 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   if(!options.pipe)
     return false;
 
-  ::spipe::blocks::SearchStoichiometries::Options searchOptions;
+  spipe::blocks::SearchStoichiometries::Options searchOptions;
   searchOptions.atomRanges = options.ranges;
   searchOptions.useSeparateDirectories = options.useSeparateDirs;
 
   blockOut->reset(
-      new ::spipe::blocks::SearchStoichiometries(searchOptions, options.pipe));
+      new spipe::blocks::SearchStoichiometries(searchOptions, options.pipe));
 
   return true;
 }
@@ -214,7 +218,11 @@ bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
     blocks::SeparateAtoms & options) const
 {
-  blockOut->reset(new ::spipe::blocks::SeparateAtoms());
+  spl::UniquePtr< spipe::blocks::SeparateAtoms>::Type sep(
+      new spipe::blocks::SeparateAtoms());
+  if(options.pairDistances)
+    sep->setPairDistances(*options.pairDistances);
+  blockOut->reset(sep.release());
   return true;
 }
 
@@ -230,7 +238,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
     return false;
 
   blockOut->reset(
-      new ::spipe::blocks::SweepPotentialParams(paramRange, options.pipe));
+      new spipe::blocks::SweepPotentialParams(paramRange, options.pipe));
   return true;
 }
 
@@ -238,8 +246,8 @@ bool
 BlockFactory::createBlock(BlockHandle * blockOut,
     const blocks::WriteStructures & options) const
 {
-  ::spl::UniquePtr< ::spipe::blocks::WriteStructures>::Type writeStructures(
-      new ::spipe::blocks::WriteStructures());
+  spl::UniquePtr< spipe::blocks::WriteStructures>::Type writeStructures(
+      new spipe::blocks::WriteStructures());
 
   writeStructures->setFileType(options.format);
   writeStructures->setWriteMulti(options.multiWrite);

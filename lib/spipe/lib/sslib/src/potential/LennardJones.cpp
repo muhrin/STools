@@ -187,7 +187,8 @@ LennardJones::updateSpeciesDb(
         *getPotentialRadius(mySpeciesList[i]));
     for(int j = i; j < static_cast< int>(myNumSpecies); ++j)
     {
-      speciesDb->setSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j],
+      speciesDb->setSpeciesPairDistance(
+          common::SpeciesPair(mySpeciesList[i], mySpeciesList[j]),
           *getSpeciesPairDistance(mySpeciesList[i], mySpeciesList[j]));
     }
   }

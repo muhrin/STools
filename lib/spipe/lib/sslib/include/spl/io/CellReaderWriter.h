@@ -16,6 +16,8 @@
 #include <ostream>
 #include <vector>
 
+#include <armadillo>
+
 namespace spl {
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace common {
@@ -30,14 +32,13 @@ class CellReaderWriter : public virtual IStructureWriter,
     public virtual IStructureReader
 {
 public:
-
   static const unsigned int DIGITS_AFTER_DECIMAL;
 
-  virtual ::std::vector< std::string>
+  virtual std::vector< std::string>
   getSupportedFileExtensions() const;
 
   // From IStructureReader //
-  virtual ::spl::common::types::StructurePtr
+  virtual spl::common::types::StructurePtr
   readStructure(const ResourceLocator & resourceLocator) const;
   virtual size_t
   readStructures(StructuresContainer & outStructures,
@@ -46,7 +47,7 @@ public:
 
   // from IStructureWriter //
   virtual void
-  writeStructure(::spl::common::Structure & str,
+  writeStructure(spl::common::Structure & str,
       const ResourceLocator & locator) const;
   // End from IStructureWriter
 
@@ -58,21 +59,19 @@ public:
   }
 
   virtual common::types::StructurePtr
-  readStructure(::std::istream & is) const;
+  readStructure(std::istream & is) const;
 
   virtual void
-  writeStructure(::std::ostream & os, common::Structure & structure) const;
+  writeStructure(std::ostream & os, common::Structure & structure) const;
 
 private:
   void
-  writeLatticeBlock(::std::ostream & os,
+  writeLatticeBlock(std::ostream & os, const common::UnitCell & unitCell) const;
+  void
+  writePositionsBlock(std::ostream & os, const common::Structure & structure,
       const common::UnitCell & unitCell) const;
   void
-  writePositionsBlock(::std::ostream & os, const common::Structure & structure,
-      const common::UnitCell & unitCell) const;
-  void
-  writePressureBlock(::std::ostream & os,
-      const ::arma::mat33 & pressureMtx) const;
+  writePressureBlock(std::ostream & os, const arma::mat33 & pressureMtx) const;
 };
 
 }

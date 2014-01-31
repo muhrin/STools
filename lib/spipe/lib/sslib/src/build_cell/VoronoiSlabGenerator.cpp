@@ -24,6 +24,24 @@ namespace build_cell {
 
 const int VoronoiSlabGenerator::MAX_ITERATIONS = 10000;
 
+template< typename K>
+  CGAL::Vector_2< K>
+  toCgalVec2(const arma::vec3 & vec)
+  {
+    return CGAL::Vector_2< K>(vec(0), vec(1));
+  }
+
+template< typename K>
+  arma::vec3
+  toArmaVec3(const CGAL::Point_2< K> & vec)
+  {
+    arma::vec3 v;
+    v(0) = CGAL::to_double(vec.x());
+    v(1) = CGAL::to_double(vec.y());
+    v(2) = 0.0;
+    return v;
+  }
+
 VoronoiSlabGenerator::VoronoiSlabGenerator(const common::UnitCell & unitCell) :
     myUnitCell(unitCell)
 {
@@ -67,25 +85,94 @@ VoronoiSlabGenerator::Slab::Slab(const arma::mat44 & transform) :
 {
 }
 
+class VoronoiSlabGenerator::Slab::SlabData
+{
+public:
+  typedef std::multimap< Delaunay::Vertex_handle,
+      std::pair< K::Vector_2, Delaunay::Vertex_handle> > PeriodicImages;
+
+  SlabData(const common::Structure & structure);
+
+  void
+  generatePeriodicImages();
+  void
+  updatePeriodicImages();
+
+  Delaunay dg;
+  std::vector< Delaunay::Vertex_handle> vertices;
+  PeriodicImages periodicImages;
+  RegionTickets tickets;
+  const common::DistanceCalculator & distCalc;
+  const common::UnitCell * const unitCell;
+};
+
+VoronoiSlabGenerator::Slab::SlabData::SlabData(
+    const common::Structure & structure) :
+    distCalc(structure.getDistanceCalculator()), unitCell(
+        structure.getUnitCell())
+{
+}
+
+void
+VoronoiSlabGenerator::Slab::SlabData::generatePeriodicImages()
+{
+  K::Vector_2 a, dr;
+  for(Delaunay::Vertex_iterator it = dg.vertices_begin(), end =
+      dg.vertices_end(); it != end; ++it)
+    vertices.push_back(it);
+  if(unitCell)
+  {
+    BOOST_FOREACH(const Delaunay::Vertex_handle vtx, vertices)
+    {
+      for(int i = -1; i <= 1; ++i)
+      {
+        a = toCgalVec2< K>(static_cast< double>(i) * unitCell->getAVec());
+        for(int j = -1; j <= 1; ++j)
+        {
+          if(!(i == 0 && j == 0))
+          {
+            dr = a
+                + toCgalVec2< K>(static_cast< double>(j) * unitCell->getBVec());
+            const Delaunay::Vertex_handle image = dg.insert(vtx->point() + dr);
+            image->info() = vtx->info();
+            image->info().isImage = true;
+            periodicImages.insert(
+                PeriodicImages::value_type(vtx, std::make_pair(dr, image)));
+          }
+        }
+      }
+    }
+  }
+}
+
+void
+VoronoiSlabGenerator::Slab::SlabData::updatePeriodicImages()
+{
+  BOOST_FOREACH(PeriodicImages::const_reference image, periodicImages)
+  {
+    dg.move(image.second.second, image.first->point() + image.second.first);
+  }
+}
+
 bool
 VoronoiSlabGenerator::Slab::generateSlab(
     common::Structure * const structure) const
 {
   SSLIB_ASSERT(structure);
 
-  Delaunay dg;
+  SlabData slabData(*structure);
+
   // Create the triangulation
-  RegionTickets tickets;
   BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
   {
-    RegionTicket ticket = region.generateSites(&dg);
+    RegionTicket ticket = region.generateSites(&slabData.dg);
     if(ticket.valid())
-      tickets[&region] = ticket;
+      slabData.tickets[&region] = ticket;
   }
+  slabData.generatePeriodicImages();
 
-  refineTriangulation(structure->getDistanceCalculator(),
-      structure->getUnitCell(), tickets, &dg);
-  generateAtoms(dg, structure);
+  refineTriangulation(&slabData);
+  generateAtoms(slabData, structure);
 
   if(mySaveTriangulation)
   {
@@ -96,7 +183,7 @@ VoronoiSlabGenerator::Slab::generateSlab(
     std::ofstream trianOut(trianFile.c_str());
     if(trianOut.is_open())
     {
-      trianOut << dg;
+      trianOut << slabData.dg;
       trianOut.close();
     }
   }
@@ -117,10 +204,7 @@ VoronoiSlabGenerator::Slab::setSaveTriangulation(const bool save)
 }
 
 bool
-VoronoiSlabGenerator::Slab::refineTriangulation(
-    const common::DistanceCalculator & distCalc,
-    const common::UnitCell * const unitCell, const RegionTickets & tickets,
-    Delaunay * const dg) const
+VoronoiSlabGenerator::Slab::refineTriangulation(SlabData * const slabData) const
 {
   typedef std::set< Delaunay::Vertex_handle> RegionSites;
   typedef std::map< const SlabRegion *, RegionSites> UpdateRegions;
@@ -132,17 +216,19 @@ VoronoiSlabGenerator::Slab::refineTriangulation(
   for(int i = 0; i < MAX_ITERATIONS; ++i)
   {
     // Fix up the triangulation
-    separatePoints(distCalc, unitCell, dg);
-    reduceEdges(dg);
+    separatePoints(slabData);
+    slabData->updatePeriodicImages();
+    equaliseEdges(slabData);
 
     // Find out which region each site belongs to and delete any that have
     // strayed out
     BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
     {
-      const bool haveTicket = tickets.find(&region) != tickets.end();
+      const bool haveTicket = slabData->tickets.find(&region)
+          != slabData->tickets.end();
       toRemove.clear();
-      for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
-          dg->vertices_end(); it != end; ++it)
+      for(Delaunay::Vertex_iterator it = slabData->dg.vertices_begin(), end =
+          slabData->dg.vertices_end(); it != end; ++it)
       {
         if(it->info().generatedBy == &region)
         {
@@ -153,7 +239,7 @@ VoronoiSlabGenerator::Slab::refineTriangulation(
         }
       }
       BOOST_FOREACH(Delaunay::Vertex_handle & vtx, toRemove)
-        dg->remove(vtx);
+        slabData->dg.remove(vtx);
     }
 
     // Check each site that provided a ticket to see if it's happy with the
@@ -161,8 +247,8 @@ VoronoiSlabGenerator::Slab::refineTriangulation(
     allRegionsGood = true;
     BOOST_FOREACH(UpdateRegions::reference update, updateRegions)
     {
-      if(!update.first->good(tickets.find(update.first)->second, update.second,
-          *dg))
+      if(!update.first->good(slabData->tickets.find(update.first)->second,
+          update.second, slabData->dg))
       {
         allRegionsGood = false;
         break;
@@ -174,47 +260,44 @@ VoronoiSlabGenerator::Slab::refineTriangulation(
     // Regions need more refinement
     BOOST_FOREACH(UpdateRegions::reference update, updateRegions)
     {
-      update.first->refine(tickets.find(update.first)->second, update.second,
-          dg);
+      update.first->refine(slabData->tickets.find(update.first)->second,
+          update.second, &slabData->dg);
       update.second.clear();
     }
+    slabData->updatePeriodicImages();
   }
 
   return allRegionsGood;
 }
 
 bool
-VoronoiSlabGenerator::Slab::separatePoints(
-    const common::DistanceCalculator & distCalc,
-    const common::UnitCell * const unitCell, Delaunay * const dg) const
+VoronoiSlabGenerator::Slab::separatePoints(SlabData * const slabData) const
 {
-  SeparationData sepData(dg->number_of_vertices(), distCalc);
+  const size_t numVertices = slabData->vertices.size();
+  SeparationData sepData(numVertices, slabData->distCalc);
 
   sepData.separations.fill(0.0);
   sepData.points.row(2).fill(0.0); // Set all z values to 0
   size_t idx = 0;
-  BOOST_FOREACH(const Delaunay::Vertex & x,
-      boost::make_iterator_range(dg->vertices_begin(), dg->vertices_end()))
+  BOOST_FOREACH(const Delaunay::Vertex_handle vtx, slabData->vertices)
   {
-    sepData.points(0, idx) = CGAL::to_double(x.point().x());
-    sepData.points(1, idx) = CGAL::to_double(x.point().y());
-    if(x.info().fixed)
+    sepData.points.col(idx) = toArmaVec3(vtx->point());
+    if(vtx->info().fixed)
       sepData.fixedPoints.insert(idx);
 
-    if(x.info().minsep)
+    if(vtx->info().minsep)
     {
-      for(size_t i = 0; i < dg->number_of_vertices(); ++i)
+      for(size_t i = 0; i < numVertices; ++i)
       {
-        double sep = std::max(sepData.separations(idx, i), *x.info().minsep);
+        double sep = std::max(sepData.separations(idx, i), *vtx->info().minsep);
         sepData.separations(i, idx) = sepData.separations(idx, i) = sep;
       }
     }
-
     ++idx;
   }
 
-  if(unitCell)
-    unitCell->wrapVecsInplace(sepData.points);
+  if(slabData->unitCell)
+    slabData->unitCell->wrapVecsInplace(sepData.points);
 
   static const PointSeparator POINT_SEPARATOR(1000, 0.1);
   const bool result = POINT_SEPARATOR.separatePoints(&sepData);
@@ -222,10 +305,9 @@ VoronoiSlabGenerator::Slab::separatePoints(
   // Copy back the separated positions, even if it didn't get the positions
   // all the way to the tolerance
   idx = 0;
-  for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
-      dg->vertices_end(); it != end; ++it)
+  BOOST_FOREACH(const Delaunay::Vertex_handle vtx, slabData->vertices)
   {
-    dg->move_if_no_collision(it,
+    slabData->dg.move_if_no_collision(vtx,
         Delaunay::Point(sepData.points(0, idx), sepData.points(1, idx)));
     ++idx;
   }
@@ -234,7 +316,7 @@ VoronoiSlabGenerator::Slab::separatePoints(
 }
 
 void
-VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
+VoronoiSlabGenerator::Slab::equaliseEdges(SlabData * const slabData) const
 {
   typedef std::map< Delaunay::Vertex_handle, K::Vector_2> Forces;
 
@@ -247,17 +329,16 @@ VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
   {
     forces.clear();
 
-    for(Delaunay::Vertex_iterator it = dg->vertices_begin(), end =
-        dg->vertices_end(); it != end; ++it)
+    BOOST_FOREACH(const Delaunay::Vertex_handle vtx, slabData->vertices)
     {
-      if(it->info().fixed || it->degree() < 3
-          || detail::isBoundaryVertex(*dg, it))
+      if(vtx->info().fixed || vtx->degree() < 3
+          || detail::isBoundaryVertex(slabData->dg, vtx))
         continue;
 
-      const K::Point_2 p0 = it->point();
+      const K::Point_2 p0 = vtx->point();
       K::Vector_2 f(0.0, 0.0), r;
 
-      const Delaunay::Vertex_circulator start = it->incident_vertices();
+      const Delaunay::Vertex_circulator start = vtx->incident_vertices();
       Delaunay::Vertex_circulator cl = start;
       if(start.is_empty())
         continue;
@@ -271,7 +352,7 @@ VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
       }
       while(cl != start);
 
-      forces[it] = FORCE_FACTOR
+      forces[vtx] = FORCE_FACTOR
           * (CGAL::centroid(poly.begin(), poly.end()) - p0);
     }
     // Now apply all the forces
@@ -280,22 +361,24 @@ VoronoiSlabGenerator::Slab::reduceEdges(Delaunay * const dg) const
     {
       maxForceSq = std::max(maxForceSq,
           CGAL::to_double(f.second.squared_length()));
-      dg->move_if_no_collision(f.first, f.first->point() + f.second);
+      slabData->dg.move_if_no_collision(f.first, f.first->point() + f.second);
     }
+    slabData->updatePeriodicImages();
   }
   while(maxForceSq > 0.0001);
 }
 
 void
-VoronoiSlabGenerator::Slab::generateAtoms(const Delaunay & dg,
+VoronoiSlabGenerator::Slab::generateAtoms(const SlabData & slabData,
     common::Structure * const structure) const
 {
   typedef std::set< Delaunay::Face_handle> FacesSet;
   typedef std::list< Delaunay::Face_handle> FacesList;
 
   FacesList allFaces;
-  for(Delaunay::Face_iterator it = dg.faces_begin(), end = dg.faces_end();
-      it != end; ++it)
+  // TODO: Only use faces where at least one vertex is in the fundamental domain
+  for(Delaunay::Face_iterator it = slabData.dg.faces_begin(), end =
+      slabData.dg.faces_end(); it != end; ++it)
     allFaces.push_back(it);
 
   std::vector< common::Atom> atoms;
@@ -310,7 +393,7 @@ VoronoiSlabGenerator::Slab::generateAtoms(const Delaunay & dg,
       Delaunay::Face_handle & face = *it;
       if(face->is_valid())
       {
-        if(region.withinBoundary(dg.dual(face)))
+        if(region.withinBoundary(slabData.dg.dual(face)))
         {
           regionFaces.insert(face);
           allFaces.erase(it);
@@ -319,7 +402,7 @@ VoronoiSlabGenerator::Slab::generateAtoms(const Delaunay & dg,
       // Move on the iterator
       it = next;
     }
-    region.generateAtoms(dg, regionFaces, &atoms);
+    region.generateAtoms(slabData.dg, regionFaces, &atoms);
   }
 
   BOOST_FOREACH(const common::Atom & atom, atoms)

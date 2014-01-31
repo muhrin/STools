@@ -41,7 +41,7 @@ SeparationData::SeparationData(const common::Structure & structure,
 {
   typedef std::vector< common::AtomSpeciesId::Value> Labels;
   typedef std::set< common::AtomSpeciesId::Value> Species;
-  typedef std::map< utility::MinMax< common::AtomSpeciesId::Value>, double> SepList;
+  typedef std::map< common::SpeciesPair, double> SepList;
 
   const size_t numPoints = structure.getNumAtoms();
   init(numPoints);
@@ -59,9 +59,10 @@ SeparationData::SeparationData(const common::Structure & structure,
   {
     for(Species::const_iterator j = i; j != species.end(); ++j)
     {
-      dist = db.getSpeciesPairDistance(*i, *j);
+      const common::SpeciesPair pair(*i, *j);
+      dist = db.getSpeciesPairDistance(pair);
       if(dist)
-        sepList[utility::MinMax< common::AtomSpeciesId::Value>(*i, *j)] = *dist;
+        sepList[pair] = *dist;
     }
   }
 
@@ -130,8 +131,8 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
       {
         if(!(fixed[row] && fixed[col]))
         {
-          sepVec = sepData->distanceCalculator.getVecMinImg(sepData->points.col(row),
-              sepData->points.col(col));
+          sepVec = sepData->distanceCalculator.getVecMinImg(
+              sepData->points.col(row), sepData->points.col(col));
           sepSq = arma::dot(sepVec, sepVec);
           if(sepSq < minSepSqs(row, col))
           {

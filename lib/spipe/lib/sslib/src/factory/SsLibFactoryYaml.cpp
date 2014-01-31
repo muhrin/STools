@@ -63,7 +63,7 @@ Factory::createAtomsDescription(const builder::SimpleAtomsDataEntry & options,
   if(!speciesCount)
     return atomsDescription;
 
-  if(speciesCount->count.nullSpan() && speciesCount->count.lower() == 0)
+  if(speciesCount->count.nullSpan() && speciesCount->count.min() == 0)
     return atomsDescription;
 
   atomsDescription.reset(
@@ -132,14 +132,8 @@ Factory::createAtomsGroup(const builder::AtomsGroup & options,
   // Species distances
   if(options.pairDistances)
   {
-    std::vector< std::string> species;
     BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
-    {
-      boost::split(species, entry.first, boost::is_any_of("~"));
-      if(species.size() == 2)
-        atomsGenerator->addSpeciesPairDistance(
-            build_cell::SpeciesPair(species[0], species[1]), entry.second);
-    }
+      atomsGenerator->addSpeciesPairDistance(entry.first, entry.second);
   }
 
   return atomsGenerator;
@@ -261,8 +255,8 @@ Factory::createRandomCellGenerator(
     SSLIB_ASSERT(options.abc->size() == 6);
     for(size_t i = A; i <= GAMMA; ++i)
     {
-      cell->setMin(i, (*options.abc)[i].lower());
-      cell->setMax(i, (*options.abc)[i].upper());
+      cell->setMin(i, (*options.abc)[i].min());
+      cell->setMax(i, (*options.abc)[i].max());
     }
   }
 
@@ -312,14 +306,8 @@ Factory::createStructureBuilder(const builder::Builder & options) const
     // Species distances
     if(options.pairDistances)
     {
-      std::vector< std::string> species;
       BOOST_FOREACH(PairDistances::const_reference entry, *options.pairDistances)
-      {
-        boost::split(species, entry.first, boost::is_any_of("~"));
-        if(species.size() == 2)
-          group->addSpeciesPairDistance(
-              build_cell::SpeciesPair(species[0], species[1]), entry.second);
-      }
+          group->addSpeciesPairDistance(entry.first, entry.second);
     }
 
     builder->addGenerator(group);

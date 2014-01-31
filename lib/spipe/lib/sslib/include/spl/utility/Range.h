@@ -27,105 +27,89 @@ namespace spl {
 namespace utility {
 
 template< typename T>
-  class MinMax
+  class OrderedPair
   {
   public:
-    BOOST_CONCEPT_ASSERT((::boost::LessThanComparable<T>));
+    BOOST_CONCEPT_ASSERT((boost::LessThanComparable<T>));
 
     typedef T ValueType;
 
-    static MinMax make(const T & x0, const T & x1)
+    static OrderedPair make(const T & x0, const T & x1)
     {
-      return MinMax(x0, x1);
+      return OrderedPair(x0, x1);
     }
 
-    MinMax()
+    OrderedPair()
     {}
 
-    explicit MinMax(const T & x)
+    explicit OrderedPair(const T & x)
     {
       set(x, x);
     }
 
-    MinMax(const T & x0, const T & x1)
+    OrderedPair(const T & x0, const T & x1)
     {
       set(x0, x1);
     }
 
-    MinMax(const MinMax & toCopy)
+    OrderedPair(const OrderedPair & toCopy)
     {
-      myLower = toCopy.myLower;
-      myUpper = toCopy.myUpper;
+      myFirst = toCopy.myFirst;
+      mySecond = toCopy.mySecond;
     }
 
-    MinMax & operator =(const MinMax & rhs)
+    OrderedPair & operator =(const OrderedPair & rhs)
     {
-      myLower = rhs.myLower;
-      myUpper = rhs.myUpper;
+      myFirst = rhs.myFirst;
+      mySecond = rhs.mySecond;
       return *this;
     }
 
-    T lower()
-    { return myLower;}
-    const T & lower() const
-    { return myLower;}
+    bool operator ==(const OrderedPair & rhs) const
+    {
+      return myFirst == rhs.myFirst && mySecond == rhs.mySecond;
+    }
 
-    T upper()
-    { return myUpper;}
-    const T & upper() const
-    { return myUpper;}
+    const T & first() const
+    { return myFirst;}
 
-    void set(const T & x)
+    const T & second() const
+    { return mySecond;}
+
+    void setBoth(const T & x)
     {
       set(x, x);
     }
 
     void set(const T & x0, const T & x1)
     {
-      myLower = x0 < x1 ? x0 : x1;
-      myUpper = x0 < x1 ? x1 : x0;
+      myFirst = x0 < x1 ? x0 : x1;
+      mySecond = x0 < x1 ? x1 : x0;
     }
 
-    bool
-    expand(const T & x)
+    bool operator < (const OrderedPair & rhs) const
     {
-      if(x < myLower)
-      {
-        myLower = x;
-        return true;
-      }
-
-      if(x > myUpper)
-      {
-        myUpper = x;
-        return true;
-      }
+      if(myFirst < rhs.myFirst)
+      return true;
+      if(rhs.myFirst < myFirst)
       return false;
-    }
 
-    bool operator < (const MinMax & rhs) const
-    {
-      if(myLower < rhs.myLower)
-        return true;
-      if(rhs.myLower < myLower)
-        return false;
-
-      if(myUpper < rhs.myUpper)
-        return true;
+      if(mySecond < rhs.mySecond)
+      return true;
 
       return false;
     }
 
   protected:
-    T myLower;
-    T myUpper;
+    T myFirst;
+    T mySecond;
   };
 
 template< typename T>
-  class Range : public MinMax< T>
+  class Range
   {
   public:
-    BOOST_CONCEPT_ASSERT((::boost::LessThanComparable<T>));
+    BOOST_CONCEPT_ASSERT((boost::LessThanComparable<T>));
 
     typedef T ValueType;
 
@@ -137,30 +121,111 @@ template< typename T>
     Range()
     {}
 
-    explicit Range(const T & x): MinMax<T>(x, x)
+    Range(const T & x0, const T & x1):
+    myPair(x0, x1)
     {
     }
 
-    Range(const T & x0, const T & x1): MinMax<T>(x0, x1)
+    Range & operator =(const Range & rhs)
     {
+      myPair = rhs.myPair;
+      return *this;
+    }
+
+    bool operator ==(const Range & rhs) const
+    {
+      return myPair == rhs.myPair;
+    }
+
+    const T &
+    min() const
+    {
+      return myPair.first();
+    }
+
+    const T &
+    max() const
+    {
+      return myPair.second();
     }
 
     bool nullSpan() const
-    { return MinMax<T>::myLower == MinMax<T>::myUpper;}
+    { return myPair.first() == myPair.second();}
 
     T span() const
-    { return MinMax<T>::myUpper - MinMax<T>::myLower;}
+    { return myPair.second() - myPair.first();}
+
+    void
+    setBoth(const T & x)
+    {
+      myPair.setBoth(x);
+    }
+
+    void
+    set(const T & x0, const T & x1)
+    {
+      myPair.set(x0, x1);
+    }
+
+    bool
+    expand(const T & x)
+    {
+      if(x < myPair.first())
+      {
+        myPair.set(x, myPair.upper());
+        return true;
+      }
+
+      if(x > myPair.upper())
+      {
+        myPair.set(myPair.first(), x);
+        return true;
+      }
+      return false;
+    }
+
+  private:
+    OrderedPair<T> myPair;
   };
 
 // IMPLEMENTATION /////////////////////////////////////////////
 template< typename T>
   std::ostream &
+  operator <<(std::ostream & out, const OrderedPair< T> & pair)
+  {
+    out << pair.first() << "~" << pair.second();
+    return out;
+  }
+
+template< typename T>
+  std::istream &
+  operator >>(std::istream &in, OrderedPair< T> & pair)
+  {
+    using boost::lexical_cast;
+
+    std::string rangeString;
+    while(in.good() && rangeString.empty())
+      in >> rangeString;
+
+    const size_t delimPos = rangeString.find('~');
+    if(delimPos == std::string::npos)
+      pair.setBoth(lexical_cast< T>(rangeString));
+    else
+      pair.set(lexical_cast< T>(rangeString.substr(0, delimPos)),
+          lexical_cast< T>(
+              rangeString.substr(delimPos + 1, rangeString.size())));
+
+    return in;
+  }
+
+template< typename T>
+  std::ostream &
   operator <<(std::ostream & out, const Range< T> & range)
   {
     if(range.nullSpan())
-      out << range.lower();
+      out << range.min();
     else
-      out << range.lower() << "~" << range.upper();
+      out << range.min() << "~" << range.max();
     return out;
   }
 
@@ -176,7 +241,7 @@ template< typename T>
 
     const size_t delimPos = rangeString.find('~');
     if(delimPos == std::string::npos)
-      range.set(lexical_cast< T>(rangeString));
+      range.setBoth(lexical_cast< T>(rangeString));
     else
       range.set(lexical_cast< T>(rangeString.substr(0, delimPos)),
           lexical_cast< T>(

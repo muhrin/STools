@@ -53,7 +53,7 @@ public:
   clone() const;
 
 private:
-  typedef utility::MinMax< int> LatticeMultiples;
+  typedef utility::Range< int> LatticeMultiples;
 
   LatticeMultiples
   getLatticeMultiples(const arma::vec2 & x0, const arma::vec2 & latticeVecP,

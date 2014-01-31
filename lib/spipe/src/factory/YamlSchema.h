@@ -63,6 +63,7 @@ struct CutAndPaste
   bool paste;
   bool separate;
   bool fixUntouched;
+  boost::optional< spl::factory::PairDistances> pairDistances;
 };
 
 SCHEMER_MAP(CutAndPasteSchema, CutAndPaste)
@@ -71,6 +72,7 @@ SCHEMER_MAP(CutAndPasteSchema, CutAndPaste)
   element("paste", &CutAndPaste::paste)->defaultValue(true);
   element("separate", &CutAndPaste::separate)->defaultValue(true);
   element("fixUntouched", &CutAndPaste::fixUntouched)->defaultValue(true);
+  element("pairDistances", &CutAndPaste::pairDistances);
 }
 
 struct FindSymmetryGroup
@@ -177,10 +179,12 @@ SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
 
 struct SeparateAtoms
 {
+  boost::optional< spl::factory::PairDistances> pairDistances;
 };
 
 SCHEMER_MAP(SeparateAtomsType, SeparateAtoms)
 {
+  element("pairDistances", &SeparateAtoms::pairDistances);
 }
 
 struct SweepPotentialParams

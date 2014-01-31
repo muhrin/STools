@@ -19,16 +19,17 @@
 #include "spl/build_cell/IFragmentGenerator.h"
 #include "spl/build_cell/GeneratorShape.h"
 #include "spl/build_cell/SymmetryGroup.h"
-
-#include "spl/build_cell/SpeciesPair.h"
+#include "spl/utility/Range.h"
 
 // FORWARD DECLARES //////////////////////////
 
 namespace spl {
 namespace build_cell {
+typedef utility::OrderedPair< std::string> SpeciesPair;
 class BuildAtomInfo;
 struct AtomsGeneratorConstructionInfo;
 class StructureBuild;
+
 
 class AbsAtomsGenerator : public FragmentGenerator
 {

@@ -253,7 +253,7 @@ RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
     params[i] = generateParameter(i);
   }
 
-  MinMaxIndex minMax;
+  OrderedPairIndex minMax;
 
   const bool overrideLengthRatio = myMaxLengthRatio;
   const double maxRatio =
@@ -264,7 +264,7 @@ RandomUnitCellGenerator::generateLengths(double (&params)[6]) const
   for(i = 0; i < maxIters && madeStep; ++i)
   {
     madeStep = false;
-    minMax = getMinMaxLengths(params);
+    minMax = getOrderedPairLengths(params);
 
     minLength = params[minMax.first];
     maxLength = params[minMax.second];
@@ -325,12 +325,12 @@ RandomUnitCellGenerator::generateVolume(const VolAndDelta & volAndDelta) const
       volAndDelta.first * (1.0 + volAndDelta.second));
 }
 
-RandomUnitCellGenerator::MinMaxIndex
-RandomUnitCellGenerator::getMinMaxLengths(const double (&params)[6]) const
+RandomUnitCellGenerator::OrderedPairIndex
+RandomUnitCellGenerator::getOrderedPairLengths(const double (&params)[6]) const
 {
   using namespace utility::cell_params_enum;
 
-  MinMaxIndex minMax;
+  OrderedPairIndex minMax;
   if(params[A] > params[B])
   {
     minMax.first = B;

@@ -20,9 +20,9 @@ namespace build_cell {
 template <typename Label>
 void
 SeparationData::setSeparationsFromLabels(const ::std::vector<Label> & pointLabels,
-    ::std::map< utility::MinMax<Label>, double> & sepList)
+    ::std::map< utility::OrderedPair<Label>, double> & sepList)
 {
-  typedef utility::MinMax<Label> LabelPair;
+  typedef utility::OrderedPair<Label> LabelPair;
   typedef ::std::map< LabelPair, double> Separations;
 
   const size_t numPoints = points.n_cols;

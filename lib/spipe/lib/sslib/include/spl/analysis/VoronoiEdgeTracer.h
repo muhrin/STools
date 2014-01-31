@@ -139,7 +139,7 @@ template< typename LabelType, class VertexDataType = arrangement_data::Vertex<
     class VertexSplitter
     {
     public:
-      typedef ::spl::utility::MinMax< size_t> Edge;
+      typedef ::spl::utility::OrderedPair< size_t> Edge;
     private:
       typedef ::std::map< Edge, LabelType> Edges;
     public:

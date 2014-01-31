@@ -15,7 +15,7 @@
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <armadillo>
+#include "spl/utility/Range.h"
 
 // DEFINES ////////////////////////////////////////////////
 
@@ -27,6 +27,8 @@ class Atom;
 class DistanceCalculator;
 class Structure;
 class UnitCell;
+
+typedef utility::OrderedPair< std::string> SpeciesPair;
 
 typedef UniquePtr<Structure>::Type StructurePtr;
 

@@ -48,7 +48,7 @@ public:
     // Populate with the individual counts e.g. 2, 3, 4, ..., 17
     BOOST_FOREACH(AtomRanges::const_reference range, atomRanges)
     {
-      for(int i = range.second.lower(); i <= range.second.upper(); ++i)
+      for(int i = range.second.min(); i <= range.second.max(); ++i)
         myAtomCounts[range.first].insert(static_cast< size_t>(i));
     }
   }

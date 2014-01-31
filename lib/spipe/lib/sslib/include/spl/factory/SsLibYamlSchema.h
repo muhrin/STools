@@ -41,8 +41,8 @@ typedef schemer::Scalar< yaml::VecAsString< utility::Range< double> >::Type> Dou
 
 struct MinMax
 {
-  ::boost::optional< double> min;
-  ::boost::optional< double> max;
+  boost::optional< double> min;
+  boost::optional< double> max;
 };
 
 SCHEMER_MAP(MinMaxSchema, MinMax)
@@ -432,7 +432,8 @@ SCHEMER_MAP(VoronoiSlabLatticeRegionType, VoronoiSlabLatticeRegion)
   element("boundary", &VoronoiSlabLatticeRegion::boundary);
   element< Lattice2DType>("lattice", &VoronoiSlabLatticeRegion::lattice);
   element< Rowvec2>("startPoint", &VoronoiSlabLatticeRegion::startPoint);
-  element("fixPoints", &VoronoiSlabLatticeRegion::fixPoints)->defaultValue(true);
+  element("fixPoints", &VoronoiSlabLatticeRegion::fixPoints)->defaultValue(
+      true);
 }
 
 SCHEMER_ENUM(VoronoiSlabRandomRegionPolyModeType, build_cell::RandomRegion::PolyMode::Value)

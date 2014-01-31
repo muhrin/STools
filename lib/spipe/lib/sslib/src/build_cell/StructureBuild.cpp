@@ -277,6 +277,7 @@ StructureBuild::generateSepSqMatrix() const
   const size_t numAtoms = myStructure.getNumAtoms();
   ::arma::mat sepSq = ::arma::zeros(numAtoms, numAtoms);
 
+  common::SpeciesPair pair;
   for(size_t i = 0; i < numAtoms; ++i)
   {
     const common::Atom & atomI = myStructure.getAtom(i);
@@ -285,6 +286,7 @@ StructureBuild::generateSepSqMatrix() const
     {
       const common::Atom & atomJ = myStructure.getAtom(j);
       const BuildAtomInfo * infoJ = getAtomInfo(atomJ);
+      pair.set(atomI.getSpecies(), atomJ.getSpecies());
 
       OptionalDouble rI, rJ;
 
@@ -299,8 +301,7 @@ StructureBuild::generateSepSqMatrix() const
       {
         // Try doing it by pair distances
         SpeciesPairDistances::const_iterator it =
-            getSpeciesPairDistances().find(
-                SpeciesPair(atomI.getSpecies(), atomJ.getSpecies()));
+            getSpeciesPairDistances().find(pair);
         if(it != mySpeciesPairDistances.end())
         {
           // Give them each a half of the separation distance
@@ -309,8 +310,7 @@ StructureBuild::generateSepSqMatrix() const
         }
       }
 
-      rI = mySpeciesDb.getSpeciesPairDistance(atomI.getSpecies(),
-          atomJ.getSpecies());
+      rI = mySpeciesDb.getSpeciesPairDistance(pair);
       if(rI)
       {
         rJ.reset(0.5 * *rI);

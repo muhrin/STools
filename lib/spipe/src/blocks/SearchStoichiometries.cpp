@@ -217,9 +217,9 @@ SearchStoichiometries::getStoichRange()
   size_t i = 0;
   BOOST_FOREACH(AtomRanges::const_reference range, myOptions.atomRanges)
   {
-    lower[i] = range.second.lower();
+    lower[i] = range.second.min();
     // Need to add one as the extents is a half-open interval i.e. [x0, x1)
-    upper[i] = range.second.upper() + 1;
+    upper[i] = range.second.max() + 1;
     ++i;
   }
 

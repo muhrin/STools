@@ -31,6 +31,20 @@ CutAndPaste::CutAndPaste(ShapePtr shape, Settings & settings):
 }
 
 void
+CutAndPaste::setPairDistances(const spl::factory::PairDistances & distances)
+{
+  myPairDistances = distances;
+}
+
+void
+CutAndPaste::pipelineInitialised()
+{
+  mySpeciesDb = getEngine()->globalData().getSpeciesDatabase();
+  BOOST_FOREACH(spl::factory::PairDistances::const_reference dist, myPairDistances)
+    mySpeciesDb.setSpeciesPairDistance(dist.first, dist.second);
+}
+
+void
 CutAndPaste::in(common::StructureData * const data)
 {
   if(!data->getStructure())
@@ -65,7 +79,7 @@ CutAndPaste::in(common::StructureData * const data)
 
     if(mySettings.separate)
     {
-      splbc::SeparationData sepData(*structure, getEngine()->globalData().getSpeciesDatabase());
+      splbc::SeparationData sepData(*structure, mySpeciesDb);
       if(mySettings.fixUntouched)
       {
         for(size_t i = 0; i < numUntouched; ++i)

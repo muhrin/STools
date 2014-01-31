@@ -81,8 +81,8 @@ public:
   // End from IUnitCellGenerator //////
 
 private:
-  typedef ::std::pair< OptionalDouble, OptionalDouble> MinMax;
-  typedef ::std::pair< size_t, size_t> MinMaxIndex;
+  typedef ::std::pair< OptionalDouble, OptionalDouble> OrderedPair;
+  typedef ::std::pair< size_t, size_t> OrderedPairIndex;
   typedef ::std::pair< double, double> VolAndDelta;
 
   inline bool
@@ -102,8 +102,8 @@ private:
   double
   generateVolume(const VolAndDelta & volAndDelta) const;
 
-  MinMaxIndex
-  getMinMaxLengths(const double (&latticeParams)[6]) const;
+  OrderedPairIndex
+  getOrderedPairLengths(const double (&latticeParams)[6]) const;
 
   bool
   areParametersValid(const double (&latticeParams)[6]) const;
@@ -114,7 +114,7 @@ private:
       const StructureContents * const structureContents = NULL) const;
 
   /** An array of the optional min/max values of the unit cell lattice parameters. */
-  MinMax myParameters[6];
+  OrderedPair myParameters[6];
 
   OptionalDouble myMinLength;
   OptionalDouble myMaxLength;

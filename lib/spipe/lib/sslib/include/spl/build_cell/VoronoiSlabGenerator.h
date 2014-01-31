@@ -29,9 +29,6 @@
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
-#include <CGAL/Periodic_2_triangulation_vertex_base_2.h>
-#include <CGAL/Periodic_2_triangulation_traits_2.h>
-#include <CGAL/Periodic_2_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_2.h>
 
 #include "spl/SSLibAssert.h"
@@ -77,27 +74,30 @@ private:
 class VoronoiSlabGenerator::Slab
 {
 public:
-  struct SiteInfo
-  {
-    bool fixed;
-    boost::optional< double> minsep;
-    const VoronoiSlabGenerator::SlabRegion * generatedBy;
-  };
-
   typedef CGAL::Exact_predicates_exact_constructions_kernel K;
+
+  struct SiteInfo;
 
 private:
   typedef CGAL::Triangulation_vertex_base_with_info_2< SiteInfo, K> Vb;
   typedef CGAL::Triangulation_data_structure_2< Vb> Tds;
 
-  typedef CGAL::Periodic_2_triangulation_vertex_base_2< K, Vb> PVb;
-  typedef CGAL::Triangulation_data_structure_2< PVb,
-      CGAL::Periodic_2_triangulation_face_base_2< K> > PTds;
-  typedef CGAL::Periodic_2_triangulation_traits_2< K> GT;
-
 public:
   typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
-  //typedef CGAL::Periodic_2_Delaunay_triangulation_2< GT, PTds> Delaunay;
+
+  struct SiteInfo
+  {
+    SiteInfo() :
+        fixed(false), generatedBy(NULL), isImage(false)
+    {
+    }
+    bool fixed;
+    boost::optional< double> minsep;
+    const VoronoiSlabGenerator::SlabRegion * generatedBy;
+    bool isImage;
+  };
+
+  class SlabData;
 
 private:
 //  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
@@ -105,6 +105,8 @@ private:
 //      Delaunay> AP;
   typedef utility::SharedHandle< size_t> RegionTicket;
   typedef std::map< const VoronoiSlabGenerator::SlabRegion *, RegionTicket> RegionTickets;
+  typedef std::multimap< Delaunay::Vertex_handle,
+      std::pair< K::Vector_2, Delaunay::Vertex_handle> > PeriodicImages;
 
 public:
   //typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
@@ -118,21 +120,19 @@ public:
   addRegion(UniquePtr< SlabRegion>::Type & region);
   void
   setSaveTriangulation(const bool save);
+
 private:
   typedef boost::ptr_vector< VoronoiSlabGenerator::SlabRegion> SlabRegions;
   typedef std::map< const Delaunay::Vertex_handle, bool> VertexInfo;
 
   bool
-  refineTriangulation(const common::DistanceCalculator & distCalc,
-      const common::UnitCell * const unitCell, const RegionTickets & tickets,
-      Delaunay * const dg) const;
+  refineTriangulation(SlabData * const slabData) const;
   bool
-  separatePoints(const common::DistanceCalculator & distCalc,
-      const common::UnitCell * const unitCell, Delaunay * const dg) const;
+  separatePoints(SlabData * const slabData) const;
   void
-  reduceEdges(Delaunay * const dg) const;
+  equaliseEdges(SlabData * const slabData) const;
   void
-  generateAtoms(const Delaunay & dg, common::Structure * const structure) const;
+  generateAtoms(const SlabData & slabData, common::Structure * const structure) const;
 
   arma::mat44 myTransform;
   SlabRegions myRegions;

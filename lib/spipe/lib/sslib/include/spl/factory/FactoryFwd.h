@@ -22,6 +22,7 @@
 #include "spl/build_cell/AtomsDescription.h"
 #include "spl/common/AtomSpeciesId.h"
 #include "spl/utility/HeterogeneousMap.h"
+#include "spl/utility/Range.h"
 
 // DEFINES //////////////////////////////////////////////
 
@@ -31,7 +32,8 @@ namespace factory {
 ///////////////////////////////////////////////////////////
 // TYPEDEFS
 ///////////////////////////////////////////////////////////
-typedef ::std::map< ::std::string, double> PairDistances;
+typedef utility::OrderedPair< std::string> SpeciesPair;
+typedef std::map< SpeciesPair, double> PairDistances;
 
 ///////////////////////////////////////////////////////////
 // CLASSES
@@ -39,10 +41,10 @@ typedef ::std::map< ::std::string, double> PairDistances;
 struct AtomSpeciesCount
 {
   AtomSpeciesCount() :
-      count(1)
+      count(1, 1)
   {
   }
-  ::std::string species;
+  std::string species;
   build_cell::AtomsDescription::CountRange count;
 };
 
@@ -50,7 +52,7 @@ inline std::ostream &
 operator <<(std::ostream & out, const AtomSpeciesCount & speciesCount)
 {
   out << speciesCount.species;
-  if(!(speciesCount.count.nullSpan() && speciesCount.count.lower() == 1))
+  if(!(speciesCount.count.nullSpan() && speciesCount.count.min() == 1))
     out << " " << speciesCount.count;
   return out;
 }
@@ -65,7 +67,7 @@ operator >>(std::istream &in, AtomSpeciesCount & speciesCount)
     in >> whitespace;
   }
   // The count is optional
-  speciesCount.count.set(1);
+  speciesCount.count.setBoth(1);
   if(in.good())
     in >> speciesCount.count;
 

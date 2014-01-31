@@ -22,7 +22,6 @@
 #include "spl/build_cell/BuildAtomInfo.h"
 #include "spl/build_cell/GeneratorShape.h"
 #include "spl/build_cell/PointSeparator.h"
-#include "spl/build_cell/SpeciesPair.h"
 
 namespace spl {
 namespace common {
@@ -31,7 +30,7 @@ class AtomSpeciesDatabase;
 class Structure;
 }
 namespace build_cell {
-
+typedef utility::OrderedPair< std::string> SpeciesPair;
 class BuildAtomInfo;
 class StructureContents;
 class SymmetryGroup;

@@ -65,20 +65,20 @@ GeomOptimise::in(common::StructureData * const data)
   ssp::OptimisationData optData;
   const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure,
       optData, myOptimisationParams);
-  if(outcome.isSuccess())
-  {
+//  if(outcome.isSuccess())
+//  {
     // Update our data table with the structure data
     if(myWriteSummary)
       updateTable(*structure, optData);
     out(data);
-  }
-  else
-  {
-    ::std::cerr << "Optimisation failed: " << outcome.getMessage()
-        << ::std::endl;
-    // The structure failed to geometry optimise properly so drop it
-    drop(data);
-  }
+//  }
+//  else
+//  {
+//    ::std::cerr << "Optimisation failed: " << outcome.getMessage()
+//        << ::std::endl;
+//    // The structure failed to geometry optimise properly so drop it
+//    drop(data);
+//  }
 }
 
 ssp::GeomOptimiser &

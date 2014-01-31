@@ -194,9 +194,9 @@ AbsAtomsGenerator::getTicket()
     if(!countSet)
     {
       if(atom.count.nullSpan())
-        count = atom.count.lower();
+        count = atom.count.min();
       else
-        count = math::randu(atom.count.lower(), atom.count.upper());
+        count = math::randu(atom.count.min(), atom.count.max());
     }
 
     if(count != 0)

@@ -26,23 +26,19 @@ struct AtomsDescription
   typedef utility::Range< int> CountRange;
 
   AtomsDescription(const common::AtomSpeciesId::Value _species,
-      const size_t _count = 1):
-        species(_species),
-        count(_count),
-        label(_species)
+      const int _count = 1) :
+      species(_species), count(_count, _count), label(_species)
   {
   }
   AtomsDescription(const common::AtomSpeciesId::Value _species,
-      const CountRange _count):
-        species(_species),
-        count(_count),
-        label(_species)
+      const CountRange _count) :
+      species(_species), count(_count), label(_species)
   {
   }
 
   common::AtomSpeciesId::Value species;
   CountRange count;
-  ::std::string label;
+  std::string label;
   OptionalDouble radius;
   OptionalArmaVec3 position;
 };

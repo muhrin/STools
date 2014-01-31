@@ -13,6 +13,7 @@
 
 #include "SpTypes.h"
 
+#include <spl/factory/FactoryFwd.h>
 // FORWARD DECLARATIONS ////////////////////////////////////
 
 namespace spipe {
@@ -23,8 +24,16 @@ class SeparateAtoms : public PipeBlock, ::boost::noncopyable
 public:
   SeparateAtoms();
 
+  void
+  setPairDistances(const spl::factory::PairDistances & distances);
+
+  virtual void
+  pipelineInitialised();
   virtual void
   in(StructureDataType * const data);
+private:
+  spl::factory::PairDistances myPairDistances;
+  spl::common::AtomSpeciesDatabase mySpeciesDb;
 };
 
 }

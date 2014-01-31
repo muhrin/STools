@@ -55,7 +55,7 @@ LatticeRegion::generateSites(Delaunay * const dg) const
   const LatticeMultiples latVec1Multiples = getLatticeMultiples(x0,
       myLattice[1], myLattice[0]);
 
-  for(int i = latVec0Multiples.lower(); i <= latVec0Multiples.upper(); ++i)
+  for(int i = latVec0Multiples.min(); i <= latVec0Multiples.max(); ++i)
   {
     const arma::vec2 & r = x0 + static_cast< double>(i) * myLattice[0];
     generateLine(r, myLattice[1], latVec1Multiples, bbox, dg);
@@ -150,7 +150,7 @@ LatticeRegion::generateLine(const arma::vec2 & r0, const arma::vec2 & dr,
     Delaunay * const dg) const
 {
   arma::vec2 r;
-  for(int i = range.lower(); i <= range.upper(); ++i)
+  for(int i = range.min(); i <= range.max(); ++i)
   {
     r = r0 + static_cast< double>(i) * dr;
     if(inBBox(r, box) && withinBoundary(r))

@@ -27,13 +27,13 @@ namespace YAML {
 
 // Vector as string
 template< typename T>
-  struct convert< ::spl::yaml::TypeWrapper< ::std::vector< T> > >
+  struct convert< spl::yaml::TypeWrapper< std::vector< T> > >
   {
     static Node
-    encode(const typename ::spl::yaml::VecAsString< T>::Type & vector);
+    encode(const typename spl::yaml::VecAsString< T>::Type & vector);
     static bool
     decode(const Node & node,
-        typename ::spl::yaml::VecAsString< T>::Type & vector);
+        typename spl::yaml::VecAsString< T>::Type & vector);
   };
 
 // Armadillo
@@ -107,21 +107,30 @@ template< typename arma::uword n_rows, typename arma::uword n_cols>
   };
 
 template< >
-  struct convert< ::spl::yaml::ArmaTriangularMat>
+  struct convert< spl::yaml::ArmaTriangularMat>
   {
     static Node
-    encode(const ::spl::yaml::ArmaTriangularMat & rhs);
+    encode(const spl::yaml::ArmaTriangularMat & rhs);
     static bool
-    decode(const Node & node, ::spl::yaml::ArmaTriangularMat & rhs);
+    decode(const Node & node, spl::yaml::ArmaTriangularMat & rhs);
   };
 
 template< typename T>
-  struct convert< ::spl::utility::Range< T> >
+  struct convert< spl::utility::OrderedPair< T> >
   {
     static Node
-    encode(const ::spl::utility::Range< T> & rhs);
+    encode(const spl::utility::OrderedPair< T> & rhs);
     static bool
-    decode(const Node & node, ::spl::utility::Range< T> & rhs);
+    decode(const Node & node, spl::utility::OrderedPair< T> & rhs);
+  };
+
+template< typename T>
+  struct convert< spl::utility::Range< T> >
+  {
+    static Node
+    encode(const spl::utility::Range< T> & rhs);
+    static bool
+    decode(const Node & node, spl::utility::Range< T> & rhs);
   };
 
 }
