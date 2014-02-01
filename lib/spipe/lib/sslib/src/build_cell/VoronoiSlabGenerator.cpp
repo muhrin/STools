@@ -25,6 +25,13 @@ namespace build_cell {
 const int VoronoiSlabGenerator::MAX_ITERATIONS = 10000;
 
 template< typename K>
+  CGAL::Point_2< K>
+  toCgalPoint2(const arma::vec3 & vec)
+  {
+    return CGAL::Point_2< K>(vec(0), vec(1));
+  }
+
+template< typename K>
   CGAL::Vector_2< K>
   toCgalVec2(const arma::vec3 & vec)
   {
@@ -97,6 +104,8 @@ public:
   generatePeriodicImages();
   void
   updatePeriodicImages();
+  void
+  wrapFundamentalVertices();
 
   Delaunay dg;
   std::vector< Delaunay::Vertex_handle> vertices;
@@ -149,8 +158,21 @@ void
 VoronoiSlabGenerator::Slab::SlabData::updatePeriodicImages()
 {
   BOOST_FOREACH(PeriodicImages::const_reference image, periodicImages)
-  {
     dg.move(image.second.second, image.first->point() + image.second.first);
+}
+
+void
+VoronoiSlabGenerator::Slab::SlabData::wrapFundamentalVertices()
+{
+  if(!unitCell)
+    return;
+
+  arma::vec3 pt;
+  BOOST_FOREACH(const Delaunay::Vertex_handle & vtx, vertices)
+  {
+    pt = toArmaVec3(vtx->point());
+    unitCell->wrapVecInplace(pt);
+    dg.move_if_no_collision(vtx, toCgalPoint2< K>(pt));
   }
 }
 
@@ -162,15 +184,7 @@ VoronoiSlabGenerator::Slab::generateSlab(
 
   SlabData slabData(*structure);
 
-  // Create the triangulation
-  BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
-  {
-    RegionTicket ticket = region.generateSites(&slabData.dg);
-    if(ticket.valid())
-      slabData.tickets[&region] = ticket;
-  }
-  slabData.generatePeriodicImages();
-
+  createTriangulation(&slabData);
   refineTriangulation(&slabData);
   generateAtoms(slabData, structure);
 
@@ -203,6 +217,18 @@ VoronoiSlabGenerator::Slab::setSaveTriangulation(const bool save)
   mySaveTriangulation = save;
 }
 
+void
+VoronoiSlabGenerator::Slab::createTriangulation(SlabData * const slabData) const
+{
+  BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
+  {
+    RegionTicket ticket = region.generateSites(&slabData->dg);
+    if(ticket.valid())
+      slabData->tickets[&region] = ticket;
+  }
+  slabData->generatePeriodicImages();
+}
+
 bool
 VoronoiSlabGenerator::Slab::refineTriangulation(SlabData * const slabData) const
 {
@@ -217,7 +243,6 @@ VoronoiSlabGenerator::Slab::refineTriangulation(SlabData * const slabData) const
   {
     // Fix up the triangulation
     separatePoints(slabData);
-    slabData->updatePeriodicImages();
     equaliseEdges(slabData);
 
     // Find out which region each site belongs to and delete any that have
@@ -227,15 +252,15 @@ VoronoiSlabGenerator::Slab::refineTriangulation(SlabData * const slabData) const
       const bool haveTicket = slabData->tickets.find(&region)
           != slabData->tickets.end();
       toRemove.clear();
-      for(Delaunay::Vertex_iterator it = slabData->dg.vertices_begin(), end =
-          slabData->dg.vertices_end(); it != end; ++it)
+      BOOST_FOREACH(Delaunay::Vertex_handle & vtx, slabData->vertices)
       {
-        if(it->info().generatedBy == &region)
+        if(vtx->info().generatedBy == &region)
         {
-          if(!region.withinBoundary(it->point()))
+          /*if(!region.withinBoundary(it->point()))
             toRemove.push_back(it);
-//          else if(haveTicket)
-//            updateRegions[&region].insert(it);
+          else*/
+          if(haveTicket)
+            updateRegions[&region].insert(vtx);
         }
       }
       BOOST_FOREACH(Delaunay::Vertex_handle & vtx, toRemove)
@@ -312,6 +337,8 @@ VoronoiSlabGenerator::Slab::separatePoints(SlabData * const slabData) const
     ++idx;
   }
 
+  slabData->updatePeriodicImages();
+
   return result;
 }
 
@@ -363,7 +390,11 @@ VoronoiSlabGenerator::Slab::equaliseEdges(SlabData * const slabData) const
           CGAL::to_double(f.second.squared_length()));
       slabData->dg.move_if_no_collision(f.first, f.first->point() + f.second);
     }
-    slabData->updatePeriodicImages();
+    if(slabData->unitCell)
+    {
+      slabData->wrapFundamentalVertices();
+      slabData->updatePeriodicImages();
+    }
   }
   while(maxForceSq > 0.0001);
 }

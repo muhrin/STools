@@ -24,13 +24,20 @@
 namespace spipe {
 namespace factory {
 
-///////////////////////////////////////////////////////////
-// TYPEDEFS
-///////////////////////////////////////////////////////////
+struct FailAction
+{
+  enum Value
+  {
+    DROP, CONTINUE
+  };
+};
 
-///////////////////////////////////////////////////////////
-// CUSTOM MAPS
-///////////////////////////////////////////////////////////
+SCHEMER_ENUM(FailActionType, FailAction::Value)
+{
+  enumeration("drop", FailAction::DROP);
+  enumeration("continue", FailAction::CONTINUE);
+}
+
 namespace blocks {
 
 struct BuildStructures
@@ -43,7 +50,8 @@ SCHEMER_MAP(BuildStructuresSchema, BuildStructures)
 {
   element("num", &BuildStructures::num)->defaultValue(1);
   element("generator", &BuildStructures::generator);
-};
+}
+;
 
 struct Clone
 {
@@ -127,6 +135,7 @@ struct GeomOptimise : spl::factory::OptimiserSettings
 {
   spl::factory::Optimiser optimiser;
   bool writeSummary;
+  FailAction::Value failAction;
 };
 
 SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
@@ -134,6 +143,8 @@ SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
   extends< spl::factory::OptimiserSettingsSchema>();
   element("optimiser", &GeomOptimise::optimiser);
   element("writeSummary", &GeomOptimise::writeSummary)->defaultValue(false);
+  element("failAction", &GeomOptimise::failAction)->defaultValue(
+      FailAction::CONTINUE);
 }
 
 struct RemoveDuplicates
@@ -180,11 +191,14 @@ SCHEMER_MAP(SearchStoichiometriesSchema, SearchStoichiometries)
 struct SeparateAtoms
 {
   boost::optional< spl::factory::PairDistances> pairDistances;
+  FailAction::Value failAction;
 };
 
 SCHEMER_MAP(SeparateAtomsType, SeparateAtoms)
 {
   element("pairDistances", &SeparateAtoms::pairDistances);
+  element("failAction", &SeparateAtoms::failAction)->defaultValue(
+      FailAction::CONTINUE);
 }
 
 struct SweepPotentialParams

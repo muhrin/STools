@@ -125,6 +125,8 @@ private:
   typedef boost::ptr_vector< VoronoiSlabGenerator::SlabRegion> SlabRegions;
   typedef std::map< const Delaunay::Vertex_handle, bool> VertexInfo;
 
+  void
+  createTriangulation(SlabData * const slabData) const;
   bool
   refineTriangulation(SlabData * const slabData) const;
   bool

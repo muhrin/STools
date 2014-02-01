@@ -14,7 +14,6 @@
 
 #include <map>
 
-#include <boost/filesystem/fstream.hpp>
 
 #include <armadillo>
 
@@ -40,12 +39,14 @@ namespace blocks {
 class ParamGeomOptimise : public GeomOptimise
 {
 public:
+  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser);
   ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
-      const bool writeSummary = false);
-
+      const GeomOptimise::Settings & settings);
   ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
-      const ::spl::potential::OptimisationSettings & optimisationParams,
-      const bool writeSummary = false);
+      const spl::potential::OptimisationSettings & optimisationParams);
+  ParamGeomOptimise(::spl::potential::IGeomOptimiserPtr optimiser,
+      const spl::potential::OptimisationSettings & optimisationParams,
+      const GeomOptimise::Settings & settings);
 
   // From Block /////////////////////////
   virtual void
@@ -60,7 +61,7 @@ public:
   // End from PipeBlock ///////////////////////
 
 private:
-  typedef ::std::vector< double> PotentialParams;
+  typedef std::vector< double> PotentialParams;
 
   void
   init();
@@ -68,7 +69,7 @@ private:
   void
   setPotentialParams(const PotentialParams & params);
 
-  ::spl::potential::IParameterisable * myParamPotential;
+  spl::potential::IParameterisable * myParamPotential;
   PotentialParams myCurrentParams;
 };
 

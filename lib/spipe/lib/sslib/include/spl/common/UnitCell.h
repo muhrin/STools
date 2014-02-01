@@ -66,7 +66,7 @@ public:
   explicit
   UnitCell(const double (&latticeParams)[6]);
   explicit
-  UnitCell(const ::arma::mat33 & orthoMatrix);
+  UnitCell(const arma::mat33 & orthoMatrix);
   UnitCell(const UnitCell & toCopy);
   ~UnitCell();
 
@@ -83,51 +83,51 @@ public:
 
 void  setLatticeParams(const double (&params)[6]);
 
-  inline ::arma::vec3 getAVec() const
+  inline arma::vec3 getAVec() const
   {
     return myOrthoMtx.col(0);
   }
 
-  inline ::arma::vec3 getBVec() const
+  inline arma::vec3 getBVec() const
   {
     return myOrthoMtx.col(1);
   }
 
-  inline ::arma::vec3 getCVec() const
+  inline arma::vec3 getCVec() const
   {
     return myOrthoMtx.col(2);
   }
 
   double getLongestCellVectorLength() const;
 
-  const ::arma::mat33 & getOrthoMtx() const;
+  const arma::mat33 & getOrthoMtx() const;
 
   // Set the orthogonalisation matrix.
   // Returns false and UnitCell remains unchanged if orthoMtx is singular, true otherwise.
-  bool setOrthoMtx(const ::arma::mat33 & orthoMtx);
+  bool setOrthoMtx(const arma::mat33 & orthoMtx);
 
-  const ::arma::mat33 & getFracMtx() const;
+  const arma::mat33 & getFracMtx() const;
 
   double getVolume() const;
   double setVolume(const double volume);
   double getNormVolume() const;
 
-  ::arma::vec3 getLongestDiagonal() const;
+  arma::vec3 getLongestDiagonal() const;
 
   LatticeSystem::Value getLatticeSystem(const double tolerance = utility::stable::STABLE_COMP_TOL) const;
 
-  inline ::arma::vec3 fracToCart(const ::arma::vec3 & frac) const
+  inline arma::vec3 fracToCart(const arma::vec3 & frac) const
   {
     return myOrthoMtx * frac;
   }
 
-  inline ::arma::vec3 & fracToCartInplace(::arma::vec3 & frac) const
+  inline arma::vec3 & fracToCartInplace(arma::vec3 & frac) const
   {
     frac = myOrthoMtx * frac;
     return frac;
   }
 
-  inline ::arma::mat & fracsToCartInplace(::arma::mat & fracs) const
+  inline arma::mat & fracsToCartInplace(arma::mat & fracs) const
   {
     SSLIB_ASSERT(fracs.n_rows == 3);
 
@@ -135,33 +135,33 @@ void  setLatticeParams(const double (&params)[6]);
     return fracs;
   }
 
-  inline ::arma::vec3 & fracWrapToCartInplace(::arma::vec3 & frac) const
+  inline arma::vec3 & fracWrapToCartInplace(arma::vec3 & frac) const
   {
-    frac -= ::arma::floor(frac); // Wrap
+    frac -= arma::floor(frac); // Wrap
     frac = myOrthoMtx * frac;// Convert to cartesian
     return frac;
   }
 
-  inline ::arma::mat & fracsWrapToCartInplace(::arma::mat & fracs) const
+  inline arma::mat & fracsWrapToCartInplace(arma::mat & fracs) const
   {
-    fracs -= ::arma::floor(fracs); // Wrap
+    fracs -= arma::floor(fracs); // Wrap
     fracs = myOrthoMtx * fracs;// Convert to cartesian
     return fracs;
   }
 
-  inline ::arma::vec3 cartToFrac(const ::arma::vec3 & cart) const
+  inline arma::vec3 cartToFrac(const arma::vec3 & cart) const
   {
-    ::arma::vec3 toFrac(cart);
+    arma::vec3 toFrac(cart);
     return cartToFracInplace(toFrac);
   }
 
-  inline ::arma::vec3 & cartToFracInplace(::arma::vec3 & cart) const
+  inline arma::vec3 & cartToFracInplace(arma::vec3 & cart) const
   {
     cart = myFracMtx * cart;
     return cart;
   }
 
-  inline ::arma::mat & cartsToFracInplace(::arma::mat & carts) const
+  inline arma::mat & cartsToFracInplace(arma::mat & carts) const
   {
     SSLIB_ASSERT(carts.n_rows == 3);
 
@@ -169,10 +169,10 @@ void  setLatticeParams(const double (&params)[6]);
     return carts;
   }
 
-  ::arma::vec3 wrapVec(const ::arma::vec3 & cart) const;
-  ::arma::vec3 & wrapVecInplace(::arma::vec3 & cart) const;
+  arma::vec3 wrapVec(const arma::vec3 & cart) const;
+  arma::vec3 & wrapVecInplace(arma::vec3 & cart) const;
 
-  inline ::arma::mat & wrapVecsInplace(::arma::mat & carts) const
+  inline arma::mat & wrapVecsInplace(arma::mat & carts) const
   {
     SSLIB_ASSERT(carts.n_rows == 3);
 
@@ -182,17 +182,17 @@ void  setLatticeParams(const double (&params)[6]);
     return carts;
   }
 
-  ::arma::vec3 wrapVecFrac(const ::arma::vec3 & frac) const;
-  ::arma::vec3 & wrapVecFracInplace(::arma::vec3 & frac) const;
+  arma::vec3 wrapVecFrac(const arma::vec3 & frac) const;
+  arma::vec3 & wrapVecFracInplace(arma::vec3 & frac) const;
 
-  inline ::arma::mat & wrapVecsFracInplace(::arma::mat & fracs) const
+  inline arma::mat & wrapVecsFracInplace(arma::mat & fracs) const
   {
     SSLIB_ASSERT(fracs.n_rows == 3);
-    fracs -= ::arma::floor(fracs);
+    fracs -= arma::floor(fracs);
     return fracs;
   }
 
-  ::arma::vec3 randomPoint() const;
+  arma::vec3 randomPoint() const;
 
   bool niggliReduce();
 
@@ -200,7 +200,7 @@ void  setLatticeParams(const double (&params)[6]);
   bool removeListener(UnitCellListener & listener);
 
 private:
-  typedef ::std::set<UnitCellListener *> Listeners;
+  typedef std::set<UnitCellListener *> Listeners;
 
   /** Initialise the unit cell from lattice parameters */
   bool init(
@@ -208,7 +208,7 @@ private:
       const double alpha, const double beta, const double gamma);
 
   /** Initialise the unit cell from an orthogonalisation matrix */
-  bool init(const ::arma::mat33 & orthoMtx);
+  bool init(const arma::mat33 & orthoMtx);
   bool initOrthoAndFracMatrices();
   void initLatticeParams();
   void initRest();
@@ -217,10 +217,10 @@ private:
   void sendUnitCellVolChangedMsg(const double oldVol);
 
   /** The unit cell matrix where columns represent basis vectors */
-  ::arma::mat33 myOrthoMtx;
+  arma::mat33 myOrthoMtx;
 
   /** The inverse of the orthogonalisation matrix */
-  ::arma::mat33 myFracMtx;
+  arma::mat33 myFracMtx;
 
   double myLatticeParams[6];
 

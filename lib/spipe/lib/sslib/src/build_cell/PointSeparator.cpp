@@ -148,16 +148,17 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
 
               // Generate the displacement vector
               dr = prefactor * sepDiff / sep * sepVec;
-
-              if(!fixed[row])
-                delta.col(row) -= dr;
-              if(!fixed[col])
-                delta.col(col) += dr;
             }
             else
             {
-              // TODO: Perturb the atoms a little to get them moving
+              dr = arma::randu(3);
+              dr *= 0.001 * sepData->separations(row, col) / arma::dot(dr, dr);
             }
+            // Move them
+            if(!fixed[row])
+              delta.col(row) -= dr;
+            if(!fixed[col])
+              delta.col(col) += dr;
           }
         }
       }

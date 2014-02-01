@@ -156,17 +156,19 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   const bool potentialIsParameterisable = optimiser->getPotential()
       && optimiser->getPotential()->getParameterisable();
 
-  const ssp::OptimisationSettings settings =
+  const ssp::OptimisationSettings optParams =
       mySplFactory.createOptimisationSettings(options);
+
+  spipe::blocks::GeomOptimise::Settings settings;
+  settings.failAction = options.failAction;
+  settings.writeSummary = options.writeSummary;
 
   if(potentialIsParameterisable)
     blockOut->reset(
-        new spipe::blocks::ParamGeomOptimise(optimiser, settings,
-            options.writeSummary));
+        new spipe::blocks::ParamGeomOptimise(optimiser, optParams, settings));
   else
     blockOut->reset(
-        new spipe::blocks::GeomOptimise(optimiser, settings,
-            options.writeSummary));
+        new spipe::blocks::GeomOptimise(optimiser, optParams, settings));
 
   return true;
 }

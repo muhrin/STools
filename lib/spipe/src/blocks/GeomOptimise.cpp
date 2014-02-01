@@ -31,17 +31,35 @@ namespace ssc = ::spl::common;
 namespace ssp = ::spl::potential;
 namespace structure_properties = ssc::structure_properties;
 
-GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
-    const bool writeSummary) :
-    Block("Geometry optimise"), myWriteSummary(writeSummary), myOptimisationParams(), myOptimiser(
+GeomOptimise::Settings::Settings():
+    writeSummary(false), failAction(factory::FailAction::CONTINUE)
+{
+}
+
+GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser) :
+    Block("Geometry optimise"), mySettings(), myOptimisationParams(), myOptimiser(
         optimiser)
 {
 }
 
 GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
+    const Settings & settings) :
+    Block("Geometry optimise"), mySettings(settings), myOptimisationParams(), myOptimiser(
+        optimiser)
+{
+}
+
+GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
+    const ::spl::potential::OptimisationSettings & optimisationParams) :
+    Block("Potential geometry optimisation"), mySettings(), myOptimisationParams(
+        optimisationParams), myOptimiser(optimiser)
+{
+}
+
+GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
     const ::spl::potential::OptimisationSettings & optimisationParams,
-    const bool writeSummary) :
-    Block("Potential geometry optimisation"), myWriteSummary(writeSummary), myOptimisationParams(
+    const Settings & settings) :
+    Block("Potential geometry optimisation"), mySettings(settings), myOptimisationParams(
         optimisationParams), myOptimiser(optimiser)
 {
 }
@@ -49,7 +67,7 @@ GeomOptimise::GeomOptimise(spl::potential::IGeomOptimiserPtr optimiser,
 void
 GeomOptimise::pipelineInitialising()
 {
-  if(myWriteSummary)
+  if(mySettings.writeSummary)
   {
     myTableSupport.setFilename(
         common::getOutputFileStem(getEngine()->sharedData(),
@@ -65,20 +83,16 @@ GeomOptimise::in(common::StructureData * const data)
   ssp::OptimisationData optData;
   const ssp::OptimisationOutcome outcome = myOptimiser->optimise(*structure,
       optData, myOptimisationParams);
-//  if(outcome.isSuccess())
-//  {
+  if(outcome.isSuccess()
+      || mySettings.failAction == factory::FailAction::CONTINUE)
+  {
     // Update our data table with the structure data
-    if(myWriteSummary)
+    if(mySettings.writeSummary)
       updateTable(*structure, optData);
     out(data);
-//  }
-//  else
-//  {
-//    ::std::cerr << "Optimisation failed: " << outcome.getMessage()
-//        << ::std::endl;
-//    // The structure failed to geometry optimise properly so drop it
-//    drop(data);
-//  }
+  }
+  else
+    drop(data);
 }
 
 ssp::GeomOptimiser &

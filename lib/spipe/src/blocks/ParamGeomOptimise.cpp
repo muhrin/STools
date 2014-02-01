@@ -10,10 +10,10 @@
 
 #include <sstream>
 
+#include <boost/assert.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <spl/SSLibAssert.h> // TEMP !
 #include <spl/common/Structure.h>
 #include <spl/potential/PotentialData.h>
 #include <spl/potential/GeomOptimiser.h>
@@ -35,9 +35,25 @@ namespace common = spipe::common;
 namespace utility = spipe::utility;
 
 ParamGeomOptimise::ParamGeomOptimise(
-    spl::potential::IGeomOptimiserPtr optimiser, const bool writeSummary) :
-    Block("Parameterised geometry optimise"), GeomOptimise(optimiser,
-        writeSummary)
+    spl::potential::IGeomOptimiserPtr optimiser) :
+    Block("Parameterised geometry optimise"), GeomOptimise(optimiser)
+{
+  init();
+}
+
+ParamGeomOptimise::ParamGeomOptimise(
+    spl::potential::IGeomOptimiserPtr optimiser,
+    const GeomOptimise::Settings & settings) :
+    Block("Parameterised geometry optimise"), GeomOptimise(optimiser, settings)
+{
+  init();
+}
+
+ParamGeomOptimise::ParamGeomOptimise(
+    spl::potential::IGeomOptimiserPtr optimiser,
+    const spl::potential::OptimisationSettings & optimisationParams) :
+    Block("Parameterised potential geometry optimisation"), GeomOptimise(
+        optimiser, optimisationParams)
 {
   init();
 }
@@ -45,9 +61,9 @@ ParamGeomOptimise::ParamGeomOptimise(
 ParamGeomOptimise::ParamGeomOptimise(
     spl::potential::IGeomOptimiserPtr optimiser,
     const spl::potential::OptimisationSettings & optimisationParams,
-    const bool writeSummary) :
+    const GeomOptimise::Settings & settings) :
     Block("Parameterised potential geometry optimisation"), GeomOptimise(
-        optimiser, optimisationParams, writeSummary)
+        optimiser, optimisationParams, settings)
 {
   init();
 }
@@ -84,7 +100,7 @@ ParamGeomOptimise::pipelineStarting()
         ss << " " << myCurrentParams[i];
       }
       // Add a note to the table with the current parameter string
-      if(myWriteSummary)
+      if(mySettings.writeSummary)
         getTableSupport().getTable().addTableNote(ss.str());
     }
   }
@@ -103,7 +119,7 @@ ParamGeomOptimise::in(spipe::common::StructureData * const data)
 void
 ParamGeomOptimise::init()
 {
-  SSLIB_ASSERT_MSG(
+  BOOST_ASSERT_MSG(
       getOptimiser().getPotential() != NULL && getOptimiser().getPotential()->getParameterisable() != NULL,
       "Must use geometry optimiser with parameterisable potential.");
   myParamPotential = getOptimiser().getPotential()->getParameterisable();
