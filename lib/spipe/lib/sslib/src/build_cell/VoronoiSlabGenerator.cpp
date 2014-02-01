@@ -403,37 +403,43 @@ void
 VoronoiSlabGenerator::Slab::generateAtoms(const SlabData & slabData,
     common::Structure * const structure) const
 {
-  typedef std::set< Delaunay::Face_handle> FacesSet;
-  typedef std::list< Delaunay::Face_handle> FacesList;
+  typedef std::set< Voronoi::Vertex_handle> VerticesSet;
+  typedef std::list< Voronoi::Vertex_handle> VerticesList;
 
-  FacesList allFaces;
-  // TODO: Only use faces where at least one vertex is in the fundamental domain
-  for(Delaunay::Face_iterator it = slabData.dg.faces_begin(), end =
-      slabData.dg.faces_end(); it != end; ++it)
-    allFaces.push_back(it);
+  const Voronoi vd(slabData.dg);
+
+  VerticesList allVertices;
+  for(Voronoi::Vertex_iterator it = vd.vertices_begin(), end =
+      vd.vertices_end(); it != end; ++it)
+  {
+    // TODO: Only use faces where at least one vertex is in the fundamental domain
+    // if(slabData.unitCell && !slabData.unitCell->isInside(convert(it))
+    //   continue;
+    allVertices.push_back(it);
+  }
 
   std::vector< common::Atom> atoms;
   BOOST_FOREACH(const VoronoiSlabGenerator::SlabRegion & region, myRegions)
   {
-    FacesSet regionFaces;
-    for(FacesList::iterator it = allFaces.begin(), end = allFaces.end();
+    VerticesSet regionVertices;
+    for(VerticesList::iterator it = allVertices.begin(), end = allVertices.end();
         it != end; /*increment in body*/)
     {
-      FacesList::iterator next = it;
+      VerticesList::iterator next = it;
       ++next;
-      Delaunay::Face_handle & face = *it;
-      if(face->is_valid())
+      Voronoi::Vertex_handle & vtx = *it;
+      if(true)
       {
-        if(region.withinBoundary(slabData.dg.dual(face)))
+        if(region.withinBoundary(vtx->point()))
         {
-          regionFaces.insert(face);
-          allFaces.erase(it);
+          regionVertices.insert(vtx);
+          allVertices.erase(it);
         }
       }
       // Move on the iterator
       it = next;
     }
-    region.generateAtoms(slabData.dg, regionFaces, &atoms);
+    region.generateAtoms(vd, regionVertices, &atoms);
   }
 
   BOOST_FOREACH(const common::Atom & atom, atoms)
@@ -475,11 +481,11 @@ VoronoiSlabGenerator::SlabRegion::withinBoundary(
 }
 
 void
-VoronoiSlabGenerator::SlabRegion::generateAtoms(const Delaunay & dg,
-    const std::set< Delaunay::Face_handle> & faces,
+VoronoiSlabGenerator::SlabRegion::generateAtoms(const Voronoi & vd,
+    const std::set< Voronoi::Vertex_handle> & vertices,
     std::vector< common::Atom> * const atoms) const
 {
-  myBasis->generateAtoms(dg, faces, atoms);
+  myBasis->generateAtoms(vd, vertices, atoms);
 }
 
 VoronoiSlabGenerator::SlabRegion *

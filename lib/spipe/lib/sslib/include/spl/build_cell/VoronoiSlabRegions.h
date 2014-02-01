@@ -128,23 +128,23 @@ private:
 
 class OrderedBasis : public VoronoiSlabGenerator::SlabRegion::Basis
 {
-  typedef VoronoiSlabGenerator::SlabRegion::Delaunay Delaunay;
+  typedef VoronoiSlabGenerator::SlabRegion::Voronoi Voronoi;
 public:
   explicit
   OrderedBasis(const std::vector< std::string> & species);
 
   virtual bool
-  generateAtoms(const Delaunay & dg,
-      const std::set< Delaunay::Face_handle> & faces,
+  generateAtoms(const Voronoi & vd,
+      const std::set< Voronoi::Vertex_handle> & vertices,
       std::vector< common::Atom> * const atoms) const;
 
   virtual UniquePtr< Basis>::Type
   clone() const;
 private:
   void
-  placeAtoms(const Delaunay & dg, const size_t basisIdx,
-      const std::set< Delaunay::Face_handle>::const_iterator & it,
-      std::set< Delaunay::Face_handle> * const faces,
+  placeAtoms(const Voronoi & vd, const size_t basisIdx,
+      const std::set< Voronoi::Vertex_handle>::const_iterator & it,
+      std::set< Voronoi::Vertex_handle> * const vertices,
       std::vector< common::Atom> * const atoms) const;
 
   std::vector< std::string> mySpecies;

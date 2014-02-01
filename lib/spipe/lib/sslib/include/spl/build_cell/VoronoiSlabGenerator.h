@@ -100,16 +100,16 @@ public:
   class SlabData;
 
 private:
-//  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
-//  typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
-//      Delaunay> AP;
+  typedef CGAL::Delaunay_triangulation_adaptation_traits_2< Delaunay> AT;
+  typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
+      Delaunay> AP;
   typedef utility::SharedHandle< size_t> RegionTicket;
   typedef std::map< const VoronoiSlabGenerator::SlabRegion *, RegionTicket> RegionTickets;
   typedef std::multimap< Delaunay::Vertex_handle,
       std::pair< K::Vector_2, Delaunay::Vertex_handle> > PeriodicImages;
 
 public:
-  //typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
+  typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
   Slab();
   Slab(const arma::mat44 & transform);
@@ -150,6 +150,7 @@ protected:
 
 public:
   typedef VoronoiSlabGenerator::Slab::Delaunay Delaunay;
+  typedef VoronoiSlabGenerator::Slab::Voronoi Voronoi;
   typedef utility::SharedHandle< size_t> Ticket;
   class Basis;
 
@@ -189,8 +190,8 @@ public:
   clone() const = 0;
 
   void
-  generateAtoms(const Delaunay & dg,
-      const std::set< Delaunay::Face_handle> & faces,
+  generateAtoms(const Voronoi & vd,
+      const std::set< Voronoi::Vertex_handle> & vertices,
       std::vector< common::Atom> * const atoms) const;
 private:
 
@@ -207,8 +208,8 @@ public:
   }
 
   virtual bool
-  generateAtoms(const Delaunay & dg,
-      const std::set< Delaunay::Face_handle> & faces,
+  generateAtoms(const Voronoi & vd,
+      const std::set< Voronoi::Vertex_handle> & vertices,
       std::vector< common::Atom> * const atoms) const = 0;
   virtual UniquePtr< Basis>::Type
   clone() const = 0;
@@ -219,7 +220,6 @@ template< typename DG>
   bool
   isBoundaryVertex(const DG & dg, const typename DG::Vertex_handle vtx)
   {
-    //const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
     const typename DG::Vertex_circulator start = dg.incident_vertices(vtx);
     if(start.is_empty())
       return false;

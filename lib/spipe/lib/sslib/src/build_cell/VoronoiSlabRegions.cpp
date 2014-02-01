@@ -25,8 +25,8 @@ using arma::endr;
 
 LatticeRegion::LatticeRegion(const ConstructionInfo & info,
     UniquePtr< Basis>::Type & basis) :
-    SlabRegion(info.boundary, basis), myStartPoint(info.startPoint),
-    myFixPoints(info.fixPoints ? *info.fixPoints : true)
+    SlabRegion(info.boundary, basis), myStartPoint(info.startPoint), myFixPoints(
+        info.fixPoints ? *info.fixPoints : true)
 {
   myLattice[0] = info.vecA;
   myLattice[1] = info.vecB;
@@ -412,13 +412,13 @@ OrderedBasis::OrderedBasis(const std::vector< std::string> & species) :
 }
 
 bool
-OrderedBasis::generateAtoms(const Delaunay & dg,
-    const std::set< Delaunay::Face_handle> & faces,
+OrderedBasis::generateAtoms(const Voronoi & vd,
+    const std::set< Voronoi::Vertex_handle> & vertices,
     std::vector< common::Atom> * const atoms) const
 {
-  std::set< Delaunay::Face_handle> toVisit(faces);
+  std::set< Voronoi::Vertex_handle> toVisit(vertices);
   while(!toVisit.empty())
-    placeAtoms(dg, 0, toVisit.begin(), &toVisit, atoms);
+    placeAtoms(vd, 0, toVisit.begin(), &toVisit, atoms);
   return true;
 }
 
@@ -430,12 +430,15 @@ OrderedBasis::clone() const
 }
 
 void
-OrderedBasis::placeAtoms(const Delaunay & dg, const size_t basisIdx,
-    const std::set< Delaunay::Face_handle>::const_iterator & it,
-    std::set< Delaunay::Face_handle> * const faces,
+OrderedBasis::placeAtoms(const Voronoi & vd, const size_t basisIdx,
+    const std::set< Voronoi::Vertex_handle>::const_iterator & it,
+    std::set< Voronoi::Vertex_handle> * const vertices,
     std::vector< common::Atom> * const atoms) const
 {
-  const Delaunay::Point pt = dg.dual(*it);
+  const Voronoi::Vertex_handle vtx = *it;
+  vertices->erase(it);
+
+  const Voronoi::Site_2 pt = vtx->point();
   arma::vec3 r;
   r(0) = CGAL::to_double(pt.x());
   r(1) = CGAL::to_double(pt.y());
@@ -444,21 +447,22 @@ OrderedBasis::placeAtoms(const Delaunay & dg, const size_t basisIdx,
   atom.setPosition(r);
   atoms->push_back(atom);
 
-  const Delaunay::Face_handle face = *it;
-  faces->erase(it);
-  for(size_t i = 0; i < 2; ++i)
+  const Voronoi::Halfedge_around_vertex_circulator start =
+      vd.incident_halfedges(vtx);
+  Voronoi::Halfedge_around_vertex_circulator cl = start;
+  do
   {
-    const Delaunay::Face_handle neigh = face->neighbor(i);
-    if(!dg.is_infinite(neigh))
-    {
-      // Check if the neighbour is in our set of vertices
-      const std::set< Delaunay::Face_handle>::const_iterator neighIt =
-          faces->find(neigh);
-      if(neighIt != faces->end())
-        placeAtoms(dg, (basisIdx + 1) % mySpecies.size(), neighIt, faces,
-            atoms);
-    }
+    const Voronoi::Vertex_handle neigh = cl->source();
+    // Check if the neighbour is in our set of vertices
+    const std::set< Voronoi::Vertex_handle>::const_iterator neighIt =
+        vertices->find(neigh);
+    if(neighIt != vertices->end())
+      placeAtoms(vd, (basisIdx + 1) % mySpecies.size(), neighIt, vertices,
+          atoms);
+    ++cl;
+    ++cl;
   }
+  while(cl != start);
 }
 
 }
