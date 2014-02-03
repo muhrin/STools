@@ -11,6 +11,7 @@
 # remote host and poll it for competion periodically
 #
 # Usage: qsub_remote  [remote_host] [remote_dir] [job_file] [list of input files]
+#
 
 declare -r REMOTE_HOST=$1
 declare -r REMOTE_DIR=$2
@@ -24,20 +25,30 @@ declare -r JOB_POLL_INTERVAL=60
 declare -r RAND_FOLDER=`strings /dev/urandom | tr -dc [:alnum:] | head -c8`
 declare -r WORK_DIR=$REMOTE_DIR/$RAND_FOLDER
 
+if [ -z "$JOB_FILE" -o ! -f "$JOB_FILE" ]
+then
+  exit 1
+fi
+
 # Make the remote directory and copy over the work files
 ssh $REMOTE_HOST mkdir -p $WORK_DIR
 scp ${INPUT_FILES[@]} $JOB_FILE $REMOTE_HOST:$WORK_DIR
 
-declare -r JOBID=`ssh $REMOTE_HOST "cd $WORK_DIR; qsub $JOB_FILE"`
-
+JOBID=`ssh $REMOTE_HOST "cd $WORK_DIR; qsub $JOB_FILE"`
+# Exit if qsub failed or the job id is empty
+if [ "$?" -ne "0" -o -z "JOBID" ]
+then
+  exit 1
+fi
+   
 # Loop until the job finishes
 finished=false
 while ! $finished
 do
   sleep $JOB_POLL_INTERVAL
 
-  (ssh $REMOTE_HOST qstat $JOBID) < /dev/null 2>&1 | grep -q "Unknown Job Id"
-  if [ "$?" -eq 0 ]
+  ssh $REMOTE_HOST qstat $JOBID > /dev/null 2>&1
+  if [ "$?" -ne "0" -a "$?" -ne "255" ] # 255 means ssh couldn't reach host, keepy trying
   then
     finished=true
   fi

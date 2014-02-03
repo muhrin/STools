@@ -1,6 +1,6 @@
 
 %BLOCK SPECIES_POT
-C ~/pspot/C_00PBE.usp
+C ~/work/pspot/C_00PBE.usp
 %ENDBLOCK SPECIES_POT
 
 FIX_ALL_CELL : TRUE

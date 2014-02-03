@@ -74,7 +74,7 @@ SCHEMER_MAP(OptResultsType, OptResults)
 }
 
 ExternalOptimiser::ExternalOptimiser(const std::string & runCommand) :
-    myRunCommand(runCommand)
+    myRunCommand(runCommand), myResReaderWriter()
 {
 }
 
