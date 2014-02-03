@@ -34,6 +34,8 @@ namespace ssc = spl::common;
 namespace ssm = spl::math;
 namespace ssu = spl::utility;
 
+BOOST_AUTO_TEST_SUITE(DistanceCalculators)
+
 BOOST_AUTO_TEST_CASE(OrthogonalUnitCellComparison)
 {
   // SETTINGS ////////////////
@@ -362,3 +364,5 @@ BOOST_AUTO_TEST_CASE(DistanceComparisonPathological)
     BOOST_REQUIRE(ssu::stable::eq(univDist[i], referenceDists[i], tolerance));
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()

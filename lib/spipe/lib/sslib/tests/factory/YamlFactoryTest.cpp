@@ -19,27 +19,34 @@
 
 using namespace spl;
 
-BOOST_AUTO_TEST_CASE(StructureGeneratorTest)
+BOOST_AUTO_TEST_SUITE(SpaceGroup)
+
+BOOST_AUTO_TEST_CASE(StructureGenerator)
 {
   //// Settings ////////////////
-  const char simpleStructure[] = "RandomStructure.sslib";
+  const char simpleStructure[] = "RandomStructure.yaml";
 
   factory::Factory factory;
 
   const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
+  BOOST_REQUIRE(loadedNode.IsDefined());
 
   factory::builder::StructureGeneratorSchema schema;
   factory::builder::StructureGenerator generator;
   schemer::ParseLog log;
-  schema.nodeToValue(loadedNode, &generator, &log);
+  BOOST_REQUIRE(schema.nodeToValue(loadedNode, &generator, &log));
   log.printErrors();
+  BOOST_REQUIRE(!log.hasErrors());
 
   try
   {
     build_cell::IStructureGeneratorPtr strGen = factory.createStructureGenerator(generator);
+    BOOST_CHECK(strGen.get());
   }
   catch(const factory::FactoryError & e)
   {
-    std::cout << boost::diagnostic_information(e) << std::endl;
+    std::cerr << boost::diagnostic_information(e) << std::endl;
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()

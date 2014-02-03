@@ -13,21 +13,19 @@
 
 #include <string>
 
-
-
 // DEFINITION ///////////////////////
 
 namespace spl {
 
 // FORWARD DECLARATIONS ///////
 namespace common {
-  class Structure;
+class Structure;
 }
 
 namespace analysis {
 namespace space_group {
 
-static const double DEFAULT_PRECISION = 0.05;
+static const double DEFAULT_PRECISION = 0.01;
 
 struct SpacegroupInfo
 {
@@ -36,12 +34,9 @@ struct SpacegroupInfo
   ::std::string hallSymbol;
 };
 
-bool getSpacegroupInfo(
-  SpacegroupInfo & outInfo,
-  const common::Structure & structure,
-  const double precision = DEFAULT_PRECISION);
-
-
+bool
+getSpacegroupInfo(SpacegroupInfo & outInfo, const common::Structure & structure,
+    const double precision = DEFAULT_PRECISION);
 
 }
 }

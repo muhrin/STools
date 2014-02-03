@@ -30,15 +30,15 @@
 #include <spl/utility/SortedDistanceComparator.h>
 #include <spl/utility/SortedDistanceComparatorEx.h>
 
-namespace fs = ::boost::filesystem;
-namespace ssio = ::spl::io;
-namespace ssc = ::spl::common;
-namespace ssu = ::spl::utility;
+namespace fs = boost::filesystem;
+namespace ssio = spl::io;
+namespace ssc = spl::common;
+namespace ssu = spl::utility;
 
 struct Result
 {
   Result() :
-      numWrong(0), failureRate(0.0), max(::std::numeric_limits< double>::min()), total(
+      numWrong(0), failureRate(0.0), max(std::numeric_limits< double>::min()), total(
           0.0), mean(0.0)
   {
   }
@@ -53,10 +53,9 @@ struct Result
   void
   printStats()
   {
-    ::std::cout << "Average: " << mean << ::std::endl;
-    ::std::cout << "Max: " << max << ::std::endl;
-    ::std::cout << "Failure rate: " << failureRate * 100.0 << "%"
-        << ::std::endl;
+    std::cout << "Average: " << mean << std::endl;
+    std::cout << "Max: " << max << std::endl;
+    std::cout << "Failure rate: " << failureRate * 100.0 << "%" << std::endl;
   }
 
   size_t numWrong;
@@ -68,13 +67,15 @@ struct Result
 
 static const fs::path REFERENCE_STRUCTURES_PATH("similarStructures");
 
+BOOST_AUTO_TEST_SUITE(StructureComparators)
+
 BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 {
-  typedef ::boost::ptr_vector< ssu::IStructureComparator> Comparators;
-  typedef ::boost::shared_ptr< ssu::IBufferedComparator> BufferedComparatorPtr;
-  typedef ::std::vector< BufferedComparatorPtr> BufferedComparators;
-  typedef ::ssu::IBufferedComparator::ComparisonDataHandle ComparisonDataHandle;
-  typedef ::std::vector< ComparisonDataHandle> ComparisonHandles;
+  typedef boost::ptr_vector< ssu::IStructureComparator> Comparators;
+  typedef boost::shared_ptr< ssu::IBufferedComparator> BufferedComparatorPtr;
+  typedef std::vector< BufferedComparatorPtr> BufferedComparators;
+  typedef ssu::IBufferedComparator::ComparisonDataHandle ComparisonDataHandle;
+  typedef std::vector< ComparisonDataHandle> ComparisonHandles;
 
   // SETTINGS ////////////////
   // List of comparators to test
@@ -94,7 +95,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   BOOST_REQUIRE(fs::exists(REFERENCE_STRUCTURES_PATH));
   BOOST_REQUIRE(fs::is_directory(REFERENCE_STRUCTURES_PATH));
 
-  ::std::vector< Result> results(NUM_COMPARATORS);
+  std::vector< Result> results(NUM_COMPARATORS);
   ComparisonHandles comparisonHandles;
 
   // Use buffered comparators to make sure comparison data is not recalculated
@@ -109,7 +110,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 
   const boost::regex resFileFilter(".*\\.res");
 
-  std::vector< ::std::string> inputFiles;
+  std::vector< std::string> inputFiles;
 
   const fs::directory_iterator dirEnd; // Default ctor yields past-the-end
   for(fs::directory_iterator it(REFERENCE_STRUCTURES_PATH); it != dirEnd; ++it)
@@ -131,13 +132,13 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
   ssio::ResReaderWriter resReader;
   ssio::StructuresContainer structures;
 
-  BOOST_FOREACH(::std::string & pathString, inputFiles)
+  BOOST_FOREACH(std::string & pathString, inputFiles)
   {
     fs::path strPath(pathString);
     if(!fs::exists(strPath))
     {
-      ::std::cerr << "File " << strPath << " does not exist.  Skipping"
-          << ::std::endl;
+      std::cerr << "File " << strPath << " does not exist.  Skipping"
+          << std::endl;
       continue;
     }
 
@@ -152,7 +153,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 
   comparisonHandles.resize(numStructures);
   const double totalComparisons = 0.5 * (numStructures - 1.0) * numStructures;
-  const size_t maxWrong = static_cast< size_t>(::std::ceil(
+  const size_t maxWrong = static_cast< size_t>(std::ceil(
       totalComparisons * ALLOWED_FAIL_RATE));
   double diff;
   for(size_t k = 0; k < NUM_COMPARATORS; ++k)
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
                 comparisonHandles[j]) ? 0 : 1;
         diff = bufferedComparators[k]->compareStructures(comparisonHandles[i],
             comparisonHandles[j]);
-        results[k].max = ::std::max(results[k].max, diff);
+        results[k].max = std::max(results[k].max, diff);
         results[k].total += diff;
       }
     }
@@ -190,9 +191,9 @@ BOOST_AUTO_TEST_CASE(StructureComparatorsTest)
 
 BOOST_AUTO_TEST_CASE(SupercellTest)
 {
-  typedef ::boost::ptr_vector< ssu::IStructureComparator> Comparators;
-  typedef ::boost::shared_ptr< ssu::IBufferedComparator> BufferedComparatorPtr;
-  typedef ::std::vector< BufferedComparatorPtr> BufferedComparators;
+  typedef boost::ptr_vector< ssu::IStructureComparator> Comparators;
+  typedef boost::shared_ptr< ssu::IBufferedComparator> BufferedComparatorPtr;
+  typedef std::vector< BufferedComparatorPtr> BufferedComparators;
 
   // SETTINGS ////////////////
   // List of comparators to test
@@ -212,7 +213,7 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   BOOST_REQUIRE(fs::exists(REFERENCE_STRUCTURES_PATH));
   BOOST_REQUIRE(fs::is_directory(REFERENCE_STRUCTURES_PATH));
 
-  ::std::vector< Result> results(NUM_COMPARATORS);
+  std::vector< Result> results(NUM_COMPARATORS);
 
   // Use buffered comparators to make sure comparison data is not recalculated
   BufferedComparators bufferedComparators;
@@ -253,9 +254,9 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   //strSupercell = resReader.readStructure(inputFiles[0], speciesDb);
   strSupercell.reset(new ssc::Structure());
 
-  ::arma::vec3 dr;
+  arma::vec3 dr;
   ssc::UnitCell * cell = str->getUnitCell();
-  ::arma::mat33 orthoMtx = cell->getOrthoMtx();
+  arma::mat33 orthoMtx = cell->getOrthoMtx();
   for(int i = 0; i < 3; ++i)
   {
     orthoMtx.col(i) *= SUPERCELL_DIMS[i];
@@ -290,3 +291,5 @@ BOOST_AUTO_TEST_CASE(SupercellTest)
   }
 
 }
+
+BOOST_AUTO_TEST_SUITE_END()

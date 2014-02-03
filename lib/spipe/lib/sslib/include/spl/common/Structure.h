@@ -52,6 +52,7 @@ public:
 
   explicit
   Structure();
+  explicit
   Structure(const UnitCell & cell);
   Structure(const Structure & toCopy);
   virtual
@@ -112,9 +113,9 @@ public:
   void
   setAtomPositions(const ::arma::mat & posMtx);
 
-  template <typename OutputIterator>
-  void
-  getAtomSpecies(OutputIterator it) const;
+  template< typename OutputIterator>
+    void
+    getAtomSpecies(OutputIterator it) const;
   size_t
   getNumAtomsOfSpecies(const AtomSpeciesId::Value species) const;
   AtomsFormula
@@ -153,7 +154,7 @@ private:
   std::string myName;
 
   /** The unit cell for this crystal structure. */
-  ::boost::optional<UnitCell> myCell;
+  ::boost::optional< UnitCell> myCell;
 
   /** The atoms contained in this group */
   AtomsContainer myAtoms;
@@ -168,13 +169,13 @@ private:
   friend class Atom;
 };
 
-template <typename OutputIterator>
-void
-Structure::getAtomSpecies(OutputIterator it) const
-{
-  BOOST_FOREACH(const Atom & atom, myAtoms)
-    *it = atom.getSpecies();
-}
+template< typename OutputIterator>
+  void
+  Structure::getAtomSpecies(OutputIterator it) const
+  {
+    BOOST_FOREACH(const Atom & atom, myAtoms)
+      *it = atom.getSpecies();
+  }
 
 }
 }
