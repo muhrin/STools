@@ -29,6 +29,19 @@ const ::std::string & SharedData::getInstanceName() const
   return myInstanceName;
 }
 
+spl::common::AtomSpeciesDatabase &
+SharedData::getSpeciesDatabase()
+{
+  return mySpeciesDb;
+}
+
+const spl::common::AtomSpeciesDatabase &
+SharedData::getSpeciesDatabase() const
+{
+  return mySpeciesDb;
+}
+
+
 const ::boost::filesystem::path &
 SharedData::getWorkingDir() const
 {

@@ -83,7 +83,8 @@ LoadStructures::start()
 
       // Set up the structure name if needed
       if(structure.getName().empty())
-        structure.setName(common::generateStructureName(getEngine()->globalData()));
+        structure.setName(
+            common::generateStructureName(getEngine()->globalData()));
 
       unitCell = structure.getUnitCell();
       if(myTryToScaleVolumes && unitCell)
@@ -160,7 +161,8 @@ LoadStructures::entryType(const ::std::string & entry) const
 }
 
 double
-LoadStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure) const
+LoadStructures::getTotalAtomicVolume(
+    const ::spl::common::Structure & structure) const
 {
   typedef ::boost::optional< double> OptionalDouble;
 
@@ -169,7 +171,8 @@ LoadStructures::getTotalAtomicVolume(const ::spl::common::Structure & structure)
 
   OptionalDouble radius;
   double dRadius, volume = 0.0;
-  const ssc::AtomSpeciesDatabase & speciesDb = getEngine()->globalData().getSpeciesDatabase();
+  const ssc::AtomSpeciesDatabase & speciesDb =
+      getEngine()->sharedData().getSpeciesDatabase();
   BOOST_FOREACH(ssc::AtomSpeciesId::Value spec, species)
   {
     radius = speciesDb.getRadius(spec);

@@ -41,8 +41,12 @@ BOOST_AUTO_TEST_CASE(ExternalOptimiserTest)
   BOOST_REQUIRE(optimiser.optimise(structure, optData, optSettings));
 
   // Check that we got the output we expected
-  BOOST_REQUIRE(optData.enthalpy && *optData.enthalpy == 2.0);
-  BOOST_REQUIRE(optData.internalEnergy && *optData.internalEnergy == 1.0);
-  BOOST_REQUIRE(optData.pressure && *optData.pressure == 0.0);
-  BOOST_REQUIRE(optData.numIters && *optData.numIters == 1000);
+  BOOST_REQUIRE(optData.enthalpy);
+  BOOST_CHECK_EQUAL(*optData.enthalpy, 2.0);
+  BOOST_REQUIRE(optData.internalEnergy);
+  BOOST_CHECK_EQUAL(*optData.internalEnergy, 1.0);
+  BOOST_REQUIRE(optData.pressure);
+  BOOST_CHECK_EQUAL(*optData.pressure, 0.0);
+  BOOST_REQUIRE(optData.numIters);
+  BOOST_CHECK_EQUAL(*optData.numIters, 1000);
 }

@@ -48,6 +48,17 @@ foreach(test_folder ${test_folders})
   )
 endforeach()
 
+## Look for any shared input files
+file(GLOB
+  tests_Input_Files__shared
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  input/*
+)
+set(tests_Input_Files
+  ${tests_Input_Files}
+  ${tests_Input_Files__shared}
+)
+
 ## tests/
 
 set(tests_Header_Files__
@@ -90,15 +101,15 @@ include_directories(
 ############################
 ## SSLibTest executable   ##
 ############################
-add_executable(sslibtest
+add_executable(spltest
   ${tests_Files}
   sslibtest.cpp
 )
 
-add_dependencies(sslibtest sslib)
+add_dependencies(spltest sslib)
 
 # Libraries we need to link to
-target_link_libraries(sslibtest
+target_link_libraries(spltest
   ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   spglib

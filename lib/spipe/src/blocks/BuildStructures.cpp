@@ -126,11 +126,11 @@ BuildStructures::generateStructure() const
 
   if(settings)
     myStructureGenerator->generateStructure(str,
-        getEngine()->globalData().getSpeciesDatabase(),
+        getEngine()->sharedData().getSpeciesDatabase(),
         *settings);
   else
     myStructureGenerator->generateStructure(str,
-        getEngine()->globalData().getSpeciesDatabase());
+        getEngine()->sharedData().getSpeciesDatabase());
   return str;
 }
 

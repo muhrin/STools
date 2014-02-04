@@ -13,7 +13,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <spl/build_cell/GenerationSettings.h>
-#include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 #include <spl/io/BoostFilesystem.h>
 #include <spl/io/ResourceLocator.h>
@@ -31,21 +30,21 @@ namespace spipe {
 namespace blocks {
 
 // NAMESPACE ALIASES /////////////////////////
-namespace fs = ::boost::filesystem;
-namespace common = ::spipe::common;
-namespace ssbc = ::spl::build_cell;
-namespace ssc = ::spl::common;
-namespace ssio = ::spl::io;
-namespace ssu = ::spl::utility;
+namespace fs = boost::filesystem;
+namespace common = spipe::common;
+namespace ssbc = spl::build_cell;
+namespace ssc = spl::common;
+namespace ssio = spl::io;
+namespace ssu = spl::utility;
 namespace structure_properties = ssc::structure_properties;
 
 const size_t SearchStoichiometries::Options::UNLIMITED_ATOMS =
-    ::std::numeric_limits<size_t>::max();
+    std::numeric_limits< size_t>::max();
 
 SearchStoichiometries::SearchStoichiometries(const Options & options,
     BlockHandle & subpipe) :
-    Block("Search stoichiometries"), myOptions(options), mySubpipe(subpipe),
-    mySubpipeEngine(NULL)
+    Block("Search stoichiometries"), myOptions(options), mySubpipe(subpipe), mySubpipeEngine(
+        NULL)
 {
 }
 
@@ -59,11 +58,8 @@ SearchStoichiometries::pipelineInitialising()
 void
 SearchStoichiometries::start()
 {
-  using ::boost::lexical_cast;
-  using ::std::string;
-
-  const ssc::AtomSpeciesDatabase & atomsDb =
-      getEngine()->globalData().getSpeciesDatabase();
+  using boost::lexical_cast;
+  using std::string;
 
   // Start looping over the possible stoichiometries
   size_t totalAtoms = 0;
@@ -84,7 +80,7 @@ SearchStoichiometries::start()
     ssbc::GenerationSettings generationSettings;
 
     // Insert all the atoms
-    ::std::stringstream stoichStringStream;
+    std::stringstream stoichStringStream;
     size_t numAtomsOfSpecies;
     ssc::AtomSpeciesId::Value species;
     size_t i = 0;
@@ -120,7 +116,7 @@ SearchStoichiometries::start()
     mySubpipeEngine->run();
 
     // Update the table
-    updateTable(sweepPath.string(), currentIdx, atomsDb);
+    updateTable(sweepPath.string(), currentIdx);
 
     // Send any finished structure data down my pipe, this will also
     // update the table with any information from the buffered structures
@@ -166,7 +162,7 @@ SearchStoichiometries::releaseBufferedStructures(
     if(spacegroup)
     {
       table.insert(tableKey, "sg",
-          ::boost::lexical_cast< ::std::string>(*spacegroup));
+          boost::lexical_cast< std::string>(*spacegroup));
     }
 
     // Try to calculate the energy/atom
@@ -228,11 +224,10 @@ SearchStoichiometries::getStoichRange()
 
 void
 SearchStoichiometries::updateTable(const utility::DataTable::Key & key,
-    const ssu::MultiIdx< unsigned int> & currentIdx,
-    const ssc::AtomSpeciesDatabase & atomsDb)
+    const ssu::MultiIdx< unsigned int> & currentIdx)
 {
-  using ::boost::lexical_cast;
-  using ::std::string;
+  using boost::lexical_cast;
+  using std::string;
 
   utility::DataTable & table = myTableSupport.getTable();
 

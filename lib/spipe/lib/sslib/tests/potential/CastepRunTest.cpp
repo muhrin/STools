@@ -15,12 +15,12 @@
 #include <spl/potential/CastepRun.h>
 
 // NAMESPACES ///////////////////////////////
-namespace ssio = ::spl::io;
-namespace ssp = ::spl::potential;
+namespace ssio = spl::io;
+namespace ssp = spl::potential;
 
 BOOST_AUTO_TEST_CASE(CastepRunTest)
 {
-  ::std::vector< ::std::string> SEEDS;
+  std::vector< std::string> SEEDS;
   SEEDS.push_back("run1");
   SEEDS.push_back("run2");
   SEEDS.push_back("run3");
@@ -32,11 +32,11 @@ BOOST_AUTO_TEST_CASE(CastepRunTest)
   for(size_t i = 0; i < 3; ++i)
   {
     ssp::CastepRun castepRun(SEEDS[i], cellReader, castepReader);
-    BOOST_REQUIRE(castepRun.finishedSuccessfully());
+    BOOST_CHECK(castepRun.finishedSuccessfully());
   }
   for(size_t i = 3; i < 4; ++i)
   {
     ssp::CastepRun castepRun(SEEDS[i], cellReader, castepReader);
-    BOOST_REQUIRE(!castepRun.finishedSuccessfully());
+    BOOST_CHECK(!castepRun.finishedSuccessfully());
   }
 }

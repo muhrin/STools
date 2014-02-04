@@ -38,18 +38,6 @@ GlobalData::setSeedName(const ::std::string & seedName)
   mySeedName = seedName;
 }
 
-ssc::AtomSpeciesDatabase &
-GlobalData::getSpeciesDatabase()
-{
-  return mySpeciesDatabase;
-}
-
-const ssc::AtomSpeciesDatabase &
-GlobalData::getSpeciesDatabase() const
-{
-  return mySpeciesDatabase;
-}
-
 ssio::StructureReadWriteManager &
 GlobalData::getStructureIo()
 {

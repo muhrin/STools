@@ -10,7 +10,7 @@ set(SSLIB_VERSION_MINOR 3)
 set(SSLIB_VERSION_PATCH 0)
 set(SSLIB_VERSION "${SSLIB_VERSION_MAJOR}.${SSLIB_VERSION_MINOR}.${SSLIB_VERSION_PATCH}")
 
-message(STATUS "Configuring SSLib ${SSLIB_VERSION}")
+message(STATUS "Configuring SPL ${SSLIB_VERSION}")
 
 ## FIND PACKAGES ########################################
 
@@ -66,7 +66,7 @@ find_package(YamlCpp QUIET)
 ## CONFIGURATION SETTINGS ##############################
 
 # Build options ###
-set(SSLIB_ENABLE_TESTING FALSE CACHE BOOL "Build sslib tests")
+set(SPL_BUILD_TESTS FALSE CACHE BOOL "Build spl tests")
 set(SSLIB_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable awareness of multithreaded environment (requires Boost thread)")
 
 set(SPL_WITH_CGAL ${CGAL_FOUND} CACHE INTERNAL "Build SPL with CGAL support.")
@@ -162,7 +162,7 @@ endif(SPL_WITH_CGAL)
 ## Tests ##
 ###########
 
-if(SSLIB_ENABLE_TESTING)
+if(SPL_BUILD_TESTS)
   add_subdirectory(tests)
-endif(SSLIB_ENABLE_TESTING)
+endif(SPL_BUILD_TESTS)
 

@@ -14,6 +14,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/utility/HeterogeneousMap.h>
 
 // Local includes
@@ -29,22 +30,28 @@ class SharedData
 public:
   SharedData();
 
-  const ::std::string &
+  const std::string &
   getInstanceName() const;
 
-  ::spl::utility::HeterogeneousMap objectsStore;
+  spl::common::AtomSpeciesDatabase &
+  getSpeciesDatabase();
+  const spl::common::AtomSpeciesDatabase &
+  getSpeciesDatabase() const;
 
-  const ::boost::filesystem::path &
+  spl::utility::HeterogeneousMap objectsStore;
+
+  const boost::filesystem::path &
   getWorkingDir() const;
   void
-  setWorkingDir(const ::boost::filesystem::path & workingDir);
+  setWorkingDir(const boost::filesystem::path & workingDir);
 
 private:
   void
   reset();
 
-  ::boost::filesystem::path myWorkingDir;
-  ::std::string myInstanceName;
+  spl::common::AtomSpeciesDatabase mySpeciesDb;
+  boost::filesystem::path myWorkingDir;
+  std::string myInstanceName;
 };
 
 

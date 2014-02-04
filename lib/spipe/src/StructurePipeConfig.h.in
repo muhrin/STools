@@ -6,6 +6,6 @@
 #define SP_VERSION @SP_VERSION@
 
 // Build settings
-#cmakedefine SP_USE_YAML
+#cmakedefine SP_WITH_YAML
 #cmakedefine SP_ENABLE_THREAD_AWARE
 

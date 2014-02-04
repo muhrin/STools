@@ -11,33 +11,10 @@ message(STATUS "Configuring StructurePipe ${SP_VERSION}")
 
 project(StructurePipe)
 
-## Configuration options ###############################
-
-# Custom paths to libraries #########
-set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
-set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
-
-# Build settings
-set(SP_USE_YAML TRUE CACHE BOOL "Build StructurePipe with YAML support.")
-set(SP_ENABLE_TESTING FALSE CACHE BOOL "Build spipe tests.")
-set(SP_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable multithreaded awareness in spipe.")
-
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
-  "${PROJECT_BINARY_DIR}/src/StructurePipeConfig.h"
-)
-
-## End configuration options ###########################
-
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
 ## FIND PACKAGES ########################################
-# First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH
-  "${BOOST_ROOT}"
-  "${ARMADILLO_ROOT}"
-)
 
 ## Boost ##
 # Disable auto-linking
@@ -53,11 +30,9 @@ if(NOT ARMADILLO_INCLUDE_DIRS)
 endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 ## Yaml ##
-if(SP_USE_YAML)
-  if(NOT YAML_CPP_LIBRARIES)
-    find_package(YamlCpp REQUIRED)
-  endif(NOT YAML_CPP_LIBRARIES)
-endif(SP_USE_YAML)
+if(NOT YAML_CPP_LIBRARIES)
+  find_package(YamlCpp QUIET)
+endif(NOT YAML_CPP_LIBRARIES)
 
 #
 # Spglib
@@ -66,6 +41,20 @@ if(NOT SPGLIB_INCLUDE_DIRS)
 endif(NOT SPGLIB_INCLUDE_DIRS)
 
 ## END FIND PACKAGES ####################################
+
+## Configuration options ###############################
+
+# Build settings
+set(SP_WITH_YAML ${YamlCpp_FOUND} CACHE BOOL "Build StructurePipe with YAML support.")
+set(SP_BUILD_TESTS FALSE CACHE BOOL "Build spipe tests.")
+set(SP_ENABLE_THREAD_AWARE TRUE CACHE BOOL "Enable multithreaded awareness in spipe.")
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/src/StructurePipeConfig.h.in"
+  "${PROJECT_BINARY_DIR}/src/StructurePipeConfig.h"
+)
+
+## End configuration options ###########################
 
 
 ## First libraries #####################################
@@ -104,6 +93,6 @@ set_property(TARGET PROPERTY PROJECT_LABEL "StructurePipe")
 
 #
 # Tests
-if(SP_ENABLE_TESTING)
+if(SP_BUILD_TESTS)
   add_subdirectory(tests)
-endif(SP_ENABLE_TESTING)
+endif(SP_BUILD_TESTS)

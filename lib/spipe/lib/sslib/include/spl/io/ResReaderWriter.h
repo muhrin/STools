@@ -15,11 +15,11 @@
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 
-
 namespace spl {
 namespace io {
 
-class ResReaderWriter :  public virtual IStructureWriter,  public virtual IStructureReader
+class ResReaderWriter : public virtual IStructureWriter,
+    public virtual IStructureReader
 {
 public:
 
@@ -28,37 +28,40 @@ public:
   // Write a structure out to disk.
   // The user can supply their own species database, however it is up to them
   // to make sure that the implementation is thread safe if necessary.
-  virtual void writeStructure(
-    ::spl::common::Structure & str,
-    const ResourceLocator & locator
-  ) const;
+  virtual void
+  writeStructure(spl::common::Structure & str,
+      const ResourceLocator & locator) const;
 
   // From IStructureReader //
 
-  virtual ::spl::common::types::StructurePtr readStructure(const ResourceLocator & resourceLocator) const;
+  virtual spl::common::types::StructurePtr
+  readStructure(const ResourceLocator & resourceLocator) const;
 
-  virtual size_t readStructures(
-    StructuresContainer & outStructures,
-    const ResourceLocator & resourceLocator
-  ) const;
+  virtual size_t
+  readStructures(StructuresContainer & outStructures,
+      const ResourceLocator & resourceLocator) const;
 
-  virtual ::std::vector<std::string> getSupportedFileExtensions() const;
+  virtual std::vector< std::string>
+  getSupportedFileExtensions() const;
 
   // End from IStructureReader //
 
   // Does this reader support reading multiple structures from a single file.
-  virtual bool multiStructureSupport() const;
+  virtual bool
+  multiStructureSupport() const;
 
 private:
-  bool parseTitle(common::Structure & structure, const ::std::string & titleLine) const;
-  bool parseCell(common::Structure & structure, const ::std::string & cellLine) const;
-  bool parseAtoms(
-    common::Structure & structure,
-    ::std::istream & inStream,
-    const ::std::string & sfacLine
-  ) const;
+  bool
+  parseTitle(common::Structure & structure,
+      const std::string & titleLine) const;
+  bool
+  parseCell(common::Structure & structure, const std::string & cellLine) const;
+  bool
+  parseAtoms(common::Structure & structure, std::istream & inStream,
+      const std::string & sfacLine) const;
 
-  void writeTitle(::std::ostream & os, const common::Structure & structure) const;
+  void
+  writeTitle(std::ostream & os, const common::Structure & structure) const;
 };
 
 }
