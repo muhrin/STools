@@ -264,7 +264,7 @@ generateTokens(TokensMap & map)
           structure_properties::general::HULL_DISTANCE, "%.4f"));
   addToken(map,
       utility::makeStructurePropertyToken("P", "p",
-          structure_properties::general::PRESSURE_INTERNAL, "%.4f"));
+          structure_properties::general::PRESSURE, "%.4f"));
   addToken(map,
       utility::makeStructurePropertyToken("x found", "tf",
           structure_properties::searching::TIMES_FOUND));

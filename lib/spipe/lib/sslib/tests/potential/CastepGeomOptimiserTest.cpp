@@ -78,6 +78,6 @@ void testCastepOutput(ssc::Structure structure, const ::std::string & seed, cons
   BOOST_REQUIRE(optimisationData.pressure);
   BOOST_REQUIRE(ssu::stable::eq(*optimisationData.pressure, pressure, 1e-4));
 
-  const double * strPressure = structure.getProperty(ssc::structure_properties::general::PRESSURE_INTERNAL);
+  const double * strPressure = structure.getProperty(ssc::structure_properties::general::PRESSURE);
   BOOST_REQUIRE(strPressure && ssu::stable::eq(*strPressure, pressure));
 }

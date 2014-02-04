@@ -110,7 +110,7 @@ OptimisationData::saveToStructure(common::Structure & structure) const
 
   setProperty(structure, properties::general::ENERGY_INTERNAL, internalEnergy);
   setProperty(structure, properties::general::ENTHALPY, enthalpy);
-  setProperty(structure, properties::general::PRESSURE_INTERNAL, pressure);
+  setProperty(structure, properties::general::PRESSURE, pressure);
 }
 
 inline void
@@ -122,7 +122,7 @@ OptimisationData::loadFromStructure(const common::Structure & structure)
       properties::general::ENERGY_INTERNAL);
   setOptimisationDataValue(enthalpy, structure, properties::general::ENTHALPY);
   setOptimisationDataValue(pressure, structure,
-      properties::general::PRESSURE_INTERNAL);
+      properties::general::PRESSURE);
 }
 
 template< typename T>

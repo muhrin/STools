@@ -87,7 +87,7 @@ ResReaderWriter::writeStructure(::spl::common::Structure & str,
 
   // Presssure
   strFile << " ";
-  dValue = str.getProperty(properties::general::PRESSURE_INTERNAL);
+  dValue = str.getProperty(properties::general::PRESSURE);
   if(dValue)
     io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
   else
@@ -294,7 +294,7 @@ ResReaderWriter::parseTitle(common::Structure & structure,
     structure.setName(titleTokens[1]);
     try
     {
-      structure.setPropertyFromString(properties::general::PRESSURE_INTERNAL,
+      structure.setPropertyFromString(properties::general::PRESSURE,
           titleTokens[2]);
     }
     catch(const ::boost::bad_lexical_cast & /*e*/)

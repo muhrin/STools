@@ -107,7 +107,7 @@ if(UNIX)
     DESTINATION "bin" COMPONENT scripts
   )
   add_custom_target(install_scripts
-    ALL COMMAND
+    COMMAND
     ${CMAKE_COMMAND}
     -DCOMPONENT=scripts
     -P cmake_install.cmake 

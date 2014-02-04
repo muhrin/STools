@@ -295,7 +295,7 @@ bool CastepReader::parseAuxInfo(AuxInfo & auxInfo, ::std::istream & inputStream,
 void CastepReader::updateStructure(common::Structure & structure, const AuxInfo & auxInfo) const
 {
   if(auxInfo.pressure)
-    structure.setProperty(properties::general::PRESSURE_INTERNAL, *auxInfo.pressure);
+    structure.setProperty(properties::general::PRESSURE, *auxInfo.pressure);
   if(auxInfo.enthalpy)
     structure.setProperty(properties::general::ENTHALPY, *auxInfo.enthalpy);
   if(auxInfo.stressTensor)

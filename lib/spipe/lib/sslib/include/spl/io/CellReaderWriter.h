@@ -64,14 +64,15 @@ public:
   virtual void
   writeStructure(std::ostream & os, common::Structure & structure) const;
 
+  void
+  writePressureBlock(std::ostream & os, const arma::mat33 & pressureMtx) const;
+
 private:
   void
   writeLatticeBlock(std::ostream & os, const common::UnitCell & unitCell) const;
   void
   writePositionsBlock(std::ostream & os, const common::Structure & structure,
       const common::UnitCell & unitCell) const;
-  void
-  writePressureBlock(std::ostream & os, const arma::mat33 & pressureMtx) const;
 };
 
 }

@@ -32,96 +32,96 @@
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
-
 
 namespace spl {
 namespace io {
 
-namespace fs = ::boost::filesystem;
-namespace ssc = ::spl::common;
+namespace fs = boost::filesystem;
+namespace ssc = spl::common;
 namespace properties = ssc::structure_properties;
 
 const unsigned int XyzReaderWriter::DIGITS_AFTER_DECIMAL = 8;
 
-void XyzReaderWriter::writeStructure(::spl::common::Structure & str, const ResourceLocator & locator) const
+void
+XyzReaderWriter::writeStructure(spl::common::Structure & str,
+    const ResourceLocator & locator) const
 {
   using namespace utility::cell_params_enum;
   using namespace utility::cart_coords_enum;
-  using ::spl::common::AtomSpeciesId;
-  using ::std::endl;
+  using spl::common::AtomSpeciesId;
+  using std::endl;
 
   const double * dValue;
-  const ::std::string * sValue;
+  const std::string * sValue;
   const unsigned int * uiValue;
 
   const fs::path filepath(locator.path());
-	if(!filepath.has_filename())
-		throw "Cannot write out structure without filepath";
+  if(!filepath.has_filename())
+    throw "Cannot write out structure without filepath";
 
   const fs::path dir = filepath.parent_path();
-	if(!dir.empty() && !exists(dir))
-	{
-		create_directories(dir);
-	}
+  if(!dir.empty() && !exists(dir))
+  {
+    create_directories(dir);
+  }
 
   fs::ofstream strFile;
-	strFile.open(filepath);
+  strFile.open(filepath);
 
   const common::UnitCell * const cell = str.getUnitCell();
 
   // Number of atoms
-  strFile << str.getNumAtoms() << ::std::endl;
+  strFile << str.getNumAtoms() << std::endl;
 
-	//////////////////////////
-	// Start Title
-	if(!str.getName().empty())
-		strFile << str.getName();
-	else
-		strFile << filepath.stem();
-	
-	// Presssure
+  //////////////////////////
+  // Start Title
+  if(!str.getName().empty())
+    strFile << str.getName();
+  else
+    strFile << filepath.stem();
+
+  // Presssure
   strFile << " ";
-  dValue = str.getProperty(properties::general::PRESSURE_INTERNAL);
-	if(dValue)
+  dValue = str.getProperty(properties::general::PRESSURE);
+  if(dValue)
     io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
-	else
-		strFile << "n/a";
+  else
+    strFile << "n/a";
 
-	// Volume
-	strFile << " ";
+  // Volume
+  strFile << " ";
   if(cell)
     io::writeToStream(strFile, cell->getVolume(), DIGITS_AFTER_DECIMAL);
   else
     strFile << "n/a";
 
-	// Enthalpy
-	strFile << " ";
+  // Enthalpy
+  strFile << " ";
   dValue = str.getProperty(properties::general::ENERGY_INTERNAL);
-	if(dValue)
-		io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
-	else
-		strFile << "n/a";
+  if(dValue)
+    io::writeToStream(strFile, *dValue, DIGITS_AFTER_DECIMAL);
+  else
+    strFile << "n/a";
 
-	// Space group
-	strFile << " 0 0 (";
+  // Space group
+  strFile << " 0 0 (";
   sValue = str.getProperty(properties::general::SPACEGROUP_SYMBOL);
-	if(sValue)
-		strFile << *sValue;
-	else
-		strFile << "n/a";
+  if(sValue)
+    strFile << *sValue;
+  else
+    strFile << "n/a";
 
-	// Times found
-	strFile << ") n - ";
+  // Times found
+  strFile << ") n - ";
   uiValue = str.getProperty(properties::searching::TIMES_FOUND);
-	if(uiValue)
-		strFile << *uiValue;
-	else
-		strFile << "n/a";
+  if(uiValue)
+    strFile << *uiValue;
+  else
+    strFile << "n/a";
 
-	strFile << endl;
-	// End title //////////////////
+  strFile << endl;
+  // End title //////////////////
 
   ////////////////////////////
   // Start atoms
@@ -130,33 +130,35 @@ void XyzReaderWriter::writeStructure(::spl::common::Structure & str, const Resou
   for(size_t i = 0; i < str.getNumAtoms(); ++i)
   {
     const common::Atom & atom = str.getAtom(i);
-    const ::arma::vec3 & pos = atom.getPosition();
+    const arma::vec3 & pos = atom.getPosition();
 
     if(!atom.getSpecies().empty())
       strFile << atom.getSpecies() << " ";
     else
       strFile << "DU ";
-    strFile << ::std::setprecision(12) << pos(X) << " " << pos(Y) << " " << pos(Z) << ::std::endl;
+    strFile << std::setprecision(12) << pos(X) << " " << pos(Y) << " " << pos(Z)
+        << std::endl;
   }
 
   // End atoms ///////////
 
-  str.setProperty(
-    properties::io::LAST_ABS_FILE_PATH,
-    io::ResourceLocator(io::absolute(filepath)));
+  str.setProperty(properties::io::LAST_ABS_FILE_PATH,
+      io::ResourceLocator(io::absolute(filepath)));
 
- if(strFile.is_open())
+  if(strFile.is_open())
     strFile.close();
 }
 
-std::vector<std::string> XyzReaderWriter::getSupportedFileExtensions() const
+std::vector< std::string>
+XyzReaderWriter::getSupportedFileExtensions() const
 {
-	std::vector<std::string> ext;
-	ext.push_back("xyz");
-	return ext;
+  std::vector< std::string> ext;
+  ext.push_back("xyz");
+  return ext;
 }
 
-bool XyzReaderWriter::multiStructureSupport() const
+bool
+XyzReaderWriter::multiStructureSupport() const
 {
   return false;
 }

@@ -27,21 +27,21 @@
 
 // DEFINES /////////////////////////////////
 
-
 // NAMESPACES ////////////////////////////////
-
 
 namespace spl {
 namespace io {
 
-namespace fs = ::boost::filesystem;
+namespace fs = boost::filesystem;
 
-::std::vector<std::string> CellReaderWriter::getSupportedFileExtensions() const
+std::vector< std::string>
+CellReaderWriter::getSupportedFileExtensions() const
 {
-  return ::std::vector< ::std::string>(1, "cell");
+  return std::vector< std::string>(1, "cell");
 }
 
-common::types::StructurePtr CellReaderWriter::readStructure(const ResourceLocator & locator) const
+common::types::StructurePtr
+CellReaderWriter::readStructure(const ResourceLocator & locator) const
 {
   common::types::StructurePtr structure;
   const fs::path filepath(locator.path());
@@ -49,20 +49,19 @@ common::types::StructurePtr CellReaderWriter::readStructure(const ResourceLocato
     return structure; // Can't write out structure without filepath
 
   fs::ifstream strFile;
-    strFile.open(filepath);
+  strFile.open(filepath);
 
   structure = readStructure(strFile);
 
- if(strFile.is_open())
+  if(strFile.is_open())
     strFile.close();
 
- return structure;
+  return structure;
 }
 
-size_t CellReaderWriter::readStructures(
-  StructuresContainer & outStructures,
-  const ResourceLocator & resourceLocator
-) const
+size_t
+CellReaderWriter::readStructures(StructuresContainer & outStructures,
+    const ResourceLocator & resourceLocator) const
 {
   common::types::StructurePtr structure = readStructure(resourceLocator);
   if(structure.get())
@@ -73,27 +72,29 @@ size_t CellReaderWriter::readStructures(
   return 0;
 }
 
-common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is) const
+common::types::StructurePtr
+CellReaderWriter::readStructure(std::istream & is) const
 {
   using namespace utility::cart_coords_enum;
 
-  static const ::boost::regex RE_FLOAT("([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
-  typedef boost::tokenizer<boost::char_separator<char> > Tok;
-  const boost::char_separator<char> sep(" \t");
+  static const boost::regex RE_FLOAT(
+      "([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)");
+  typedef boost::tokenizer< boost::char_separator< char> > Tok;
+  const boost::char_separator< char> sep(" \t");
 
   common::types::StructurePtr structure(new common::Structure());
 
-  ::std::string line;
-  ::boost::smatch match;
+  std::string line;
+  boost::smatch match;
   if(findNextLine(line, is, "%BLOCK lattice_", false))
   {
     // Unit cell
-    if(::boost::ifind_first(line, "_abc"))
+    if(boost::ifind_first(line, "_abc"))
     { // abc format
       int offset = 0;
-      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      while(std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
       {
-        if(::boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
+        if(boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
         {
           double latticeParams[6];
 
@@ -101,7 +102,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
           Tok::iterator tokIt = tok.begin();
           unsigned int i;
           for(i = 0; i < 3 && tokIt != tok.end(); ++i)
-            latticeParams[i + offset] = ::boost::lexical_cast<double>(*tokIt++);
+            latticeParams[i + offset] = boost::lexical_cast< double>(*tokIt++);
 
           // Did we get all three parts
           if(i < 3)
@@ -117,19 +118,19 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
         }
       }
     }
-    else if(::boost::ifind_first(line, "_cart"))
+    else if(boost::ifind_first(line, "_cart"))
     { // cart format
       int vec = 0;
-      ::arma::mat33 mtx;
-      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      arma::mat33 mtx;
+      while(std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
       {
-        if(::boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
+        if(boost::regex_search(line, match, RE_FLOAT)) // Have we reached numbers yet?
         {
           Tok tok(line, sep);
           Tok::iterator tokIt = tok.begin();
           unsigned int i;
           for(i = X; i <= Z && tokIt != tok.end(); ++i)
-            mtx(vec, i) = ::boost::lexical_cast<double>(*tokIt++);
+            mtx(vec, i) = boost::lexical_cast< double>(*tokIt++);
 
           // Did we get all three components?
           if(i <= Z)
@@ -155,12 +156,12 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
   if(findNextLine(line, is, "%BLOCK positions_", false))
   {
     common::AtomSpeciesId::Value species;
-    ::arma::vec3 pos;
-    const bool fractional = ::boost::ifind_first(line, "_frac");
-    const bool cartesian = ::boost::ifind_first(line, "_abs");
+    arma::vec3 pos;
+    const bool fractional = boost::ifind_first(line, "_frac");
+    const bool cartesian = boost::ifind_first(line, "_abs");
     if(fractional || cartesian)
     { // fractional format
-      while(::std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
+      while(std::getline(is, line) && !::boost::ifind_first(line, "%ENDBLOCK"))
       {
         Tok tok(line, sep);
         Tok::iterator tokIt = tok.begin();
@@ -168,7 +169,7 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
 
         unsigned int i;
         for(i = X; i <= Z && tokIt != tok.end(); ++i)
-          pos(i) = ::boost::lexical_cast<double>(*tokIt++);
+          pos(i) = boost::lexical_cast< double>(*tokIt++);
 
         // Did we get all three components?
         if(i > Z)
@@ -184,115 +185,110 @@ common::types::StructurePtr CellReaderWriter::readStructure(::std::istream & is)
   return structure;
 }
 
-void CellReaderWriter::writeStructure(common::Structure & structure, const ResourceLocator & locator) const
+void
+CellReaderWriter::writeStructure(common::Structure & structure,
+    const ResourceLocator & locator) const
 {
   const fs::path filepath(locator.path());
-	if(!filepath.has_filename())
+  if(!filepath.has_filename())
     return; // Can't write out structure without filepath
 
   const fs::path dir(filepath.parent_path());
-	if(!dir.empty() && !exists(dir))
-		create_directories(dir);
+  if(!dir.empty() && !exists(dir))
+    create_directories(dir);
 
   fs::ofstream strFile;
-	strFile.open(filepath);
+  strFile.open(filepath);
 
   writeStructure(strFile, structure);
 
- if(strFile.is_open())
+  if(strFile.is_open())
     strFile.close();
 }
 
-void CellReaderWriter::writeStructure(::std::ostream & os, common::Structure & structure) const
+void
+CellReaderWriter::writePressureBlock(std::ostream & os,
+    const arma::mat33 & pressureMtx) const
+{
+  os << "%BLOCK EXTERNAL_PRESSURE\n";
+  for(int row = 0; row < 3; ++row)
+  {
+    os << std::string(row, ' ');
+    for(int col = row; col < 3; ++col)
+      os << pressureMtx(row, col) << " ";
+    os << "\n";
+  }
+  os << "%ENDBLOCK EXTERNAL_PRESSURE\n";
+}
+
+void
+CellReaderWriter::writeStructure(std::ostream & os,
+    common::Structure & structure) const
 {
   using namespace utility::cell_params_enum;
 
   // Use full precision when printing numbers
-  os.precision(::std::numeric_limits<double>::digits10);
-  os << ::std::fixed;
+  os.precision(std::numeric_limits< double>::digits10);
+  os << std::fixed;
 
   const common::UnitCell * unitCell = structure.getUnitCell();
 
-  boost::scoped_ptr<common::UnitCell> boundingCell;
+  common::UnitCell boundingCell;
   if(!unitCell)
   {
     double latticeParams[6];
-    // TODO: CASTEP needs a cell, so create one
+    os
+        << "# WARNING: The following cell was created as a default because this structure didn't have one.\n";
     latticeParams[A] = 10;
     latticeParams[B] = 10;
     latticeParams[C] = 10;
     latticeParams[ALPHA] = 90.0;
     latticeParams[BETA] = 90.0;
     latticeParams[GAMMA] = 90.0;
-    boundingCell.reset(new common::UnitCell(latticeParams));
-    unitCell = boundingCell.get();
+    boundingCell.setLatticeParams(latticeParams);
+    unitCell = &boundingCell;
   }
 
   writeLatticeBlock(os, *unitCell);
-  os << ::std::endl;
+  os << "\n";
   writePositionsBlock(os, structure, *unitCell);
-  os << ::std::endl;
-
-  const double * const pressure = structure.getProperty(common::structure_properties::general::PRESSURE_INTERNAL);
-  if(pressure)
-  {
-    ::arma::mat33 pressureMtx = ::arma::zeros(3, 3);
-    pressureMtx.diag().fill(*pressure);
-    writePressureBlock(os, pressureMtx);
-  }
+  os << "\n";
 }
 
-void CellReaderWriter::writeLatticeBlock(::std::ostream & os, const common::UnitCell & unitCell) const
+void
+CellReaderWriter::writeLatticeBlock(std::ostream & os,
+    const common::UnitCell & unitCell) const
 {
   using namespace utility::cell_params_enum;
 
   const double (&params)[6] = unitCell.getLatticeParams();
-  os << "%BLOCK LATTICE_ABC" << ::std::endl;
-  os << params[A] << " " << params[B] << " " << params[C] << ::std::endl;
-  os << params[ALPHA] << " " << params[BETA] << " " << params[GAMMA] << ::std::endl;
-  os << "%ENDBLOCK LATTICE_ABC" << ::std::endl;
+  os << "%BLOCK LATTICE_ABC" << "\n";
+  os << params[A] << " " << params[B] << " " << params[C] << "\n";
+  os << params[ALPHA] << " " << params[BETA] << " " << params[GAMMA] << "\n";
+  os << "%ENDBLOCK LATTICE_ABC" << std::endl;
 }
 
-void CellReaderWriter::writePositionsBlock(
-  ::std::ostream & os,
-  const common::Structure & structure,
-  const common::UnitCell & unitCell
-) const
+void
+CellReaderWriter::writePositionsBlock(std::ostream & os,
+    const common::Structure & structure,
+    const common::UnitCell & unitCell) const
 {
   using namespace utility::cart_coords_enum;
 
-  ::arma::mat positions;
+  arma::mat positions;
   structure.getAtomPositions(positions);
   unitCell.cartsToFracInplace(positions);
   unitCell.wrapVecsFracInplace(positions);
-  os << "%BLOCK POSITIONS_FRAC" << ::std::endl;
+  os << "%BLOCK POSITIONS_FRAC" << "\n";
   for(size_t i = 0; i < structure.getNumAtoms(); ++i)
   {
     const common::Atom & atom = structure.getAtom(i);
     os << atom.getSpecies() << " ";
-    os << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i) << ::std::endl;    
+    os << positions(X, i) << " " << positions(Y, i) << " " << positions(Z, i)
+        << "\n";
   }
-  os << "%ENDBLOCK POSITIONS_FRAC" << ::std::endl;
+  os << "%ENDBLOCK POSITIONS_FRAC" << std::endl;
 }
-
-void
-CellReaderWriter::writePressureBlock(::std::ostream & os,
-    const ::arma::mat33 & pressureTensor) const
-{
-  os << "%BLOCK EXTERNAL_PRESSURE" << ::std::endl;
-
-  for(unsigned int row = 0; row < 3; ++row)
-  {
-    os << ::std::string(row, ' ');
-    for(unsigned int col = row; col < 3; ++col)
-    {
-      os << pressureTensor(row, col) << " ";
-    }
-    os << ::std::endl;
-  }
-  os << "%ENDBLOCK EXTERNAL_PRESSURE" << ::std::endl;
-}
-
 
 }
 }
