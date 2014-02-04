@@ -13,6 +13,12 @@
 # Usage: qsub_remote  [remote_host] [remote_dir] [job_file] [list of input files]
 #
 
+if [ "$#" -lt 3 ]
+then
+  echo "Usage: qsub_remote  [remote_host] [remote_dir] [job_file] [list of input files]"
+  exit 1
+fi 
+
 declare -r REMOTE_HOST=$1
 declare -r REMOTE_DIR=$2
 declare -r JOB_FILE=$3
@@ -36,7 +42,7 @@ scp ${INPUT_FILES[@]} $JOB_FILE $REMOTE_HOST:$WORK_DIR
 
 JOBID=`ssh $REMOTE_HOST "cd $WORK_DIR; qsub $JOB_FILE"`
 # Exit if qsub failed or the job id is empty
-if [ "$?" -ne "0" -o -z "JOBID" ]
+if [ "$?" -ne "0" -o -z "$JOBID" ]
 then
   exit 1
 fi
@@ -56,8 +62,10 @@ done
 
 # Copy everything back over
 scp $REMOTE_HOST:$WORK_DIR/\* .
-
-# Delete the remote working directory
-ssh $REMOTE_HOST "if [ -d \"$WORK_DIR\" ]; then rm -r $WORK_DIR; fi"
+if [ "$?" -eq "0" ]
+then  
+  # Delete the remote working directory
+  ssh $REMOTE_HOST "if [ -d \"$WORK_DIR\" ]; then rm -r $WORK_DIR; fi"
+fi
 
 

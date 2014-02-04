@@ -3,8 +3,7 @@
 #set -x
 
 # Required library to perform manipulation of castep input files
-source castep_manip.sh
-
+source castep_manip.inc
 if [ "$#" -ne "2" ]
 then
   echo "Usage: $0 [settings_file] [structure_file]"
@@ -49,7 +48,7 @@ cp ${SEED}.param $PARAM_FILE
 
 #################################
 # Set up the job file for the run
-sed "s/REPLACE_SEED/${filename}/" $JOB_FILE > ${NEW_JOB_FILE}
+sed "s/REPLACE_SEED/${filename}/g" $JOB_FILE > ${NEW_JOB_FILE}
 
 #################################################
 # Set up the param file using the input settings
@@ -59,7 +58,7 @@ then
   castep_param_set_value $PARAM_FILE GEOM_MAX_ITER $iter
 fi
 
-qsub_remote $REMOTE_HOST $REMOTE_WORK_DIR $NEW_JOB_FILE $PARAM_FILE $CELL_FILE > /dev/null 2>&1
+qsub_remote $REMOTE_HOST $REMOTE_WORK_DIR $NEW_JOB_FILE $PARAM_FILE $CELL_FILE
 if [ "$?" -ne "0" ]
 then
   exit 1

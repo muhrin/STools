@@ -95,14 +95,23 @@ add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 ## SCRIPTS TO BE INSTALLED #################################
 if(UNIX)
   set(STOOLS_SCRIPTS
+    scripts/castep_manip.inc
+    scripts/castep_qsub_optimiser
     scripts/sgen_work
     scripts/potparams2queue
     scripts/srefine
     scripts/srun
+    scripts/qsub_remote
   )
-
-  INSTALL(PROGRAMS ${STOOLS_SCRIPTS}
-    DESTINATION "bin"
+  install(PROGRAMS ${STOOLS_SCRIPTS}
+    DESTINATION "bin" COMPONENT scripts
+  )
+  add_custom_target(install_scripts
+    ALL COMMAND
+    ${CMAKE_COMMAND}
+    -DCOMPONENT=scripts
+    -P cmake_install.cmake 
+    DEPENDS ${STOOLS_SCRIPTS}
   )
 endif(UNIX)
 
