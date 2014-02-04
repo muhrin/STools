@@ -72,7 +72,7 @@ void
 ParamGeomOptimise::pipelineInitialising()
 {
   myParamPotential->updateSpeciesDb(
-      &getEngine()->globalData().getSpeciesDatabase());
+      &getEngine()->sharedData().getSpeciesDatabase());
 }
 
 void
@@ -133,7 +133,7 @@ ParamGeomOptimise::setPotentialParams(const PotentialParams & params)
   myParamPotential->setParams(params);
   if(getEngine())
     myParamPotential->updateSpeciesDb(
-        &getEngine()->globalData().getSpeciesDatabase());
+        &getEngine()->sharedData().getSpeciesDatabase());
   myCurrentParams = myParamPotential->getParams();
 }
 

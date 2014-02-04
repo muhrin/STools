@@ -30,14 +30,6 @@
 #include "utility/DataTableSupport.h"
 
 // FORWARD DECLARATIONS ////////////////////////////////////
-namespace spl {
-namespace build_cell {
-class AddOnStructureBuilder;
-}
-namespace common {
-class AtomSpeciesDatabase;
-}
-}
 
 namespace spipe {
 namespace common {
@@ -48,17 +40,17 @@ namespace blocks {
 
 class SearchStoichiometries : public StartBlock,
     public FinishedSink,
-    ::boost::noncopyable
+    boost::noncopyable
 {
 public:
-  typedef ::spl::utility::Range< int> CountRange;
-  typedef ::std::map< ::std::string, CountRange> AtomRanges;
+  typedef spl::utility::Range< int> CountRange;
+  typedef std::map< std::string, CountRange> AtomRanges;
 
   struct Options
   {
     static const size_t UNLIMITED_ATOMS;
-    Options():
-      atomRanges(), maxAtoms(UNLIMITED_ATOMS), useSeparateDirectories(false)
+    Options() :
+        atomRanges(), maxAtoms(UNLIMITED_ATOMS), useSeparateDirectories(false)
     {
     }
     AtomRanges atomRanges;
@@ -84,8 +76,8 @@ public:
   // End from IDataSink /////////////////////////
 
 private:
-  typedef ::spipe::StructureDataType StructureDataTyp;
-  typedef ::boost::scoped_ptr< ::spipe::utility::DataTableWriter> TableWriterPtr;
+  typedef spipe::StructureDataType StructureDataTyp;
+  typedef boost::scoped_ptr< spipe::utility::DataTableWriter> TableWriterPtr;
 
   // From Block ////////
   virtual void
@@ -94,7 +86,7 @@ private:
   engineDetached();
   // End from Block ////
 
-  ::spl::utility::MultiIdxRange< unsigned int>
+  spl::utility::MultiIdxRange< unsigned int>
   getStoichRange();
 
   void
@@ -102,8 +94,7 @@ private:
 
   void
   updateTable(const utility::DataTable::Key & key,
-      const ::spl::utility::MultiIdx< unsigned int> & currentIdx,
-      const ::spl::common::AtomSpeciesDatabase & atomsDb);
+      const spl::utility::MultiIdx< unsigned int> & currentIdx);
 
   const Options myOptions;
 
@@ -111,11 +102,11 @@ private:
   Engine * mySubpipeEngine;
 
   // Use this to write out our table data
-  ::spipe::utility::DataTableSupport myTableSupport;
-  ::boost::filesystem::path myOutputPath;
+  spipe::utility::DataTableSupport myTableSupport;
+  boost::filesystem::path myOutputPath;
 
   /** Buffer to store structure that have finished their path through the sub pipeline. */
-  ::std::vector< StructureDataTyp *> myBuffer;
+  std::vector< StructureDataTyp *> myBuffer;
 };
 
 }

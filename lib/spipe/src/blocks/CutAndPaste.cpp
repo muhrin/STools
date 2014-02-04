@@ -39,7 +39,7 @@ CutAndPaste::setPairDistances(const spl::factory::PairDistances & distances)
 void
 CutAndPaste::pipelineInitialised()
 {
-  mySpeciesDb = getEngine()->globalData().getSpeciesDatabase();
+  mySpeciesDb = getEngine()->sharedData().getSpeciesDatabase();
   BOOST_FOREACH(spl::factory::PairDistances::const_reference dist, myPairDistances)
     mySpeciesDb.setSpeciesPairDistance(dist.first, dist.second);
 }
