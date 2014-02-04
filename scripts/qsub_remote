@@ -12,6 +12,14 @@
 #
 # Usage: qsub_remote  [remote_host] [remote_dir] [job_file] [list of input files]
 #
+log_file=false
+while getopts l: opt
+do
+  case "$opt" in
+    l) log_file=$OPTARG ;;
+   esac
+done
+shift `expr $OPTIND - 1`
 
 if [ "$#" -lt 3 ]
 then
@@ -31,6 +39,17 @@ declare -r JOB_POLL_INTERVAL=60
 declare -r RAND_FOLDER=`strings /dev/urandom | tr -dc [:alnum:] | head -c8`
 declare -r WORK_DIR=$REMOTE_DIR/$RAND_FOLDER
 
+#############################
+## Functions 
+
+function log
+{
+  if [ -n "$log_file" ]
+  then
+    echo [`date +"%D %T"`] qsub_remote: $1 >> $log_file
+  fi
+}
+
 if [ -z "$JOB_FILE" -o ! -f "$JOB_FILE" ]
 then
   exit 1
@@ -40,6 +59,7 @@ fi
 ssh $REMOTE_HOST mkdir -p $WORK_DIR
 scp ${INPUT_FILES[@]} $JOB_FILE $REMOTE_HOST:$WORK_DIR
 
+log "Starting job $JOB_FILE in $REMOTE_HOST:$WORK_DIR"
 JOBID=`ssh $REMOTE_HOST "cd $WORK_DIR; qsub $JOB_FILE"`
 # Exit if qsub failed or the job id is empty
 if [ "$?" -ne "0" -o -z "$JOBID" ]
@@ -54,8 +74,10 @@ do
   sleep $JOB_POLL_INTERVAL
 
   ssh $REMOTE_HOST qstat $JOBID > /dev/null 2>&1
-  if [ "$?" -ne "0" -a "$?" -ne "255" ] # 255 means ssh couldn't reach host, keepy trying
+  result=$?
+  if [ "$result" -ne "0" -a "$result" -ne "255" ] # 255 means ssh couldn't reach host, keepy trying
   then
+    log "Job $JOB_FILE finished successfully, exit status: $result"
     finished=true
   fi
 done
@@ -63,7 +85,8 @@ done
 # Copy everything back over
 scp $REMOTE_HOST:$WORK_DIR/\* .
 if [ "$?" -eq "0" ]
-then  
+then
+  log "Copied job files for $JOB_FILE back successfully." 
   # Delete the remote working directory
   ssh $REMOTE_HOST "if [ -d \"$WORK_DIR\" ]; then rm -r $WORK_DIR; fi"
 fi

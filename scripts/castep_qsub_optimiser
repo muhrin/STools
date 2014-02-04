@@ -1,14 +1,14 @@
 #!/bin/bash
 
+# castep_qsub_optimise
+# by Martin Uhrin
+# Version 0.0.2
+# Licenced under GPL-v2 and later, see COPYING for details
+
 #set -x
 
 # Required library to perform manipulation of castep input files
 source castep_manip.inc
-if [ "$#" -ne "2" ]
-then
-  echo "Usage: $0 [settings_file] [structure_file]"
-  exit 1
-fi
 
 ## SETTINGS ##
 # The following variables should be set before running this script
@@ -20,6 +20,22 @@ fi
 # export JOB_FILE=graphene.job (the submission script)
 
 # INPUTS ##
+write_log=false
+while getopts l opt
+do
+  case "$opt" in
+    l) write_log=true ;;
+   esac
+done
+shift `expr $OPTIND - 1`
+declare -r LOG_FILE=castep_opt.log
+
+if [ "$#" -ne "2" ]
+then
+  echo "Usage: $0 [settings_file] [structure_file]"
+  exit 1
+fi
+
 declare -r SETTINGS=$1
 declare -r STRUCTURE=$2
 
@@ -30,6 +46,16 @@ filename="${filename%.*}"
 declare -r PARAM_FILE=${filename}.param
 declare -r CELL_FILE=${filename}.cell
 declare -r NEW_JOB_FILE=${filename}.job
+
+##################################
+# Functions
+function log
+{
+  if $write_log
+  then
+    echo [`date +"%D %T"`] $1 >> $LOG_FILE
+  fi
+}
 
 ##################################
 # Set up the cell file for the run
@@ -58,11 +84,20 @@ then
   castep_param_set_value $PARAM_FILE GEOM_MAX_ITER $iter
 fi
 
-qsub_remote $REMOTE_HOST $REMOTE_WORK_DIR $NEW_JOB_FILE $PARAM_FILE $CELL_FILE
+
+log "Starting optimisation of ${filename}."
+log_command=""
+if $write_log
+then
+  log_command="-l $LOG_FILE"
+fi
+qsub_remote $log_command $REMOTE_HOST $REMOTE_WORK_DIR $NEW_JOB_FILE $PARAM_FILE $CELL_FILE
 if [ "$?" -ne "0" ]
 then
+  log "Optimisation of ${filename} failed."
   exit 1
 fi
+log "Optimisation of ${filename} finished."
 
 ## Did we get the castep file?
 declare -r CASTEP=${filename}.castep
