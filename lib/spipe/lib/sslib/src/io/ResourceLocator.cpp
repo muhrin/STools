@@ -11,7 +11,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-
 #include "spl/io/BoostFilesystem.h"
 
 // NAMESPACES ////////////////////////////////
@@ -19,35 +18,40 @@
 namespace spl {
 namespace io {
 
-namespace fs = ::boost::filesystem;
-namespace algorithm = ::boost::algorithm;
+namespace fs = boost::filesystem;
+namespace algorithm = boost::algorithm;
 
-const ::std::string ResourceLocator::ID_DELIMITER = "#";
+const std::string ResourceLocator::ID_DELIMITER = "#";
 
 ResourceLocator::ResourceLocator()
-{}
-
-ResourceLocator::ResourceLocator(const fs::path & path):
-myPath(path)
-{}
-
-ResourceLocator::ResourceLocator(const fs::path & path, const ::std::string & resourceId):
-myPath(path),
-myResourceId(resourceId)
-{}
-
-bool ResourceLocator::set(const ::std::string & locatorString)
 {
-  typedef ::std::vector< ::std::string> SplitVector;
+}
+
+ResourceLocator::ResourceLocator(const fs::path & path) :
+    myPath(path)
+{
+}
+
+ResourceLocator::ResourceLocator(const fs::path & path,
+    const std::string & resourceId) :
+    myPath(path), myResourceId(resourceId)
+{
+}
+
+bool
+ResourceLocator::set(const std::string & locatorString)
+{
+  typedef std::vector< std::string> SplitVector;
 
   if(locatorString.empty())
     return false;
 
   fs::path newPath;
-  ::std::string newResourceId;
-    
+  std::string newResourceId;
+
   SplitVector splitStrings;
-  algorithm::split(splitStrings, locatorString, algorithm::is_any_of(ID_DELIMITER));
+  algorithm::split(splitStrings, locatorString,
+      algorithm::is_any_of(ID_DELIMITER));
 
   if(splitStrings.size() > 2)
     return false;
@@ -57,7 +61,7 @@ bool ResourceLocator::set(const ::std::string & locatorString)
   newPath = fs::path(splitStrings[0]);
 
   // TODO: Probably worthwhile to do check on path and resource id here
-  
+
   setPath(newPath);
   if(!newResourceId.empty())
     setId(newResourceId);
@@ -65,50 +69,59 @@ bool ResourceLocator::set(const ::std::string & locatorString)
   return true;
 }
 
-::std::string ResourceLocator::string() const
+::std::string
+ResourceLocator::string() const
 {
-  ::std::string str = myPath.string();
+  std::string str = myPath.string();
   if(!myResourceId.empty())
     str += ID_DELIMITER + myResourceId;
   return str;
 }
 
-const fs::path & ResourceLocator::path() const
+const fs::path &
+ResourceLocator::path() const
 {
   return myPath;
 }
 
-void ResourceLocator::setPath(const fs::path & path)
+void
+ResourceLocator::setPath(const fs::path & path)
 {
   myPath = path;
 }
 
-void ResourceLocator::clearPath()
+void
+ResourceLocator::clearPath()
 {
   myPath.clear();
 }
 
-const ::std::string & ResourceLocator::id() const
+const std::string &
+ResourceLocator::id() const
 {
   return myResourceId;
 }
 
-void ResourceLocator::setId(const ::std::string & resourceId)
+void
+ResourceLocator::setId(const std::string & resourceId)
 {
   myResourceId = resourceId;
 }
 
-void ResourceLocator::clearId()
+void
+ResourceLocator::clearId()
 {
   myResourceId.clear();
 }
 
-bool ResourceLocator::empty() const
+bool
+ResourceLocator::empty() const
 {
   return myPath.empty() && myResourceId.empty();
 }
 
-ResourceLocator & ResourceLocator::operator =(const ResourceLocator & rhs)
+ResourceLocator &
+ResourceLocator::operator =(const ResourceLocator & rhs)
 {
   setPath(rhs.path());
   setId(rhs.id());
@@ -116,36 +129,50 @@ ResourceLocator & ResourceLocator::operator =(const ResourceLocator & rhs)
 }
 
 ResourceLocator &
-ResourceLocator::makeRelative(const ::boost::filesystem::path & from)
+ResourceLocator::makeRelative(const boost::filesystem::path & from)
 {
   myPath = make_relative(from, myPath);
   return *this;
 }
 
-bool equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2)
+bool
+equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2)
 {
   return fs::equivalent(loc1.path(), loc2.path()) && loc1.id() == loc2.id();
 }
 
-ResourceLocator absolute(const ResourceLocator & loc)
+ResourceLocator
+absolute(const ResourceLocator & loc)
 {
   return ResourceLocator(io::absolute(loc.path()), loc.id());
 }
 
-ResourceLocator relative(const ResourceLocator & to)
+ResourceLocator
+relative(const ResourceLocator & to)
 {
   return relative(ResourceLocator(fs::current_path()), to);
 }
 
-ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & to)
+ResourceLocator
+relative(const ResourceLocator & from, const ResourceLocator & to)
 {
   return ResourceLocator(io::make_relative(from.path(), to.path()), to.id());
 }
 
-::std::ostream & operator <<(::std::ostream & os, const ResourceLocator & loc)
+::std::ostream &
+operator <<(std::ostream & os, const ResourceLocator & loc)
 {
   os << loc.string();
   return os;
+}
+
+std::istream &
+operator >>(std::istream &in, ResourceLocator & speciesCount)
+{
+  std::stringstream ss;
+  ss << in;
+  speciesCount.set(ss.str());
+  return in;
 }
 
 }

@@ -16,21 +16,21 @@
 #include <yaml-cpp/yaml.h>
 
 #include "spl/factory/FactoryFwd.h"
+#include "spl/yaml/HelperTypes.h"
 
 // NAMESPACES ////////////////////////////////
 
 // Some custom YAML transcoders
 namespace YAML {
 
-// factory::AtomSpeciesCount
-template <>
-struct convert < ::spl::factory::AtomSpeciesCount>
-{
-  static Node encode(const ::spl::factory::AtomSpeciesCount & rhs);
-  static bool decode(const Node & node, ::spl::factory::AtomSpeciesCount & rhs);
-};
-
-
+template< >
+  struct convert< spl::factory::AtomSpeciesCount> : public spl::yaml::detail::ConvertStreamableScalar<
+      spl::factory::AtomSpeciesCount>
+  {
+    typedef ConvertStreamableScalar< spl::factory::AtomSpeciesCount> Base;
+    using Base::encode;
+    using Base::decode;
+  };
 
 }
 

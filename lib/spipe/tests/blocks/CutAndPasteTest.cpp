@@ -25,21 +25,23 @@
 #include <blocks/BuildStructures.h>
 #include <blocks/CutAndPaste.h>
 
-using namespace ::spipe;
+using namespace spipe;
 
-namespace splbc = ::spl::build_cell;
-namespace splc = ::spl::common;
-namespace ssc = ::spl::common;
+namespace splbc = spl::build_cell;
+namespace splc = spl::common;
+namespace ssc = spl::common;
 
-typedef ::spl::UniquePtr< splbc::GeneratorShape>::Type GenShape;
+typedef spl::UniquePtr< splbc::GeneratorShape>::Type GenShape;
+
+BOOST_AUTO_TEST_SUITE(CutAndPasteTest)
 
 static const size_t NUM_ATOMS = 100;
 
 class SeedBlock : public StartBlock
 {
 public:
-  SeedBlock(splc::StructurePtr structure):
-    Block("Seed block")
+  SeedBlock(splc::StructurePtr structure) :
+      Block("Seed block")
   {
     myStructure = structure;
   }
@@ -56,10 +58,10 @@ private:
 
 class CutChecker : public FinishedSink
 {
-  typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
+  typedef spipe::StructureDataUniquePtr StructureDataPtr;
 public:
-  CutChecker(const splbc::GeneratorShape & genShape):
-    myShape(genShape)
+  CutChecker(const splbc::GeneratorShape & genShape) :
+      myShape(genShape)
   {
   }
   virtual
@@ -74,10 +76,10 @@ private:
 
 class PasteChecker : public FinishedSink
 {
-  typedef ::spipe::StructureDataUniquePtr StructureDataPtr;
+  typedef spipe::StructureDataUniquePtr StructureDataPtr;
 public:
-  PasteChecker(const splbc::GeneratorShape & genShape):
-    myShape(genShape)
+  PasteChecker(const splbc::GeneratorShape & genShape) :
+      myShape(genShape)
   {
   }
   virtual
@@ -92,7 +94,7 @@ private:
 };
 
 void
-createShapes(::boost::ptr_vector< splbc::GeneratorShape> & shapes);
+createShapes(boost::ptr_vector< splbc::GeneratorShape> & shapes);
 
 BOOST_AUTO_TEST_CASE(CutAndPasteTest)
 {
@@ -101,7 +103,7 @@ BOOST_AUTO_TEST_CASE(CutAndPasteTest)
   static const splc::UnitCell UNIT_CELL(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
 
   // Create all the shapes that we want to check
-  ::boost::ptr_vector< splbc::GeneratorShape> shapes;
+  boost::ptr_vector< splbc::GeneratorShape> shapes;
   createShapes(shapes);
 
   blocks::CutAndPaste::Settings settings;
@@ -148,9 +150,9 @@ BOOST_AUTO_TEST_CASE(CutAndPasteTest)
 }
 
 void
-createShapes(::boost::ptr_vector< splbc::GeneratorShape> & shapes)
+createShapes(boost::ptr_vector< splbc::GeneratorShape> & shapes)
 {
-  ::arma::vec3 centre;
+  arma::vec3 centre;
   centre(0) = 5.0;
   centre(1) = 5.0;
   centre(2) = 5.0;
@@ -171,3 +173,5 @@ createShapes(::boost::ptr_vector< splbc::GeneratorShape> & shapes)
   }
 
 }
+
+BOOST_AUTO_TEST_SUITE_END()

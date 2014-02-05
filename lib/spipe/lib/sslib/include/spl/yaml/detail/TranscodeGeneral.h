@@ -121,58 +121,6 @@ template< typename T>
     return true;
   }
 
-template< typename T>
-  Node
-  convert< spl::utility::OrderedPair< T> >::encode(
-      const spl::utility::OrderedPair< T> & rhs)
-  {
-    std::stringstream ss;
-    ss << rhs;
-    Node node;
-    node = ss.str();
-    return node;
-  }
-
-template< typename T>
-  bool
-  convert< spl::utility::OrderedPair< T> >::decode(const Node & node,
-      spl::utility::OrderedPair< T> & rhs)
-  {
-    namespace ssio = spl::io;
-
-    if(!node.IsScalar())
-      return false;
-    std::stringstream ss(node.Scalar());
-    ss >> rhs;
-    return true;
-  }
-
-template< typename T>
-  Node
-  convert< spl::utility::Range< T> >::encode(
-      const spl::utility::Range< T> & rhs)
-  {
-    std::stringstream ss;
-    ss << rhs;
-    Node node;
-    node = ss.str();
-    return node;
-  }
-
-template< typename T>
-  bool
-  convert< spl::utility::Range< T> >::decode(const Node & node,
-      spl::utility::Range< T> & rhs)
-  {
-    namespace ssio = spl::io;
-
-    if(!node.IsScalar())
-      return false;
-    std::stringstream ss(node.Scalar());
-    ss >> rhs;
-    return true;
-  }
-
 }
 
 #endif /* TRANSCODE_GENERAL_DETAIL_H */

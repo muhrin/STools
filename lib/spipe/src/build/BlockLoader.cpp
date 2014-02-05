@@ -70,6 +70,10 @@ BlockLoader::BlockLoader()
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::FindSymmetryGroupSchema>(
               myBlockFactory)));
+  registerCreator("geomOptimise",
+        CreatorPtr(
+            new FactoryBlockCreator< factory::blocks::GeomOptimiseSchema>(
+                myBlockFactory)));
 #ifdef SPL_WITH_CGAL
   registerCreator("keepStableCompositions",
       CreatorPtr(
@@ -88,13 +92,13 @@ BlockLoader::BlockLoader()
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::LoadStructures>(
               myBlockFactory)));
+  registerCreator("pasteFragment",
+        CreatorPtr(
+            new FactoryBlockCreator< factory::blocks::PasteFragmentSchema>(
+                myBlockFactory)));
   registerCreator("niggliReduce",
       CreatorPtr(
           new FactoryBlockCreator< factory::blocks::NiggliReduceSchema>(
-              myBlockFactory)));
-  registerCreator("geomOptimise",
-      CreatorPtr(
-          new FactoryBlockCreator< factory::blocks::GeomOptimiseSchema>(
               myBlockFactory)));
   registerCreator("removeDuplicates",
       CreatorPtr(

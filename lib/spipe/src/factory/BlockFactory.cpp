@@ -23,6 +23,7 @@
 #include "blocks/NiggliReduce.h"
 #include "blocks/GeomOptimise.h"
 #include "blocks/ParamGeomOptimise.h"
+#include "blocks/PasteFragment.h"
 #include "blocks/RemoveDuplicates.h"
 #include "blocks/RunPotentialParamsQueue.h"
 #include "blocks/SearchStoichiometries.h"
@@ -102,6 +103,35 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
   return true;
 }
 
+bool
+BlockFactory::createBlock(BlockHandle * const blockOut,
+    const blocks::GeomOptimise & options) const
+{
+  ssp::IGeomOptimiserPtr optimiser = mySplFactory.createGeometryOptimiser(
+      options.optimiser);
+  if(!optimiser.get())
+    return false;
+
+  const bool potentialIsParameterisable = optimiser->getPotential()
+      && optimiser->getPotential()->getParameterisable();
+
+  const ssp::OptimisationSettings optParams =
+      mySplFactory.createOptimisationSettings(options);
+
+  spipe::blocks::GeomOptimise::Settings settings;
+  settings.failAction = options.failAction;
+  settings.writeSummary = options.writeSummary;
+
+  if(potentialIsParameterisable)
+    blockOut->reset(
+        new spipe::blocks::ParamGeomOptimise(optimiser, optParams, settings));
+  else
+    blockOut->reset(
+        new spipe::blocks::GeomOptimise(optimiser, optParams, settings));
+
+  return true;
+}
+
 #ifdef SPL_WITH_CGAL
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
@@ -146,30 +176,9 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
 
 bool
 BlockFactory::createBlock(BlockHandle * const blockOut,
-    const blocks::GeomOptimise & options) const
+    const blocks::PasteFragment & options) const
 {
-  ssp::IGeomOptimiserPtr optimiser = mySplFactory.createGeometryOptimiser(
-      options.optimiser);
-  if(!optimiser.get())
-    return false;
-
-  const bool potentialIsParameterisable = optimiser->getPotential()
-      && optimiser->getPotential()->getParameterisable();
-
-  const ssp::OptimisationSettings optParams =
-      mySplFactory.createOptimisationSettings(options);
-
-  spipe::blocks::GeomOptimise::Settings settings;
-  settings.failAction = options.failAction;
-  settings.writeSummary = options.writeSummary;
-
-  if(potentialIsParameterisable)
-    blockOut->reset(
-        new spipe::blocks::ParamGeomOptimise(optimiser, optParams, settings));
-  else
-    blockOut->reset(
-        new spipe::blocks::GeomOptimise(optimiser, optParams, settings));
-
+  blockOut->reset(new spipe::blocks::PasteFragment(options.fragment));
   return true;
 }
 

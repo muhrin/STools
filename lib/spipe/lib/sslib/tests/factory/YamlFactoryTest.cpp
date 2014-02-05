@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/filesystem.hpp>
 
 #include <spl/build_cell/BuildCellFwd.h>
 #include <spl/factory/FactoryError.h>
@@ -19,7 +20,7 @@
 
 using namespace spl;
 
-BOOST_AUTO_TEST_SUITE(SpaceGroup)
+BOOST_AUTO_TEST_SUITE(YamlFactory)
 
 BOOST_AUTO_TEST_CASE(StructureGenerator)
 {
@@ -28,6 +29,7 @@ BOOST_AUTO_TEST_CASE(StructureGenerator)
 
   factory::Factory factory;
 
+  BOOST_REQUIRE(boost::filesystem::exists(boost::filesystem::path(simpleStructure)));
   const YAML::Node loadedNode = YAML::LoadFile(simpleStructure);
   BOOST_REQUIRE(loadedNode.IsDefined());
 

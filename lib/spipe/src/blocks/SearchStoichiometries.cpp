@@ -44,7 +44,7 @@ const size_t SearchStoichiometries::Options::UNLIMITED_ATOMS =
 SearchStoichiometries::SearchStoichiometries(const Options & options,
     BlockHandle & subpipe) :
     Block("Search stoichiometries"), myOptions(options), mySubpipe(subpipe), mySubpipeEngine(
-        NULL)
+    NULL)
 {
 }
 
@@ -115,8 +115,9 @@ SearchStoichiometries::start()
     // Start the sweep pipeline
     mySubpipeEngine->run();
 
-    // Update the table
-    updateTable(sweepPath.string(), currentIdx);
+    // Update the table, use '.' as the current directory if the path is empty
+    updateTable(sweepPath.string().empty() ? "." : sweepPath.string(),
+        currentIdx);
 
     // Send any finished structure data down my pipe, this will also
     // update the table with any information from the buffered structures

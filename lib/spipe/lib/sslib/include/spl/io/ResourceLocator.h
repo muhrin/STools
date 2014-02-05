@@ -17,9 +17,7 @@
 
 #include <boost/filesystem.hpp>
 
-
 // FORWARD DECLARATIONS ////////////////////////////////////
-
 
 namespace spl {
 namespace io {
@@ -27,52 +25,76 @@ namespace io {
 class ResourceLocator
 {
 public:
-  static const ::std::string ID_DELIMITER;
+  static const std::string ID_DELIMITER;
 
   ResourceLocator();
-  /* implicit */ ResourceLocator(const ::boost::filesystem::path & path);
-  ResourceLocator(const ::boost::filesystem::path & path, const ::std::string & resourceId);
+  /* implicit */
+  ResourceLocator(const boost::filesystem::path & path);
+  ResourceLocator(const boost::filesystem::path & path,
+      const std::string & resourceId);
 
-  bool set(const ::std::string & locatorString);
+  bool
+  set(const std::string & locatorString);
 
-  ::std::string string() const;
+  std::string
+  string() const;
 
-  const ::boost::filesystem::path & path() const;
-  void setPath(const ::boost::filesystem::path & path);
-  void clearPath();
+  const boost::filesystem::path &
+  path() const;
+  void
+  setPath(const boost::filesystem::path & path);
+  void
+  clearPath();
 
-  const ::std::string & id() const;
-  void setId(const ::std::string & resourceId);
-  void clearId();
+  const std::string &
+  id() const;
+  void
+  setId(const std::string & resourceId);
+  void
+  clearId();
 
-  bool empty() const;
+  bool
+  empty() const;
 
-  ResourceLocator & operator =(const ResourceLocator & rhs);
+  ResourceLocator &
+  operator =(const ResourceLocator & rhs);
 
-  ResourceLocator & makeRelative(const ::boost::filesystem::path & from);
+  ResourceLocator &
+  makeRelative(const boost::filesystem::path & from);
 
 private:
 
-  ::boost::filesystem::path myPath;
-  ::std::string myResourceId;
+  boost::filesystem::path myPath;
+  std::string myResourceId;
 };
 
-bool equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2);
+bool
+equivalent(const ResourceLocator & loc1, const ResourceLocator & loc2);
 
-ResourceLocator absolute(const ResourceLocator & loc);
+ResourceLocator
+absolute(const ResourceLocator & loc);
 
-ResourceLocator relative(const ResourceLocator & to);
+ResourceLocator
+relative(const ResourceLocator & to);
 
-ResourceLocator relative(const ResourceLocator & from, const ResourceLocator & to);
+ResourceLocator
+relative(const ResourceLocator & from, const ResourceLocator & to);
 
-::std::ostream & operator <<(::std::ostream & os, const ResourceLocator & loc);
+::std::ostream &
+operator <<(std::ostream & os, const ResourceLocator & loc);
 
-inline bool operator<(const ResourceLocator & lhs, const ResourceLocator & rhs)
+
+std::istream &
+operator >>(std::istream &in, ResourceLocator & speciesCount);
+
+inline bool
+operator<(const ResourceLocator & lhs, const ResourceLocator & rhs)
 {
   return lhs.string() < rhs.string();
 }
 
-inline bool operator>(const ResourceLocator & lhs, const ResourceLocator & rhs)
+inline bool
+operator>(const ResourceLocator & lhs, const ResourceLocator & rhs)
 {
   return lhs.string() > rhs.string();
 }

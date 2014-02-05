@@ -15,24 +15,37 @@ endif(Boost_USE_STATIC_LIBS)
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS system filesystem unit_test_framework)
 
-# tests/blocks
 
-set(tests_Source_Files__blocks
-  blocks/CutAndPasteTest.cpp
-  blocks/LoadSeedStructuresTest.cpp
-  blocks/LowestFreeEnergyTest.cpp
-  blocks/StoichiometrySearchTest.cpp
+set(test_folders
+  blocks
 )
-source_group("Source Files\\blocks" FILES ${tests_Source_Files__blocks})
 
-set(tests_Source_Files__utility
-  utility/DataTableTest.cpp
-)
-source_group("Source Files\\utility" FILES ${tests_Source_Files__utility})
-
+foreach(test_folder ${test_folders})
+  # Look for cpp files
+  file(GLOB
+    tests_Source_Files__${test_folder}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${test_folder}/*.cpp
+  )
+  source_group("Source Files\\${test_folder}" FILES ${tests_Source_Files__${test_folder}})
+  set(tests_Source_Files
+    ${tests_Source_Files}
+	${tests_Source_Files__${test_folder}}
+  )
+  
+  # Look for input files
+  file(GLOB
+    tests_Input_Files__${test_folder}
+	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${test_folder}/input/*
+  )
+  set(tests_Input_Files
+    ${tests_Input_Files}
+	${tests_Input_Files__${test_folder}}
+  )
+endforeach()
 
 ## tests/
-
 set(tests_Header_Files__
   spipetest.h
 )
@@ -42,17 +55,6 @@ set(tests_Source_Files__
 )
 source_group("Source Files" FILES ${tests_Source_Files__})
 
-set(tests_Header_Files
-  ${tests_Header_Files__utility}
-  ${tests_Header_Files__}
-)
-
-set(tests_Source_Files
-  ${tests_Source_Files__blocks}
-  ${tests_Source_Files__utility}
-  ${tests_Source_Files__}
-)
-
 set(tests_Files
   ${tests_Header_Files}
   ${tests_Source_Files}
@@ -61,6 +63,7 @@ set(tests_Files
 
 ## Copy over files needed by tests
 set(tests_Input_Files
+  ${tests_Input_Files}
   structures
 )
 
@@ -71,16 +74,13 @@ file(COPY
 )
 
 
-
 #########################
 ## Include directories ##
 #########################
-
 include_directories(
   ${SPIPE_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/tests
 )
-
 
 ############################
 ## SSLibTest executable   ##

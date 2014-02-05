@@ -43,6 +43,9 @@ public:
   bool
   createBlock(BlockHandle * const blockOut,
       const blocks::FindSymmetryGroup & options) const;
+  bool
+  createBlock(BlockHandle * const blockOut,
+      const blocks::GeomOptimise & options) const;
 #ifdef SPL_WITH_CGAL
   bool
   createBlock(BlockHandle * const blockOut,
@@ -61,7 +64,7 @@ public:
       const blocks::NiggliReduce & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
-      const blocks::GeomOptimise & options) const;
+      const blocks::PasteFragment & options) const;
   bool
   createBlock(BlockHandle * const blockOut,
       const blocks::RemoveDuplicates & options) const;

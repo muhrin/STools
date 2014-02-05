@@ -13,6 +13,7 @@
 
 #include <schemer/Schemer.h>
 
+#include <spl/io/ResourceLocator.h>
 #include <spl/factory/SsLibYamlSchema.h>
 
 #include "blocks/RunPotentialParamsQueue.h"
@@ -91,6 +92,22 @@ SCHEMER_MAP(FindSymmetryGroupSchema, FindSymmetryGroup)
 {
 }
 
+struct GeomOptimise : spl::factory::OptimiserSettings
+{
+  spl::factory::Optimiser optimiser;
+  bool writeSummary;
+  FailAction::Value failAction;
+};
+
+SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
+{
+  extends< spl::factory::OptimiserSettingsSchema>();
+  element("optimiser", &GeomOptimise::optimiser);
+  element("writeSummary", &GeomOptimise::writeSummary)->defaultValue(false);
+  element("failAction", &GeomOptimise::failAction)->defaultValue(
+      FailAction::CONTINUE);
+}
+
 struct KeepStableCompositions
 {
   bool writeHull;
@@ -131,20 +148,14 @@ SCHEMER_MAP(NiggliReduceSchema, NiggliReduce)
 {
 }
 
-struct GeomOptimise : spl::factory::OptimiserSettings
+struct PasteFragment
 {
-  spl::factory::Optimiser optimiser;
-  bool writeSummary;
-  FailAction::Value failAction;
+  spl::io::ResourceLocator fragment;
 };
 
-SCHEMER_MAP(GeomOptimiseSchema, GeomOptimise)
+SCHEMER_MAP(PasteFragmentSchema, PasteFragment)
 {
-  extends< spl::factory::OptimiserSettingsSchema>();
-  element("optimiser", &GeomOptimise::optimiser);
-  element("writeSummary", &GeomOptimise::writeSummary)->defaultValue(false);
-  element("failAction", &GeomOptimise::failAction)->defaultValue(
-      FailAction::CONTINUE);
+  element("fragment", &PasteFragment::fragment);
 }
 
 struct RemoveDuplicates

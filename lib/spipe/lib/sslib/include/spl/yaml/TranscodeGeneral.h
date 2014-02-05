@@ -17,6 +17,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "spl/io/ResourceLocator.h"
 #include "spl/utility/Range.h"
 #include "spl/yaml/HelperTypes.h"
 
@@ -24,6 +25,15 @@
 
 // Some custom YAML transcoders
 namespace YAML {
+
+template< >
+  struct convert< spl::io::ResourceLocator> : public spl::yaml::detail::ConvertStreamableScalar<
+      spl::io::ResourceLocator>
+  {
+    typedef ConvertStreamableScalar< spl::io::ResourceLocator> Base;
+    using Base::encode;
+    using Base::decode;
+  };
 
 // Vector as string
 template< typename T>
@@ -116,21 +126,22 @@ template< >
   };
 
 template< typename T>
-  struct convert< spl::utility::OrderedPair< T> >
+  struct convert< spl::utility::OrderedPair< T> > : public spl::yaml::detail::ConvertStreamableScalar<
+      spl::utility::OrderedPair< T> >
   {
-    static Node
-    encode(const spl::utility::OrderedPair< T> & rhs);
-    static bool
-    decode(const Node & node, spl::utility::OrderedPair< T> & rhs);
+    typedef spl::yaml::detail::ConvertStreamableScalar<
+        spl::utility::OrderedPair< T> > Base;
+    using typename Base::encode;
+    using typename Base::decode;
   };
 
 template< typename T>
-  struct convert< spl::utility::Range< T> >
+  struct convert< spl::utility::Range< T> > : public spl::yaml::detail::ConvertStreamableScalar<
+      spl::utility::Range< T> >
   {
-    static Node
-    encode(const spl::utility::Range< T> & rhs);
-    static bool
-    decode(const Node & node, spl::utility::Range< T> & rhs);
+    typedef spl::yaml::detail::ConvertStreamableScalar< spl::utility::Range< T> > Base;
+    using typename Base::encode;
+    using typename Base::decode;
   };
 
 }

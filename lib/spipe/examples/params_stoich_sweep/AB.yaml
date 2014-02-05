@@ -11,15 +11,17 @@ runPotentialParamsQueue:
         B: 0~4
       pipe:
       # START search pipe
-        buildStructures:
+        generateStructures:
           num: 100
-          atoms:
-            - spec: A 2
-            - spec: B 2
-          unitCell:
-            angles:
-              min: 45
-              max: 135
+          generator:
+            builder:
+              atoms:
+                - spec: A 2
+                - spec: B 2
+              unitCell:
+                angles:
+                  min: 45
+                  max: 135
         
         geomOptimise:
           optimiser: &opt
@@ -56,7 +58,7 @@ runPotentialParamsQueue:
         keepTopN:
           num: 1
           
-        run: buildStructures | preGeomOptimise | geomOptimise | keepWithinXPercent | removeDuplicates | findSymmetry | writeStructures | keepTopN
+        run: generateStructures | preGeomOptimise | geomOptimise | keepWithinXPercent | removeDuplicates | findSymmetry | writeStructures | keepTopN
         # END search pipe
    
     keepStableCompositions:

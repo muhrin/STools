@@ -14,6 +14,7 @@ set(spipe_Header_Files__blocks
   blocks/LoadStructures.h
   blocks/NiggliReduce.h
   blocks/ParamGeomOptimise.h
+  blocks/PasteFragment.h
   blocks/RemoveDuplicates.h
   blocks/RunPotentialParamsQueue.h
   blocks/SearchStoichiometries.h
@@ -35,6 +36,7 @@ set(spipe_Source_Files__blocks
   blocks/LoadStructures.cpp
   blocks/NiggliReduce.cpp
   blocks/ParamGeomOptimise.cpp
+  blocks/PasteFragment.cpp
   blocks/RemoveDuplicates.cpp
   blocks/RunPotentialParamsQueue.cpp
   blocks/SearchStoichiometries.cpp
@@ -177,7 +179,6 @@ set(spipe_Files
 #########################
 ## Include directories ##
 #########################
-
 include_directories(
   ${YAML_CPP_INCLUDE_DIRS}
   ${SPGLIB_INCLUDE_DIRS}
@@ -186,7 +187,6 @@ include_directories(
 ###########################
 ## StructurePipe Library ##
 ###########################
-
 add_library(spipe
   ${spipe_Files}
 )
@@ -199,6 +199,12 @@ target_link_libraries(spipe
   ${SPGLIB_LIBRARIES}
   pipelib
   sslib
+)
+
+## Installation
+install(TARGETS spipe
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
 )
 
 ###################

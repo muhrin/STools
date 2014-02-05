@@ -5,7 +5,6 @@
  *      Author: Martin Uhrin
  */
 
-
 #ifndef RANDOM_DETAIL_H
 #define RANDOM_DETAIL_H
 
@@ -25,6 +24,7 @@
 #  include <boost/random/uniform_int_distribution.hpp>
 #  include <boost/random/uniform_real_distribution.hpp>
 #endif
+#include <boost/type_traits/is_integral.hpp>
 
 #include "spl/SSLibAssert.h"
 
@@ -38,205 +38,167 @@ namespace spl {
 namespace math {
 namespace detail {
 
-
-template <typename T>
-struct Rand
-{
-private:
-  Rand(); // non constructible
-};
+template< typename T, bool isIntegral = boost::is_integral< T>::value>
+  struct Rand;
 
 extern boost::mt19937 mt19937;
 
 // Specialisations
-template <>
-struct Rand<int>
-{
-  static int getUniform(const int to)
+template< typename T>
+  struct Rand< T, true>
   {
+    static T
+    getUniform(const T to)
+    {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<> dist(0, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
-    return gen();
+      const boost::uniform_int<T> dist(0, to);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
+      return gen();
 #else
-    const ::boost::random::uniform_int_distribution<> dist(0, to);
-    return dist(mt19937);
+      const boost::random::uniform_int_distribution< T> dist(0, to);
+      return dist(mt19937);
 #endif
-  }
-  static int getUniform(const int from, const int to)
+    }
+    static T
+    getUniform(const T from, const T to)
+    {
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+      const boost::uniform_int<T> dist(from, to);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int<T> > gen(mt19937, dist);
+      return gen();
+#else
+      const boost::random::uniform_int_distribution< T> dist(from, to);
+      return dist(mt19937);
+#endif
+    }
+  };
+
+template< typename T>
+  struct Rand< T, false>
   {
+    static boost::normal_distribution< T> normal;
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<> dist(from, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
-    return gen();
+    static const boost::uniform_real<T> uniform;
+    static boost::variate_generator< boost::mt19937 &, boost::uniform_real<T> > uniformGenerator;
+    static boost::variate_generator< boost::mt19937 &, boost::normal_distribution<T> > normalGenerator;
 #else
-    const ::boost::random::uniform_int_distribution<> dist(from, to);
-    return dist(mt19937);
-#endif
-  }
-};
-
-template <>
-struct Rand<unsigned int>
-{
-  static unsigned int getUniform(const unsigned int to)
-  {
-    SSLIB_ASSERT(to > 0);
-
-#ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<unsigned int> dist(0, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen(mt19937, dist);
-    return gen();
-#else
-    const ::boost::random::uniform_int_distribution<unsigned int> dist(0, to);
-    return dist(mt19937);
-#endif
-  }
-  static unsigned int getUniform(const unsigned int from, const unsigned int to)
-  {
-    SSLIB_ASSERT(to > from);
-
-#ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<unsigned int> dist(from, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<unsigned int> > gen(mt19937, dist);
-    return gen();
-#else
-    const ::boost::random::uniform_int_distribution<unsigned int> dist(from, to);
-    return dist(mt19937);
-#endif
-  }
-};
-
-template <>
-struct Rand<long unsigned int>
-{
-  static long unsigned int getUniform(const long unsigned int to)
-  {
-    SSLIB_ASSERT(to > 0);
-
-#ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<long unsigned int> dist(0, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<long unsigned int> > gen(mt19937, dist);
-    return gen();
-#else
-    const ::boost::random::uniform_int_distribution<long unsigned int> dist(0, to);
-    return dist(mt19937);
-#endif
-  }
-  static long unsigned int getUniform(const long unsigned int from, const long unsigned int to)
-  {
-    SSLIB_ASSERT(to > from);
-
-#ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    const ::boost::uniform_int<long unsigned int> dist(from, to);
-    ::boost::variate_generator<boost::mt19937&, boost::uniform_int<long unsigned int> > gen(mt19937, dist);
-    return gen();
-#else
-    const ::boost::random::uniform_int_distribution<long unsigned int> dist(from, to);
-    return dist(mt19937);
-#endif
-  }
-};
-
-template <>
-struct Rand<double>
-{
-  static ::boost::normal_distribution<> normal;
-#ifdef SSLIB_USE_BOOST_OLD_RANDOM
-  static const ::boost::uniform_real<> uniform;
-  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::uniform_real<> > uniformGenerator;
-  static ::boost::variate_generator< ::boost::mt19937 &, ::boost::normal_distribution<> > normalGenerator;
-#else
-  static const ::boost::random::uniform_real_distribution<> uniform;
+    static const boost::random::uniform_real_distribution< T> uniform;
 #endif
 
-  static double getUniform()
-  {
+    static T
+    getUniform()
+    {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    return uniformGenerator();
+      return uniformGenerator();
 #else
-    return uniform(mt19937);
+      return uniform(mt19937);
 #endif
-  }
-  static double getUniform(const double to)
-  {
+    }
+    static T
+    getUniform(const T to)
+    {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    return uniformGenerator() * to;
+      return uniformGenerator() * to;
 #else
-    return uniform(mt19937) * to;
+      return uniform(mt19937) * to;
 #endif
-  }
-  static double getUniform(const double from, const double to)
-  {
-    return getUniform(to - from) + from;
-  }
-  static double getNormal()
-  {
+    }
+    static T
+    getUniform(const T from, const T to)
+    {
+      return getUniform(to - from) + from;
+    }
+    static T
+    getNormal()
+    {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    return normalGenerator();
+      return normalGenerator();
 #else
-    return normal(mt19937);
+      return normal(mt19937);
 #endif
-  }
-  static double getNormal(const double mean, const double variance)
-  {
-    ::boost::normal_distribution<> normal(mean, variance);
+    }
+    static T
+    getNormal(const T mean, const T variance)
+    {
+      boost::normal_distribution< > normal(mean, variance);
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    ::boost::variate_generator<boost::mt19937&, ::boost::normal_distribution<> >
+      boost::variate_generator<boost::mt19937&, boost::normal_distribution<T> >
       normalGen(mt19937, normal);
-    normalGen();
+      normalGen();
 #else
-    return normal(mt19937);
+      return normal(mt19937);
 #endif
-  }
-};
+    }
+  };
+
+template< typename T>
+  boost::normal_distribution< T> Rand< T, false>::normal(0.0, 1.0);
+#ifdef SSLIB_USE_BOOST_OLD_RANDOM
+template< typename T>
+  const boost::uniform_real<T> Rand< T, false>::uniform(0.0, 1.0);
+template< typename T>
+  boost::variate_generator< boost::mt19937 &, boost::uniform_real< T> >
+  Rand< T, false>::uniformGenerator(mt19937, uniform);
+template< typename T>
+  boost::variate_generator< boost::mt19937 &, boost::normal_distribution< T> >
+  Rand< T, false>::normalGenerator(mt19937, normal);
+#else
+template< typename T>
+  const boost::random::uniform_real_distribution< T> Rand< T, false>::uniform(
+      0.0, 1.0);
+#endif
 
 } // namespace detail
 
-inline void seed(const unsigned int randSeed)
+inline void
+seed(const unsigned int randSeed)
 {
-  ::std::srand(randSeed);
+  std::srand(randSeed);
   detail::mt19937.seed(randSeed);
 }
 
-inline void seed()
+inline void
+seed()
 {
-  ::std::srand(static_cast<unsigned int>(time(NULL)));
-  detail::mt19937.seed(static_cast<unsigned int>(time(NULL)));
+  std::srand(static_cast< unsigned int>(time(NULL)));
+  detail::mt19937.seed(static_cast< unsigned int>(time(NULL)));
 }
 
-template <typename T>
-inline T randu()
-{
-  return detail::Rand<T>::getUniform();
-}
+template< typename T>
+  inline T
+  randu()
+  {
+    return detail::Rand< T>::getUniform();
+  }
 
-template <typename T>
-inline T randu(const T to)
-{
-  return detail::Rand<T>::getUniform(to);
-}
+template< typename T>
+  inline T
+  randu(const T to)
+  {
+    return detail::Rand< T>::getUniform(to);
+  }
 
-template <typename T>
-inline T randu(const T from, const T to)
-{
-  return detail::Rand<T>::getUniform(from, to);
-}
+template< typename T>
+  inline T
+  randu(const T from, const T to)
+  {
+    return detail::Rand< T>::getUniform(from, to);
+  }
 
-template <typename T>
-inline T randn()
-{
-  return detail::Rand<T>::getNormal();
-}
-template <typename T>
-inline T randn(const T mean, const T variance)
-{
-  return detail::Rand<T>::getNormal(mean, variance);
-}
+template< typename T>
+  inline T
+  randn()
+  {
+    return detail::Rand< T>::getNormal();
+  }
+template< typename T>
+  inline T
+  randn(const T mean, const T variance)
+  {
+    return detail::Rand< T>::getNormal(mean, variance);
+  }
 
-
 }
 }
-
 
 #endif /* RANDOM_DETAIL_H */
