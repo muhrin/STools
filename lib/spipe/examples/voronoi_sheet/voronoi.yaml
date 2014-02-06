@@ -8,7 +8,7 @@ generateStructures:
       unitCell:
         abc: [17.0434, 20, 6.8, 90, 90, 90]
       slabs:
-        - debugSaveTriangulation: true
+        - debugSaveTriangulation: false
           pos: 0 0 3.4
           regions:
            - basis:
@@ -22,13 +22,17 @@ generateStructures:
              random:
               boundary: [0 8, 0 12, 17 12, 17 8]
               numPoints: 18
-              minsep: 2.4
+              minsep: 2.2
            - basis:
                ordered: [C]
              lattice:
               startPoint: 0.547 13.06
               boundary: [0 12.3, 0 18.5, 16.9 18.5, 16.9 12.3]
               lattice: [2.44 0, 1.22 2.11]
+
+removeDuplicates:
+  comparator:
+    sortedDist:
 
 pasteFragment:
   fragment: hydrogen_termination.res
