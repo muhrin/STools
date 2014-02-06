@@ -27,7 +27,7 @@ template< >
   struct convert< spl::factory::AtomSpeciesCount> : public spl::yaml::detail::ConvertStreamableScalar<
       spl::factory::AtomSpeciesCount>
   {
-    typedef ConvertStreamableScalar< spl::factory::AtomSpeciesCount> Base;
+    typedef spl::yaml::detail::ConvertStreamableScalar< spl::factory::AtomSpeciesCount> Base;
     using Base::encode;
     using Base::decode;
   };

@@ -51,8 +51,8 @@ template< typename T>
     getUniform(const T to)
     {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-      const boost::uniform_int<T> dist(0, to);
-      boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(mt19937, dist);
+      const boost::uniform_int< T> dist(0, to);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int< T> > gen(mt19937, dist);
       return gen();
 #else
       const boost::random::uniform_int_distribution< T> dist(0, to);
@@ -63,8 +63,8 @@ template< typename T>
     getUniform(const T from, const T to)
     {
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-      const boost::uniform_int<T> dist(from, to);
-      boost::variate_generator<boost::mt19937&, boost::uniform_int<T> > gen(mt19937, dist);
+      const boost::uniform_int< T> dist(from, to);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int< T> > gen(mt19937, dist);
       return gen();
 #else
       const boost::random::uniform_int_distribution< T> dist(from, to);
@@ -78,9 +78,9 @@ template< typename T>
   {
     static boost::normal_distribution< T> normal;
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-    static const boost::uniform_real<T> uniform;
-    static boost::variate_generator< boost::mt19937 &, boost::uniform_real<T> > uniformGenerator;
-    static boost::variate_generator< boost::mt19937 &, boost::normal_distribution<T> > normalGenerator;
+    static const boost::uniform_real< T> uniform;
+    static boost::variate_generator< boost::mt19937 &, boost::uniform_real< T> > uniformGenerator;
+    static boost::variate_generator< boost::mt19937 &, boost::normal_distribution< T> > normalGenerator;
 #else
     static const boost::random::uniform_real_distribution< T> uniform;
 #endif
@@ -120,9 +120,9 @@ template< typename T>
     static T
     getNormal(const T mean, const T variance)
     {
-      boost::normal_distribution< > normal(mean, variance);
+      boost::normal_distribution< T> normal(mean, variance);
 #ifdef SSLIB_USE_BOOST_OLD_RANDOM
-      boost::variate_generator<boost::mt19937&, boost::normal_distribution<T> >
+      boost::variate_generator<boost::mt19937&, boost::normal_distribution< T> >
       normalGen(mt19937, normal);
       normalGen();
 #else

@@ -119,7 +119,7 @@ ParamGeomOptimise::in(spipe::common::StructureData * const data)
 void
 ParamGeomOptimise::init()
 {
-  BOOST_ASSERT_MSG(
+  SPIPE_ASSERT_MSG(
       getOptimiser().getPotential() != NULL && getOptimiser().getPotential()->getParameterisable() != NULL,
       "Must use geometry optimiser with parameterisable potential.");
   myParamPotential = getOptimiser().getPotential()->getParameterisable();

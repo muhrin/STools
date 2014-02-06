@@ -17,15 +17,6 @@ message(STATUS "Configuring SPL ${SSLIB_VERSION}")
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
 
-# First add any user specified paths to the package search array
-set(CMAKE_PREFIX_PATH
-  "${BOOST_ROOT}"
-  "${ARMADILLO_ROOT}"
-  "${CGAL_ROOT}"
-  "${LAPACK_ROOT}"
-)
-
-#
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
@@ -46,7 +37,7 @@ endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 #
 # CGAL #
-find_package(CGAL QUIET)
+find_package(CGAL QUIET COMPONENTS CGAL CGAL_Core)
 if(CGAL_FOUND)
   include( ${CGAL_USE_FILE} )
 endif(CGAL_FOUND)
@@ -157,6 +148,11 @@ if(SPL_WITH_CGAL)
     ${CGAL_Core_LIBRARY}
   )
 endif(SPL_WITH_CGAL)
+
+install(TARGETS sslib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 ###########
 ## Tests ##

@@ -30,7 +30,7 @@ template< >
   struct convert< spl::io::ResourceLocator> : public spl::yaml::detail::ConvertStreamableScalar<
       spl::io::ResourceLocator>
   {
-    typedef ConvertStreamableScalar< spl::io::ResourceLocator> Base;
+    typedef spl::yaml::detail::ConvertStreamableScalar< spl::io::ResourceLocator> Base;
     using Base::encode;
     using Base::decode;
   };

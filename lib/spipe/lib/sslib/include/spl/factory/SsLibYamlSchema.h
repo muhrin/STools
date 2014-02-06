@@ -402,6 +402,8 @@ SCHEMER_MAP(BuilderSchema, Builder)
   element("overlap", &Builder::overlap);
 }
 
+#ifdef SPL_WITH_CGAL
+
 struct VoronoiSlabRegionBasis
 {
   boost::optional< std::vector< std::string> > ordered;
@@ -505,16 +507,22 @@ SCHEMER_MAP(VoronoiSlabGeneratorType, VoronoiSlabGenerator)
   element("unitCell", &VoronoiSlabGenerator::unitCell);
 }
 
+#endif // SPL_WITH_CGAL
+
 struct StructureGenerator
 {
   boost::optional< Builder> builder;
+#ifdef SPL_WITH_CGAL
   boost::optional< VoronoiSlabGenerator> voronoiSlab;
+#endif
 };
 
 SCHEMER_MAP(StructureGeneratorSchema, StructureGenerator)
 {
   element("builder", &StructureGenerator::builder);
+#ifdef SPL_WITH_CGAL
   element("voronoiSlab", &StructureGenerator::voronoiSlab);
+#endif
 }
 
 } // namespace builder
