@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 
 set(SCHEMER_VERSION_MAJOR 0)
 set(SCHEMER_VERSION_MINOR 1)
-set(SCHEMER_VERSION_PATCH 0)
+set(SCHEMER_VERSION_PATCH 1)
 set(SCHEMER_VERSION "${SCHEMER_VERSION_MAJOR}.${SCHEMER_VERSION_MINOR}.${SCHEMER_VERSION_PATCH}")
 
 message(STATUS "Configuring Schemer ${SCHEMER_VERSION}")
@@ -50,6 +50,7 @@ set_property(TARGET PROPERTY PROJECT_LABEL "Schemer")
 
 
 set(schemer_Header_Files
+  include/schemer/Assert.h
   include/schemer/Enumeration.h
   include/schemer/List.h
   include/schemer/Map.h

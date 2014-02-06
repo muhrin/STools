@@ -11,9 +11,10 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/assert.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
+
+#include "schemer/Assert.h"
 
 // NAMESPACES ////////////////////////////////
 
@@ -31,7 +32,7 @@ ParseLogError::operator =(const ParseLogError & rhs)
 void
 ParseLogError::print(std::ostream * const os) const
 {
-  BOOST_ASSERT(os);
+  SCHEMER_ASSERT(os);
 
   *os << myPath << ": " << myMessage << " code: " << myCode
       << std::endl;

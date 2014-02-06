@@ -21,34 +21,34 @@
 
 #define SCHEMER_REGISTER(SCHEMA_TYPE, BINDING_TYPE) \
   const SCHEMA_TYPE & getType(const BINDING_TYPE &) \
-  { return schemer::getTypeInstance< SCHEMA_TYPE>(); }
+  { return ::schemer::getTypeInstance< SCHEMA_TYPE>(); }
 
 #define SCHEMER_MAP(NAME, TYPE) \
-  struct NAME : public schemer::HeteroMap< TYPE> \
+  struct NAME : public ::schemer::HeteroMap< TYPE> \
   { NAME(); }; \
   inline const NAME & getType(const TYPE &) \
-  { return schemer::getTypeInstance< NAME>(); } \
+  { return ::schemer::getTypeInstance< NAME>(); } \
   inline NAME::NAME()
 
-#define SCHEMER_HOMO_MAP(NAME) SCHEMER_HOMO_MAP_TYPED(NAME, schemer::String)
+#define SCHEMER_HOMO_MAP(NAME) SCHEMER_HOMO_MAP_TYPED(NAME, ::schemer::String)
 
 #define SCHEMER_HOMO_MAP_TYPED(NAME, TYPE) \
-  SCHEMER_HOMO_MAP_KEY_TYPED(NAME, schemer::String, TYPE)
+  SCHEMER_HOMO_MAP_KEY_TYPED(NAME, ::schemer::String, TYPE)
 
 #define SCHEMER_HOMO_MAP_KEY_TYPED(NAME, KEY, TYPE) \
-  struct NAME : public schemer::Map< KEY, TYPE> \
+  struct NAME : public ::schemer::Map< KEY, TYPE> \
   { NAME(); }; \
   inline NAME::NAME()
 
 #define SCHEMER_ENUM(NAME, TYPE) \
-  struct NAME : public schemer::Enumeration< TYPE> \
+  struct NAME : public ::schemer::Enumeration< TYPE> \
   { NAME(); }; \
   inline const NAME & getType(const TYPE & ) \
-  { return schemer::getTypeInstance< NAME>(); } \
+  { return ::schemer::getTypeInstance< NAME>(); } \
   inline NAME::NAME()
 
 #define SCHEMER_LIST(NAME, TYPE) \
-  struct NAME : public schemer::List< TYPE> \
+  struct NAME : public ::schemer::List< TYPE> \
   { NAME(); }; \
   inline NAME::NAME()
 

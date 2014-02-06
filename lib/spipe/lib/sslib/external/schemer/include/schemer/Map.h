@@ -15,9 +15,9 @@
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 
+#include "schemer/Assert.h"
 #include "schemer/detail/Type.h"
 #include "schemer/Scalar.h"
 
@@ -59,8 +59,8 @@ template< typename KeyType, typename EntryType>
     typedef typename KeyType::BindingType KeyBinding;
     typedef typename EntryType::BindingType EntryBinding;
     typedef detail::HomoMapElement< EntryType> Element;
-    BOOST_STATIC_ASSERT_MSG(
-        (boost::is_base_of< Scalar< KeyBinding>, KeyType>::value),
+    SCHEMER_STATIC_ASSERT_MSG(
+        (boost::is_base_of<Scalar<KeyBinding>, KeyType>::value),
         "Key must be a scalar schema type.");
   public:
     typedef std::map< KeyBinding, EntryBinding> BindingType;

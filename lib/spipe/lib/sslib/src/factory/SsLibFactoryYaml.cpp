@@ -404,9 +404,9 @@ Factory::createVoronoiSlabGenerator(
     arma::mat44 transform;
     transform.eye();
     if(s.pos)
-      math::setTranslation(transform, *s.pos);
+      math::setTranslation(transform, s.pos->t());
     if(s.rot)
-      math::setRotation(transform, *s.rot);
+      math::setRotation(transform, s.rot->t());
 
     build_cell::VoronoiSlabGenerator::Slab slab(transform);
     if(s.debugSaveTriangulation && *s.debugSaveTriangulation)

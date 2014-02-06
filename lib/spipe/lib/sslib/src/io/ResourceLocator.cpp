@@ -169,9 +169,9 @@ operator <<(std::ostream & os, const ResourceLocator & loc)
 std::istream &
 operator >>(std::istream &in, ResourceLocator & speciesCount)
 {
-  std::stringstream ss;
-  ss << in;
-  speciesCount.set(ss.str());
+  std::string loc;
+  in >> loc;
+  speciesCount.set(loc);
   return in;
 }
 
