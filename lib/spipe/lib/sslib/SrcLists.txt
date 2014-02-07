@@ -81,6 +81,7 @@ set(sslib_Source_Files__io
   src/io/BoostFilesystem.cpp
   src/io/CastepReader.cpp
   src/io/CellReaderWriter.cpp
+  src/io/InfoLine.cpp
   src/io/Parsing.cpp
   src/io/ResourceLocator.cpp
   src/io/ResReaderWriter.cpp

@@ -133,6 +133,7 @@ set(sslib_Header_Files__io
   include/spl/io/BoostFilesystem.h
   include/spl/io/CastepReader.h
   include/spl/io/CellReaderWriter.h
+  include/spl/io/InfoLine.h
   include/spl/io/IStructureReader.h
   include/spl/io/IStructureWriter.h
   include/spl/io/Parsing.h
