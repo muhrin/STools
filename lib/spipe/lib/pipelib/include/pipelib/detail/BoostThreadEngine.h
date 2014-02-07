@@ -486,15 +486,9 @@ template< typename Pipe, typename Shared, typename Global>
   void
   BoostThreadEngine< Pipe, Shared, Global>::runTillFinished()
   {
-    while(getNumRunning() > 0)
-    {
-      if(myRoot->myThreading->threadService.stopped())
-        myRoot->myThreading->threadService.reset();
 
-      const size_t numRan = myRoot->myThreading->threadService.poll_one();
-      if(numRan == 0)
-        ::boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-    }
+    while(getNumRunning() > 0)
+      myRoot->myThreading->threadService.poll_one();
   }
 
 template< typename Pipe, typename Shared, typename Global>

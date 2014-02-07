@@ -1,6 +1,6 @@
 
 nProcs: &nProcs
-  1
+  2
 
 runPotentialParamsQueue:
   pipe:
@@ -73,6 +73,5 @@ rngSeed:
   123
 
 engine:
-  serial:
-#  multithreaded:
-#    nThreads: *nProcs
+  multithreaded:
+    nThreads: *nProcs
