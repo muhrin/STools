@@ -25,6 +25,7 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Voronoi_diagram_2.h>
+#include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
@@ -76,15 +77,6 @@ class VoronoiSlabGenerator::Slab
 public:
   typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 
-  struct SiteInfo;
-
-private:
-  typedef CGAL::Triangulation_vertex_base_with_info_2< SiteInfo, K> Vb;
-  typedef CGAL::Triangulation_data_structure_2< Vb> Tds;
-
-public:
-  typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
-
   struct SiteInfo
   {
     SiteInfo() :
@@ -96,7 +88,18 @@ public:
     const VoronoiSlabGenerator::SlabRegion * generatedBy;
     bool isImage;
   };
+  struct FaceInfo
+  {
+    std::string atomSpecies;
+  };
 
+private:
+  typedef CGAL::Triangulation_vertex_base_with_info_2< SiteInfo, K> Vb;
+  typedef CGAL::Triangulation_face_base_with_info_2< FaceInfo, K> Fb;
+  typedef CGAL::Triangulation_data_structure_2< Vb, Fb> Tds;
+
+public:
+  typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
   class SlabData;
 
 private:

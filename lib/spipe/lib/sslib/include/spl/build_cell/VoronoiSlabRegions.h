@@ -146,6 +146,9 @@ private:
       const std::set< Voronoi::Vertex_handle>::const_iterator & it,
       std::set< Voronoi::Vertex_handle> * const vertices,
       std::vector< common::Atom> * const atoms) const;
+  size_t
+  nextBasisAtomIndex(const Voronoi & vd,
+      const Voronoi::Vertex_handle & vtx) const;
 
   std::vector< std::string> mySpecies;
 };

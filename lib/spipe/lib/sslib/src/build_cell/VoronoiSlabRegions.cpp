@@ -417,8 +417,10 @@ OrderedBasis::generateAtoms(const Voronoi & vd,
     std::vector< common::Atom> * const atoms) const
 {
   std::set< Voronoi::Vertex_handle> toVisit(vertices);
+  // Place all the atoms
   while(!toVisit.empty())
-    placeAtoms(vd, 0, toVisit.begin(), &toVisit, atoms);
+    placeAtoms(vd, nextBasisAtomIndex(vd, *toVisit.begin()), toVisit.begin(),
+        &toVisit, atoms);
   return true;
 }
 
@@ -446,6 +448,8 @@ OrderedBasis::placeAtoms(const Voronoi & vd, const size_t basisIdx,
   common::Atom atom(mySpecies[basisIdx]);
   atom.setPosition(r);
   atoms->push_back(atom);
+  // Save the atom species with the dual face in the triangulation ds
+  vtx->dual()->info().atomSpecies = atom.getSpecies();
 
   const Voronoi::Halfedge_around_vertex_circulator start =
       vd.incident_halfedges(vtx);
@@ -463,6 +467,37 @@ OrderedBasis::placeAtoms(const Voronoi & vd, const size_t basisIdx,
     ++cl;
   }
   while(cl != start);
+}
+
+size_t
+OrderedBasis::nextBasisAtomIndex(const Voronoi & vd,
+    const Voronoi::Vertex_handle & vtx) const
+{
+  const Voronoi::Halfedge_around_vertex_circulator start =
+      vd.incident_halfedges(vtx);
+  Voronoi::Halfedge_around_vertex_circulator cl = start;
+  size_t idx = 0;
+  do
+  {
+    const Voronoi::Vertex_handle neigh = cl->source();
+    if(!neigh->dual()->info().atomSpecies.empty())
+    {
+      // Find out if the neighbouring atom is one in our basis
+      const std::vector< std::string>::const_iterator it = std::find(
+          mySpecies.begin(), mySpecies.end(),
+          neigh->dual()->info().atomSpecies);
+      if(it != mySpecies.end())
+      {
+        idx = (std::distance(mySpecies.begin(), it) + 1) % mySpecies.size();
+        break;
+      }
+    }
+
+    ++cl;
+    ++cl;
+  }
+  while(cl != start);
+  return idx;
 }
 
 }
