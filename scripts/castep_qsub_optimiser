@@ -103,11 +103,11 @@ log "Optimisation of ${filename} finished."
 declare -r CASTEP=${filename}.castep
 if [ -e "$CASTEP" ]
 then
-  sconvert ${filename}.castep\#last $STRUCTURE
+  sconvert ${CASTEP}\#last $STRUCTURE
   echo -e "\n\n#  OUTCOME" >> $SETTINGS
   echo "successful: true" >> $SETTINGS
   # Get information from the castep file
-  sinfo graphene.castep\#last -f -n -i 'finalEnthalpy: $h$\nfinalInternalEnergy: $u$ \nfinalPressure: $p$ \n' >> $SETTINGS
+  sinfo ${CASTEP}\#last -f -n -i 'finalEnthalpy: $h$\nfinalInternalEnergy: $u$ \nfinalPressure: $p$ \n' >> $SETTINGS
   iters=`grep -oE "finished iteration .*" $CASTEP | tail -n 1 | sed -r 's/finished iteration[[:blank:]]+([[:digit:]]+)[[:blank:]]+.*/\1/'`
   if [ -n "$iters" ]
   then
