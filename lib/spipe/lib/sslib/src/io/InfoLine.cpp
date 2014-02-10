@@ -33,7 +33,12 @@ InfoLine::InfoLine()
 
 InfoLine::InfoLine(const common::Structure & str)
 {
+  set(str);
+}
 
+void
+InfoLine::set(const common::Structure & str)
+{
   if(!str.getName().empty())
     name = str.getName();
 
@@ -61,6 +66,9 @@ InfoLine::InfoLine(const common::Structure & str)
       enthalpy = *sEnthalpy;
   }
 
+  // Num atoms
+  numAtoms = str.getNumAtoms();
+
   // Space group
   {
     const std::string * const sg = str.getProperty(
@@ -78,11 +86,23 @@ InfoLine::InfoLine(const common::Structure & str)
   }
 }
 
+void
+InfoLine::populate(common::Structure * const structure) const
+{
+  if(name)
+    structure->setName(*name);
+
+  structure->setProperty(properties::general::PRESSURE, pressure);
+  structure->setProperty(properties::general::ENTHALPY, enthalpy);
+  structure->setProperty(properties::general::SPACEGROUP_SYMBOL, spaceGroup);
+  structure->setProperty(properties::searching::TIMES_FOUND, timesFound);
+}
+
 std::ostream &
 operator <<(std::ostream & os, const InfoLine & line)
 {
   // Name
-  if(!line.name)
+  if(line.name)
     os << *line.name;
   else
     os << detail::EMPTY;
@@ -187,12 +207,14 @@ operator >>(std::istream &in, InfoLine & line)
       return in;
   }
 
-  std::string iucSymbol = *it;
-  if(!iucSymbol.empty() && iucSymbol[0] == '(')
-    iucSymbol.erase(0, 1);
-  if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
-    iucSymbol.erase(iucSymbol.size() - 1, 1);
-  detail::setValue(*it, &line.spaceGroup);
+  {
+    std::string iucSymbol = *it;
+    if(!iucSymbol.empty() && iucSymbol[0] == '(')
+      iucSymbol.erase(0, 1);
+    if(!iucSymbol.empty() && iucSymbol[iucSymbol.size() - 1] == ')')
+      iucSymbol.erase(iucSymbol.size() - 1, 1);
+    detail::setValue(iucSymbol, &line.spaceGroup);
+  }
 
   // 8 = 'n'
   if(++it == end)

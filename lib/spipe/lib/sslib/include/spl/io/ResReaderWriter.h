@@ -52,9 +52,6 @@ public:
 
 private:
   bool
-  parseTitle(common::Structure & structure,
-      const std::string & titleLine) const;
-  bool
   parseCell(common::Structure & structure, const std::string & cellLine) const;
   bool
   parseAtoms(common::Structure & structure, std::istream & inStream,

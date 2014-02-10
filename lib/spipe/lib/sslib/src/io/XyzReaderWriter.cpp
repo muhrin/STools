@@ -124,6 +124,7 @@ XyzReaderWriter::readStructure(const ResourceLocator & resourceLocator) const
   // Title line
   InfoLine infoLine;
   is >> infoLine;
+  infoLine.populate(str.get());
 
   // Atoms
   readAtoms(&is, str.get());

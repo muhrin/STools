@@ -12,6 +12,7 @@
 #include "spl/SSLib.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 #include "spl/utility/HeterogeneousMap.h"
 
@@ -21,7 +22,9 @@ namespace utility {
 class PropertiesObject
 {
 public:
-  PropertiesObject() {}
+  PropertiesObject()
+  {
+  }
   PropertiesObject(const PropertiesObject & toCopy)
   {
     *this = toCopy;
@@ -48,19 +51,25 @@ public:
 
   template< typename T>
     void
-    setPropertyFromString(utility::Key< T> & key, const ::std::string & value);
+    setProperty(utility::Key< T> & key, const boost::optional< T> & value);
+
+  template< typename T>
+    void
+    setPropertyFromString(utility::Key< T> & key, const std::string & value);
 
   template< typename T>
     bool
     eraseProperty(utility::Key< T> & key);
 
 protected:
-  HeterogeneousMap & getProperties()
+  HeterogeneousMap &
+  getProperties()
   {
     return myTypedProperties;
   }
 
-  const HeterogeneousMap & getProperties() const
+  const HeterogeneousMap &
+  getProperties() const
   {
     return myTypedProperties;
   }
@@ -92,10 +101,21 @@ template< typename T>
 
 template< typename T>
   void
-  PropertiesObject::setPropertyFromString(utility::Key< T> & key,
-      const ::std::string & value)
+  PropertiesObject::setProperty(utility::Key< T> & key,
+      const boost::optional< T> & value)
   {
-    setProperty(key, ::boost::lexical_cast< T>(value));
+    if(value)
+      setProperty(key, *value);
+    else
+      myTypedProperties.erase(key);
+  }
+
+template< typename T>
+  void
+  PropertiesObject::setPropertyFromString(utility::Key< T> & key,
+      const std::string & value)
+  {
+    setProperty(key, boost::lexical_cast< T>(value));
   }
 
 template< typename T>

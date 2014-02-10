@@ -28,7 +28,6 @@ class Structure;
 
 namespace io {
 
-
 struct InfoLine
 {
   InfoLine();
@@ -39,14 +38,18 @@ struct InfoLine
   boost::optional< double> enthalpy;
   boost::optional< double> spinDensity;
   boost::optional< double> integratedSpinDensity;
-  boost::optional< double> numAtoms;
+  boost::optional< size_t> numAtoms;
   boost::optional< std::string> spaceGroup;
   boost::optional< unsigned int> timesFound;
+
+  void
+  set(const common::Structure & structure);
+  void
+  populate(common::Structure * const structure) const;
 };
 
 ::std::ostream &
 operator <<(std::ostream & os, const InfoLine & line);
-
 
 std::istream &
 operator >>(std::istream &in, InfoLine & line);
@@ -54,21 +57,21 @@ operator >>(std::istream &in, InfoLine & line);
 namespace detail {
 extern const std::string EMPTY;
 
-template < typename T>
-void
-setValue(const std::string str, boost::optional< T> * const member)
-{
-  if(str.empty() || str == EMPTY)
-    return;
+template< typename T>
+  void
+  setValue(const std::string str, boost::optional< T> * const member)
+  {
+    if(str.empty() || str == EMPTY)
+      return;
 
-  try
-  {
-    *member = boost::lexical_cast< T>(str);
+    try
+    {
+      *member = boost::lexical_cast< T>(str);
+    }
+    catch(const boost::bad_lexical_cast & /*e*/)
+    {
+    }
   }
-  catch(const boost::bad_lexical_cast & /*e*/)
-  {
-  }
-}
 
 }
 }
