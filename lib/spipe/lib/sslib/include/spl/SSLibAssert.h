@@ -16,11 +16,11 @@
 
 #define SSLIB_ASSERT(expr) BOOST_ASSERT(expr)
 
-#if (BOOST_VERSION / 100000) <= 1 && ((BOOST_VERSION / 100) % 1000) <= 45
+#ifdef BOOST_ASSERT_MSG
+#  define SSLIB_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
+#else
   // No BOOST_ASSERT_MSG.  Was introduced in 1.46
 #  define SSLIB_ASSERT_MSG(expr, msg) BOOST_ASSERT(expr)
-#else
-#  define SSLIB_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
 #endif
 
 #define SSLIB_DIE_NOT_IMPLEMENTED() SSLIB_ASSERT_MSG(false, "Not implemented yet")

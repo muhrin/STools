@@ -6,8 +6,9 @@
 #include "PrintStringBlock.h"
 #include "RandomStringBlock.h"
 
-int
-main()
+#include "pipelibtest.h"
+
+BOOST_AUTO_TEST_CASE(Strings)
 {
   using namespace pipelib;
   using std::string;
@@ -16,7 +17,11 @@ main()
   typedef pipelib::SimpleBarrier< string, const void *, const void *> Barrier;
 
   // Create the pipeline
+#ifdef PIPELIB_USE_BOOST_THREAD
   NoSharedGlobal< string>::BoostThreadEngineType engine(4);
+#else
+  NosharedGlobal< string>::SerialEngine engine;
+#endif
 
   // Create the start block
   BlockHandle start(new RandomStringBlock(2));
@@ -32,7 +37,5 @@ main()
 
   // Run the pipe
   engine.run(start);
-
-  return 0;
 }
 

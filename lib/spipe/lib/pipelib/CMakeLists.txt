@@ -5,25 +5,10 @@ project(Pipelib)
 
 set(PIPELIB_VERSION_MAJOR 0)
 set(PIPELIB_VERSION_MINOR 5)
-set(PIPELIB_VERSION_PATCH 1)
+set(PIPELIB_VERSION_PATCH 2)
 set(PIPELIB_VERSION "${PIPELIB_VERSION_MAJOR}.${PIPELIB_VERSION_MINOR}.${PIPELIB_VERSION_PATCH}")
 message(STATUS "Configuring Pipelib ${PIPELIB_VERSION}")
 
-
-## CONFIGURATION SETTINGS ##############################
-
-# Custom paths to libraries ####
-set(BOOST_ROOT "" CACHE FILEPATH "Path to boost library")
-
-# Build options ###
-set(PIPELIB_ENABLE_TESTING FALSE CACHE BOOL "Build pipelib tests")
-
-set(PIPELIB_USE_BOOST_THREAD FALSE CACHE BOOL "Enable use of boost threads.")
-
-configure_file(
-  "${PROJECT_SOURCE_DIR}/include/pipelib/PipelibConfig.h.in"
-  "${PROJECT_BINARY_DIR}/include/pipelib/PipelibConfig.h"
-)
 
 ## FIND PACKAGES ########################################
 
@@ -31,13 +16,32 @@ configure_file(
 # Boost #
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB)
-find_package(Boost 1.36.0 REQUIRED)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost 1.36.0 QUIET REQUIRED)
 
-if(PIPELIB_USE_BOOST_THREAD)
-  set(Boost_USE_MULTITHREADED ON)
-  find_package(Boost 1.36.0 COMPONENTS system thread REQUIRED)
-  find_package(Threads REQUIRED)
-endif(PIPELIB_USE_BOOST_THREAD)
+find_package(Boost 1.36.0 QUIET COMPONENTS thread system)
+find_package(Threads QUIET)
+if(NOT DEFINED PIPELIB_WITH_BOOST_THREAD)
+  # If we found what we need to run with threads then do so
+  set(PIPELIB_USE_BOOST_THREAD Boost_FOUND AND Threads_FOUND)
+elseif(PIPELIB_WITH_BOOST_THREAD)
+  if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Could not find boost thread which is required when using PIPELIB_WITH_BOOST_THREAD")
+  elseif(NOT Threads_FOUND)
+    message(FATAL_ERROR "Could not find threads library which is required when using PIPELIB_WITH_BOOST_THREAD")
+  endif()
+endif()
+
+## CONFIGURATION SETTINGS ##############################
+
+# Build options ###
+set(PIPELIB_BUILD_TESTS FALSE CACHE BOOL "Build pipelib tests")
+set(PIPELIB_USE_BOOST_THREAD ${PIPELIB_USE_BOOST_THREAD} CACHE INTERNAL  "Enable use of boost threads.")
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/pipelib/PipelibConfig.h.in"
+  "${PROJECT_BINARY_DIR}/include/pipelib/PipelibConfig.h"
+)
 
 ## pipelib
 
@@ -45,7 +49,6 @@ set(pipelib_Header_Files__
 #  ${PROJECT_BINARY_DIR}/include/pipelib/PipelibConfig.h
   include/pipelib/Barrier.h
   include/pipelib/Block.h
-  include/pipelib/BlockHandle.h
   include/pipelib/BlockConnector.h
   include/pipelib/BlockHandle.h
   include/pipelib/BlockIterator.h
@@ -134,6 +137,6 @@ set(PIPELIB_INCLUDE_DIRS
 ## Tests ##
 ###########
 
-if(PIPELIB_ENABLE_TESTING)
+if(PIPELIB_BUILD_TESTS)
   add_subdirectory(tests)
-endif(PIPELIB_ENABLE_TESTING)
+endif(PIPELIB_BUILD_TESTS)

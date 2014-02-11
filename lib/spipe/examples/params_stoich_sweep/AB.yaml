@@ -7,8 +7,8 @@ runPotentialParamsQueue:
     # START stoich pipe
     searchStoichiometries:
       ranges:
-        A: 0~4
-        B: 0~4
+        A: 4~10
+        B: 4~10
       pipe:
       # START search pipe
         generateStructures:

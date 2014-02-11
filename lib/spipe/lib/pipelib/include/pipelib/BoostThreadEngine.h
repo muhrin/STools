@@ -191,8 +191,17 @@ template< typename Pipe, typename Shared, typename Global>
     // Threading stuff
     struct Threading
     {
+      Threading(): work(threadService)
+      {
+      }
+      ~Threading()
+      {
+        threadService.stop();
+        threads.join_all();
+      }
       ::boost::thread_group threads;
       ::boost::asio::io_service threadService;
+      ::boost::asio::io_service::work work;
     };
 
     ::boost::scoped_ptr<Threading> myThreading;

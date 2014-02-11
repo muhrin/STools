@@ -310,23 +310,19 @@ template< typename Pipe, typename Shared, typename Global>
     myFinishedSink = NULL;
     myDroppedSink = NULL;
     clear();
+    if(isRoot())
+    {
+      myThreading.reset(new Threading());
+      for(size_t i = 1; i < myNumThreads; ++i)
+        myThreading->threads.create_thread(
+            ::boost::bind(&boost::asio::io_service::run, &myThreading->threadService));
+    }
   }
 
 template< typename Pipe, typename Shared, typename Global>
   void
   BoostThreadEngine< Pipe, Shared, Global>::doRun()
   {
-    namespace asio = ::boost::asio;
-
-    if(isRoot())
-    {
-      myThreading.reset(new Threading());
-
-      for(size_t i = 1; i < myNumThreads; ++i)
-        myThreading->threads.create_thread(
-            ::boost::bind(&asio::io_service::run, &myThreading->threadService));
-    }
-
     postTask(
         ::boost::bind(&Self::startTask, this, myStartBlock->asStartBlock()));
 
@@ -341,12 +337,6 @@ template< typename Pipe, typename Shared, typename Global>
       ++numReleases;
       if(numReleases >= myMaxReleases)
         break;
-    }
-
-    if(isRoot())
-    {
-      myThreading->threads.join_all();
-      myThreading.reset();
     }
   }
 
@@ -486,7 +476,6 @@ template< typename Pipe, typename Shared, typename Global>
   void
   BoostThreadEngine< Pipe, Shared, Global>::runTillFinished()
   {
-
     while(getNumRunning() > 0)
       myRoot->myThreading->threadService.poll_one();
   }
