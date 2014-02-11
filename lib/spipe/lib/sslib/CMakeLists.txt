@@ -37,7 +37,7 @@ endif(NOT ARMADILLO_INCLUDE_DIRS)
 
 #
 # CGAL #
-find_package(CGAL QUIET COMPONENTS CGAL CGAL_Core)
+find_package(CGAL QUIET COMPONENTS Core)
 if(CGAL_FOUND)
   include( ${CGAL_USE_FILE} )
 endif(CGAL_FOUND)

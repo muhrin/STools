@@ -1,6 +1,7 @@
 rngSeed:
   time
 
+
 generateStructures:
   num: 100
   generator:
@@ -8,21 +9,21 @@ generateStructures:
       unitCell:
         abc: [17.0434, 20, 6.8, 90, 90, 90]
       slabs:
-        - debugSaveTriangulation: false
+        - debugSaveTriangulation: true
           pos: 0 0 3.4
           regions:
            - basis:
                ordered: [C]
              lattice:
               startPoint: 0 2.75
-              boundary: [0 1, 0 7.746, 16.9 7.746, 16.9 1]
+              boundary: [0 1, 0 7.0, 16.9 7.0, 16.9 1]
               lattice: [0 2.56, 2.13 1.273]
            - basis:
                ordered: [C]
              random:
-              boundary: [0 8, 0 12, 17 12, 17 8]
-              numPoints: 18
-              minsep: 2.2
+              boundary: [0 7, 0 12.3, 17 12.3, 17 7]
+              numPoints: 15
+              minsep: 2.4
            - basis:
                ordered: [C]
              lattice:
@@ -42,7 +43,7 @@ separateAtoms:
     B~N: 0.8
     B~C: 0.8
     B~B: 0.8
-    C~C: 0.8
+    C~C: 1.0
     C~N: 0.8
     N~N: 0.8
     C~H: 0.8
@@ -51,7 +52,9 @@ writeStructures:
   format: cell
 
 engine:
-  serial:
+  multithreaded:
+    nThreads: 2
+#  serial:
 
 
 run: generateStructures | pasteFragment | separateAtoms | writeStructures

@@ -1,14 +1,14 @@
 
 nProcs: &nProcs
-  1
+  2
 
 runPotentialParamsQueue:
   pipe:
     # START stoich pipe
     searchStoichiometries:
       ranges:
-        A: 0~4
-        B: 0~4
+        A: 4~10
+        B: 4~10
       pipe:
       # START search pipe
         generateStructures:
@@ -73,6 +73,5 @@ rngSeed:
   123
 
 engine:
-  serial:
-#  multithreaded:
-#    nThreads: *nProcs
+  multithreaded:
+    nThreads: *nProcs

@@ -98,9 +98,9 @@ include_directories(
 )
 
 
-############################
-## SSLibTest executable   ##
-############################
+##########################
+## SplTest executable   ##
+##########################
 add_executable(spltest
   ${tests_Files}
   sslibtest.cpp
