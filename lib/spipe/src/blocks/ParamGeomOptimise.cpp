@@ -71,6 +71,8 @@ ParamGeomOptimise::ParamGeomOptimise(
 void
 ParamGeomOptimise::pipelineInitialising()
 {
+  // Call the parent to let them deal with the initialising event too
+  GeomOptimise::pipelineInitialising();
   myParamPotential->updateSpeciesDb(
       &getEngine()->sharedData().getSpeciesDatabase());
 }
