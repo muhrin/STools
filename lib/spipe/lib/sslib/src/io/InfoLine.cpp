@@ -129,7 +129,17 @@ operator <<(std::ostream & os, const InfoLine & line)
     os << "0.0";
 
   // Spin density
-  os << " 0 0 ";
+  os << " ";
+  if(line.spinDensity)
+    os << *line.spinDensity;
+  else
+    os << "0.0";
+
+  os << " ";
+  if(line.integratedSpinDensity)
+    os << *line.integratedSpinDensity;
+  else
+    os << "0.0";
 
   // Num atoms
   if(line.numAtoms)

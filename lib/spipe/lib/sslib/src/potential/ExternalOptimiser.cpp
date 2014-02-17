@@ -120,6 +120,7 @@ ExternalOptimiser::optimise(common::Structure & structure,
   common::StructurePtr newStructure = myResReaderWriter.readStructure(
       io::ResourceLocator(strFile.get()));
   structure = *newStructure;
+  data.saveToStructure(structure);
 
   return OptimisationOutcome::success();
 }
