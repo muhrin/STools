@@ -99,7 +99,7 @@ ExternalOptimiser::optimise(common::Structure & structure,
   writeSettings(settingsFile.get().string(), options);
   myResReaderWriter.writeStructure(structure, io::ResourceLocator(strFile.get()));
 
-  // Set up cargs to process: [options file] [structure file]
+  // Set up args to process: [options file] [structure file]
   std::vector< std::string> args;
   args.push_back(settingsFile.get().string());
   args.push_back(strFile.get().string());
