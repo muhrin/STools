@@ -90,14 +90,17 @@ OptimisationOutcome
 ExternalOptimiser::optimise(common::Structure & structure,
     OptimisationData & data, const OptimisationSettings & options) const
 {
-  const std::string outputStem = utility::generateUniqueName(10);
+  const std::string outputStem = (
+      structure.getName().empty() ?
+          utility::generateUniqueName(6) : structure.getName()) + "_opt";
   // These will automatically be deleted when they go out of scope
   const io::ScopedFile settingsFile(outputStem + "_opt.yaml");
   const io::ScopedFile strFile(outputStem + ".res");
 
   // Write the settings and the structure file
   writeSettings(settingsFile.get().string(), options);
-  myResReaderWriter.writeStructure(structure, io::ResourceLocator(strFile.get()));
+  myResReaderWriter.writeStructure(structure,
+      io::ResourceLocator(strFile.get()));
 
   // Set up args to process: [options file] [structure file]
   std::vector< std::string> args;

@@ -23,6 +23,7 @@ BOOST_AUTO_TEST_CASE(ExternalOptimiserTest)
   potential::ExternalOptimiser optimiser("external_optimiser.sh");
 
   common::Structure structure;
+  structure.setName("NaCl-external_optimise");
   structure.setUnitCell(common::UnitCell()); // Create a 1 1 1 90 90 90 unit cell
   structure.newAtom("Na").setPosition(structure.getUnitCell()->randomPoint());
   structure.newAtom("Na").setPosition(structure.getUnitCell()->randomPoint());
