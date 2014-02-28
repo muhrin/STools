@@ -21,6 +21,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/StructureTriangulation.h
   include/spl/analysis/VectorAnchorArrangementOutputter.h
   include/spl/analysis/VoronoiEdgeTracer.h
+  include/spl/analysis/VoronoiPathTracer.h
 )
 source_group("Header Files\\analysis" FILES ${sslib_Header_Files__analysis})
 
@@ -33,6 +34,7 @@ set(sslib_Header_Files__analysis__detail
   include/spl/analysis/detail/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/detail/VectorAnchorArrangementOutputter.h
   include/spl/analysis/detail/VoronoiEdgeTracer.h
+  include/spl/analysis/detail/VoronoiPathTracer.h
 )
 source_group("Header Files\\analysis\\detail" FILES ${sslib_Header_Files__analysis__detail})
 

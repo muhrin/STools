@@ -25,6 +25,7 @@
 #include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
 #include <spl/analysis/VectorAnchorArrangementOutputter.h>
 #include <spl/analysis/VoronoiEdgeTracer.h>
+#include <spl/analysis/VoronoiPathTracer.h>
 
 // FORWARD DECLARES //////////////////////////
 class DataRow;
@@ -36,8 +37,9 @@ namespace spla = ::spl::analysis;
 // TYPEDEFS ////////////////////////////////////
 typedef ::std::string LabelType;
 typedef ::spl::analysis::AnchorArrangement< LabelType> AnchorArrangement;
+typedef spl::analysis::VoronoiPathTracer< LabelType> PathTracer;
 typedef AnchorArrangement::EdgeTracer EdgeTracer;
-typedef EdgeTracer::Point Point;
+typedef PathTracer::Point Point;
 typedef ::std::vector< ::std::pair< Point, LabelType> > Points;
 typedef ::spl::UniquePtr< spla::AnchorArrangementOutputter< LabelType> >::Type ArrangementOutputterPtr;
 
@@ -81,7 +83,7 @@ main(const int argc, char * argv[])
 
   static const boost::char_separator< char> tokSep(" \t");
 
-  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+  //feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
 // Program options
   InputOptions in;
@@ -146,17 +148,22 @@ main(const int argc, char * argv[])
     inFile.close();
   }
 
-  EdgeTracer::Delaunay tempDelaunay;
+  PathTracer::Delaunay tempDelaunay;
   tempDelaunay.insert(points.begin(), points.end());
-  EdgeTracer::Voronoi voronoi(tempDelaunay, true);
+  PathTracer::Voronoi voronoi(tempDelaunay, true);
 
-  EdgeTracer tracer(voronoi, !in.dontSplitSharedVertices);
+//  EdgeTracer tracer(voronoi, !in.dontSplitSharedVertices);
+  spl::analysis::VoronoiPathTracer< LabelType> tracer;
+  spl::analysis::VoronoiPathTracer< LabelType>::Arrangement arr =
+      tracer.tracePaths(voronoi);
+  std::cout << arr;
 
-  AnchorArrangement arr(tracer);
-  smoothArrangement(in, arr);
-
-  ArrangementOutputterPtr outputter = generateOutputter(in);
-  outputter->outputArrangement(arr);
+//
+//  AnchorArrangement arr(tracer);
+//  smoothArrangement(in, arr);
+//
+//  ArrangementOutputterPtr outputter = generateOutputter(in);
+//  outputter->outputArrangement(arr);
 
   return 0;
 }
@@ -248,7 +255,8 @@ generateOutputter(const InputOptions & in)
     outputter.reset(new spla::VectorAnchorArrangementOutputter< LabelType>());
   else if(in.outputter == "gnuplot")
   {
-    outputter.reset(new spla::GnuplotAnchorArrangementPlotter<LabelType>("map"));
+    outputter.reset(
+        new spla::GnuplotAnchorArrangementPlotter< LabelType>("map"));
   }
   else
     ::std::cerr << "Error: unrecognised outputter - " << in.outputter
