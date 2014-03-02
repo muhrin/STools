@@ -22,6 +22,7 @@
 #include <CGAL/Polytope_distance_d_traits_2.h>
 
 #include "spl/SSLibAssert.h"
+#include "spl/utility/TransformFunctions.h"
 
 // FORWARD DECLARATIONS ///////
 
@@ -51,7 +52,8 @@ template< typename LabelType>
   operator <<(std::ostream & os,
       const typename VoronoiPathTracer< LabelType>::Path & path)
   {
-    BOOST_FOREACH(const typename VoronoiPathTracer< LabelType>::Point & pt, path.vertices)
+    BOOST_FOREACH(const typename VoronoiPathTracer< LabelType>::Point & pt,
+        boost::make_iterator_range(path.verticesBegin(), path.verticesEnd()))
       os << pt << "\n";
     os << "\n" << std::endl;
     return os;
@@ -89,33 +91,12 @@ template< typename IncomingMap, typename Vertex>
   };
 
 template< typename LabelType>
-  void
-  VoronoiPathTracer< LabelType>::Path::insert(const Point & vtx,
-      const typename Delaunay::Edge & spanningEdge)
-  {
-    vertices.push_back(vtx);
-    spanningEdges.push_back(spanningEdge);
-  }
-
-template< typename LabelType>
-  typename VoronoiPathTracer< LabelType>::Path
-  VoronoiPathTracer< LabelType>::Path::extract(
-      const PossiblePath & possible) const
-  {
-    Path extracted;
-    BOOST_FOREACH(const size_t & idx, possible)
-      extracted.insert(vertices[idx], spanningEdges[idx]);
-    return extracted;
-  }
-
-template< typename LabelType>
   class VoronoiPathTracer< LabelType>::GeneratePathVisitor : public std::binary_function<
       typename Voronoi::Halfedge_handle, const typename NextHalfedgeType::Value,
       void>
   {
   public:
-    GeneratePathVisitor(Path * const path,
-        MeetingVertices * const meetingVertices);
+    GeneratePathVisitor(Path * const path);
     void
     operator()(typename Voronoi::Halfedge_handle he,
         const typename NextHalfedgeType::Value nextType);
@@ -124,13 +105,12 @@ template< typename LabelType>
     isContinuation(const typename Delaunay::Edge & edge) const;
 
     Path * const myPath;
-    MeetingVertices * const myMeetingVertices;
   };
 
 template< typename LabelType>
   VoronoiPathTracer< LabelType>::GeneratePathVisitor::GeneratePathVisitor(
-      Path * const path, MeetingVertices * const meetingVertices) :
-      myPath(path), myMeetingVertices(meetingVertices)
+      Path * const path) :
+      myPath(path)
   {
     SSLIB_ASSERT(myPath);
   }
@@ -147,10 +127,10 @@ template< typename LabelType>
     // Check if this is a continuation of the path i.e. this halfedges is not the last
     // one that we inserted into the path
     if(!isContinuation(dual))
-      myPath->insert(midpoint(dual), dual);
+      myPath->push_back(midpoint(dual), dual);
 
     if(nextType == NextHalfedgeType::IS_START)
-      myPath->isCircular = true;
+      myPath->push_back(*myPath->begin());
     else if(nextType == NextHalfedgeType::IS_NULL)
     {
       // If we're at the end of the path it's either at the boundary of the data set
@@ -158,14 +138,7 @@ template< typename LabelType>
       // or it's at a meeting vertex with another path in which case we should add
       // the vertex
       if(he->has_target())
-      {
-        const typename Voronoi::Vertex_handle target = he->target();
-        const Polygon poly = surroundingPolygon< Voronoi>(*target);
-        const Point meetingPoint =
-            myMeetingVertices->insert(
-                std::make_pair(target,
-                    CGAL::centroid(poly.vertices_begin(), poly.vertices_end()))).first->second;
-      }
+        myPath->setBackVoronoiVertex(he->target());
     }
   }
 
@@ -174,9 +147,176 @@ template< typename LabelType>
   VoronoiPathTracer< LabelType>::GeneratePathVisitor::isContinuation(
       const typename Delaunay::Edge & edge) const
   {
-    return !myPath->spanningEdges.empty()
-        && myPath->spanningEdges.back() == edge;
+    return !myPath->empty() && myPath->back().second == edge;
   }
+
+template< typename LabelType>
+  struct VoronoiPathTracer< LabelType>::Path
+  {
+  public:
+    typedef std::pair< Point, typename Delaunay::Edge> value_type;
+  private:
+    typedef std::vector< value_type> Vertices;
+    typedef utility::TakeFirst< const typename Vertices::value_type> TakeFirst;
+    typedef utility::TakeSecond< const typename Vertices::value_type> TakeSecond;
+  public:
+    typedef typename Vertices::iterator iterator;
+    typedef typename Vertices::const_iterator const_iterator;
+    typedef boost::transform_iterator< TakeFirst, const_iterator> vertices_const_iterator;
+    typedef boost::transform_iterator< TakeSecond, const_iterator> edges_const_iterator;
+
+    void
+    push_back(const Point & vtx, const typename Delaunay::Edge & spanningEdge)
+    {
+      myVertices.push_back(value_type(vtx, spanningEdge));
+    }
+    void
+    push_back(const value_type & val)
+    {
+      myVertices.push_back(val);
+    }
+    iterator
+    insert(iterator position, const value_type & val)
+    {
+      return myVertices.insert(position, val);
+    }
+
+    iterator
+    begin()
+    {
+      return myVertices.begin();
+    }
+    iterator
+    end()
+    {
+      return myVertices.end();
+    }
+    const_iterator
+    begin() const
+    {
+      return myVertices.begin();
+    }
+    const_iterator
+    end() const
+    {
+      return myVertices.end();
+    }
+    value_type &
+    operator [](const size_t i)
+    {
+      return myVertices[i];
+    }
+    const value_type &
+    operator [](const size_t i) const
+    {
+      return myVertices[i];
+    }
+    value_type &
+    front()
+    {
+      return myVertices.front();
+    }
+    value_type &
+    back()
+    {
+      return myVertices.back();
+    }
+    const value_type &
+    front() const
+    {
+      return myVertices.front();
+    }
+    const value_type &
+    back() const
+    {
+      return myVertices.back();
+    }
+    bool
+    empty() const
+    {
+      return myVertices.empty();
+    }
+
+    vertices_const_iterator
+    verticesBegin() const
+    {
+      return vertices_const_iterator(myVertices.begin());
+    }
+
+    vertices_const_iterator
+    verticesEnd() const
+    {
+      return vertices_const_iterator(myVertices.end());
+    }
+
+    edges_const_iterator
+    edgesBegin() const
+    {
+      return edges_const_iterator(myVertices.begin());
+    }
+
+    edges_const_iterator
+    edgesEnd() const
+    {
+      return edges_const_iterator(myVertices.end());
+    }
+
+    void
+    reverse();
+
+    Path
+    extract(const PossiblePath & possible) const
+    {
+      Path extracted;
+      BOOST_FOREACH(const size_t & idx, possible)
+        extracted.push_back(myVertices[idx]);
+      return extracted;
+    }
+
+    size_t
+    length() const
+    {
+      return myVertices.size();
+    }
+
+    bool
+    isCircular() const
+    {
+      return !myVertices.empty() && myVertices.front() == myVertices.back();
+    }
+
+    typename Voronoi::Vertex_handle
+    getFrontVoronoiVertex() const
+    {
+      return myFrontVoronoiVertex;
+    }
+    void
+    setFrontVoronoiVertex(const typename Voronoi::Vertex_handle vtx)
+    {
+      myFrontVoronoiVertex = vtx;
+    }
+    typename Voronoi::Vertex_handle
+    getBackVoronoiVertex() const
+    {
+      return myBackVoronoiVertex;
+    }
+    void
+    setBackVoronoiVertex(const typename Voronoi::Vertex_handle vtx)
+    {
+      myBackVoronoiVertex = vtx;
+    }
+
+  private:
+    typename Voronoi::Vertex_handle myFrontVoronoiVertex;
+    typename Voronoi::Vertex_handle myBackVoronoiVertex;
+    Vertices myVertices;
+  };
+
+template< typename LabelType>
+  struct VoronoiPathTracer< LabelType>::TracingData
+  {
+    std::vector< Path> paths;
+  };
 
 template< typename LabelType>
   typename VoronoiPathTracer< LabelType>::Arrangement
@@ -194,8 +334,8 @@ template< typename LabelType>
   void
   VoronoiPathTracer< LabelType>::Path::reverse()
   {
-    std::reverse(vertices.begin(), vertices.end());
-    std::reverse(spanningEdges.begin(), spanningEdges.end());
+    std::reverse(myVertices.begin(), myVertices.end());
+    std::swap(myFrontVoronoiVertex, myBackVoronoiVertex);
   }
 
 template< typename LabelType>
@@ -216,20 +356,85 @@ template< typename LabelType>
   }
 
 template< typename LabelType>
+  struct VoronoiPathTracer< LabelType>::PathInfo
+  {
+    std::vector< Line> fitLines;
+    Path adjusted;
+  };
+
+template< typename LabelType>
   void
   VoronoiPathTracer< LabelType>::generatePaths(const Voronoi & voronoi,
       TracingData * const tracing, Arrangement * const arr) const
   {
+    typedef std::vector< std::pair< size_t, bool> > MeetingInfo;
+    typedef std::map< typename Voronoi::Vertex_handle, MeetingInfo> MeetingVertices;
+
     generatePathVertices(voronoi, tracing, arr);
+
+    MeetingVertices meeting;
+    std::vector< PathInfo> adjusted(tracing->paths.size());
+    size_t idx = 0;
     BOOST_FOREACH(const Path & path, tracing->paths)
     {
       PathGraph paths = findStraightPaths(path, *tracing);
-      operator <<< LabelType>(std::cout, path);
+      //operator <<< LabelType>(std::cout, path);
       const PossiblePath & optimal = findOptimumPath(path, paths);
-      const Path & adjusted = generateVertexAdjustedPath(path, optimal,
-          voronoi);
-      operator <<< LabelType>(std::cout, path.extract(optimal));
-      operator <<< LabelType>(std::cout, adjusted);
+      adjusted[idx].fitLines = calculateLeastSquaresSubpaths(path, optimal);
+      adjusted[idx].adjusted = generateVertexAdjustedPath(path, optimal,
+          voronoi, adjusted[idx].fitLines);
+      //operator <<< LabelType>(std::cout, path.extract(optimal));
+      //operator <<< LabelType>(std::cout, adjusted[idx].adjusted);
+
+      {
+        const typename Voronoi::Vertex_handle front =
+            path.getFrontVoronoiVertex();
+        if(front != typename Voronoi::Vertex_handle() && front->is_valid())
+          meeting[front].push_back(std::make_pair(idx, true));
+      }
+      {
+        const typename Voronoi::Vertex_handle back =
+            path.getBackVoronoiVertex();
+        if(back != typename Voronoi::Vertex_handle() && back->is_valid())
+          meeting[back].push_back(std::make_pair(idx, false));
+      }
+
+      ++idx;
+    }
+
+    typedef std::pair< size_t, bool> MeetingPair;
+    BOOST_FOREACH(typename MeetingVertices::const_reference mv, meeting)
+    {
+      const Polygon poly = surroundingPolygon< Voronoi>(*mv.first);
+      std::vector< Line> lines;
+      BOOST_FOREACH(const MeetingPair & mi, mv.second)
+      {
+        if(!adjusted[mi.first].fitLines.empty())
+        {
+          if(mi.second)
+            lines.push_back(adjusted[mi.first].fitLines.front());
+          else
+            lines.push_back(adjusted[mi.first].fitLines.back());
+        }
+      }
+      const Point pt = meetingVertex(lines.begin(), lines.end(), poly);
+      BOOST_FOREACH(const MeetingPair & mi, mv.second)
+      {
+        if(!adjusted[mi.first].fitLines.empty())
+        {
+          if(mi.second)
+            adjusted[mi.first].adjusted.front() = std::make_pair(pt,
+                typename Delaunay::Edge());
+          else
+            adjusted[mi.first].adjusted.back() = std::make_pair(pt,
+                typename Delaunay::Edge());
+        }
+      }
+    }
+
+    BOOST_FOREACH(const PathInfo & info, adjusted)
+    {
+      operator <<< LabelType>(std::cout, info.adjusted);
     }
   }
 
@@ -257,17 +462,15 @@ template< typename LabelType>
         Path path;
         he = *it;
         // Trace the path out in one direction
-        visitBoundaryHaledges(voronoi, he,
-            GeneratePathVisitor(&path, &tracing->meetingVertices));
-        if(!path.isCircular)
+        visitBoundaryHaledges(voronoi, he, GeneratePathVisitor(&path));
+        if(!path.isCircular())
         {
           // Reverse the path and get the visitor to continue in the other direction
           path.reverse();
           he = he->twin();
-          visitBoundaryHaledges(voronoi, he,
-              GeneratePathVisitor(&path, &tracing->meetingVertices));
+          visitBoundaryHaledges(voronoi, he, GeneratePathVisitor(&path));
         }
-        visited.insert(path.spanningEdges.begin(), path.spanningEdges.end());
+        visited.insert(path.edgesBegin(), path.edgesEnd());
         tracing->paths.push_back(path);
       }
     }
@@ -409,12 +612,12 @@ template< typename LabelType>
   {
     // TODO: Add check for all four directions
 
-    const size_t n = path.vertices.size();
+    const size_t n = path.length();
     PathGraph paths;
     bool pathStraight;
     for(size_t i = 0; i < n; ++i) // Start vertex
     {
-      const Point & v_i = path.vertices[i];
+      const Point & v_i = path[i].first;
 
       // Paths of length 1 are always possible
       for(size_t k = i + 1; k < std::min(i + 2, n); ++k)
@@ -423,12 +626,12 @@ template< typename LabelType>
       // Check longer paths
       for(size_t k = i + 2; k < n; ++k) // End vertex
       {
-        const Point & v_k = path.vertices[k];
+        const Point & v_k = path[k].first;
         const Segment ik(v_i, v_k);
         pathStraight = true;
         for(size_t j = i + 1; j < k; ++j) // Inbetween vertices
         {
-          const Segment edgeSegment = segment(path.spanningEdges[j]);
+          const Segment edgeSegment = segment(path[j].second);
           if(!CGAL::intersection(ik, edgeSegment))
           {
             pathStraight = false;
@@ -439,7 +642,7 @@ template< typename LabelType>
           boost::add_edge(i, k, paths);
       }
     }
-    //filterPossiblePaths(path, &paths);
+    filterPossiblePaths(path, &paths);
     return paths;
   }
 
@@ -450,12 +653,12 @@ template< typename LabelType>
   {
     typedef std::pair< PathGraph::edge_descriptor, bool> EdgeQuery;
 
-    const size_t n = path.vertices.size();
+    const size_t n = path.length();
     if(n < 4)
       return;
 
     EdgeQuery edge;
-    if(path.isCircular)
+    if(path.isCircular())
     {
       // TODO: Implement, and possibly make one piece of code with the non circular case
       std::cout << "IS CIRCULAR\n";
@@ -488,7 +691,7 @@ template< typename LabelType>
   VoronoiPathTracer< LabelType>::findOptimumPath(const Path & path,
       const PathGraph & paths) const
   {
-    const size_t n = path.vertices.size();
+    const size_t n = path.length();
     if(n == 1)
       return PossiblePath();
 
@@ -551,7 +754,7 @@ template< typename LabelType>
       return;
     PossiblePath & currentPath = *possiblePaths->insert(possiblePaths->end(),
         PossiblePath());
-    const size_t finalVertex = fullPath.vertices.size() - 1;
+    const size_t finalVertex = fullPath.length() - 1;
     currentPath.insert(finalVertex);
     generatePossiblePaths(incoming, finalVertex, &currentPath, possiblePaths);
   }
@@ -615,70 +818,92 @@ template< typename LabelType>
   {
     const size_t n = subpath.second - subpath.first;
 
-    const Segment v_ij(fullPath.vertices[subpath.first],
-        fullPath.vertices[subpath.second]);
+    const Segment v_ij(fullPath[subpath.first].first,
+        fullPath[subpath.second].first);
     const double lenSq = CGAL::to_double(v_ij.squared_length());
 
     double sumSq = 0.0;
     for(size_t k = subpath.first; k < subpath.second; ++k)
-    {
-      sumSq += CGAL::to_double(
-          CGAL::squared_distance(fullPath.vertices[k], v_ij));
-    }
+      sumSq += CGAL::to_double(CGAL::squared_distance(fullPath[k].first, v_ij));
+
     return lenSq * 1 / static_cast< double>(n) * sumSq;
+  }
+
+template< typename LabelType>
+  std::vector< typename VoronoiPathTracer< LabelType>::Line>
+  VoronoiPathTracer< LabelType>::calculateLeastSquaresSubpaths(
+      const Path & full, const PossiblePath & reduced) const
+  {
+    if(reduced.size() < 2)
+      return std::vector< Line>();
+
+    std::vector< Line> lines(reduced.size() - 1);
+
+    PossiblePath::const_iterator it = reduced.begin();
+    const PossiblePath::const_iterator end = reduced.end();
+
+    Subpath sp;
+    sp.first = *it;
+    sp.second = *++it;
+
+    CGAL::linear_least_squares_fitting_2(full.verticesBegin() + sp.first,
+        full.verticesBegin() + (sp.second + 1), lines[0],
+        CGAL::Dimension_tag< 0>());
+
+    ++it;
+    for(size_t lineIdx = 1; lineIdx < lines.size(); ++lineIdx, ++it)
+    {
+      // Move the subpath to the next edge
+      sp = Subpath(sp.second, *it);
+
+      CGAL::linear_least_squares_fitting_2(full.verticesBegin() + sp.first,
+          full.verticesBegin() + (sp.second + 1), lines[lineIdx],
+          CGAL::Dimension_tag< 0>());
+    }
+    return lines;
   }
 
 template< typename LabelType>
   typename VoronoiPathTracer< LabelType>::Path
   VoronoiPathTracer< LabelType>::generateVertexAdjustedPath(const Path & path,
-      const PossiblePath & reduced, const Voronoi & voronoi) const
+      const PossiblePath & reduced, const Voronoi & voronoi,
+      const std::vector< Line> & fitLines) const
   {
-    if(path.vertices.size() == 1)
+    if(path.length() == 1)
       return path;
-
-    // 1) get least squares fit through all points in subpath
-    // 2) Check that the line goes through the Spanning edges at
 
     Path adjusted;
 
-    adjusted.insert(path.vertices.front(), path.spanningEdges.front());
-
-    PossiblePath::const_iterator it = reduced.begin();
-    const PossiblePath::const_iterator end = reduced.end();
-    Subpath sp1, sp2;
-    Line l1, l2;
-    sp1.first = *it;
-    sp1.second = *++it;
-
-    CGAL::linear_least_squares_fitting_2(path.vertices.begin(),
-        path.vertices.begin() + (sp1.second + 1), l1,
-        CGAL::Dimension_tag< 0>());
+    // TODO: Make this work for circular paths
 
     // TODO: Intersect l1 and line supporting spanningEdges[0] to determine start point
+    adjusted.push_back(path.front());
 
-    ++it;
-    for(; it != end; ++it, l1 = l2, sp1 = sp2)
+    // Only iterate from the second to the second last vertex indices
+    const PossiblePath::const_iterator first = ++(reduced.begin());
+    const PossiblePath::const_iterator end = --(reduced.end());
+
+    size_t lineIdx = 0;
+    for(PossiblePath::const_iterator it = first; it != end; ++it)
     {
-      sp2 = Subpath(sp1.second, *it);
-
-      CGAL::linear_least_squares_fitting_2(path.vertices.begin() + sp2.first,
-          path.vertices.begin() + (sp2.second + 1), l2,
-          CGAL::Dimension_tag< 0>());
-
       const typename CGAL::cpp11::result_of< K::Intersect_2
-      (Line, Line)>::type result = CGAL::intersection(l1, l2);
+      (Line, Line)>::type result = CGAL::intersection(fitLines[lineIdx],
+          fitLines[lineIdx + 1]);
       const Point * const intersection = boost::get< Point>(&*result);
       SSLIB_ASSERT(intersection);
 
-      //const Point constrained = *intersection;
-      const Point constrained = constrainVertex(*intersection, voronoi,
-          *(path.spanningEdges.begin() + sp2.first));
+      const typename Delaunay::Edge & spanningEdge = *(path.edgesBegin() + *it);
 
-      adjusted.insert(constrained, path.spanningEdges[sp1.first]);
+      // Constrain the intersection point to be 'near' the original vertex
+      const Point constrained = constrainVertex(*intersection, voronoi,
+          spanningEdge);
+
+      adjusted.push_back(constrained, spanningEdge);
+      ++lineIdx;
     }
 
     // TODO: Intersect l1 and line supporting spanningEdges[n - 1] to determine end point
-    adjusted.insert(path.vertices.back(), path.spanningEdges.back());
+    adjusted.push_back(path.back());
 
     return adjusted;
   }
@@ -693,10 +918,6 @@ template< typename LabelType>
     const typename Voronoi::Halfedge_handle he = voronoi.dual(edge);
     const Polygon poly1 = surroundingPolygon< Voronoi>(*(he->source()));
     const Polygon poly2 = surroundingPolygon< Voronoi>(*(he->target()));
-
-//    BOOST_FOREACH(const Point p, poly.container())
-//      std::cout << "(" << p << ") ";
-//    std::cout << "point: " << point << std::endl;
 
     if(poly1.bounded_side(point) == CGAL::ON_UNBOUNDED_SIDE
         && poly2.bounded_side(point) == CGAL::ON_UNBOUNDED_SIDE)
@@ -720,6 +941,59 @@ template< typename LabelType>
 
     return point;
   }
+
+template< typename LabelType>
+  template< typename LineIterator>
+    typename VoronoiPathTracer< LabelType>::Point
+    VoronoiPathTracer< LabelType>::meetingVertex(LineIterator begin,
+        LineIterator beyond, const Polygon & bounding) const
+    {
+      typedef CGAL::Linear_algebraCd< K::FT> Linalg;
+      typename Linalg::Matrix A(2, 2, 0.0);
+      typename Linalg::Vector b(2, 0.0);
+      for(LineIterator it = begin; it != beyond; ++it)
+      {
+        const typename K::Vector_2 ortho = it->to_vector().perpendicular(
+            CGAL::COUNTERCLOCKWISE);
+        const Point point = it->point();
+        typename Linalg::Vector p(2);
+        p[0] = point.x();
+        p[1] = point.y();
+        const K::FT lenSq = ortho.squared_length();
+        typename Linalg::Matrix o(2, 1);
+        o(0, 0) = ortho.x();
+        o(1, 0) = ortho.y();
+        const typename Linalg::Matrix oTrans = Linalg::transpose(o)
+            * (1 / lenSq);
+        const typename Linalg::Matrix oo = o * oTrans;
+        A += oo;
+        b += oo * p;
+      }
+      K::FT D;
+      typename Linalg::Vector x;
+      Linalg::linear_solver(A, b, x, D);
+
+      Point rmsPt(x[0] / D, x[1] / D);
+
+      // Now check that the isn't outside the boundary
+      if(bounding.bounded_side(rmsPt) != CGAL::ON_UNBOUNDED_SIDE)
+        return rmsPt;
+
+      typedef CGAL::MP_Float ET;
+      typedef CGAL::Polytope_distance_d_traits_2< K, ET, K::RT> Traits;
+      typedef CGAL::Polytope_distance_d< Traits> PolyDist;
+
+      PolyDist polyDist(bounding.vertices_begin(), bounding.vertices_end(),
+          &rmsPt, (&rmsPt) + 1);
+
+      PolyDist::Coordinate_iterator it =
+          polyDist.realizing_point_p_coordinates_begin();
+      const double xB = CGAL::to_double(*it);
+      const double yB = CGAL::to_double(*++it);
+      const double denom = CGAL::to_double(*++it);
+
+      return Point(xB / denom, yB / denom);
+    }
 
 }
 }

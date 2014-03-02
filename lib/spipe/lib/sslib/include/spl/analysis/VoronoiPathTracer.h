@@ -110,37 +110,15 @@ template< typename LabelType>
       };
     };
   public:
-    struct Path
-    {
-      Path() :
-          isCircular(false)
-      {
-      }
-
-      void
-      insert(const Point & vtx, const typename Delaunay::Edge & spanningEdge);
-
-      void
-      reverse();
-
-      Path
-      extract(const PossiblePath & possible) const;
-
-      bool isCircular;
-      std::vector< Point> vertices;
-      std::vector< typename Delaunay::Edge> spanningEdges;
-    };
+    class Path;
   private:
-    typedef std::map< typename Voronoi::Vertex_handle, Point> MeetingVertices;
-    struct TracingData
-    {
-      std::vector< Path> paths;
-      MeetingVertices meetingVertices;
-    };
+    struct TracingData;
 
     template< typename Func>
       class BoundaryTraceVisitor;
     class GeneratePathVisitor;
+    struct PathInfo;
+    struct MeetingInfo;
 
     static Point
     midpoint(const typename Delaunay::Edge & edge);
@@ -195,12 +173,19 @@ template< typename LabelType>
         const PathGraph & shortestPaths) const;
     double
     penalty(const Path & fullPath, const Subpath & subpath) const;
+    std::vector< Line>
+    calculateLeastSquaresSubpaths(const Path & full,
+        const PossiblePath & reduced) const;
     Path
     generateVertexAdjustedPath(const Path & path, const PossiblePath & reduced,
-        const Voronoi & voronoi) const;
+        const Voronoi & voronoi, const std::vector< Line> & fitLines) const;
     Point
     constrainVertex(const Point & point, const Voronoi & voronoi,
         const typename Delaunay::Edge & edge) const;
+    template< typename LineIterator>
+      Point
+      meetingVertex(LineIterator begin, LineIterator beyond,
+          const Polygon & bounding) const;
   };
 
 }
