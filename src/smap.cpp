@@ -156,7 +156,7 @@ main(const int argc, char * argv[])
   spl::analysis::VoronoiPathTracer< LabelType> tracer;
   spl::analysis::VoronoiPathTracer< LabelType>::Arrangement arr =
       tracer.tracePaths(voronoi);
-  std::cout << arr;
+  //std::cout << arr;
 
 //
 //  AnchorArrangement arr(tracer);

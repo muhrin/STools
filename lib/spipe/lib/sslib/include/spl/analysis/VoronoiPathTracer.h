@@ -16,6 +16,7 @@
 #include <map>
 #include <set>
 
+#include <boost/variant.hpp>
 #include <boost/graph/adjacency_list.hpp>
 
 #include <CGAL/Arrangement_2.h>
@@ -27,7 +28,7 @@
 #include <CGAL/Voronoi_diagram_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
-
+#include <CGAL/Linear_algebraCd.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Voronoi_diagram_2.h>
 
@@ -39,6 +40,57 @@
 
 namespace spl {
 namespace analysis {
+namespace detail {
+
+template< typename VD>
+  struct TracingArrangement
+  {
+    typedef VD Voronoi;
+    typedef typename Voronoi::Delaunay_graph Delaunay;
+    typedef typename Delaunay::Geom_traits K;
+    typedef CGAL::Linear_algebraCd< typename K::FT> Linalg;
+
+    struct FeatureLocation
+    {
+      enum Value { INTERIOR, BOUNDARY };
+    };
+
+    struct VertexInfo
+    {
+      typename Delaunay::Edge spanningEdge;
+      FeatureLocation::Value location;
+    };
+
+    struct HalfedgeInfo
+    {
+      boost::optional< typename K::Line_2> leastSqLine;
+      boost::optional< typename Linalg::Matrix> quadraticForm;
+      FeatureLocation::Value location;
+    };
+
+    struct FaceInfo
+    {
+    };
+
+    // Arrangements stuff
+    typedef CGAL::Arr_segment_traits_2< K> ArrTraits;
+    typedef CGAL::Arr_extended_dcel< ArrTraits, VertexInfo, HalfedgeInfo,
+        FaceInfo> Dcel;
+    typedef CGAL::Arrangement_2< ArrTraits, Dcel> Arrangement;
+
+    typedef std::pair< typename Arrangement::Vertex_handle,
+        typename Arrangement::Vertex_handle> Path;
+
+    static const HalfedgeInfo &
+    edgeInfo(const typename Arrangement::Halfedge & he)
+    {
+      if(he.data().leastSqLine)
+        return he.data();
+      else
+        return he.twin()->data();
+    }
+  };
+}
 
 template< typename LabelType>
   class VoronoiPathTracer
@@ -54,7 +106,7 @@ template< typename LabelType>
     typedef K::Point_2 Point;
     typedef CGAL::Polygon_2< K> Polygon;
     typedef K::Segment_2 Segment;
-    typedef K::Point_2 Vector;
+    typedef K::Vector_2 Vector;
     typedef CGAL::Delaunay_triangulation_2< K, Tds> Delaunay;
 
   private:
@@ -94,6 +146,8 @@ template< typename LabelType>
     tracePaths(const Voronoi & voronoi) const;
 
   private:
+    typedef detail::TracingArrangement< Voronoi> TracingArrangement;
+
     typedef spl::utility::OrderedPair< LabelType> BoundaryPair;
     typedef boost::adjacency_list< > PathGraph;
     typedef std::map< PathGraph::vertex_descriptor,
@@ -126,11 +180,10 @@ template< typename LabelType>
     segment(const typename Delaunay::Edge & edge) const;
 
     void
-    generatePaths(const Voronoi & voronoi, TracingData * const tracing,
-        Arrangement * const arr) const;
+    generatePaths(const Voronoi & voronoi, TracingData * const tracing) const;
     void
-    generatePathVertices(const Voronoi & voronoi, TracingData * const tracing,
-        Arrangement * const arr) const;
+    generatePathVertices(const Voronoi & voronoi,
+        TracingData * const tracing) const;
     void
     smoothPaths(const Voronoi & voronoi, TracingData * const tracing,
         Arrangement * const arr) const;
@@ -150,9 +203,6 @@ template< typename LabelType>
       visitBoundaryHaledges(const Voronoi & voronoi,
           const typename Voronoi::Halfedge_handle & start,
           Visitor visitor) const;
-
-    Path
-    joinPaths(const Path & p1, const Path & p2) const;
 
     PathGraph
     findStraightPaths(const Path & path, const TracingData & tracing) const;
@@ -175,17 +225,36 @@ template< typename LabelType>
     penalty(const Path & fullPath, const Subpath & subpath) const;
     std::vector< Line>
     calculateLeastSquaresSubpaths(const Path & full,
-        const PossiblePath & reduced) const;
+        const PossiblePath & reduced, const Voronoi & voronoi) const;
+    Line
+    calculateLeastSquaresLine(const Path & full, const size_t idx0,
+        const size_t idx1) const;
+    typename CGAL::Linear_algebraCd< K::FT>::Matrix
+    calculateQuadraticForm(const Line & line) const;
     Path
     generateVertexAdjustedPath(const Path & path, const PossiblePath & reduced,
         const Voronoi & voronoi, const std::vector< Line> & fitLines) const;
-    Point
-    constrainVertex(const Point & point, const Voronoi & voronoi,
-        const typename Delaunay::Edge & edge) const;
+    typename TracingArrangement::Path
+    pathToArrangement(const Path & path, const PossiblePath & reduced,
+        typename TracingArrangement::Arrangement * const arr) const;
+    void
+    vertexAdjustment(const Voronoi & voronoi,
+        typename TracingArrangement::Arrangement * const arr) const;
     template< typename LineIterator>
       Point
-      meetingVertex(LineIterator begin, LineIterator beyond,
-          const Polygon & bounding) const;
+      joinLines(LineIterator begin, LineIterator beyond,
+          const Polygon & boundary) const;
+    Point
+    joinLines(const CGAL::Linear_algebraCd< K::FT>::Matrix & quad,
+        const Polygon & boundary) const;
+    Polygon
+    surroundingBoundary(const typename Delaunay::Edge & edge,
+        const Voronoi & voronoi) const;
+    K::FT
+    quadDist(const Point & p,
+        const CGAL::Linear_algebraCd< K::FT>::Matrix & Q) const;
+    Point
+    constrainOnSegment(const Point & p, const Segment & seg) const;
   };
 
 }
