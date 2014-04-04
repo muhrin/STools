@@ -1,0 +1,401 @@
+/*
+ * VoronoiPathArrangement.h
+ *
+ *  Created on: Mar 20, 2014
+ *      Author: Martin Uhrin
+ */
+
+#ifndef VORONOI_PATH_ARRANGEMENT_DETAIL_H
+#define VORONOI_PATH_ARRANGEMENT_DETAIL_H
+
+// INCLUDES ////////////
+#include "spl/SSLib.h"
+
+#ifdef SPL_WITH_CGAL
+
+#include <boost/foreach.hpp>
+
+// FORWARD DECLARATIONS ///////
+
+// DEFINITION ///////////////////////
+
+namespace spl {
+namespace analysis {
+
+template< typename VD>
+  VoronoiPathArrangement< VD>::VoronoiPathArrangement(const Voronoi & voronoi) :
+      myVoronoi(voronoi)
+  {
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathIterator
+  VoronoiPathArrangement< VD>::insertPath(const Path & path)
+  {
+    SSLIB_ASSERT(&myVoronoi == path.getVoronoi());
+
+    if(path.empty())
+      return myPaths.end();
+
+    // Check if we have any paths like this already
+    BOOST_FOREACH(const Path & p, myPaths)
+    {
+      const typename CommonVoronoiVertices::Value common =
+          commonVoronoiVertices(p, path);
+      if(common == CommonVoronoiVertices::FORWARDS)
+      {
+        // TODO: Merge the labels
+        return myPaths.end();
+      }
+      else if(common == CommonVoronoiVertices::BACKWARDS)
+      {
+        // TODO: Merge the labels
+        return myPaths.end();
+      }
+    }
+
+    return myPaths.insert(myPaths.end(), path);
+  }
+
+template< typename VD>
+  void
+  VoronoiPathArrangement< VD>::insertBoundaryPath(const Path & path)
+  {
+    SSLIB_ASSERT(&myVoronoi == path.getVoronoi());
+    BOOST_FOREACH(const typename Path::Edge & e,
+        boost::make_iterator_range(path.edgesBegin(), path.edgesEnd()))
+    {
+      SSLIB_ASSERT(e.isBoundary());
+    }
+
+    if(path.empty())
+      return;
+
+    myBoundaryPaths.push_back(path);
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathIterator
+  VoronoiPathArrangement< VD>::pathsBegin()
+  {
+    return myPaths.begin();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathIterator
+  VoronoiPathArrangement< VD>::pathsEnd()
+  {
+    return myPaths.end();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathConstIterator
+  VoronoiPathArrangement< VD>::pathsBegin() const
+  {
+    return myPaths.begin();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathConstIterator
+  VoronoiPathArrangement< VD>::pathsEnd() const
+  {
+    return myPaths.end();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathIterator
+  VoronoiPathArrangement< VD>::boundaryPathsBegin()
+  {
+    return myBoundaryPaths.begin();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathIterator
+  VoronoiPathArrangement< VD>::boundaryPathsEnd()
+  {
+    return myBoundaryPaths.end();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathConstIterator
+  VoronoiPathArrangement< VD>::boundaryPathsBegin() const
+  {
+    return myBoundaryPaths.begin();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::PathConstIterator
+  VoronoiPathArrangement< VD>::boundaryPathsEnd() const
+  {
+    return myBoundaryPaths.end();
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::MeetingVertices
+  VoronoiPathArrangement< VD>::getMeetingVertices()
+  {
+    MeetingVertices meeting;
+    BOOST_FOREACH(Path & path, myPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const typename Voronoi::Vertex_handle startVtx =
+            path.vertex(0).voronoiVertex();
+        if(startVtx != typename Voronoi::Vertex_handle())
+        {
+          meeting.insert(std::make_pair(startVtx, VertexHandle(&path, 0)));
+        }
+        const typename Voronoi::Vertex_handle endVtx = path.vertex(
+            path.numVertices() - 1).voronoiVertex();
+        if(endVtx != typename Voronoi::Vertex_handle())
+        {
+          meeting.insert(
+              std::make_pair(endVtx,
+                  VertexHandle(&path, path.numVertices() - 1)));
+        }
+      }
+    }
+    return meeting;
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::MeetingVerticesConst
+  VoronoiPathArrangement< VD>::getMeetingVertices() const
+  {
+    MeetingVerticesConst meeting;
+    BOOST_FOREACH(const Path & path, myPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const typename Voronoi::Vertex_handle startVtx =
+            path.vertex(0).voronoiVertex();
+        if(startVtx != typename Voronoi::Vertex_handle())
+        {
+          meeting.insert(std::make_pair(startVtx, VertexConstHandle(&path, 0)));
+        }
+        const typename Voronoi::Vertex_handle endVtx = path.vertex(
+            path.numVertices() - 1).voronoiVertex();
+        if(endVtx != typename Voronoi::Vertex_handle())
+        {
+          meeting.insert(
+              std::make_pair(endVtx,
+                  VertexConstHandle(&path, path.numVertices() - 1)));
+        }
+      }
+    }
+    return meeting;
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::BoundaryVertices
+  VoronoiPathArrangement< VD>::getBoundaryVertices()
+  {
+    const Delaunay & delaunay = myVoronoi.dual();
+
+    BoundaryVertices boundary;
+    BOOST_FOREACH(Path & path, myPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const size_t n = path.numVertices();
+
+        // Check start vertex
+        if(path.vertex(0).isBoundary())
+        {
+          typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexHandle(&path, 0)));
+        }
+
+        // Check end vertex
+        if(n > 1 && path.vertex(n - 1).isBoundary())
+        {
+          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexHandle(&path, n - 1)));
+        }
+      }
+    }
+    BOOST_FOREACH(Path & path, myBoundaryPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const size_t n = path.numVertices();
+
+        // Start vertex
+        SSLIB_ASSERT(path.vertex(0).isBoundary());
+        typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+        if(!delaunay.is_infinite(e.first))
+          e = delaunay.mirror_edge(e);
+
+        SSLIB_ASSERT(delaunay.is_infinite(e.first));
+        boundary.insert(std::make_pair(e, VertexHandle(&path, 0)));
+
+        // Check end vertex
+        if(n > 1)
+        {
+          SSLIB_ASSERT(path.vertex(n - 1).isBoundary());
+          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexHandle(&path, n - 1)));
+        }
+      }
+    }
+    return boundary;
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::BoundaryVerticesConst
+  VoronoiPathArrangement< VD>::getBoundaryVertices() const
+  {
+    const Delaunay & delaunay = myVoronoi.dual();
+
+    BoundaryVerticesConst boundary;
+    BOOST_FOREACH(const Path & path, myPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const size_t n = path.numVertices();
+
+        // Check start vertex
+        if(path.vertex(0).isBoundary())
+        {
+          typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexConstHandle(&path, 0)));
+        }
+
+        // Check end vertex
+        if(n > 1 && path.vertex(n - 1).isBoundary())
+        {
+          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexConstHandle(&path, n - 1)));
+        }
+      }
+    }
+    BOOST_FOREACH(const Path & path, myBoundaryPaths)
+    {
+      // Keep track of the path endpoints so we know the meeting points of
+      // paths in the arrangement
+      if(!path.isCircular())
+      {
+        const size_t n = path.numVertices();
+
+        // Start vertex
+        SSLIB_ASSERT(path.vertex(0).isBoundary());
+        typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+        if(!delaunay.is_infinite(e.first))
+          e = delaunay.mirror_edge(e);
+
+        SSLIB_ASSERT(delaunay.is_infinite(e.first));
+        boundary.insert(std::make_pair(e, VertexConstHandle(&path, 0)));
+
+        // Check end vertex
+        if(n > 1)
+        {
+          SSLIB_ASSERT(path.vertex(n - 1).isBoundary());
+          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          if(!delaunay.is_infinite(e.first))
+            e = delaunay.mirror_edge(e);
+
+          SSLIB_ASSERT(delaunay.is_infinite(e.first));
+          boundary.insert(std::make_pair(e, VertexConstHandle(&path, n - 1)));
+        }
+      }
+    }
+    return boundary;
+  }
+
+template< typename VD>
+  void
+  VoronoiPathArrangement< VD>::print() const
+  {
+    BOOST_FOREACH(const Path & p, myPaths)
+    {
+      BOOST_FOREACH(const typename Path::Vertex & v,
+          boost::make_iterator_range(p.verticesBegin(), p.verticesEnd()))
+      {
+        std::cout << v.point() << "\n";
+      }
+      std::cout << "\n" << std::endl;
+    }
+    BOOST_FOREACH(const Path & p, myBoundaryPaths)
+    {
+      BOOST_FOREACH(const typename Path::Vertex & v,
+          boost::make_iterator_range(p.verticesBegin(), p.verticesEnd()))
+      {
+        std::cout << v.point() << "\n";
+      }
+      std::cout << "\n" << std::endl;
+    }
+  }
+
+template< typename VD>
+  typename VoronoiPathArrangement< VD>::CommonVoronoiVertices::Value
+  VoronoiPathArrangement< VD>::commonVoronoiVertices(const Path & p1,
+      const Path & p2) const
+  {
+    if(p1.numVertices() != p2.numVertices())
+      return CommonVoronoiVertices::NEITHER;
+
+    // Check forwards
+    const size_t n = p1.numVertices();
+    bool pathsSame = true;
+    for(size_t i = 0; i < n; ++i)
+    {
+      if(p1.vertex(i).voronoiVertex() != p2.vertex(i).voronoiVertex())
+      {
+        pathsSame = false;
+        break;
+      }
+    }
+    if(pathsSame)
+      return CommonVoronoiVertices::FORWARDS;
+
+    // Check backwards
+    pathsSame = true;
+    for(size_t i = 0; i < n; ++i)
+    {
+      if(p1.vertex(i).voronoiVertex() != p2.vertex(n - 1 - i).voronoiVertex())
+      {
+        pathsSame = false;
+        break;
+      }
+    }
+    if(pathsSame)
+      return CommonVoronoiVertices::BACKWARDS;
+
+    return CommonVoronoiVertices::NEITHER;
+  }
+
+}
+}
+
+#endif /* SPL_WITH_CGAL */
+#endif /* VORONOI_PATH_ARRANGEMENT_DETAIL_H */
