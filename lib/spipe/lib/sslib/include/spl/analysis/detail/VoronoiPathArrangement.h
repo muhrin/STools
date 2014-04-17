@@ -58,23 +58,6 @@ template< typename VD>
   }
 
 template< typename VD>
-  void
-  VoronoiPathArrangement< VD>::insertBoundaryPath(const Path & path)
-  {
-    SSLIB_ASSERT(&myVoronoi == path.getVoronoi());
-    BOOST_FOREACH(const typename Path::Edge & e,
-        boost::make_iterator_range(path.edgesBegin(), path.edgesEnd()))
-    {
-      SSLIB_ASSERT(e.isBoundary());
-    }
-
-    if(path.empty())
-      return;
-
-    myBoundaryPaths.push_back(path);
-  }
-
-template< typename VD>
   typename VoronoiPathArrangement< VD>::PathIterator
   VoronoiPathArrangement< VD>::pathsBegin()
   {
@@ -100,34 +83,6 @@ template< typename VD>
   VoronoiPathArrangement< VD>::pathsEnd() const
   {
     return myPaths.end();
-  }
-
-template< typename VD>
-  typename VoronoiPathArrangement< VD>::PathIterator
-  VoronoiPathArrangement< VD>::boundaryPathsBegin()
-  {
-    return myBoundaryPaths.begin();
-  }
-
-template< typename VD>
-  typename VoronoiPathArrangement< VD>::PathIterator
-  VoronoiPathArrangement< VD>::boundaryPathsEnd()
-  {
-    return myBoundaryPaths.end();
-  }
-
-template< typename VD>
-  typename VoronoiPathArrangement< VD>::PathConstIterator
-  VoronoiPathArrangement< VD>::boundaryPathsBegin() const
-  {
-    return myBoundaryPaths.begin();
-  }
-
-template< typename VD>
-  typename VoronoiPathArrangement< VD>::PathConstIterator
-  VoronoiPathArrangement< VD>::boundaryPathsEnd() const
-  {
-    return myBoundaryPaths.end();
   }
 
 template< typename VD>
@@ -228,36 +183,6 @@ template< typename VD>
         }
       }
     }
-    BOOST_FOREACH(Path & path, myBoundaryPaths)
-    {
-      // Keep track of the path endpoints so we know the meeting points of
-      // paths in the arrangement
-      if(!path.isCircular())
-      {
-        const size_t n = path.numVertices();
-
-        // Start vertex
-        SSLIB_ASSERT(path.vertex(0).isBoundary());
-        typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
-        if(!delaunay.is_infinite(e.first))
-          e = delaunay.mirror_edge(e);
-
-        SSLIB_ASSERT(delaunay.is_infinite(e.first));
-        boundary.insert(std::make_pair(e, VertexHandle(&path, 0)));
-
-        // Check end vertex
-        if(n > 1)
-        {
-          SSLIB_ASSERT(path.vertex(n - 1).isBoundary());
-          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
-          if(!delaunay.is_infinite(e.first))
-            e = delaunay.mirror_edge(e);
-
-          SSLIB_ASSERT(delaunay.is_infinite(e.first));
-          boundary.insert(std::make_pair(e, VertexHandle(&path, n - 1)));
-        }
-      }
-    }
     return boundary;
   }
 
@@ -277,9 +202,9 @@ template< typename VD>
         const size_t n = path.numVertices();
 
         // Check start vertex
-        if(path.vertex(0).isBoundary())
+        if(path.vertexFront().isBoundary())
         {
-          typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+          typename Delaunay::Edge e = path.vertexFront().getBoundaryEdge();
           if(!delaunay.is_infinite(e.first))
             e = delaunay.mirror_edge(e);
 
@@ -288,39 +213,9 @@ template< typename VD>
         }
 
         // Check end vertex
-        if(n > 1 && path.vertex(n - 1).isBoundary())
+        if(n > 1 && path.vertexBack().isBoundary())
         {
-          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
-          if(!delaunay.is_infinite(e.first))
-            e = delaunay.mirror_edge(e);
-
-          SSLIB_ASSERT(delaunay.is_infinite(e.first));
-          boundary.insert(std::make_pair(e, VertexConstHandle(&path, n - 1)));
-        }
-      }
-    }
-    BOOST_FOREACH(const Path & path, myBoundaryPaths)
-    {
-      // Keep track of the path endpoints so we know the meeting points of
-      // paths in the arrangement
-      if(!path.isCircular())
-      {
-        const size_t n = path.numVertices();
-
-        // Start vertex
-        SSLIB_ASSERT(path.vertex(0).isBoundary());
-        typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
-        if(!delaunay.is_infinite(e.first))
-          e = delaunay.mirror_edge(e);
-
-        SSLIB_ASSERT(delaunay.is_infinite(e.first));
-        boundary.insert(std::make_pair(e, VertexConstHandle(&path, 0)));
-
-        // Check end vertex
-        if(n > 1)
-        {
-          SSLIB_ASSERT(path.vertex(n - 1).isBoundary());
-          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          typename Delaunay::Edge e = path.vertexBack().getBoundaryEdge();
           if(!delaunay.is_infinite(e.first))
             e = delaunay.mirror_edge(e);
 
@@ -337,15 +232,6 @@ template< typename VD>
   VoronoiPathArrangement< VD>::print() const
   {
     BOOST_FOREACH(const Path & p, myPaths)
-    {
-      BOOST_FOREACH(const typename Path::Vertex & v,
-          boost::make_iterator_range(p.verticesBegin(), p.verticesEnd()))
-      {
-        std::cout << v.point() << "\n";
-      }
-      std::cout << "\n" << std::endl;
-    }
-    BOOST_FOREACH(const Path & p, myBoundaryPaths)
     {
       BOOST_FOREACH(const typename Path::Vertex & v,
           boost::make_iterator_range(p.verticesBegin(), p.verticesEnd()))

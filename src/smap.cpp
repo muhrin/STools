@@ -20,7 +20,10 @@
 #include <boost/tokenizer.hpp>
 #include <boost/range/iterator_range.hpp>
 
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+
 #include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
+#include <spl/analysis/MapArrangement.h>
 #include <spl/analysis/VectorAnchorArrangementOutputter.h>
 #include <spl/analysis/VoronoiEdgeTracer.h>
 #include <spl/analysis/VoronoiPathTracer.h>
@@ -36,8 +39,10 @@ namespace spla = spl::analysis;
 typedef std::string LabelType;
 typedef spl::analysis::VoronoiPathTracer< LabelType> PathTracer;
 typedef PathTracer::Point Point;
+typedef spl::analysis::MapArrangement<
+    CGAL::Exact_predicates_exact_constructions_kernel, LabelType> MapArrangement;
 typedef std::vector< std::pair< Point, LabelType> > Points;
-typedef spl::UniquePtr< spla::AnchorArrangementOutputter< LabelType> >::Type ArrangementOutputterPtr;
+typedef spl::UniquePtr< spla::AnchorArrangementOutputter< MapArrangement> >::Type ArrangementOutputterPtr;
 typedef PathTracer::Map Map;
 
 // CONSTANTS ////////////////////////////////
@@ -148,10 +153,9 @@ main(const int argc, char * argv[])
 
   spl::analysis::VoronoiPathTracer< LabelType> tracer;
   const Map arr = tracer.generateMap(voronoi);
-  std::cout << arr;
 
-  //ArrangementOutputterPtr outputter = generateOutputter(in);
-  //outputter->outputArrangement(arr);
+  ArrangementOutputterPtr outputter = generateOutputter(in);
+  outputter->outputArrangement(arr);
 
   return 0;
 }
@@ -208,11 +212,11 @@ generateOutputter(const InputOptions & in)
   ArrangementOutputterPtr outputter;
 
   if(in.outputter == "vector")
-    outputter.reset(new spla::VectorAnchorArrangementOutputter< LabelType>());
+    outputter.reset(new spla::VectorAnchorArrangementOutputter< MapArrangement>());
   else if(in.outputter == "gnuplot")
   {
     outputter.reset(
-        new spla::GnuplotAnchorArrangementPlotter< LabelType>("map"));
+        new spla::GnuplotAnchorArrangementPlotter< MapArrangement>("map"));
   }
   else
     std::cerr << "Error: unrecognised outputter - " << in.outputter

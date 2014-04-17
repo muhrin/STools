@@ -52,15 +52,14 @@ template< typename VD>
     typedef typename Edges::const_iterator EdgeConstIterator;
 
     VoronoiPath();
-    VoronoiPath(const Voronoi & voronoi);
+    explicit VoronoiPath(const Voronoi & voronoi);
+    VoronoiPath(const VoronoiPath & path);
 
     size_t
     push_back(const typename Voronoi::Halfedge_handle & he);
     size_t
     push_back(const Vertex & vtx1, const Vertex & vtx2,
-        const typename Delaunay::Edge & dgEdge, const bool isBoundary);
-    void
-    push_back(const typename Delaunay::Edge & edge);
+        const typename Delaunay::Edge & dgEdge);
 
     VertexConstIterator
     verticesBegin() const;
@@ -70,6 +69,10 @@ template< typename VD>
     vertex(const size_t index);
     const Vertex &
     vertex(const size_t index) const;
+    const Vertex &
+    vertexFront() const;
+    const Vertex &
+    vertexBack() const;
 
     EdgeConstIterator
     edgesBegin() const;
@@ -79,6 +82,14 @@ template< typename VD>
     edge(const size_t index);
     const Edge &
     edge(const size_t index) const;
+    Edge &
+    edgeFront();
+    const Edge &
+    edgeFront() const;
+    Edge &
+    edgeBack();
+    const Edge &
+    edgeBack() const;
 
     void
     reverse();
@@ -99,6 +110,9 @@ template< typename VD>
     getVoronoi() const;
 
   private:
+    void
+    push_back(const typename Delaunay::Edge & edge);
+
     const Voronoi * myVoronoi;
     Vertices myVertices;
     Edges myEdges;

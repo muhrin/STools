@@ -45,9 +45,6 @@ template< typename VD>
     PathIterator
     insertPath(const Path & path);
 
-    void
-    insertBoundaryPath(const Path & path);
-
     PathIterator
     pathsBegin();
     PathIterator
@@ -57,16 +54,6 @@ template< typename VD>
     pathsBegin() const;
     PathConstIterator
     pathsEnd() const;
-
-    PathIterator
-    boundaryPathsBegin();
-    PathIterator
-    boundaryPathsEnd();
-
-    PathConstIterator
-    boundaryPathsBegin() const;
-    PathConstIterator
-    boundaryPathsEnd() const;
 
     MeetingVertices
     getMeetingVertices();
@@ -80,6 +67,12 @@ template< typename VD>
 
     void
     print() const;
+
+    const Voronoi &
+    getVoronoi() const
+    {
+      return myVoronoi;
+    }
 
   private:
     struct CommonVoronoiVertices
@@ -95,7 +88,6 @@ template< typename VD>
 
     const Voronoi & myVoronoi;
     std::vector< Path> myPaths;
-    std::vector< Path> myBoundaryPaths;
   };
 
 }

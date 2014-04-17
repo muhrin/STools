@@ -22,14 +22,13 @@ namespace spl {
 // FORWARD DECLARATIONS ///////
 
 namespace analysis {
-template< typename LabelType>
-  class AnchorArrangement;
 
-template< typename LabelType>
+template< typename Map>
   class AnchorArrangementOutputter
   {
   public:
-    typedef ::std::map< LabelType, ::std::string> InfoMap;
+    typedef typename Map::Arrangement Arrangement;
+    typedef std::map< typename Map::Label, ::std::string> InfoMap;
 
     virtual
     ~AnchorArrangementOutputter()
@@ -37,10 +36,9 @@ template< typename LabelType>
     }
 
     virtual bool
-    outputArrangement(
-        const AnchorArrangement< LabelType> & arrangement) const = 0;
+    outputArrangement(const Arrangement & map) const = 0;
     virtual bool
-    outputArrangement(const AnchorArrangement< LabelType> & arrangement,
+    outputArrangement(const Arrangement & map,
         const InfoMap & labelInfo) const = 0;
   };
 

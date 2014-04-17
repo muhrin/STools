@@ -30,6 +30,9 @@ template< typename K, typename LabelType>
   class MapArrangement
   {
   public:
+    typedef LabelType Label;
+    typedef K Kernel;
+
     struct VertexInfo
     {
     };
@@ -40,12 +43,12 @@ template< typename K, typename LabelType>
           label()
       {
       }
-      boost::optional< LabelType> label;
+      boost::optional< Label> label;
     };
 
     struct FaceInfo
     {
-      boost::optional< LabelType> label;
+      boost::optional< Label> label;
     };
 
     // Arrangements stuff

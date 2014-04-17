@@ -14,6 +14,7 @@
 #include <armadillo>
 
 #include <spl/analysis/AnchorArrangement.h>
+#include <spl/math/LinearAlgebra.h>
 
 // FORWARD DECLARATIONS ///////
 
@@ -25,18 +26,17 @@ namespace analysis {
 template< typename LabelType>
   bool
   VectorAnchorArrangementOutputter< LabelType>::outputArrangement(
-      const AnchorArrangement< LabelType> & arr) const
+      const Arrangement & arr) const
   {
-    ::arma::vec2 source, dr;
-    for(typename Arrangement::Arrangement::Edge_const_iterator edge =
-        arr.getCgalArrangement().edges_begin(), edgesEnd =
-        arr.getCgalArrangement().edges_end(); edge != edgesEnd; ++edge)
+    arma::vec2 source, dr;
+    for(typename Arrangement::Edge_const_iterator edge = arr.edges_begin(),
+        edgesEnd = arr.edges_end(); edge != edgesEnd; ++edge)
     {
       if(!edge->is_fictitious())
       {
-        source = edge->source()->data().anchor->getPos();
-        dr = edge->target()->data().anchor->getPos() - source;
-        ::std::cout << source(0) << " " << source(1) << " " << dr(0) << " "
+        source = math::cgalToArma(edge->source()->point());
+        dr = math::cgalToArma(edge->target()->point()) - source;
+        std::cout << source(0) << " " << source(1) << " " << dr(0) << " "
             << dr(1) << "\n";
       }
     }
@@ -47,8 +47,7 @@ template< typename LabelType>
 template< typename LabelType>
   bool
   VectorAnchorArrangementOutputter< LabelType>::outputArrangement(
-      const AnchorArrangement< LabelType> & arrangement,
-      const InfoMap & labelInfo) const
+      const Arrangement & arrangement, const InfoMap & labelInfo) const
   {
     return outputArrangement(arrangement);
   }

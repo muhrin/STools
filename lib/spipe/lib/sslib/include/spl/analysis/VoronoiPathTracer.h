@@ -66,23 +66,32 @@ template< typename LabelType>
     typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
         Delaunay> AP;
 
+    typedef std::pair< Line, Point> LineAndCoM;
+
   public:
     typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
     //typedef typename MapArrangement< K, LabelType>::Arrangement Map;
-    typedef typename MapArrangement< CGAL::Exact_predicates_exact_constructions_kernel, LabelType>::Arrangement Map;
+    typedef typename MapArrangement<
+        CGAL::Exact_predicates_exact_constructions_kernel, LabelType>::Arrangement Map;
 
   public:
     Map
     generateMap(const Voronoi & voronoi) const;
 
   private:
-    typedef boost::adjacency_list< > PathGraph;
-    typedef std::map< PathGraph::vertex_descriptor,
-        std::vector< PathGraph::vertex_descriptor> > IncomingMap;
+    struct PathVertexIndexType
+    {
+      typedef boost::vertex_property_tag kind;
+    };
+    typedef boost::property< PathVertexIndexType, ptrdiff_t> PathVertexIndex;
+    typedef boost::adjacency_list< boost::vecS, boost::vecS, boost::directedS,
+        PathVertexIndex> PathGraph;
+    typedef std::map< typename PathGraph::vertex_descriptor,
+        std::vector< typename PathGraph::vertex_descriptor> > IncomingMap;
     typedef std::pair< size_t, size_t> Subpath;
     typedef std::set< size_t> PossiblePath;
-    typedef std::map< PathGraph::edge_descriptor, double> WeightMap;
+    typedef std::map< typename PathGraph::edge_descriptor, double> WeightMap;
 
     struct PathGraphInfo
     {
@@ -103,9 +112,7 @@ template< typename LabelType>
   private:
     struct TracingData;
 
-    template< typename Func>
-      class BoundaryTraceVisitor;
-    class GeneratePathVisitor;
+    class DirectionChecker;
     struct PathInfo;
     struct MeetingInfo;
 
@@ -120,9 +127,13 @@ template< typename LabelType>
     PathGraphInfo
     findStraightPathsInternal(const Path & path,
         const PathArrangement & arr) const;
-    PathGraphInfo
-    findStraightPathsBoundary(const Path & path,
-        const TracingData & tracing) const;
+    bool
+    isStraight(const Path & path, const size_t vtxI, const size_t vtxK) const;
+    bool
+    isStraight(const typename Delaunay::Edge & startEdge,
+        const typename Delaunay::Edge & endEdge, const Path & path,
+        const size_t pathEdgeBegin, const size_t pathEdgeLast,
+        DirectionChecker * const dirs) const;
 
     void
     filterPossiblePaths(const Path & path, PathGraphInfo * const paths) const;
@@ -130,10 +141,13 @@ template< typename LabelType>
     findOptimumPath(const Path & path, const PathGraphInfo & paths) const;
     void
     generatePossiblePaths(const Path & fullPath, const IncomingMap & incoming,
+        const PathGraphInfo & pathsInfo,
         std::vector< PossiblePath> * const possiblePaths) const;
     void
     generatePossiblePaths(const IncomingMap & incoming,
-        const PathGraph::vertex_descriptor currentVertex,
+        const typename PathGraph::vertex_descriptor currentVertex,
+        const typename PathGraph::vertex_descriptor targetVertex,
+        const typename boost::property_map< PathGraph, PathVertexIndexType>::const_type & index,
         PossiblePath * const currentPath,
         std::vector< PossiblePath> * const possiblePaths) const;
     WeightMap
@@ -144,11 +158,11 @@ template< typename LabelType>
     std::vector< Line>
     calculateLeastSquaresSubpaths(const Path & full,
         const PossiblePath & reduced, const Voronoi & voronoi) const;
-    Line
+    LineAndCoM
     calculateLeastSquaresLine(const Path & full, const size_t idx0,
         const size_t idx1) const;
     typename CGAL::Linear_algebraCd< K::FT>::Matrix
-    calculateQuadraticForm(const Line & line) const;
+    calculateQuadraticForm(const LineAndCoM & line) const;
 
     Path
     extractReducedPath(const Path & full, const PossiblePath & reduced) const;

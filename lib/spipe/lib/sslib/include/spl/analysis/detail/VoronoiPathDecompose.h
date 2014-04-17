@@ -60,10 +60,13 @@ template< typename VD>
 
 template< typename VD>
   typename VD::Halfedge_handle
-  targetBoundaryHalfedge(const typename VD::Halfedge_handle & he)
+  targetBoundaryHalfedge(const VD & voronoi,
+      const typename VD::Halfedge_handle & he)
   {
     typedef VD Voronoi;
     typedef typename VoronoiLabel< VD>::Type Label;
+
+    SSLIB_ASSERT(isBoundary< VD>(*he));
 
     if(!he->has_target())
       return typename Voronoi::Halfedge_handle();
@@ -74,8 +77,9 @@ template< typename VD>
     typename Voronoi::Halfedge_handle next;
     const typename Voronoi::Vertex_handle target = he->target();
     const typename Voronoi::Halfedge_around_vertex_circulator start =
-        target->incident_halfedges();
+        voronoi.incident_halfedges(target, he);
     typename Voronoi::Halfedge_around_vertex_circulator cl = start;
+    ++cl; // start corresponds to this halfedge, so move to the next one
     do
     {
       if(typename Voronoi::Halfedge_handle(cl) != he
@@ -106,10 +110,11 @@ template< typename VD, typename Visitor>
     typename NextHalfedgeType::Value nextType;
     do
     {
-      next = targetBoundaryHalfedge< VD>(he);
+      next = targetBoundaryHalfedge< VD>(voronoi, he);
       if(next == typename Voronoi::Halfedge_handle())
         nextType = NextHalfedgeType::IS_NULL;
-      else if(next == start)
+      else if(start->has_source() && he->has_target()
+          && he->target() == start->source())
         nextType = NextHalfedgeType::IS_START;
       else
         nextType = NextHalfedgeType::IS_BOUNDARY;
@@ -152,7 +157,7 @@ template< typename VD>
         {
           // Reverse the path and get the visitor to continue in the other direction
           path.reverse();
-          he = targetBoundaryHalfedge< VD>(he->twin());
+          he = targetBoundaryHalfedge< VD>(voronoi, he->twin());
           if(he != typename Voronoi::Halfedge_handle())
             visitBoundaryHaledges(voronoi, he, GeneratePathVisitor< VD>(&path));
         }

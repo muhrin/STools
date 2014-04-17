@@ -24,6 +24,7 @@
 #include "spl/SSLibAssert.h"
 #include "spl/analysis/VoronoiPathDecompose.h"
 #include "spl/analysis/VoronoiPathUtility.h"
+#include "spl/utility/StableComparison.h"
 #include "spl/utility/TransformFunctions.h"
 
 // FORWARD DECLARATIONS ///////
@@ -63,7 +64,6 @@ template< typename IncomingMap, typename Vertex>
       tree_edge(Edge e, Graph & g)
       {
         // set the parent of the target(e) to source(e)
-        // TODO: Don't use push_back so other container type can be used
         myIncoming[boost::target(e, g)].push_back(boost::source(e, g));
       }
 
@@ -78,6 +78,44 @@ template< typename IncomingMap, typename Vertex>
   private:
     IncomingMap myIncoming;
     Vertex myFinishVertex;
+  };
+
+template< typename LabelType>
+  class VoronoiPathTracer< LabelType>::DirectionChecker
+  {
+    struct Direction
+    {
+      enum Value
+      {
+        UP, LEFT, DOWN, RIGHT
+      };
+    };
+  public:
+    void
+    update(const Vector & dr)
+    {
+      namespace stable = spl::utility::stable;
+
+      if(numDirections() == 4)
+        return;
+
+      if(stable::gt(dr.x(), 0.0))
+        myDirections.insert(Direction::RIGHT);
+      else if(stable::lt(dr.x(), 0.0))
+        myDirections.insert(Direction::LEFT);
+
+      if(stable::gt(dr.y(), 0.0))
+        myDirections.insert(Direction::UP);
+      else if(stable::lt(dr.y(), 0.0))
+        myDirections.insert(Direction::DOWN);
+    }
+    size_t
+    numDirections() const
+    {
+      return myDirections.size();
+    }
+  private:
+    std::set< typename Direction::Value> myDirections;
   };
 
 template< typename LabelType>
@@ -132,8 +170,7 @@ template< typename LabelType>
       TracingData * const tracing) const
   {
     decomposePaths(voronoi, &tracing->pathArrangement);
-
-    tracing->pathArrangement.print();
+    //return tracing->pathArrangement;
 
     PathArrangement pathArr(voronoi);
 
@@ -150,24 +187,8 @@ template< typename LabelType>
       pathArr.insertPath(optimalPath);
     }
 
-    BOOST_FOREACH(const Path & path,
-        boost::make_iterator_range(tracing->pathArrangement.boundaryPathsBegin(), tracing->pathArrangement.boundaryPathsEnd()))
-    {
-      const PathGraphInfo & paths = findStraightPathsBoundary(path, *tracing);
-      const PossiblePath & optimal = findOptimumPath(path, paths);
-
-      Path optimalPath = extractReducedPath(path, optimal);
-      adjustVertices(&optimalPath);
-
-      pathArr.insertBoundaryPath(optimalPath);
-    }
-
-    //pathArr.print();
-
     optimiseBoundaryVertices(&pathArr);
-    optimiseMeetingVertices(&pathArr);
-
-    pathArr.print();
+    //optimiseMeetingVertices(&pathArr);
 
     return pathArr;
   }
@@ -177,290 +198,385 @@ template< typename LabelType>
   VoronoiPathTracer< LabelType>::findStraightPathsInternal(const Path & path,
       const PathArrangement & arr) const
   {
-    // TODO: Add check for all four directions
-
     const ptrdiff_t n = static_cast< ptrdiff_t>(path.numVertices());
     PathGraphInfo paths;
     // Populate the graph with the vertices for this path
-    for(ptrdiff_t i = 0; i < n; ++i)
-      paths.vertexMap[i] = boost::add_vertex(paths.graph);
-    if(!path.isCircular())
+    typename boost::property_map< PathGraph, PathVertexIndexType>::type index =
+        boost::get(PathVertexIndexType(), paths.graph);
+    for(ptrdiff_t i = -1; i <= n; ++i)
     {
-      // Vertex before the start meeting vertex
-      if(!path.vertex(0).isBoundary())
-        paths.vertexMap[-1] = boost::add_vertex(paths.graph);
-      // Vertex after the end meeting vertex
-      if(n > 1 && !path.vertex(n - 1).isBoundary())
-        paths.vertexMap[n] = boost::add_vertex(paths.graph);
+      const typename PathGraph::vertex_descriptor vtx = boost::add_vertex(
+          paths.graph);
+      paths.vertexMap[i] = vtx;
+      boost::put(index, vtx, i);
     }
 
-    bool pathStraight;
+    // TODO: Add circular path support
+    arma::Mat<int> straight(n + 2, n + 2);
+    straight.zeros();
     for(ptrdiff_t i = 0; i < n - 1; ++i) // Start vertex
     {
-      const typename Path::Edge & e1 = path.edge(i);
-      const typename Delaunay::Edge & dgE1 = e1.delaunayEdge();
-      const Point v_i[] =
-        { dgE1.first->vertex((dgE1.second + 1) % 3)->point(),
-            dgE1.first->vertex((dgE1.second + 2) % 3)->point() };
-
-      // Paths of length 1-2 are always possible
-      for(ptrdiff_t k = i + 1; k < std::min(i + 3, n); ++k)
-        boost::add_edge(paths.vertexMap[i], paths.vertexMap[k], paths.graph);
-
-      // Check longer paths
-      for(size_t k = i + 3; k < n; ++k) // End vertex
+      for(ptrdiff_t k = i + 1; k < n; ++k) // End vertex
       {
-        const typename Path::Edge & e2 = path.edge(k - 1);
-        const typename Delaunay::Edge & dgE2 = e2.delaunayEdge();
+        straight(i + 1, k + 1) = isStraight(path, i, k);
+      }
+    }
 
-        const Point v_k[] =
-          { dgE2.first->vertex((dgE2.second + 1) % 3)->point(),
-              dgE2.first->vertex((dgE2.second + 2) % 3)->point() };
+    if(!path.isCircular())
+    {
+      bool pathStraight;
+      const typename PathArrangement::MeetingVerticesConst & meeting =
+          arr.getMeetingVertices();
+      std::pair< typename PathArrangement::MeetingVerticesConst::const_iterator,
+          typename PathArrangement::MeetingVerticesConst::const_iterator> meetingRange;
 
-        Segment ik[4];
-        for(size_t l = 0; l < 2; ++l)
+      // Vertex before the start meeting vertex
+      if(path.vertexFront().isBoundary())
+      {
+        for(ptrdiff_t i = 0; i < n; ++i)
         {
-          for(size_t m = 0; m < 2; ++m)
-            ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
+          if(boost::edge(paths.vertexMap[0], paths.vertexMap[i], paths.graph).second)
+          {
+//            boost::add_edge(paths.vertexMap[-1], paths.vertexMap[i],
+//                paths.graph);
+            straight(0, i + 1) = true;
+          }
+        }
+      }
+      else
+      {
+        // Paths of length 1-2 are always possible
+        for(ptrdiff_t i = 0; i < std::min(static_cast< ptrdiff_t>(2), n); ++i)
+        {
+//          boost::add_edge(paths.vertexMap[-1], paths.vertexMap[i], paths.graph);
+          straight(0, i + 1) = true;
         }
 
-        for(ptrdiff_t j = i + 1; j < k - 1; ++j) // Inbetween edges
+        meetingRange = meeting.equal_range(path.vertex(0).voronoiVertex());
+
+        for(ptrdiff_t i = 2; i < n; ++i) // End vertex
         {
-          pathStraight = false;
-          const Segment edgeSegment = segment(path.edge(j).delaunayEdge());
-          for(size_t l = 0; l < 4; ++l)
+          const typename Path::Edge & e1 = path.edge(i - 1);
+
+          pathStraight = true;
+          BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
+              meetingRange)
           {
-            if(CGAL::intersection(ik[l], edgeSegment))
+            const typename Path::Edge & e2 =
+                vtx.second.second == 0 ?
+                    vtx.second.first->edgeFront() :
+                    vtx.second.first->edgeBack();
+
+            DirectionChecker dirs;
+            dirs.update(
+                path.vertex(0).point()
+                    - vtx.second.first->vertex(vtx.second.second).point());
+            dirs.update(path.vertex(1).point() - path.vertex(0).point());
+
+            if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, 0, i - 2,
+                &dirs))
             {
-              pathStraight = true;
+              pathStraight = false;
+              break;
+            }
+          }
+//          if(pathStraight)
+//            boost::add_edge(paths.vertexMap[-1], paths.vertexMap[i],
+//                paths.graph);
+          straight(0, i + 1) = pathStraight;
+
+        }
+      }
+
+      // Vertex after the end meeting vertex
+      if(n > 1)
+      {
+        if(path.vertexBack().isBoundary())
+        {
+          for(ptrdiff_t i = 0; i < n; ++i)
+          {
+            if(boost::edge(paths.vertexMap[i], paths.vertexMap[n - 1],
+                paths.graph).second)
+            {
+//              boost::add_edge(paths.vertexMap[i], paths.vertexMap[n],
+//                  paths.graph);
+              straight(i + 1, n + 1) = true;
+            }
+          }
+        }
+        else
+        {
+          // Paths of length 1-2 are always possible
+          for(ptrdiff_t i = n - 1;
+              i >= std::max(n - 2, static_cast< ptrdiff_t>(0)); --i)
+          {
+//            boost::add_edge(paths.vertexMap[i], paths.vertexMap[n],
+//                paths.graph);
+            straight(i + 1, n + 1) = true;
+          }
+
+          meetingRange = meeting.equal_range(
+              path.vertex(n - 1).voronoiVertex());
+
+          for(ptrdiff_t i = n - 3; i >= 0; --i) // End vertex
+          {
+            const typename Path::Edge & e1 = path.edge(i);
+
+            pathStraight = true;
+            BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
+                meetingRange)
+            {
+              const typename Path::Edge & e2 =
+                  vtx.second.second == 0 ?
+                      vtx.second.first->edgeFront() :
+                      vtx.second.first->edgeBack();
+
+              DirectionChecker dirs;
+              dirs.update(
+                  path.vertex(n - 1).point() - path.vertex(n - 2).point());
+              dirs.update(
+                  vtx.second.first->vertex(vtx.second.second).point()
+                      - path.vertex(n - 1).point());
+
+              if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, i + 1,
+                  path.numEdges() - 1, &dirs))
+              {
+                pathStraight = false;
+                break;
+              }
+            }
+//            if(pathStraight)
+//              boost::add_edge(paths.vertexMap[i], paths.vertexMap[n],
+//                  paths.graph);
+            straight(i + 1, n + 1) = pathStraight;
+          }
+        }
+      }
+
+      if(!path.vertexFront().isBoundary() && n > 1
+          && !path.vertexBack().isBoundary())
+      {
+        meetingRange = meeting.equal_range(path.vertexFront().voronoiVertex());
+        std::pair<
+            typename PathArrangement::MeetingVerticesConst::const_iterator,
+            typename PathArrangement::MeetingVerticesConst::const_iterator> meetingRange2 =
+            meeting.equal_range(path.vertexBack().voronoiVertex());
+        pathStraight = true;
+        BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
+            meetingRange)
+        {
+          const typename Path::Edge & e1 =
+              vtx.second.second == 0 ?
+                  vtx.second.first->edgeFront() : vtx.second.first->edgeBack();
+
+          BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx2,
+              meetingRange2)
+          {
+            const typename Path::Edge & e2 =
+                vtx2.second.second == 0 ?
+                    vtx2.second.first->edgeFront() :
+                    vtx2.second.first->edgeBack();
+
+            DirectionChecker dirs;
+            dirs.update(
+                path.vertex(n - 1).point() - path.vertex(n - 2).point());
+            dirs.update(
+                vtx.second.first->vertex(vtx.second.second).point()
+                    - path.vertex(n - 1).point());
+            dirs.update(
+                path.vertex(n - 1).point() - path.vertex(n - 2).point());
+            dirs.update(
+                vtx.second.first->vertex(vtx.second.second).point()
+                    - path.vertex(n - 1).point());
+
+            if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, 0, n - 2,
+                &dirs))
+            {
+              pathStraight = false;
               break;
             }
           }
           if(!pathStraight)
             break;
         }
-        if(pathStraight)
-          boost::add_edge(paths.vertexMap[i], paths.vertexMap[k], paths.graph);
+//        if(pathStraight)
+//          boost::add_edge(paths.vertexMap[0], paths.vertexMap[n], paths.graph);
+        straight(1, n + 1) = pathStraight;
       }
     }
 
-//    if(!path.isCircular())
-//    {
-//      const typename PathArrangement::MeetingVerticesConst & meeting =
-//          arr.getMeetingVertices();
-//      std::pair< typename PathArrangement::MeetingVerticesConst::const_iterator,
-//          typename PathArrangement::MeetingVerticesConst::const_iterator> meetingRange;
-//      // Vertex before the start meeting vertex
-//      if(!path.vertex(0).isBoundary())
-//      {
-//        // Paths of length 1-2 are always possible
-//        for(ptrdiff_t i = 0; i < std::min(static_cast< ptrdiff_t>(2), n); ++i)
-//          boost::add_edge(paths.vertexMap[-1], paths.vertexMap[i], paths.graph);
-//
-//        meetingRange = meeting.equal_range(path.vertex(0).voronoiVertex());
-//        for(ptrdiff_t i = 1; i < n - 1; ++i)
-//        {
-//          const typename Path::Edge & e1 = path.edge(i);
-//          const typename Delaunay::Edge & dgE1 = e1.delaunayEdge();
-//          const Point v_i[] =
-//            { dgE1.first->vertex((dgE1.second + 1) % 3)->point(),
-//                dgE1.first->vertex((dgE1.second + 2) % 3)->point() };
-//
-//          BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
-//              meetingRange)
-//          {
-//            const typename Path::Edge & e2 =
-//                vtx.second.second == 0 ?
-//                    vtx.second.first->edge(0) :
-//                    vtx.second.first->edge(vtx.second.first->numEdges() - 1);
-//            const typename Delaunay::Edge & dgE2 = e2.delaunayEdge();
-//            const Point v_k[] =
-//              { dgE2.first->vertex((dgE2.second + 1) % 3)->point(),
-//                  dgE2.first->vertex((dgE2.second + 2) % 3)->point() };
-//
-//            Segment ik[4];
-//            for(size_t l = 0; l < 2; ++l)
-//            {
-//              for(size_t m = 0; m < 2; ++m)
-//                ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
-//            }
-//
-//            for(ptrdiff_t j = 0; j < i - 1; ++j) // Inbetween edges
-//            {
-//              pathStraight = false;
-//              const Segment edgeSegment = segment(path.edge(j).delaunayEdge());
-//              for(size_t l = 0; l < 4; ++l)
-//              {
-//                if(CGAL::intersection(ik[l], edgeSegment))
-//                {
-//                  pathStraight = true;
-//                  break;
-//                }
-//              }
-//              if(pathStraight)
-//                break;
-//            }
-//            if(pathStraight)
-//              break;
-//          }
-//          if(pathStraight)
-//            boost::add_edge(paths.vertexMap[-1], paths.vertexMap[i + 1],
-//                paths.graph);
-//          else
-//            break;
-//        }
-//      }
-//      // Vertex after the end meeting vertex
-//      if(n > 1 && !path.vertex(n - 1).isBoundary())
-//      {
-//        // Paths of length 1-2 are always possible
-//        for(ptrdiff_t i = n - 1;
-//            i >= std::max(n - 2, static_cast< ptrdiff_t>(0)); --i)
-//          boost::add_edge(paths.vertexMap[i], paths.vertexMap[n], paths.graph);
-//
-//        meetingRange = meeting.equal_range(path.vertex(0).voronoiVertex());
-//        for(ptrdiff_t i = n - 3; i >= 0; --i)
-//        {
-//          const typename Path::Edge & e1 = path.edge(i);
-//          const typename Delaunay::Edge & dgE1 = e1.delaunayEdge();
-//          const Point v_i[] =
-//            { dgE1.first->vertex((dgE1.second + 1) % 3)->point(),
-//                dgE1.first->vertex((dgE1.second + 2) % 3)->point() };
-//
-//          BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
-//              meetingRange)
-//          {
-//            const typename Path::Edge & e2 =
-//                vtx.second.second == 0 ?
-//                    vtx.second.first->edge(0) :
-//                    vtx.second.first->edge(vtx.second.first->numEdges() - 1);
-//            const typename Delaunay::Edge & dgE2 = e2.delaunayEdge();
-//            const Point v_k[] =
-//              { dgE2.first->vertex((dgE2.second + 1) % 3)->point(),
-//                  dgE2.first->vertex((dgE2.second + 2) % 3)->point() };
-//
-//            Segment ik[4];
-//            for(size_t l = 0; l < 2; ++l)
-//            {
-//              for(size_t m = 0; m < 2; ++m)
-//                ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
-//            }
-//
-//            for(ptrdiff_t j = n - 2; j > i; --j) // Inbetween edges
-//            {
-//              pathStraight = false;
-//              const Segment edgeSegment = segment(path.edge(j).delaunayEdge());
-//              for(size_t l = 0; l < 4; ++l)
-//              {
-//                if(CGAL::intersection(ik[l], edgeSegment))
-//                {
-//                  pathStraight = true;
-//                  break;
-//                }
-//              }
-//              if(!pathStraight)
-//                break;
-//            }
-//            if(!pathStraight)
-//              break;
-//          }
-//          if(pathStraight)
-//            boost::add_edge(paths.vertexMap[i], paths.vertexMap[n],
-//                paths.graph);
-//          else
-//            break;
-//        }
-//      }
-//    }
+    for(ptrdiff_t i = -1; i < n + 1; ++i) // Start vertex
+    {
+      for(ptrdiff_t k = i + 1; k < n + 1; ++k) // End vertex
+      {
+        bool allStraight = true;
+        for(ptrdiff_t l = i; l < k; ++l) // Start
+        {
+          for(ptrdiff_t m = l + 1; m <= k; ++m) // End
+          {
+            if(!straight(l + 1, m + 1))
+            {
+              allStraight = false;
+              break;
+            }
+          }
+          if(!allStraight)
+            break;
+        }
+        if(allStraight)
+          boost::add_edge(paths.vertexMap[i], paths.vertexMap[k], paths.graph);
+        else
+          break;
+      }
+    }
 
-//    std::cout << path.numEdges() << "\n";
-//    BOOST_FOREACH(const typename PathGraph::edge_descriptor & edge, boost::edges(paths.graph))
-//    {
-//      std::cout << boost::source(edge, paths.graph) << "->"
-//          << boost::target(edge, paths.graph) << "\n";
-//    }
-//    std::cout << "\n" << std::endl;
+    std::cout << path.numEdges() << "\n";
+    BOOST_FOREACH(const typename PathGraph::edge_descriptor & edge, boost::edges(paths.graph))
+    {
+      std::cout << boost::get(index, boost::source(edge, paths.graph)) << "->"
+          << boost::get(index, boost::target(edge, paths.graph)) << "\n";
+    }
+    std::cout << "\n" << std::endl;
 
     filterPossiblePaths(path, &paths);
+
+    std::cout << path.numEdges() << "\n";
+    BOOST_FOREACH(const typename PathGraph::edge_descriptor & edge, boost::edges(paths.graph))
+    {
+      std::cout << boost::get(index, boost::source(edge, paths.graph)) << "->"
+          << boost::get(index, boost::target(edge, paths.graph)) << "\n";
+    }
+    std::cout << "\n" << std::endl;
+
     return paths;
   }
 
 template< typename LabelType>
-  typename VoronoiPathTracer< LabelType>::PathGraphInfo
-  VoronoiPathTracer< LabelType>::findStraightPathsBoundary(const Path & path,
-      const TracingData & tracing) const
+  bool
+  VoronoiPathTracer< LabelType>::isStraight(const Path & path, const size_t i,
+      const size_t k) const
   {
-    const ptrdiff_t n = static_cast< ptrdiff_t>(path.numVertices());
-    PathGraphInfo paths;
-    // Populate the graph with the vertices for this path
-    for(ptrdiff_t i = 0; i < n; ++i)
-      paths.vertexMap[i] = boost::add_vertex(paths.graph);
-    if(!path.isCircular())
+    SSLIB_ASSERT(i < path.numVertices());
+    SSLIB_ASSERT(k < path.numVertices());
+    SSLIB_ASSERT(i <= k);
+
+    // Paths of length 1 & 2 are always straight
+    if((i - k) <= 2 || (k - i) <= 2)
+      return true;
+
+    // The start and end Delaunay edges
+    const typename Delaunay::Edge & dgE1 = path.edge(i).delaunayEdge();
+    const typename Delaunay::Edge & dgE2 = path.edge(k - 1).delaunayEdge();
+
+    const Point v_i[] =
+      { dgE1.first->vertex((dgE1.second + 1) % 3)->point(), dgE1.first->vertex(
+          (dgE1.second + 2) % 3)->point() };
+    const Point v_k[] =
+      { dgE2.first->vertex((dgE2.second + 1) % 3)->point(), dgE2.first->vertex(
+          (dgE2.second + 2) % 3)->point() };
+
+    // Construct the 4 segments between the two endpoints of the two Delaunay edges
+    Segment ik[4];
+    for(size_t l = 0; l < 2; ++l)
     {
-      // Vertex before the start meeting vertex
-      if(!path.vertex(0).isBoundary())
-        paths.vertexMap[-1] = boost::add_vertex(paths.graph);
-      // Vertex after the end meeting vertex
-      if(n > 1 && !path.vertex(n - 1).isBoundary())
-        paths.vertexMap[n] = boost::add_vertex(paths.graph);
+      for(size_t m = 0; m < 2; ++m)
+        ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
+    }
+
+    DirectionChecker dirs;
+    // No need to check paths of length 1 & 2, just seed the direction vector
+    dirs.update(path.vertex(i + 1).point() - path.vertex(i).point());
+
+    bool pathStraight;
+    for(ptrdiff_t j = i + 2; j < k; ++j) // Inbetween vertices
+    {
+      pathStraight = false;
+      const typename Path::Edge & edge = path.edge(j - 1);
+      dirs.update(
+          path.vertex(edge.target()).point()
+              - path.vertex(edge.source()).point());
+      // Check 4-directions condition
+      if(dirs.numDirections() == 4)
+        break;
+
+      const Segment edgeSegment = segment(edge.delaunayEdge());
+      for(size_t l = 0; l < 4; ++l)
+      {
+        if(CGAL::intersection(ik[l], edgeSegment))
+        {
+          // As soon as one of the segments intersects this Edge then we're
+          // happy to move on
+          pathStraight = true;
+          break;
+        }
+      }
+      if(!pathStraight)
+        break;
+    }
+
+    // Add in the final direction vector
+    dirs.update(path.vertex(k).point() - path.vertex(k - 1).point());
+    if(dirs.numDirections() == 4)
+      pathStraight = false;
+
+    return pathStraight;
+  }
+
+template< typename LabelType>
+  bool
+  VoronoiPathTracer< LabelType>::isStraight(
+      const typename Delaunay::Edge & startEdge,
+      const typename Delaunay::Edge & endEdge, const Path & path,
+      const size_t pathEdgeBegin, const size_t pathEdgeLast,
+      DirectionChecker * const dirs) const
+  {
+    SSLIB_ASSERT(pathEdgeBegin < path.numEdges());
+    SSLIB_ASSERT(pathEdgeLast < path.numEdges());
+    SSLIB_ASSERT(pathEdgeBegin <= pathEdgeLast);
+
+    const Point v_i[] =
+      { startEdge.first->vertex((startEdge.second + 1) % 3)->point(),
+          startEdge.first->vertex((startEdge.second + 2) % 3)->point() };
+    const Point v_k[] =
+      { endEdge.first->vertex((endEdge.second + 1) % 3)->point(),
+          endEdge.first->vertex((endEdge.second + 2) % 3)->point() };
+
+    // Construct the 4 segments between the two endpoints of the two Delaunay edges
+    Segment ik[4];
+    for(size_t l = 0; l < 2; ++l)
+    {
+      for(size_t m = 0; m < 2; ++m)
+        ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
     }
 
     bool pathStraight;
-    for(ptrdiff_t i = 0; i < n - 1; ++i) // Start vertex
+    for(size_t j = pathEdgeBegin; j <= pathEdgeLast; ++j) // Path edges to check
     {
-      const typename Path::Vertex & v1 = path.vertex(i);
-      SSLIB_ASSERT(v1.isBoundary());
-      const typename Delaunay::Edge & dgE1 = v1.getBoundaryEdge();
-      const Point v_i[] =
-        { dgE1.first->vertex((dgE1.second + 1) % 3)->point(),
-            dgE1.first->vertex((dgE1.second + 2) % 3)->point() };
+      pathStraight = false;
+      const typename Path::Edge & edge = path.edge(j);
+      dirs->update(
+          path.vertex(edge.target()).point()
+              - path.vertex(edge.source()).point());
+      // Check 4-directions condition
+      if(dirs->numDirections() == 4)
+        break;
 
-      // Paths of length 1 are always possible
-      for(ptrdiff_t k = i + 1; k < std::min(i + 2, n); ++k)
-        boost::add_edge(paths.vertexMap[i], paths.vertexMap[k], paths.graph);
-
-      // Check longer paths
-      for(ptrdiff_t k = i + 2; k < n; ++k) // End vertex
+      const Segment edgeSegment = segment(edge.delaunayEdge());
+      for(size_t l = 0; l < 4; ++l)
       {
-        const typename Path::Vertex & v2 = path.vertex(k);
-        SSLIB_ASSERT(v2.isBoundary());
-        const typename Delaunay::Edge & dgE2 = v2.getBoundaryEdge();
-
-        const Point v_k[] =
-          { dgE2.first->vertex((dgE2.second + 1) % 3)->point(),
-              dgE2.first->vertex((dgE2.second + 2) % 3)->point() };
-
-        Segment ik[4];
-        for(size_t l = 0; l < 2; ++l)
+        if(CGAL::intersection(ik[l], edgeSegment))
         {
-          for(size_t m = 0; m < 2; ++m)
-            ik[l * 2 + m] = Segment(v_i[l], v_k[m]);
+          // As soon as one of the segments intersects this Edge then we're
+          // happy to move on
+          pathStraight = true;
+          break;
         }
-
-        for(ptrdiff_t j = i + 1; j < k; ++j) // Inbetween vertices
-        {
-          const typename Path::Vertex & v3 = path.vertex(j);
-          SSLIB_ASSERT(v3.isBoundary());
-          const Segment edgeSegment = segment(v3.getBoundaryEdge());
-
-          pathStraight = false;
-          for(size_t l = 0; l < 4; ++l)
-          {
-            if(CGAL::intersection(ik[l], edgeSegment))
-            {
-              pathStraight = true;
-              break;
-            }
-          }
-          if(!pathStraight)
-            break;
-        }
-        if(pathStraight)
-          boost::add_edge(paths.vertexMap[i], paths.vertexMap[k], paths.graph);
       }
+      if(!pathStraight)
+        break;
     }
-    filterPossiblePaths(path, &paths);
-    return paths;
+
+    return pathStraight;
   }
 
 template< typename LabelType>
@@ -468,45 +584,37 @@ template< typename LabelType>
   VoronoiPathTracer< LabelType>::filterPossiblePaths(const Path & path,
       PathGraphInfo * const paths) const
   {
-    typedef std::pair< PathGraph::edge_descriptor, bool> EdgeQuery;
+    typedef std::pair< typename PathGraph::edge_descriptor, bool> EdgeQuery;
 
     const ptrdiff_t n = static_cast< ptrdiff_t>(path.numVertices());
     if(n < 3)
       return;
 
-    EdgeQuery edge;
-    if(path.isCircular())
-    {
-      // TODO: Implement, and possibly make one piece of code with the non circular case
-      std::cout << "IS CIRCULAR\n";
-    }
-    else
-    {
-      std::vector< PathGraph::edge_descriptor> toRemove;
-      ptrdiff_t iBack, jForward;
-      for(ptrdiff_t i = 0; i < n; ++i)
-      {
-        //iBack = (i == 0 && path.vertex(0).isBoundary()) ? i : i - 1;
-        iBack = i == 0 ? i : i - 1;
+    // TODO: Implement a version for circular paths
 
-        for(ptrdiff_t j = i + 2; j < n; ++j)
+    EdgeQuery edge;
+    std::vector< typename PathGraph::edge_descriptor> toRemove;
+    ptrdiff_t iBack, jForward;
+    for(ptrdiff_t i = 0; i < n; ++i)
+    {
+      iBack = i - 1;
+
+      for(ptrdiff_t j = i + 2; j < n; ++j)
+      {
+        edge = boost::edge(paths->vertexMap[i], paths->vertexMap[j],
+            paths->graph);
+        if(edge.second)
         {
-          edge = boost::edge(paths->vertexMap[i], paths->vertexMap[j],
-              paths->graph);
-          if(edge.second)
-          {
-            //jForward =
-            //    (j == (n - 1) && path.vertex(n - 1).isBoundary()) ? j : j + 1;
-            jForward = j == (n - 1) ? j : j + 1;
-            if(!boost::edge(paths->vertexMap[iBack], paths->vertexMap[jForward],
-                paths->graph).second)
-              toRemove.push_back(edge.first);
-          }
+          jForward = j + 1;
+
+          if(!boost::edge(paths->vertexMap[iBack], paths->vertexMap[jForward],
+              paths->graph).second)
+            toRemove.push_back(edge.first);
         }
       }
-      BOOST_FOREACH(const PathGraph::edge_descriptor & e, toRemove)
-        paths->graph.remove_edge(e);
     }
+    BOOST_FOREACH(const typename PathGraph::edge_descriptor & e, toRemove)
+      paths->graph.remove_edge(e);
   }
 
 template< typename LabelType>
@@ -524,15 +632,16 @@ template< typename LabelType>
       return poss;
     }
 
-    const PathGraph::vertex_descriptor source = paths.vertexMap.find(0)->second;
-    const PathGraph::vertex_descriptor target =
-        paths.vertexMap.find(n - 1)->second;
+    const typename PathGraph::vertex_descriptor source =
+        paths.vertexMap.find(0)->second;
+    const typename PathGraph::vertex_descriptor target = paths.vertexMap.find(
+        n - 1)->second;
     IncomingMap incoming;
     // Make the source it's own root to allow general algorithms
     // i.e. not have to conditionally check for source and do special case
     incoming[source].push_back(source);
 
-    RecordIncoming< IncomingMap &, PathGraph::vertex_descriptor> visitor(
+    RecordIncoming< IncomingMap &, typename PathGraph::vertex_descriptor> visitor(
         incoming, target);
     try
     {
@@ -543,7 +652,7 @@ template< typename LabelType>
     }
 
     std::vector< PossiblePath> possiblePaths;
-    generatePossiblePaths(path, incoming, &possiblePaths);
+    generatePossiblePaths(path, incoming, paths, &possiblePaths);
 
     PossiblePath optimal;
     if(possiblePaths.size() == 1)
@@ -577,30 +686,44 @@ template< typename LabelType>
 template< typename LabelType>
   void
   VoronoiPathTracer< LabelType>::generatePossiblePaths(const Path & fullPath,
-      const IncomingMap & incoming,
+      const IncomingMap & incoming, const PathGraphInfo & pathsInfo,
       std::vector< PossiblePath> * const possiblePaths) const
   {
     if(incoming.empty())
       return;
+
+    // Get the mapping from graph vertices to path index
+    const typename boost::property_map< PathGraph, PathVertexIndexType>::const_type index =
+        boost::get(PathVertexIndexType(), pathsInfo.graph);
+
     PossiblePath & currentPath = *possiblePaths->insert(possiblePaths->end(),
         PossiblePath());
-    const size_t finalVertex = fullPath.numVertices() - 1;
-    currentPath.insert(finalVertex);
-    generatePossiblePaths(incoming, finalVertex, &currentPath, possiblePaths);
+    const typename PathGraph::vertex_descriptor startVertex =
+        pathsInfo.vertexMap.find(0)->second;
+    const typename PathGraph::vertex_descriptor finalVertex =
+        pathsInfo.vertexMap.find(fullPath.numVertices() - 1)->second;
+
+    currentPath.insert(fullPath.numVertices() - 1);
+
+    generatePossiblePaths(incoming, finalVertex, startVertex, index,
+        &currentPath, possiblePaths);
   }
 
 template< typename LabelType>
   void
   VoronoiPathTracer< LabelType>::generatePossiblePaths(
       const IncomingMap & incoming,
-      const PathGraph::vertex_descriptor currentVertex,
+      const typename PathGraph::vertex_descriptor currentVertex,
+      const typename PathGraph::vertex_descriptor targetVertex,
+      const typename boost::property_map< PathGraph, PathVertexIndexType>::const_type & index,
       PossiblePath * const currentPath,
       std::vector< PossiblePath> * const possiblePaths) const
   {
-    if(currentVertex == 0)
+    if(currentVertex == targetVertex)
       return;
 
-    const IncomingMap::const_iterator it = incoming.find(currentVertex);
+    const typename IncomingMap::const_iterator it = incoming.find(
+        currentVertex);
     SSLIB_ASSERT(it != incoming.end());
     SSLIB_ASSERT(!it->second.empty());
 
@@ -608,9 +731,10 @@ template< typename LabelType>
     const PossiblePath pathSoFar = *currentPath;
 
     // Continue the current path
-    const size_t predecessor = it->second[0];
-    currentPath->insert(predecessor);
-    generatePossiblePaths(incoming, predecessor, currentPath, possiblePaths);
+    const typename PathGraph::vertex_descriptor predecessor = it->second[0];
+    currentPath->insert(boost::get(index, predecessor));
+    generatePossiblePaths(incoming, predecessor, targetVertex, index,
+        currentPath, possiblePaths);
 
     // Do any branching paths
     for(size_t i = 1; i < it->second.size(); ++i)
@@ -619,7 +743,8 @@ template< typename LabelType>
       PossiblePath & splitPath = *possiblePaths->insert(possiblePaths->end(),
           pathSoFar);
       splitPath.insert(predecessor);
-      generatePossiblePaths(incoming, predecessor, &splitPath, possiblePaths);
+      generatePossiblePaths(incoming, predecessor, targetVertex, index,
+          &splitPath, possiblePaths);
     }
   }
 
@@ -660,27 +785,28 @@ template< typename LabelType>
   }
 
 template< typename LabelType>
-  typename VoronoiPathTracer< LabelType>::Line
+  typename VoronoiPathTracer< LabelType>::LineAndCoM
   VoronoiPathTracer< LabelType>::calculateLeastSquaresLine(const Path & full,
       const size_t idx0, const size_t idx1) const
   {
     SSLIB_ASSERT(idx0 < full.numVertices() && idx1 < full.numVertices());
 
-    Line line;
     std::vector< Point> pts;
     for(typename Path::VertexConstIterator it = full.verticesBegin() + idx0,
-        end = full.verticesBegin() + idx0 + 1; it != end; ++it)
+        end = full.verticesBegin() + idx1 + 1; it != end; ++it)
       pts.push_back(it->point());
 
-    CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(), line,
-        CGAL::Dimension_tag< 0>());
+    LineAndCoM line;
+    CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(), line.first,
+        line.second, CGAL::Dimension_tag< 0>());
 
     return line;
   }
 
 template< typename LabelType>
   typename CGAL::Linear_algebraCd< typename VoronoiPathTracer< LabelType>::K::FT>::Matrix
-  VoronoiPathTracer< LabelType>::calculateQuadraticForm(const Line & line) const
+  VoronoiPathTracer< LabelType>::calculateQuadraticForm(
+      const LineAndCoM & line) const
   {
     typedef typename CGAL::Linear_algebraCd< K::FT> Linalg;
     // The quadratic form matrix summed for each line.  Least squares
@@ -688,13 +814,13 @@ template< typename LabelType>
     // (x, y, 1) Q (x, y, 1)^T
     typename Linalg::Matrix Q(3, 3, 0.0);
 
-    const Vector & ortho = line.to_vector().perpendicular(
+    const Vector & ortho = line.first.to_vector().perpendicular(
         CGAL::COUNTERCLOCKWISE);
     const K::FT lenSq = ortho.squared_length();
     typename Linalg::Matrix v(3, 1);
     v(0, 0) = ortho.x();
     v(1, 0) = ortho.y();
-    v(2, 0) = -ortho * (line.point() - CGAL::ORIGIN);
+    v(2, 0) = -ortho * (line.second - CGAL::ORIGIN);
     Q += v * Linalg::transpose(v) * (1.0 / lenSq);
 
     return Q;
@@ -771,8 +897,7 @@ template< typename LabelType>
       ++next;
 
       edgeIdx = extracted.push_back(full.vertex(*it), full.vertex(*next),
-          full.edge(*it).delaunayEdge(),
-          full.edge(*it).isBoundary() && full.edge(*next - 1).isBoundary());
+          full.edge(*it).delaunayEdge());
       typename Path::Edge & edge = extracted.edge(edgeIdx);
 
       edge.setLeastSqLine(calculateLeastSquaresLine(full, *it, *next));
@@ -844,36 +969,29 @@ template< typename LabelType>
     Polygon domain;
     bool domainSet;
     const typename Path::Edge * edge;
-    CGAL::Linear_algebraCd< K::FT>::Matrix Q(3, 3, 0.0);
 
     for(BoundaryVertexIterator it = boundary.begin(), end = boundary.end();
         it != end; /*increment in loop body*/)
     {
       const BoundaryVertexRange range(it, boundary.upper_bound(it->first));
 
+      CGAL::Linear_algebraCd< K::FT>::Matrix Q(3, 3, 0.0);
       domainSet = false;
       BOOST_FOREACH(typename BoundaryVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
         const Path * const path = vtx.first;
 
-        if(vtx.second == 0)
-          edge = &path->edge(0);
-        else
-          edge = &path->edge(path->numEdges() - 1);
+        edge = vtx.second == 0 ? &path->edgeFront() : &path->edgeBack();
 
-        // Only non boundary edges contribute to the optimal point
-        if(!edge->isBoundary())
+        SSLIB_ASSERT(edge->getQuadraticForm());
+        Q += *edge->getQuadraticForm();
+        // Use the first domain we come across - they should all be
+        // equivalent anyway
+        if(!domainSet)
         {
-          SSLIB_ASSERT(edge->getQuadraticForm());
-          Q += *edge->getQuadraticForm();
-          // Use the first domain we come across - they should all be
-          // equivalent anyway
-          if(!domainSet)
-          {
-            domain = path->vertex(vtx.second).domain();
-            domainSet = true;
-          }
+          domain = path->vertex(vtx.second).domain();
+          domainSet = true;
         }
       }
       SSLIB_ASSERT(domainSet);
@@ -913,10 +1031,8 @@ template< typename LabelType>
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
 
-        if(vtx.second == 0)
-          edge = &vtx.first->edge(0);
-        else
-          edge = &vtx.first->edge(vtx.first->numEdges() - 1);
+        edge =
+            vtx.second == 0 ? &vtx.first->edgeFront() : &vtx.first->edgeBack();
 
         SSLIB_ASSERT(edge->getQuadraticForm());
         Q += *edge->getQuadraticForm();

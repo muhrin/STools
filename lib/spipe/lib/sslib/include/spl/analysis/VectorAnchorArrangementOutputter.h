@@ -25,13 +25,13 @@ namespace spl {
 
 namespace analysis {
 
-template< typename LabelType>
+template< typename Map>
   class VectorAnchorArrangementOutputter : public AnchorArrangementOutputter<
-      LabelType>
+      Map>
   {
-  typedef AnchorArrangement<LabelType> Arrangement;
   public:
-    typedef typename AnchorArrangementOutputter< LabelType>::InfoMap InfoMap;
+    typedef typename AnchorArrangementOutputter< Map>::InfoMap InfoMap;
+    typedef typename AnchorArrangementOutputter< Map>::Arrangement Arrangement;
 
     virtual
     ~VectorAnchorArrangementOutputter()
@@ -39,10 +39,9 @@ template< typename LabelType>
     }
 
     virtual bool
-    outputArrangement(
-        const AnchorArrangement< LabelType> & arrangement) const;
+    outputArrangement(const Arrangement & arrangement) const;
     virtual bool
-    outputArrangement(const AnchorArrangement< LabelType> & arrangement,
+    outputArrangement(const Arrangement & arrangement,
         const InfoMap & labelInfo) const;
   };
 

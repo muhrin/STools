@@ -18,6 +18,7 @@
 #include <CGAL/centroid.h>
 
 #include <spl/analysis/AnchorArrangement.h>
+#include <spl/math/LinearAlgebra.h>
 
 // FORWARD DECLARATIONS ///////
 
@@ -26,54 +27,63 @@
 namespace spl {
 namespace analysis {
 
-template< typename LabelType>
-  GnuplotAnchorArrangementPlotter< LabelType>::GnuplotAnchorArrangementPlotter(
-      const ::std::string & outputFileStem) :
+template< typename Map>
+  GnuplotAnchorArrangementPlotter< Map>::GnuplotAnchorArrangementPlotter(
+      const std::string & outputFileStem) :
       myOutputFileStem(outputFileStem)
   {
   }
 
-template< typename LabelType>
+template< typename Map>
   bool
-  GnuplotAnchorArrangementPlotter< LabelType>::outputArrangement(
+  GnuplotAnchorArrangementPlotter< Map>::outputArrangement(
       const Arrangement & arrangement) const
   {
-    using ::CGAL::to_double;
+    typedef CGAL::Point_2< typename Map::Kernel> MapPoint;
 
-    const ::std::string edgesOutStr = myOutputFileStem + ".edge", pltOutStr =
+    using CGAL::to_double;
+
+    const std::string edgesOutStr = myOutputFileStem + ".edge", pltOutStr =
         myOutputFileStem + ".plt", polysOutStr = myOutputFileStem + ".poly";
 
-    ::std::ofstream edgesOut(edgesOutStr.c_str());
-    ::std::ofstream pltOut(pltOutStr.c_str());
-    ::std::ofstream polysOut(polysOutStr.c_str());
+    std::ofstream edgesOut(edgesOutStr.c_str());
+    std::ofstream pltOut(pltOutStr.c_str());
+    std::ofstream polysOut(polysOutStr.c_str());
 
-    ::std::stringstream plotCommand;
+    std::stringstream plotCommand;
     plotCommand << "plot ";
 
     size_t polyIdx = 0;
-    typename Arrangement::CgalPoint centre;
-    BOOST_FOREACH(const typename Arrangement::Arrangement::Face & face,
-        ::boost::make_iterator_range(arrangement.getCgalArrangement().faces_begin(),
-            arrangement.getCgalArrangement().faces_end()))
+    MapPoint centre;
+    BOOST_FOREACH(const typename Arrangement::Face & face,
+        boost::make_iterator_range(arrangement.faces_begin(),
+            arrangement.faces_end()))
     {
       if(!face.is_unbounded() && !face.is_fictitious())
       {
-        const typename Arrangement::FacePolygon poly =
-            arrangement.getFacePolygon(face);
-        centre = ::CGAL::centroid(poly.vertices_begin(), poly.vertices_end(),
-            ::CGAL::Dimension_tag< 0>());
-        pltOut << "set label \"" << face.data().label << "\" at "
-            << ::CGAL::to_double(centre.x()) << ", "
-            << ::CGAL::to_double(centre.y()) << " centre front\n";
+        const FacePolygon poly = getFacePolygon(face);
+        centre = CGAL::centroid(poly.vertices_begin(), poly.vertices_end(),
+            CGAL::Dimension_tag< 0>());
+        if(face.data().label)
+        {
+          pltOut << "set label \"" << *face.data().label << "\" at "
+              << CGAL::to_double(centre.x()) << ", "
+              << CGAL::to_double(centre.y()) << " centre front\n";
+        }
 
-        BOOST_FOREACH(const typename Arrangement::CgalPoint & pt,
-            ::boost::make_iterator_range(poly.vertices_begin(), poly.vertices_end()))
+        BOOST_FOREACH(const MapPoint & pt,
+            boost::make_iterator_range(poly.vertices_begin(), poly.vertices_end()))
         {
           polysOut << to_double(pt.x()) << " " << to_double(pt.y()) << "\n";
         }
         polysOut << "\n\n";
         plotCommand << "\"" << polysOutStr << "\" u 1:2 i " << polyIdx
-            << " w filledcurves lt " << face.data().label << ", \\\n";
+            << " w filledcurves";
+
+        if(face.data().label)
+          plotCommand << " lt " << *face.data().label;
+
+        plotCommand << ", \\\n";
         ++polyIdx;
       }
     }
@@ -97,44 +107,64 @@ template< typename LabelType>
     return true;
   }
 
-template< typename LabelType>
+template< typename Map>
   bool
-  GnuplotAnchorArrangementPlotter< LabelType>::outputArrangement(
-      const AnchorArrangement< LabelType> & arrangement,
-      const InfoMap & labelInfo) const
+  GnuplotAnchorArrangementPlotter< Map>::outputArrangement(
+      const Arrangement & map, const InfoMap & labelInfo) const
   {
-    return outputArrangement(arrangement);
+    return outputArrangement(map);
   }
 
-template< typename LabelType>
+template< typename Map>
   void
-  GnuplotAnchorArrangementPlotter< LabelType>::plotEdges(
-      const Arrangement & arr, ::std::ostream * const os) const
+  GnuplotAnchorArrangementPlotter< Map>::plotEdges(const Arrangement & arr,
+      std::ostream * const os) const
   {
 
-    ::arma::vec2 source, dr;
-    for(typename Arrangement::Arrangement::Edge_const_iterator edge =
-        arr.getCgalArrangement().edges_begin(), edgesEnd =
-        arr.getCgalArrangement().edges_end(); edge != edgesEnd; ++edge)
+    arma::vec2 source, dr;
+    for(typename Arrangement::Edge_const_iterator edge = arr.edges_begin(),
+        edgesEnd = arr.edges_end(); edge != edgesEnd; ++edge)
     {
       if(!edge->is_fictitious())
       {
-        source = edge->source()->data().anchor->getPos();
-        dr = edge->target()->data().anchor->getPos() - source;
+        source = math::cgalToArma(edge->source()->point());
+        dr = math::cgalToArma(edge->target()->point()) - source;
         *os << source(0) << " " << source(1) << " " << dr(0) << " " << dr(1)
             << "\n";
       }
     }
   }
 
-template< typename LabelType>
-  ::std::string
-  GnuplotAnchorArrangementPlotter< LabelType>::drawLabel(const double x,
-      const double y, const ::std::string & label) const
+template< typename Map>
+  std::string
+  GnuplotAnchorArrangementPlotter< Map>::drawLabel(const double x,
+      const double y, const std::string & label) const
   {
-    ::std::stringstream ss;
+    std::stringstream ss;
     ss << "set label \"" << label << "\" at " << x << ", " << y << " centre\n";
     return ss.str();
+  }
+
+template< typename Map>
+  typename GnuplotAnchorArrangementPlotter< Map>::FacePolygon
+  GnuplotAnchorArrangementPlotter< Map>::getFacePolygon(
+      const typename Arrangement::Face & face) const
+  {
+    FacePolygon poly;
+
+    if(face.has_outer_ccb())
+    {
+      const typename Arrangement::Ccb_halfedge_const_circulator start =
+          face.outer_ccb();
+      typename Arrangement::Ccb_halfedge_const_circulator cl = start;
+      do
+      {
+        poly.push_back(cl->source()->point());
+        ++cl;
+      } while(cl != start);
+    }
+
+    return poly;
   }
 
 }

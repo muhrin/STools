@@ -14,6 +14,7 @@
 #include <armadillo>
 
 #ifdef SPL_WITH_CGAL
+#include <CGAL/Point_2.h>
 #include <CGAL/Point_3.h>
 #endif // SPL_WITH_CGAL
 
@@ -24,19 +25,28 @@ namespace math {
 
 #ifdef SPL_WITH_CGAL
 
-template <typename Kernel>
-inline ::arma::vec3 cgalToArma(const ::CGAL::Point_3<Kernel> & point)
+template <typename K>
+inline arma::vec2 cgalToArma(const CGAL::Point_2<K> & point)
 {
-  ::arma::vec3 ret;
+  arma::vec2 ret;
+  for(int i = 0; i < 2; ++i)
+    ret[i] = CGAL::to_double(point[i]);
+  return ret;
+}
+
+template <typename Kernel>
+inline arma::vec3 cgalToArma(const CGAL::Point_3<Kernel> & point)
+{
+  arma::vec3 ret;
   for(int i = 0; i < 3; ++i)
     ret[i] = CGAL::to_double(point[i]);
   return ret;
 }
 
 template <typename Kernel>
-inline ::CGAL::Point_3<Kernel> armaToCgal(const ::arma::vec3 & point)
+inline CGAL::Point_3<Kernel> armaToCgal(const arma::vec3 & point)
 {
-  return ::CGAL::Point_3<Kernel>(point[0], point[1], point[2]);
+  return CGAL::Point_3<Kernel>(point[0], point[1], point[2]);
 }
 
 #endif // SPL_WITH_CGAL

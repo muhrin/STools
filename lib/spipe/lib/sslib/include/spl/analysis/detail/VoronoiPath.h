@@ -103,6 +103,7 @@ template< typename VD>
   public:
     typedef CGAL::Line_2< GeomTraits> Line;
     typedef typename Linalg::Matrix Matrix;
+    typedef std::pair< Line, Point> LineAndCoM;
 
     size_t
     source() const
@@ -126,21 +127,14 @@ template< typename VD>
     {
       return myPath;
     }
-    bool
-    isBoundary() const
-    {
-      SSLIB_ASSERT(isValid());
 
-      return myIsBoundary;
-    }
-
-    const boost::optional< Line> &
+    const boost::optional< LineAndCoM> &
     getLeastSqLine() const
     {
       return myLeastSqLine;
     }
     void
-    setLeastSqLine(const boost::optional< Line> & lsq)
+    setLeastSqLine(const boost::optional< LineAndCoM> & lsq)
     {
       myLeastSqLine = lsq;
     }
@@ -168,36 +162,18 @@ template< typename VD>
 
   private:
     Edge() :
-        myPath(NULL), mySource(0), myTarget(0), myIsBoundary(false)
+        myPath(NULL), mySource(0), myTarget(0)
     {
-    }
-    Edge(const Path & path, const size_t source, const size_t target,
-        const typename Delaunay::Edge & dgEdge, const bool isBoundary) :
-        myPath(&path), mySource(source), myTarget(target), myIsBoundary(
-            isBoundary), myDelaunayEdge(dgEdge)
-    {
-      initLabels();
     }
     Edge(const Path & path, const size_t source, const size_t target,
         const typename Delaunay::Edge & delaunayEdge) :
-        myPath(&path), mySource(source), myTarget(target), myIsBoundary(false), myDelaunayEdge(
+        myPath(&path), mySource(source), myTarget(target), myDelaunayEdge(
             delaunayEdge)
     {
-      // Because this edge has a Delaunay edge that it intersects it is not
-      // a boundary edge (as set in the initialiser list)
+      SSLIB_ASSERT(myDelaunayEdge != typename Delaunay::Edge());
       initLabels();
     }
 
-    void
-    setSource(const size_t source)
-    {
-      mySource = source;
-    }
-    void
-    setTarget(const size_t target)
-    {
-      myTarget = target;
-    }
     void
     setDelaunayEdge(const typename Delaunay::Edge edge)
     {
@@ -209,38 +185,41 @@ template< typename VD>
       SSLIB_ASSERT(isValid());
       const size_t n = myPath->numVertices();
 
+      const size_t newSource = n - target() - 1;
+      const size_t newTarget = n - source() - 1;
+
       // Swap source and target and wrap around
-      setTarget(n - source() - 1);
-      setSource(n - target() - 1);
+      mySource = newSource;
+      myTarget = newTarget;
       setDelaunayEdge(myPath->getVoronoi()->dual().mirror_edge(delaunayEdge()));
       std::swap(myLeftLabel, myRightLabel);
     }
     void
     initLabels()
     {
-      SSLIB_ASSERT(myPath);
-      SSLIB_ASSERT(myDelaunayEdge != typename Delaunay::Edge());
+      SSLIB_ASSERT(isValid());
 
-      if(myIsBoundary)
-      {
+      const Delaunay & delaunay = myPath->getVoronoi()->dual();
 
-      }
-      else
-      {
-        // TODO: Check that this is the right way around
-        myLeftLabel = myDelaunayEdge.first->vertex(
-            (myDelaunayEdge.second + 1) % 3)->info();
-        myRightLabel = myDelaunayEdge.first->vertex(
-            (myDelaunayEdge.second + 2) % 3)->info();
-      }
+      myLeftLabel = myDelaunayEdge.first->vertex(
+          delaunay.ccw(myDelaunayEdge.second))->info();
+      myRightLabel = myDelaunayEdge.first->vertex(
+          delaunay.cw(myDelaunayEdge.second))->info();
+      std::cout << myPath->vertex(mySource).point() << " -> "
+          << myPath->vertex(myTarget).point() << " ";
+      std::cout << *myLeftLabel << ":" << *myRightLabel << "\n";
+    }
+    void
+    setPath(const Path & path)
+    {
+      myPath = &path;
     }
 
     const Path * myPath;
     size_t mySource;
     size_t myTarget;
-    bool myIsBoundary;
     typename Delaunay::Edge myDelaunayEdge;
-    boost::optional< Line> myLeastSqLine;
+    boost::optional< LineAndCoM> myLeastSqLine;
     boost::optional< Matrix> myQuadraticForm;
     boost::optional< Label> myLeftLabel;
     boost::optional< Label> myRightLabel;
@@ -258,6 +237,15 @@ template< typename VD>
   VoronoiPath< VD>::VoronoiPath(const Voronoi & voronoi) :
       myVoronoi(&voronoi)
   {
+  }
+
+template< typename VD>
+  VoronoiPath< VD>::VoronoiPath(const VoronoiPath & path) :
+      myVoronoi(path.myVoronoi), myVertices(path.myVertices), myEdges(
+          path.myEdges)
+  {
+    BOOST_FOREACH(Edge & edge, myEdges)
+      edge.setPath(*this);
   }
 
 template< typename VD>
@@ -297,30 +285,34 @@ template< typename VD>
     if(he->has_target())
     {
       vtx = he->target();
-      domain = delaunayDomain(vtx, *myVoronoi);
-      myVertices.push_back(
-          Vertex(CGAL::centroid(domain.vertices_begin(), domain.vertices_end()),
-              domain, vtx));
+      if(vtx == myVertices.front().voronoiVertex())
+      {
+        // Complete the circular path
+        myEdges.push_back(Edge(*this, numVertices() - 1, 0, he->dual()));
+      }
+      else
+      {
+        domain = delaunayDomain(vtx, *myVoronoi);
+        myVertices.push_back(
+            Vertex(
+                CGAL::centroid(domain.vertices_begin(), domain.vertices_end()),
+                domain, vtx));
+        // Continuing the path
+        myEdges.push_back(
+            Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
+      }
     }
     else
     {
       // We're at the end of the path so use the Delaunay edge as the domain
       // and leave the halfedge empty
-      const typename Delaunay::Edge edge = he->dual();
-      const CGAL::Segment_2< GeomTraits> seg = myVoronoi->dual().segment(edge);
-
-      Polygon domain;
-      domain.push_back(seg.source());
-      domain.push_back(seg.target());
-
-      myVertices.push_back(
-          Vertex(CGAL::midpoint(seg.source(), seg.target()), domain, edge));
+      push_back(he->dual());
+      // Continuing the path
+      myEdges.push_back(
+          Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
     }
 
     // TODO: Check for circular paths
-    // Continuing the path
-    myEdges.push_back(
-        Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
 
     return myEdges.size() - 1;
   }
@@ -328,7 +320,7 @@ template< typename VD>
 template< typename VD>
   size_t
   VoronoiPath< VD>::push_back(const Vertex & vtx1, const Vertex & vtx2,
-      const typename Delaunay::Edge & dgEdge, const bool isBoundary)
+      const typename Delaunay::Edge & dgEdge)
   {
     SSLIB_ASSERT(myVoronoi);
     SSLIB_ASSERT(!isCircular());
@@ -343,7 +335,7 @@ template< typename VD>
         && vtx2.voronoiVertex() == myVertices.front().voronoiVertex())
     {
       // The path is circular and this is the last edge
-      myEdges.push_back(Edge(*this, numVertices() - 1, 0, dgEdge, isBoundary));
+      myEdges.push_back(Edge(*this, numVertices() - 1, 0, dgEdge));
     }
     else
     {
@@ -353,45 +345,10 @@ template< typename VD>
 
       // Continuing the path
       myEdges.push_back(
-          Edge(*this, numVertices() - 2, numVertices() - 1, dgEdge,
-              isBoundary));
+          Edge(*this, numVertices() - 2, numVertices() - 1, dgEdge));
     }
 
     return myEdges.size() - 1;
-  }
-
-template< typename VD>
-  void
-  VoronoiPath< VD>::push_back(const typename Delaunay::Edge & edge)
-  {
-    const Delaunay & delaunay = myVoronoi->dual();
-    const CGAL::Segment_2< GeomTraits> seg = delaunay.segment(edge);
-
-    const Point & point = CGAL::midpoint(seg.source(), seg.target());
-
-    Polygon domain;
-    domain.push_back(seg.source());
-    domain.push_back(seg.target());
-
-    myVertices.push_back(Vertex(point, domain, edge));
-
-    if(numVertices() > 1)
-    {
-      // Check if this arrangement edge spans the supplied Delaunay edge
-      const typename Voronoi::Vertex_handle lastVoronoiVtx = vertex(
-          numVertices() - 2).voronoiVertex();
-      if(myVoronoi->dual(edge)->source() == lastVoronoiVtx)
-        myEdges.push_back(
-            Edge(*this, numVertices() - 2, numVertices() - 1, edge));
-      else
-        myEdges.push_back(
-            Edge(*this, numVertices() - 2, numVertices() - 1, edge, true));
-
-      // Check if this vertex completes a circular path
-      if(myVertices.front().isBoundary()
-          && myVertices.front().getBoundaryEdge() == edge)
-        myEdges.push_back(Edge(*this, numVertices() - 1, 0, edge, true));
-    }
   }
 
 template< typename VD>
@@ -423,6 +380,20 @@ template< typename VD>
   }
 
 template< typename VD>
+  const typename VoronoiPath< VD>::Vertex &
+  VoronoiPath< VD>::vertexFront() const
+  {
+    return myVertices.front();
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::Vertex &
+  VoronoiPath< VD>::vertexBack() const
+  {
+    return myVertices.back();
+  }
+
+template< typename VD>
   typename VoronoiPath< VD>::EdgeConstIterator
   VoronoiPath< VD>::edgesBegin() const
   {
@@ -448,6 +419,34 @@ template< typename VD>
   VoronoiPath< VD>::edge(const size_t index) const
   {
     return myEdges[index];
+  }
+
+template< typename VD>
+  typename VoronoiPath< VD>::Edge &
+  VoronoiPath< VD>::edgeFront()
+  {
+    return myEdges.front();
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::Edge &
+  VoronoiPath< VD>::edgeFront() const
+  {
+    return myEdges.front();
+  }
+
+template< typename VD>
+  typename VoronoiPath< VD>::Edge &
+  VoronoiPath< VD>::edgeBack()
+  {
+    return myEdges.back();
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::Edge &
+  VoronoiPath< VD>::edgeBack() const
+  {
+    return myEdges.back();
   }
 
 template< typename VD>
@@ -497,6 +496,20 @@ template< typename VD>
   VoronoiPath< VD>::getVoronoi() const
   {
     return myVoronoi;
+  }
+
+template< typename VD>
+  void
+  VoronoiPath< VD>::push_back(const typename Delaunay::Edge & edge)
+  {
+    const CGAL::Segment_2< GeomTraits> seg = myVoronoi->dual().segment(edge);
+
+    Polygon domain;
+    domain.push_back(seg.source());
+    domain.push_back(seg.target());
+
+    myVertices.push_back(
+        Vertex(CGAL::midpoint(seg.source(), seg.target()), domain, edge));
   }
 
 template< typename VD>

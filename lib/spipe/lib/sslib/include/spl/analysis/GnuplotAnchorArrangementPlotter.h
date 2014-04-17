@@ -16,6 +16,8 @@
 #include <ostream>
 #include <string>
 
+#include <CGAL/Polygon_2.h>
+
 #include "spl/analysis/AnchorArrangementOutputter.h"
 
 // DEFINITION ///////////////////////
@@ -26,37 +28,35 @@ namespace spl {
 
 namespace analysis {
 
-template< typename LabelType>
-  class GnuplotAnchorArrangementPlotter : public AnchorArrangementOutputter<
-      LabelType>
+template< typename Map>
+  class GnuplotAnchorArrangementPlotter : public AnchorArrangementOutputter< Map>
   {
-  typedef AnchorArrangement< LabelType> Arrangement;
+    typedef typename Map::Arrangement Arrangement;
+    typedef CGAL::Polygon_2< typename Map::Kernel> FacePolygon;
   public:
-    typedef typename AnchorArrangementOutputter< LabelType>::InfoMap InfoMap;
+    typedef typename AnchorArrangementOutputter< Map>::InfoMap InfoMap;
 
-    GnuplotAnchorArrangementPlotter(const ::std::string & outputFileStem);
+    GnuplotAnchorArrangementPlotter(const std::string & outputFileStem);
     virtual
     ~GnuplotAnchorArrangementPlotter()
     {
     }
 
     virtual bool
-    outputArrangement(
-        const Arrangement & arrangement) const;
+    outputArrangement(const Arrangement & map) const;
     virtual bool
-    outputArrangement(const Arrangement & arrangement,
-        const InfoMap & labelInfo) const;
+    outputArrangement(const Arrangement & map, const InfoMap & labelInfo) const;
 
   private:
     void
-    plotEdges(const Arrangement & arrangement, ::std::ostream * const os) const;
-    ::std::string
-    drawLabel(const double x, const double y, const ::std::string & label) const;
+    plotEdges(const Arrangement & arrangement, std::ostream * const os) const;
+    std::string
+    drawLabel(const double x, const double y, const std::string & label) const;
+    FacePolygon
+    getFacePolygon(const typename Arrangement::Face & face) const;
 
-    const ::std::string myOutputFileStem;
+    const std::string myOutputFileStem;
   };
-
-
 
 }
 }
