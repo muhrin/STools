@@ -23,7 +23,7 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 
 #include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
-#include <spl/analysis/MapArrangement.h>
+#include <spl/analysis/MapArrangementTraits.h>
 #include <spl/analysis/VectorAnchorArrangementOutputter.h>
 #include <spl/analysis/VoronoiEdgeTracer.h>
 #include <spl/analysis/VoronoiPathTracer.h>
@@ -37,13 +37,13 @@ namespace spla = spl::analysis;
 
 // TYPEDEFS ////////////////////////////////////
 typedef std::string LabelType;
-typedef spl::analysis::VoronoiPathTracer< LabelType> PathTracer;
+typedef spl::analysis::MapArrangementTraits<
+    CGAL::Exact_predicates_exact_constructions_kernel, LabelType> MapTraits;
+typedef spl::analysis::VoronoiPathTracer< MapTraits> PathTracer;
 typedef PathTracer::Point Point;
-typedef spl::analysis::MapArrangement<
-    CGAL::Exact_predicates_exact_constructions_kernel, LabelType> MapArrangement;
 typedef std::vector< std::pair< Point, LabelType> > Points;
-typedef spl::UniquePtr< spla::AnchorArrangementOutputter< MapArrangement> >::Type ArrangementOutputterPtr;
-typedef PathTracer::Map Map;
+typedef spl::UniquePtr< spla::AnchorArrangementOutputter< MapTraits> >::Type ArrangementOutputterPtr;
+typedef MapTraits::Arrangement Map;
 
 // CONSTANTS ////////////////////////////////
 
@@ -151,7 +151,7 @@ main(const int argc, char * argv[])
   tempDelaunay.insert(points.begin(), points.end());
   PathTracer::Voronoi voronoi(tempDelaunay, true);
 
-  spl::analysis::VoronoiPathTracer< LabelType> tracer;
+  PathTracer tracer;
   const Map arr = tracer.generateMap(voronoi);
 
   ArrangementOutputterPtr outputter = generateOutputter(in);
@@ -212,11 +212,11 @@ generateOutputter(const InputOptions & in)
   ArrangementOutputterPtr outputter;
 
   if(in.outputter == "vector")
-    outputter.reset(new spla::VectorAnchorArrangementOutputter< MapArrangement>());
+    outputter.reset(new spla::VectorAnchorArrangementOutputter< MapTraits>());
   else if(in.outputter == "gnuplot")
   {
     outputter.reset(
-        new spla::GnuplotAnchorArrangementPlotter< MapArrangement>("map"));
+        new spla::GnuplotAnchorArrangementPlotter< MapTraits>("map"));
   }
   else
     std::cerr << "Error: unrecognised outputter - " << in.outputter

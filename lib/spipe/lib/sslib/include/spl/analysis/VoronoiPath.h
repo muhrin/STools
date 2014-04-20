@@ -60,6 +60,8 @@ template< typename VD>
     size_t
     push_back(const Vertex & vtx1, const Vertex & vtx2,
         const typename Delaunay::Edge & dgEdge);
+    size_t
+    close(const typename Voronoi::Halfedge_handle & he);
 
     VertexConstIterator
     verticesBegin() const;
@@ -108,6 +110,15 @@ template< typename VD>
 
     const Voronoi *
     getVoronoi() const;
+
+    bool
+    inRange(const ptrdiff_t index) const;
+    ptrdiff_t
+    forwardDist(const ptrdiff_t i, const ptrdiff_t j) const;
+    ptrdiff_t
+    wrapIndex(const ptrdiff_t i) const;
+    ptrdiff_t
+    safeIndex(const ptrdiff_t i) const;
 
   private:
     void

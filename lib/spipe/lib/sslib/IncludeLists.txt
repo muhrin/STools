@@ -16,7 +16,7 @@ set(sslib_Header_Files__analysis
   include/spl/analysis/GnuplotAnchorArrangementPlotter.h
   include/spl/analysis/GnuplotConvexHullPlotter.h
   include/spl/analysis/Histogram.h
-  include/spl/analysis/MapArrangement.h
+  include/spl/analysis/MapArrangementTraits.h
   include/spl/analysis/SpaceGroup.h
   include/spl/analysis/StructureConvexHullInfoSupplier.h
   include/spl/analysis/StructureTriangulation.h

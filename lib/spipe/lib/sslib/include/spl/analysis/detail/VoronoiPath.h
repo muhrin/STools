@@ -205,8 +205,9 @@ template< typename VD>
           delaunay.ccw(myDelaunayEdge.second))->info();
       myRightLabel = myDelaunayEdge.first->vertex(
           delaunay.cw(myDelaunayEdge.second))->info();
-      std::cout << myPath->vertex(mySource).point() << " -> "
-          << myPath->vertex(myTarget).point() << " ";
+      std::cout << myPath->vertex(mySource).point() << " "
+          << myPath->vertex(myTarget).point() - myPath->vertex(mySource).point()
+          << " ";
       std::cout << *myLeftLabel << ":" << *myRightLabel << "\n";
     }
     void
@@ -285,29 +286,20 @@ template< typename VD>
     if(he->has_target())
     {
       vtx = he->target();
-      if(vtx == myVertices.front().voronoiVertex())
-      {
-        // Complete the circular path
-        myEdges.push_back(Edge(*this, numVertices() - 1, 0, he->dual()));
-      }
-      else
-      {
-        domain = delaunayDomain(vtx, *myVoronoi);
-        myVertices.push_back(
-            Vertex(
-                CGAL::centroid(domain.vertices_begin(), domain.vertices_end()),
-                domain, vtx));
-        // Continuing the path
-        myEdges.push_back(
-            Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
-      }
+      domain = delaunayDomain(vtx, *myVoronoi);
+      myVertices.push_back(
+          Vertex(CGAL::centroid(domain.vertices_begin(), domain.vertices_end()),
+              domain, vtx));
+      // Continue the path
+      myEdges.push_back(
+          Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
     }
     else
     {
       // We're at the end of the path so use the Delaunay edge as the domain
       // and leave the halfedge empty
       push_back(he->dual());
-      // Continuing the path
+      // Continue the path
       myEdges.push_back(
           Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
     }
@@ -348,6 +340,19 @@ template< typename VD>
           Edge(*this, numVertices() - 2, numVertices() - 1, dgEdge));
     }
 
+    return myEdges.size() - 1;
+  }
+
+template< typename VD>
+  size_t
+  VoronoiPath< VD>::close(const typename Voronoi::Halfedge_handle & he)
+  {
+    SSLIB_ASSERT(numVertices() > 1);
+    SSLIB_ASSERT(
+        he->has_target() && he->target() == vertexFront().voronoiVertex());
+
+    // Complete the circular path
+    myEdges.push_back(Edge(*this, numVertices() - 1, 0, he->dual()));
     return myEdges.size() - 1;
   }
 
@@ -496,6 +501,55 @@ template< typename VD>
   VoronoiPath< VD>::getVoronoi() const
   {
     return myVoronoi;
+  }
+
+template< typename VD>
+  bool
+  VoronoiPath< VD>::inRange(const ptrdiff_t i) const
+  {
+    return i >= 0 && i < numVertices();
+  }
+
+template< typename VD>
+  ptrdiff_t
+  VoronoiPath< VD>::forwardDist(const ptrdiff_t i, const ptrdiff_t j) const
+  {
+    SSLIB_ASSERT(inRange(i));
+    SSLIB_ASSERT(inRange(j));
+
+    const ptrdiff_t n = numVertices();
+
+    if(isCircular())
+      return i <= j ? j - i : n - i + j;
+    else
+    {
+      SSLIB_ASSERT(i <= j);
+      return j - i;
+    }
+  }
+
+template< typename VD>
+  ptrdiff_t
+  VoronoiPath< VD>::wrapIndex(const ptrdiff_t i) const
+  {
+    if(isCircular())
+      return safeIndex(i);
+    else
+    {
+      SSLIB_ASSERT(inRange(i));
+      return i;
+    }
+  }
+
+template< typename VD>
+  ptrdiff_t
+  VoronoiPath< VD>::safeIndex(const ptrdiff_t i) const
+  {
+    const ptrdiff_t n = numVertices();
+    if(isCircular())
+      return i < 0 ? n - (-i % n) : i % n;
+    else
+      return i < 0 ? 0 : (i >= n ? n - 1 : i);
   }
 
 template< typename VD>

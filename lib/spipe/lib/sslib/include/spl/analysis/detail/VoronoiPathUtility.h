@@ -109,12 +109,14 @@ template< typename Map, typename Label>
         std::pair< typename Map::Vertex_handle, typename Map::Vertex_handle> > myUpcomingEdge;
   };
 
-template< typename Map, typename Label, typename VD>
+template< typename MapTraits, typename VD>
   struct MapBuilder
   {
+    typedef typename MapTraits::Kernel K;
+    typedef typename MapTraits::Label Label;
+    typedef typename MapTraits::Arrangement Map;
     typedef VD Voronoi;
     typedef typename VD::Delaunay_graph Delaunay;
-    typedef typename Map::Geometry_traits_2 K;
     typedef typename Map::Point_2 Point;
     typedef VoronoiPathArrangement< VD> PathArrangement;
     typedef typename PathArrangement::Path Path;
@@ -128,6 +130,7 @@ template< typename Map, typename Label, typename VD>
     placePathEdges(const typename PathArrangement::Path & path, Map * const map)
     {
       typedef typename K::Segment_2 Segment;
+      typedef typename EdgeLabeller::EdgeLabels EdgeLabels;
 
       Point p0, p1;
 
@@ -138,9 +141,7 @@ template< typename Map, typename Label, typename VD>
       if(path.numEdges() != 0)
       {
         const typename Path::Edge & edge = path.edgeFront();
-        labeller.setEdgeLabels(
-            typename EdgeLabeller::EdgeLabels(edge.leftLabel(),
-                edge.rightLabel()));
+        labeller.setEdgeLabels(EdgeLabels(edge.leftLabel(), edge.rightLabel()));
       }
 
       BOOST_FOREACH(const typename Path::Edge & edge,
@@ -280,15 +281,17 @@ template< typename Map, typename Label, typename VD>
 }
 
 template< class VD>
-  typename BoundaryPair< typename VoronoiLabel< VD>::Type>::Type
+  std::pair< typename VoronoiLabel< VD>::Type, typename VoronoiLabel< VD>::Type>
   getBoundaryPair(const typename VD::Halfedge & he)
   {
-    return getSpanningPair< typename VD::Delaunay_graph>(he.dual());
+    const typename VD::Delaunay_graph::Edge edge = he.dual();
+    return std::make_pair(edge.first->vertex((edge.second + 1) % 3)->info(),
+        edge.first->vertex((edge.second + 2) % 3)->info());
   }
 
 template< class DG>
   typename BoundaryPair< typename DelaunayLabel< DG>::Type>::Type
-  getSpanningPair(const typename DG::Edge & edge)
+  getSpanningPair(const typename DG::Edge edge)
   {
     return typename BoundaryPair< typename DelaunayLabel< DG>::Type>::Type(
         edge.first->vertex((edge.second + 2) % 3)->info(),
@@ -337,19 +340,15 @@ template< typename VD>
     return poly;
   }
 
-template< typename Label, typename VD>
-  typename MapArrangement< CGAL::Exact_predicates_exact_constructions_kernel,
-      Label>::Arrangement
+template< typename MapTraits, typename VD>
+  typename MapTraits::Arrangement
   toMap(const VoronoiPathArrangement< VD> & pathArrangement)
   {
-    typedef typename MapArrangement<
-        CGAL::Exact_predicates_exact_constructions_kernel, Label>::Arrangement Map;
-    typedef detail::MapBuilder< Map, Label, VD> Builder;
+    typedef typename MapTraits::Arrangement Map;
+    typedef detail::MapBuilder< MapTraits, VD> Builder;
+
     Map map;
-
     Builder builder;
-
-    std::cout << "CONSTRUCTING ARRANGEMENT\n";
 
     // Connect the edges
     BOOST_FOREACH(const typename Builder::Path & path,

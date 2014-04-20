@@ -1,5 +1,5 @@
 /*
- * MapArrangement.h
+ * MapArrangementTraits.h
  *
  *  Created on: Mar 22, 2014
  *      Author: Martin Uhrin
@@ -27,7 +27,7 @@ namespace spl {
 namespace analysis {
 
 template< typename K, typename LabelType>
-  class MapArrangement
+  class MapArrangementTraits
   {
   public:
     typedef LabelType Label;

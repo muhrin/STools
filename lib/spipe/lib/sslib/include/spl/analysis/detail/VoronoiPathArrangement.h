@@ -37,22 +37,22 @@ template< typename VD>
     if(path.empty())
       return myPaths.end();
 
-    // Check if we have any paths like this already
-    BOOST_FOREACH(const Path & p, myPaths)
-    {
-      const typename CommonVoronoiVertices::Value common =
-          commonVoronoiVertices(p, path);
-      if(common == CommonVoronoiVertices::FORWARDS)
-      {
-        // TODO: Merge the labels
-        return myPaths.end();
-      }
-      else if(common == CommonVoronoiVertices::BACKWARDS)
-      {
-        // TODO: Merge the labels
-        return myPaths.end();
-      }
-    }
+//    // Check if we have any paths like this already
+//    BOOST_FOREACH(const Path & p, myPaths)
+//    {
+//      const typename CommonVoronoiVertices::Value common =
+//          commonVoronoiVertices(p, path);
+//      if(common == CommonVoronoiVertices::FORWARDS)
+//      {
+//        // TODO: Merge the labels
+//        return myPaths.end();
+//      }
+//      else if(common == CommonVoronoiVertices::BACKWARDS)
+//      {
+//        // TODO: Merge the labels
+//        return myPaths.end();
+//      }
+//    }
 
     return myPaths.insert(myPaths.end(), path);
   }
@@ -247,13 +247,22 @@ template< typename VD>
   VoronoiPathArrangement< VD>::commonVoronoiVertices(const Path & p1,
       const Path & p2) const
   {
-    if(p1.numVertices() != p2.numVertices())
+    const size_t n1 = p1.numVertices();
+    const size_t n2 = p2.numVertices();
+    if(n1 != n2)
       return CommonVoronoiVertices::NEITHER;
+    if(n1 == 2)
+    {
+      bool allBoundary = true;
+      for(size_t i = 0; i < 2; ++i)
+        allBoundary &= p1.vertex(i).isBoundary() && p2.vertex(i).isBoundary();
+      if(allBoundary)
+        return CommonVoronoiVertices::NEITHER;
+    }
 
     // Check forwards
-    const size_t n = p1.numVertices();
     bool pathsSame = true;
-    for(size_t i = 0; i < n; ++i)
+    for(size_t i = 0; i < n1; ++i)
     {
       if(p1.vertex(i).voronoiVertex() != p2.vertex(i).voronoiVertex())
       {
@@ -266,9 +275,9 @@ template< typename VD>
 
     // Check backwards
     pathsSame = true;
-    for(size_t i = 0; i < n; ++i)
+    for(size_t i = 0; i < n1; ++i)
     {
-      if(p1.vertex(i).voronoiVertex() != p2.vertex(n - 1 - i).voronoiVertex())
+      if(p1.vertex(i).voronoiVertex() != p2.vertex(n1 - 1 - i).voronoiVertex())
       {
         pathsSame = false;
         break;

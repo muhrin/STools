@@ -16,7 +16,7 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 
-#include "spl/analysis/MapArrangement.h"
+#include "spl/analysis/MapArrangementTraits.h"
 #include "spl/utility/Range.h"
 
 // FORWARD DECLARATIONS ///////
@@ -48,13 +48,9 @@ template< typename Label>
     typedef spl::utility::OrderedPair< Label> Type;
   };
 
-template< class VD>
-  typename BoundaryPair< typename VoronoiLabel< VD>::Type>::Type
-  getBoundaryPair(const typename VD::Halfedge & he);
-
 template< class DG>
   typename BoundaryPair< typename DelaunayLabel< DG>::Type>::Type
-  getSpanningPair(const typename DG::Edge & edge);
+  getSpanningPair(const typename DG::Edge edge);
 
 // Is this Voronoi halfedge a boundary between regions of different labels
 template< class VD>
@@ -74,9 +70,8 @@ template< typename VD>
   CGAL::Polygon_2< typename VD::Delaunay_geom_traits>
   delaunayDomain(const typename VD::Vertex_handle & vtx, const VD & voronoi);
 
-template< typename Label, typename VD>
-  typename MapArrangement< CGAL::Exact_predicates_exact_constructions_kernel,
-      Label>::Arrangement
+template< typename MapTraits, typename VD>
+  typename MapTraits::Arrangement
   toMap(const VoronoiPathArrangement< VD> & pathArrangement);
 
 }

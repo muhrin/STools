@@ -51,12 +51,38 @@ template< typename VD>
     operator()(typename Voronoi::Halfedge_handle he,
         const typename NextHalfedgeType::Value nextType)
     {
-      myPath->push_back(he);
+      if(nextType == NextHalfedgeType::IS_START)
+        myPath->close(he);
+      else
+        myPath->push_back(he);
     }
 
   private:
     Path * const myPath;
   };
+
+template< typename VD>
+  size_t
+  numZones(const typename VD::Vertex_handle & vtx, const VD & voronoi)
+  {
+    typedef VD Voronoi;
+    typedef typename VoronoiLabel< Voronoi>::Type Label;
+
+    size_t zones = 0;
+
+    const typename Voronoi::Halfedge_around_vertex_circulator start =
+        voronoi.incident_halfedges(vtx);
+    typename Voronoi::Halfedge_around_vertex_circulator cl = start;
+    do
+    {
+      const std::pair< Label, Label> & boundaryPair = getBoundaryPair< VD>(*cl);
+      if(boundaryPair.first != boundaryPair.second)
+        ++zones;
+      ++cl;
+    } while(cl != start);
+
+    return zones;
+  }
 
 template< typename VD>
   typename VD::Halfedge_handle
@@ -65,27 +91,47 @@ template< typename VD>
   {
     typedef VD Voronoi;
     typedef typename VoronoiLabel< VD>::Type Label;
+    typedef typename Voronoi::Halfedge_handle HalfedgeHandle;
 
     SSLIB_ASSERT(isBoundary< VD>(*he));
 
     if(!he->has_target())
-      return typename Voronoi::Halfedge_handle();
+      return HalfedgeHandle();
 
-    const typename BoundaryPair< Label>::Type & boundaryPair = getBoundaryPair<
-        VD>(*he);
+    const std::pair< Label, Label> & boundaryPair = getBoundaryPair< VD>(*he);
 
-    typename Voronoi::Halfedge_handle next;
     const typename Voronoi::Vertex_handle target = he->target();
     const typename Voronoi::Halfedge_around_vertex_circulator start =
         voronoi.incident_halfedges(target, he);
     typename Voronoi::Halfedge_around_vertex_circulator cl = start;
+
+    const size_t zones = numZones(target, voronoi);
+    if(zones == 4)
+    {
+      typename Voronoi::Halfedge_around_vertex_circulator cw = start;
+      --cw;
+      typename Voronoi::Halfedge_around_vertex_circulator ccw = start;
+      ++ccw;
+      if(getBoundaryPair< VD>(*cw) == getBoundaryPair< VD>(*ccw))
+        return HalfedgeHandle();
+      else if(getBoundaryPair< VD>(*cw->twin()) == boundaryPair)
+        return cw->twin();
+      else if(getBoundaryPair< VD>(*ccw->twin()) == boundaryPair)
+        return ccw->twin();
+      else
+        return HalfedgeHandle();
+    }
+    else if(zones > 2)
+      return HalfedgeHandle();
+
+    HalfedgeHandle next;
     ++cl; // start corresponds to this halfedge, so move to the next one
     do
     {
-      if(typename Voronoi::Halfedge_handle(cl) != he
-          && boundaryPair == getBoundaryPair< VD>(*cl))
+      const HalfedgeHandle out = cl->twin();
+      if(boundaryPair == getBoundaryPair< VD>(*out))
       {
-        next = cl->twin();
+        next = out;
         break;
       }
       ++cl;
@@ -99,12 +145,8 @@ template< typename VD, typename Visitor>
       const typename VD::Halfedge_handle & start, Visitor visitor)
   {
     typedef VD Voronoi;
-    typedef typename VoronoiLabel< VD>::Type Label;
 
     SSLIB_ASSERT(isBoundary< VD>(*start));
-
-    const typename BoundaryPair< Label>::Type boundaryPair =
-        getBoundaryPair< VD>(*start);
 
     typename Voronoi::Halfedge_handle next, he = start;
     typename NextHalfedgeType::Value nextType;
@@ -112,9 +154,16 @@ template< typename VD, typename Visitor>
     {
       next = targetBoundaryHalfedge< VD>(voronoi, he);
       if(next == typename Voronoi::Halfedge_handle())
-        nextType = NextHalfedgeType::IS_NULL;
-      else if(start->has_source() && he->has_target()
-          && he->target() == start->source())
+      {
+        // HACK: This is a way to detect if the targetBoundayHalfedge couldn't decide
+        // which way to go because we are actually back at the start
+        if(he != start && start->has_source() && he->has_target()
+            && he->target() == start->source())
+          nextType = NextHalfedgeType::IS_START;
+        else
+          nextType = NextHalfedgeType::IS_NULL;
+      }
+      else if(next == start)
         nextType = NextHalfedgeType::IS_START;
       else
         nextType = NextHalfedgeType::IS_BOUNDARY;
@@ -148,6 +197,8 @@ template< typename VD>
       if(spansBoundary< Delaunay>(dual) && visited.find(dual) == visited.end()
           && visited.find(delaunay.mirror_edge(dual)) == visited.end())
       {
+        std::cout << "#GENERATING PATH\n\n\n";
+
         Path path(voronoi);
         he = *it;
         // Trace the path out in one direction

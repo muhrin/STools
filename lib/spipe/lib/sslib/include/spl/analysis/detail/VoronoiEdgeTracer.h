@@ -82,7 +82,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
     // unbounded face of the arrangement as this make the subsequent step
     // of creating the edges a lot easier
 
-    typedef ::std::pair< typename VertexMap::iterator, bool> VertexMapInsertReturn;
+    typedef std::pair< typename VertexMap::iterator, bool> VertexMapInsertReturn;
 
     typename Arrangement::Face_handle unboundedFace =
         arrangement_.unbounded_face();
@@ -106,32 +106,32 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
         if(he->has_source())
         {
           const VertexMapInsertReturn ret = tracingData.vertexMap.insert(
-              ::std::make_pair(he->source(), arrangement_.vertices_end()));
+              std::make_pair(he->source(), arrangement_.vertices_end()));
 
           // Is the vertex new to the arrangement?
           if(ret.second)
           {
             ret.first->second = arrangement_.insert_in_face_interior(
                 he->source()->point(), unboundedFace);
-            ret.first->second->data().maxDisplacement = ::CGAL::to_double(
-                ::CGAL::sqrt(
-                    ::CGAL::squared_distance(ret.first->second->point(),
+            ret.first->second->data().maxDisplacement = CGAL::to_double(
+                CGAL::sqrt(
+                    CGAL::squared_distance(ret.first->second->point(),
                         it->first->vertex((it->second + 1) % 3)->point())));
           }
         }
         if(he->has_target())
         {
           const VertexMapInsertReturn ret = tracingData.vertexMap.insert(
-              ::std::make_pair(he->target(), arrangement_.vertices_end()));
+              std::make_pair(he->target(), arrangement_.vertices_end()));
 
           // Is the vertex new to the arrangement?
           if(ret.second)
           {
             ret.first->second = arrangement_.insert_in_face_interior(
                 he->target()->point(), unboundedFace);
-            ret.first->second->data().maxDisplacement = ::CGAL::to_double(
-                ::CGAL::sqrt(
-                    ::CGAL::squared_distance(ret.first->second->point(),
+            ret.first->second->data().maxDisplacement = CGAL::to_double(
+                CGAL::sqrt(
+                    CGAL::squared_distance(ret.first->second->point(),
                         it->first->vertex((it->second + 1) % 3)->point())));
           }
         }
@@ -141,8 +141,8 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 //        {
 //          const typename Arrangement::Vertex_handle vtx = arrangement_.insert_in_face_interior(
 //              midpoint(*it), unboundedFace);
-//          vtx->data().maxDisplacement = ::std::sqrt(
-//              ::CGAL::squared_distance(vtx->point(),
+//          vtx->data().maxDisplacement = std::sqrt(
+//              CGAL::squared_distance(vtx->point(),
 //                  it->first->vertex((it->second + 1) % 3)->point()));
 //          vtx->data().isOuterBoundary = true;
 //
@@ -179,9 +179,9 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 //      dr = r2 - r1;
 //
 //      if(isBoundaryEdge(*cl))
-//        ::std::cout << r1 << " " << dr.x() << " " << dr.y() << " 1\n";
+//        std::cout << r1 << " " << dr.x() << " " << dr.y() << " 1\n";
 //      else
-//        ::std::cout << r1 << " " << dr.x() << " " << dr.y() << " 0\n";
+//        std::cout << r1 << " " << dr.x() << " " << dr.y() << " 0\n";
 //
 //      const typename Delaunay::Edge_circulator starting = cl;
 //      do
@@ -326,21 +326,18 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
       tracingData->boundary.push_back(v1->point());
 
-      ::CGAL::Object dual = dg.dual(*cl);
-      if(const Ray * const ray = ::CGAL::object_cast< Ray>(&dual))
+      CGAL::Object dual = dg.dual(*cl);
+      if(const Ray * const ray = CGAL::object_cast< Ray>(&dual))
       {
         const Segment boundary(v1->point(), v2->point());
-        const ::CGAL::Object intersection = ::CGAL::intersection(boundary,
-            *ray);
-        if(const Point * const point = ::CGAL::object_cast< Point>(
-            &intersection))
+        const CGAL::Object intersection = CGAL::intersection(boundary, *ray);
+        if(const Point * const point = CGAL::object_cast< Point>(&intersection))
         {
           tracingData->boundary.push_back(*point);
         }
       }
       ++cl;
-    }
-    while(cl != first);
+    } while(cl != first);
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
@@ -348,10 +345,9 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   void
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::splitSharedVertices()
   {
-    typedef ::std::vector<
-        typename Arrangement::Halfedge_around_vertex_circulator> SurroundingZones;
+    typedef std::vector< typename Arrangement::Halfedge_around_vertex_circulator> SurroundingZones;
 
-    using ::std::make_pair;
+    using std::make_pair;
 
     typename Arrangement::Vertex_iterator vNext;
     for(typename Arrangement::Vertex_iterator vIt =
@@ -380,13 +376,12 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
         {
           zones.push_back(cl);
           ++cl;
-        }
-        while(cl != first);
+        } while(cl != first);
 
         VertexSplitter splitter(degree);
         {
           // Find the graph of connected zones
-          ::std::vector< bool> visitedZones(degree, false);
+          std::vector< bool> visitedZones(degree, false);
           {
             size_t lastZone, numConnections;
             for(size_t i = 0; i < zones.size(); ++i)
@@ -424,15 +419,15 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
         if(splitter.noEdges())
           continue;
 
-        typedef ::std::vector< SplitVertex> NewVertices;
+        typedef std::vector< SplitVertex> NewVertices;
 
-        ::std::vector< int> edgeVertexIndices(degree, -1);
+        std::vector< int> edgeVertexIndices(degree, -1);
         NewVertices vertices;
 
         {
-          ::std::pair< int, int> zone;
+          std::pair< int, int> zone;
           BOOST_FOREACH(typename VertexSplitter::EdgeIterator::reference entry,
-              ::boost::make_iterator_range(splitter.edgesBegin(), splitter.edgesEnd()))
+              boost::make_iterator_range(splitter.edgesBegin(), splitter.edgesEnd()))
           {
             const typename VertexSplitter::Edge & edge = entry.first;
             {
@@ -532,13 +527,13 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
           // Now, create the new 'split' vertex
           const typename Arrangement::Vertex_handle newArrVertex =
-              ::CGAL::insert_point(arrangement_, newVertexPos);
+              CGAL::insert_point(arrangement_, newVertexPos);
           newArrVertex->set_data(vertexData); // Copy the data over
 
           // Create the new halfedges
           size_t edgeIdx = 0;
           BOOST_FOREACH(typename Arrangement::Vertex_handle neighbour,
-              ::boost::make_iterator_range(splitVertex.neighboursBegin(), splitVertex.neighboursEnd()))
+              boost::make_iterator_range(splitVertex.neighboursBegin(), splitVertex.neighboursEnd()))
           {
             // Insert the segment corresponding to the edge into the arrangement
             const ArrSegment segment(newArrVertex->point(), neighbour->point());
@@ -564,7 +559,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   void
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::splitEdges()
   {
-    ::std::vector< typename Arrangement::Halfedge_handle> toSplit;
+    std::vector< typename Arrangement::Halfedge_handle> toSplit;
     for(typename Arrangement::Edge_iterator it = arrangement_.edges_begin(),
         end = arrangement_.edges_end(); it != end; ++it)
     {
@@ -588,7 +583,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
 
       p1 = source->point();
       p2 = target->point();
-      midpoint = ::CGAL::midpoint(p1, p2);
+      midpoint = CGAL::midpoint(p1, p2);
 
       const typename K::Segment_2 s1(p1, midpoint);
       const typename K::Segment_2 s2(midpoint, p2);
@@ -619,7 +614,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::populateFaceLabels()
   {
     BOOST_FOREACH(typename Arrangement::Face & face,
-        ::boost::make_iterator_range(arrangement_.faces_begin(),
+        boost::make_iterator_range(arrangement_.faces_begin(),
             arrangement_.faces_end()))
     {
       // Get the label from one of the halfedges
@@ -636,7 +631,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::midpoint(
       const typename Delaunay::Edge & edge) const
   {
-    return ::CGAL::midpoint(edge.first->vertex((edge.second + 1) % 3)->point(),
+    return CGAL::midpoint(edge.first->vertex((edge.second + 1) % 3)->point(),
         edge.first->vertex((edge.second + 2) % 3)->point());
   }
 
@@ -696,10 +691,9 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
   void
   VoronoiEdgeTracer< LabelType, VertexDataType, HalfedgeDataType, FaceDataType>::VertexSplitter::resolveCollisions()
   {
-    using ::std::make_pair;
+    using std::make_pair;
 
-    ::std::vector<
-        ::std::vector< ::std::vector< ::std::pair< Edge, LabelType> > > > collisionMatrix(
+    std::vector< std::vector< std::vector< std::pair< Edge, LabelType> > > > collisionMatrix(
         degree_);
     // Create a lower triangular matrix of Edges
     for(int i = 0; i < degree_; ++i)
@@ -718,7 +712,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
       }
     }
 
-    ::std::set< Edge> toRemove;
+    std::set< Edge> toRemove;
     // Now all the matrix entries with two or more edges that don't have a common
     // label will be considered 'colliding' and should be removed
     for(int i = 0; i < degree_; ++i)
@@ -768,7 +762,7 @@ template< typename LabelType, class VertexDataType, class HalfedgeDataType,
         HalfedgeData(halfedge->data(), halfedge->twin()->data()));
     const K::Vector_2 dr = halfedge->source()->point()
         - halfedge->target()->point();
-    newPos_ = newPos_ + dr / ::CGAL::sqrt(dr.squared_length());
+    newPos_ = newPos_ + dr / CGAL::sqrt(dr.squared_length());
   }
 
 template< typename LabelType, class VertexDataType, class HalfedgeDataType,
