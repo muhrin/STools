@@ -254,7 +254,9 @@ template< typename VD>
   VoronoiPath< VD>::push_back(const typename Voronoi::Halfedge_handle & he)
   {
     SSLIB_ASSERT(myVoronoi);
-    SSLIB_ASSERT(!isCircular());
+    SSLIB_ASSERT(!isClosed());
+
+    typedef typename Voronoi::Delaunay_graph::Edge DelaunayEdge;
 
     typename Voronoi::Vertex_handle vtx;
     Polygon domain;
@@ -290,21 +292,22 @@ template< typename VD>
       myVertices.push_back(
           Vertex(CGAL::centroid(domain.vertices_begin(), domain.vertices_end()),
               domain, vtx));
-      // Continue the path
-      myEdges.push_back(
-          Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
     }
     else
     {
       // We're at the end of the path so use the Delaunay edge as the domain
       // and leave the halfedge empty
       push_back(he->dual());
-      // Continue the path
-      myEdges.push_back(
-          Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
     }
+    // Continue the path
+    myEdges.push_back(
+        Edge(*this, numVertices() - 2, numVertices() - 1, he->dual()));
 
-    // TODO: Check for circular paths
+    if(numEdges() > 1 && edgeFront().delaunayEdge() != DelaunayEdge())
+    {
+      // Check that we don't have a closed path
+      SSLIB_ASSERT(edgeFront().delaunayEdge() != edgeBack().delaunayEdge());
+    }
 
     return myEdges.size() - 1;
   }
@@ -312,10 +315,10 @@ template< typename VD>
 template< typename VD>
   size_t
   VoronoiPath< VD>::push_back(const Vertex & vtx1, const Vertex & vtx2,
-      const typename Delaunay::Edge & dgEdge)
+      const VoronoiPath & path, const DelaunayEdge & dgEdge)
   {
     SSLIB_ASSERT(myVoronoi);
-    SSLIB_ASSERT(!isCircular());
+    SSLIB_ASSERT(!isClosed());
 
     // Create the first source vertex
     if(myVertices.empty())
@@ -323,8 +326,8 @@ template< typename VD>
     else
       SSLIB_ASSERT(myVertices.back().voronoiVertex() == vtx1.voronoiVertex());
 
-    if(!vtx2.isBoundary()
-        && vtx2.voronoiVertex() == myVertices.front().voronoiVertex())
+    if(path.isClosed() && !vtx2.isBoundary()
+        && vtx2.voronoiVertex() == vertexFront().voronoiVertex())
     {
       // The path is circular and this is the last edge
       myEdges.push_back(Edge(*this, numVertices() - 1, 0, dgEdge));
@@ -481,7 +484,7 @@ template< typename VD>
 
 template< typename VD>
   bool
-  VoronoiPath< VD>::isCircular() const
+  VoronoiPath< VD>::isClosed() const
   {
     // If the final edge has the 0th vertex as its target then the path
     // is circular
@@ -519,7 +522,7 @@ template< typename VD>
 
     const ptrdiff_t n = numVertices();
 
-    if(isCircular())
+    if(isClosed())
       return i <= j ? j - i : n - i + j;
     else
     {
@@ -532,7 +535,7 @@ template< typename VD>
   ptrdiff_t
   VoronoiPath< VD>::wrapIndex(const ptrdiff_t i) const
   {
-    if(isCircular())
+    if(isClosed())
       return safeIndex(i);
     else
     {
@@ -546,7 +549,7 @@ template< typename VD>
   VoronoiPath< VD>::safeIndex(const ptrdiff_t i) const
   {
     const ptrdiff_t n = numVertices();
-    if(isCircular())
+    if(isClosed())
       return i < 0 ? n - (-i % n) : i % n;
     else
       return i < 0 ? 0 : (i >= n ? n - 1 : i);

@@ -203,7 +203,6 @@ template< typename MapTraits, typename VD>
           // .|  <- ccw(i)
           // -|  <- The boundary edge that intersects the convex hull
           // .|  <- cw(i)
-
           it = boundaryVertices.find(edge);
           SSLIB_ASSERT(it != boundaryVertices.end());
 

@@ -181,7 +181,7 @@ template< typename MapTraits>
             path.wrapIndex(k));
     }
 
-    if(!path.isCircular())
+    if(!path.isClosed())
     {
       bool pathStraight;
       const MeetingVertices & meeting = arr.getMeetingVertices();
@@ -207,16 +207,18 @@ template< typename MapTraits>
           BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
               meetingRange)
           {
+            const Path * const path2 = vtx.second.first;
             const typename Path::Edge & e2 =
-                vtx.second.second == 0 ?
-                    vtx.second.first->edgeFront() :
-                    vtx.second.first->edgeBack();
+                vtx.second.second == 0 ? path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
+            // Put in the start and end vectors
             dirs.update(
-                path.vertexFront().point()
-                    - vtx.second.first->vertex(vtx.second.second).point());
-            dirs.update(path.vertex(1).point() - path.vertexFront().point());
+                path.vertex(e1.target()).point()
+                    - path.vertex(e1.source()).point());
+            dirs.update(
+                path2->vertex(e2.target()).point()
+                    - path2->vertex(e2.source()).point());
 
             if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, 0, i - 2,
                 &dirs))
@@ -250,17 +252,18 @@ template< typename MapTraits>
           BOOST_FOREACH(typename MeetingVertices::const_reference vtx,
               meetingRange)
           {
+            const Path * const path2 = vtx.second.first;
             const Edge & e2 =
-                vtx.second.second == 0 ?
-                    vtx.second.first->edgeFront() :
-                    vtx.second.first->edgeBack();
+                vtx.second.second == 0 ? path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
+            // Put in the start and end vectors
             dirs.update(
-                path.vertex(n - 1).point() - path.vertex(n - 2).point());
+                path.vertex(e1.target()).point()
+                    - path.vertex(e1.source()).point());
             dirs.update(
-                vtx.second.first->vertex(vtx.second.second).point()
-                    - path.vertex(n - 1).point());
+                path2->vertex(e2.target()).point()
+                    - path2->vertex(e2.source()).point());
 
             if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, i + 1,
                 path.numEdges() - 1, &dirs))
@@ -281,32 +284,29 @@ template< typename MapTraits>
             typename MeetingVertices::const_iterator> meetingRange2 =
             meeting.equal_range(path.vertexBack().voronoiVertex());
         pathStraight = true;
-        BOOST_FOREACH(typename MeetingVertices::const_reference vtx,
+        BOOST_FOREACH(typename MeetingVertices::const_reference vtx1,
             meetingRange)
         {
+          const Path * const path1 = vtx1.second.first;
           const Edge & e1 =
-              vtx.second.second == 0 ?
-                  vtx.second.first->edgeFront() : vtx.second.first->edgeBack();
+              vtx1.second.second == 0 ? path1->edgeFront() : path1->edgeBack();
 
           BOOST_FOREACH(typename MeetingVertices::const_reference vtx2,
               meetingRange2)
           {
+            const Path * const path2 = vtx2.second.first;
             const Edge & e2 =
                 vtx2.second.second == 0 ?
-                    vtx2.second.first->edgeFront() :
-                    vtx2.second.first->edgeBack();
+                    path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
+            // Put in the start and end vectors
             dirs.update(
-                path.vertex(n - 1).point() - path.vertex(n - 2).point());
+                path1->vertex(e1.target()).point()
+                    - path1->vertex(e1.source()).point());
             dirs.update(
-                vtx.second.first->vertex(vtx.second.second).point()
-                    - path.vertex(n - 1).point());
-            dirs.update(
-                path.vertex(n - 1).point() - path.vertex(n - 2).point());
-            dirs.update(
-                vtx.second.first->vertex(vtx.second.second).point()
-                    - path.vertex(n - 1).point());
+                path2->vertex(e2.target()).point()
+                    - path2->vertex(e2.source()).point());
 
             if(!isStraight(e1.delaunayEdge(), e2.delaunayEdge(), path, 0, n - 2,
                 &dirs))
@@ -322,15 +322,15 @@ template< typename MapTraits>
       }
     }
 
-    const ptrdiff_t s0 = path.isCircular() ? 0 : -1, s1 =
-        path.isCircular() ? n : n + 1;
+    const ptrdiff_t s0 = path.isClosed() ? 0 : -1, s1 =
+        path.isClosed() ? n : n + 1;
     std::vector< ptrdiff_t> longest(n + 2);
     for(ptrdiff_t i = s0; i < s1; ++i) // Start vertex
     {
-      const ptrdiff_t dMax = path.isCircular() ? n : n - i + 1;
+      const ptrdiff_t dMax = path.isClosed() ? n : n - i + 1;
       for(ptrdiff_t d = 1; d < dMax; ++d)
       {
-        const ptrdiff_t k = path.isCircular() ? path.wrapIndex(i + d) : i + d; // End vertex
+        const ptrdiff_t k = path.isClosed() ? path.wrapIndex(i + d) : i + d; // End vertex
         bool allStraight = true;
         for(ptrdiff_t l = i; l < k; ++l) // Start
         {
@@ -525,7 +525,7 @@ template< typename MapTraits>
       clip0[i] = c < i ? n : c;
     }
 
-    const ptrdiff_t endVertex = path.isCircular() ? n : n - 1;
+    const ptrdiff_t endVertex = path.isClosed() ? n : n - 1;
     // Calculate seg0[j] = longest path index from 0 with j segments
     std::vector< ptrdiff_t> seg0(endVertex + 1);
     for(i = 0, j = 0; i < endVertex; ++j)
@@ -579,7 +579,7 @@ template< typename MapTraits>
 
     // Get the shortest path
     PossiblePath optimal(m + 1);
-    optimal.back() = path.isCircular() ? 0 : n - 1;
+    optimal.back() = path.isClosed() ? 0 : n - 1;
     for(i = endVertex, j = m - 1; i > 0; --j)
     {
       i = prev[i];
@@ -589,12 +589,13 @@ template< typename MapTraits>
     return optimal;
   }
 
-
 template< typename MapTraits>
   double
   VoronoiPathTracer< MapTraits>::penalty(const Path & fullPath,
       const Subpath & subpath) const
   {
+    SSLIB_ASSERT(subpath.first < subpath.second);
+
     const size_t n = subpath.second - subpath.first;
 
     const Segment v_ij(fullPath.vertex(subpath.first).point(),
@@ -721,7 +722,7 @@ template< typename MapTraits>
       PossiblePath::const_iterator next = it;
       ++next;
 
-      edgeIdx = extracted.push_back(full.vertex(*it), full.vertex(*next),
+      edgeIdx = extracted.push_back(full.vertex(*it), full.vertex(*next), full,
           full.edge(*it).delaunayEdge());
       typename Path::Edge & edge = extracted.edge(edgeIdx);
 

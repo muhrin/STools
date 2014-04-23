@@ -62,6 +62,30 @@ template< typename VD>
   };
 
 template< typename VD>
+  class TrackLastHalfedge : public std::binary_function<
+      typename VD::Halfedge_handle, const typename NextHalfedgeType::Value, void>
+  {
+    typedef VD Voronoi;
+    typedef typename Voronoi::Halfedge_handle HalfedgeHandle;
+  public:
+    TrackLastHalfedge(HalfedgeHandle * const halfedge) :
+        myHalfedge(halfedge)
+    {
+      SSLIB_ASSERT(halfedge);
+    }
+
+    void
+    operator()(HalfedgeHandle he,
+        const typename NextHalfedgeType::Value nextType)
+    {
+      *myHalfedge = he;
+    }
+
+  private:
+    HalfedgeHandle * const myHalfedge;
+  };
+
+template< typename VD>
   size_t
   numZones(const typename VD::Vertex_handle & vtx, const VD & voronoi)
   {
@@ -154,15 +178,7 @@ template< typename VD, typename Visitor>
     {
       next = targetBoundaryHalfedge< VD>(voronoi, he);
       if(next == typename Voronoi::Halfedge_handle())
-      {
-        // HACK: This is a way to detect if the targetBoundayHalfedge couldn't decide
-        // which way to go because we are actually back at the start
-        if(he != start && start->has_source() && he->has_target()
-            && he->target() == start->source())
-          nextType = NextHalfedgeType::IS_START;
-        else
-          nextType = NextHalfedgeType::IS_NULL;
-      }
+        nextType = NextHalfedgeType::IS_NULL;
       else if(next == start)
         nextType = NextHalfedgeType::IS_START;
       else
@@ -197,26 +213,30 @@ template< typename VD>
       if(spansBoundary< Delaunay>(dual) && visited.find(dual) == visited.end()
           && visited.find(delaunay.mirror_edge(dual)) == visited.end())
       {
-        std::cout << "#GENERATING PATH\n\n\n";
+        std::cout << "#GENERATING PATH " << arrangement->numPaths() << " ";
 
         Path path(voronoi);
-        he = *it;
+
+        if(it->has_source())
+          std::cout << it->source()->point();
+        if(it->has_target())
+          std::cout << " : "<< it->target()->point();
+        std::cout << std::endl;
+
         // Trace the path out in one direction
-        detail::visitBoundaryHaledges(voronoi, he,
+        detail::visitBoundaryHaledges(voronoi, *it,
+            detail::TrackLastHalfedge< VD>(&he));
+        // Trace the path out in one direction
+        detail::visitBoundaryHaledges(voronoi, he->twin(),
             detail::GeneratePathVisitor< VD>(&path));
-        if(!path.isCircular())
-        {
-          // Reverse the path and get the visitor to continue in the other direction
-          path.reverse();
-          he = targetBoundaryHalfedge< VD>(voronoi, he->twin());
-          if(he != typename Voronoi::Halfedge_handle())
-            visitBoundaryHaledges(voronoi, he, GeneratePathVisitor< VD>(&path));
-        }
+
         BOOST_FOREACH(const typename Path::Edge & edge,
             boost::make_iterator_range(path.edgesBegin(), path.edgesEnd()))
           visited.insert(edge.delaunayEdge());
 
         arrangement->insertPath(path);
+
+        std::cout << "\n\n\n";
       }
     }
   }

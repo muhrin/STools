@@ -65,6 +65,12 @@ template< typename VD>
     BoundaryVerticesConst
     getBoundaryVertices() const;
 
+    size_t
+    numPaths() const
+    {
+      return myPaths.size();
+    }
+
     void
     print() const;
 

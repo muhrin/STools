@@ -152,14 +152,14 @@ template< typename MapTraits>
     ptrdiff_t
     pEnd(const ptrdiff_t i, const Path & p) const
     {
-      return p.isCircular() ? i + p.numVertices() : p.numVertices();
+      return p.isClosed() ? i + p.numVertices() : p.numVertices();
     }
 
     ptrdiff_t
     lonWrap(const ptrdiff_t i, const Path & p) const
     {
       const ptrdiff_t n = p.numVertices();
-      if(p.isCircular())
+      if(p.isClosed())
         return i < 0 ? n - (-i % n) : i % n;
       else
         return i < 0 ? n + 1 : i;

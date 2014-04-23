@@ -94,7 +94,7 @@ template< typename VD>
     {
       // Keep track of the path endpoints so we know the meeting points of
       // paths in the arrangement
-      if(!path.isCircular())
+      if(!path.isClosed())
       {
         const typename Voronoi::Vertex_handle startVtx =
             path.vertex(0).voronoiVertex();
@@ -124,7 +124,7 @@ template< typename VD>
     {
       // Keep track of the path endpoints so we know the meeting points of
       // paths in the arrangement
-      if(!path.isCircular())
+      if(!path.isClosed())
       {
         const typename Voronoi::Vertex_handle startVtx =
             path.vertex(0).voronoiVertex();
@@ -156,7 +156,7 @@ template< typename VD>
     {
       // Keep track of the path endpoints so we know the meeting points of
       // paths in the arrangement
-      if(!path.isCircular())
+      if(!path.isClosed())
       {
         const size_t n = path.numVertices();
 
@@ -197,7 +197,7 @@ template< typename VD>
     {
       // Keep track of the path endpoints so we know the meeting points of
       // paths in the arrangement
-      if(!path.isCircular())
+      if(!path.isClosed())
       {
         const size_t n = path.numVertices();
 

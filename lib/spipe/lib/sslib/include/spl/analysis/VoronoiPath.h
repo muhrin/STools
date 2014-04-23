@@ -45,6 +45,7 @@ template< typename VD>
   private:
     typedef std::vector< Vertex> Vertices;
     typedef std::vector< Edge> Edges;
+    typedef typename Delaunay::Edge DelaunayEdge;
   public:
     typedef typename Vertices::iterator VertexIterator;
     typedef typename Vertices::const_iterator VertexConstIterator;
@@ -59,7 +60,7 @@ template< typename VD>
     push_back(const typename Voronoi::Halfedge_handle & he);
     size_t
     push_back(const Vertex & vtx1, const Vertex & vtx2,
-        const typename Delaunay::Edge & dgEdge);
+        const VoronoiPath & path, const DelaunayEdge & dgEdge);
     size_t
     close(const typename Voronoi::Halfedge_handle & he);
 
@@ -103,7 +104,7 @@ template< typename VD>
     numEdges() const;
 
     bool
-    isCircular() const;
+    isClosed() const;
 
     bool
     empty() const;
