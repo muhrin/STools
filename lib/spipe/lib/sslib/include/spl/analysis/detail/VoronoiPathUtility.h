@@ -127,28 +127,29 @@ template< typename MapTraits, typename VD>
     typedef std::map< const Path *, std::vector< typename Map::Vertex_handle> > PathVertices;
 
     void
-    placePathEdges(const typename PathArrangement::Path & path, Map * const map)
+    placePathEdges(const Path & path, Map * const map)
     {
       typedef typename K::Segment_2 Segment;
       typedef typename EdgeLabeller::EdgeLabels EdgeLabels;
 
-      Point p0, p1;
-
-      typename Delaunay::Edge dgEdge;
+      // Set the edge labels
       EdgeLabeller labeller(map);
-
-      // Grab the edge labels from the first edge
       if(path.numEdges() != 0)
-      {
-        const typename Path::Edge & edge = path.edgeFront();
-        labeller.setEdgeLabels(EdgeLabels(edge.leftLabel(), edge.rightLabel()));
-      }
+        labeller.setEdgeLabels(EdgeLabels(path.leftLabel(), path.rightLabel()));
 
-      BOOST_FOREACH(const typename Path::Edge & edge,
-          boost::make_iterator_range(path.edgesBegin(), path.edgesEnd()))
+      const typename Path::Curve & curve = path.curve();
+      Point p0, p1;
+      for(size_t i = 0; i < curve.numVertices() - 1; ++i)
       {
-        p0 = convert(path.vertex(edge.source()).point());
-        p1 = convert(path.vertex(edge.target()).point());
+        p0 = convert(curve.vertex(i).point());
+        p1 = convert(curve.vertex(i + 1).point());
+        if(p0 != p1)
+          CGAL::insert(*map, Segment(p0, p1));
+      }
+      if(path.isClosed())
+      {
+        p0 = convert(curve.vertexBack().point());
+        p1 = convert(curve.vertexFront().point());
         if(p0 != p1)
           CGAL::insert(*map, Segment(p0, p1));
       }
@@ -200,9 +201,9 @@ template< typename MapTraits, typename VD>
         {
           // Viewing a vertical edge with the infinite vertex (i) to its right
           // that span a boundary it looks like this:
-          // .|  <- ccw(i)
-          // -|  <- The boundary edge that intersects the convex hull
-          // .|  <- cw(i)
+          //   |.  <- ccw(i)
+          // --|   <- The boundary edge that intersects the convex hull
+          //   |.  <- cw(i)
           it = boundaryVertices.find(edge);
           SSLIB_ASSERT(it != boundaryVertices.end());
 
@@ -210,8 +211,8 @@ template< typename MapTraits, typename VD>
           p0 = convert(cl->vertex(delaunay.ccw(edge.second))->point());
           p1 =
               it->second.second == 0 ?
-                  convert(it->second.first->vertexFront().point()) :
-                  convert(it->second.first->vertexBack().point());
+                  convert(it->second.first->curve().vertexFront().point()) :
+                  convert(it->second.first->curve().vertexBack().point());
 
           // Insert the edge segment into the arrangement
           if(p0 != p1)

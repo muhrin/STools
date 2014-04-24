@@ -226,7 +226,7 @@ template< typename VD>
         // Trace the path out in one direction
         detail::visitBoundaryHaledges(voronoi, *it,
             detail::TrackLastHalfedge< VD>(&he));
-        // Trace the path out in one direction
+        // Trace the path out from that endpoint in the opposite direction
         detail::visitBoundaryHaledges(voronoi, he->twin(),
             detail::GeneratePathVisitor< VD>(&path));
 

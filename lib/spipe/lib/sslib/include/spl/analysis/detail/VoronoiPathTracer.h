@@ -88,22 +88,10 @@ template< typename MapTraits>
   };
 
 template< typename MapTraits>
-  struct VoronoiPathTracer< MapTraits>::TracingData
-  {
-    TracingData(const Voronoi & voronoi) :
-        pathArrangement(voronoi)
-    {
-    }
-    VoronoiPathArrangement< Voronoi> pathArrangement;
-  };
-
-template< typename MapTraits>
   typename VoronoiPathTracer< MapTraits>::Map
   VoronoiPathTracer< MapTraits>::generateMap(const Voronoi & voronoi) const
   {
-    TracingData tracingData(voronoi);
-    const PathArrangement & pathArrangement = generatePaths(voronoi,
-        &tracingData);
+    const PathArrangement & pathArrangement = generatePaths(voronoi);
 
     return analysis::toMap< MapTraits>(pathArrangement);
   }
@@ -135,25 +123,21 @@ template< typename MapTraits>
 
 template< typename MapTraits>
   typename VoronoiPathTracer< MapTraits>::PathArrangement
-  VoronoiPathTracer< MapTraits>::generatePaths(const Voronoi & voronoi,
-      TracingData * const tracing) const
+  VoronoiPathTracer< MapTraits>::generatePaths(const Voronoi & voronoi) const
   {
-    decomposePaths(voronoi, &tracing->pathArrangement);
+    typename VoronoiPathTracer< MapTraits>::PathArrangement pathArr(voronoi);
+    decomposePaths(voronoi, &pathArr);
     //return tracing->pathArrangement;
 
-    PathArrangement pathArr(voronoi);
-
-    BOOST_FOREACH(const Path & path,
-        boost::make_iterator_range(tracing->pathArrangement.pathsBegin(), tracing->pathArrangement.pathsEnd()))
+    BOOST_FOREACH(Path & path,
+        boost::make_iterator_range(pathArr.pathsBegin(), pathArr.pathsEnd()))
     {
       const std::vector< ptrdiff_t> & longest = findStraightPathsInternal(path,
-          tracing->pathArrangement);
+          pathArr);
       const PossiblePath & optimal = findOptimumPath(path, longest);
+      path.setOptimalPath(optimal);
 
-      Path optimalPath = extractReducedPath(path, optimal);
-      adjustVertices(&optimalPath);
-
-      pathArr.insertPath(optimalPath);
+      adjustVertices(&path);
     }
 
     optimiseBoundaryVertices(&pathArr);
@@ -611,156 +595,34 @@ template< typename MapTraits>
   }
 
 template< typename MapTraits>
-  typename VoronoiPathTracer< MapTraits>::LineAndCoM
-  VoronoiPathTracer< MapTraits>::calculateLeastSquaresLine(const Path & full,
-      const size_t i, const size_t j) const
-  {
-    SSLIB_ASSERT(full.inRange(i));
-    SSLIB_ASSERT(full.inRange(j));
-
-    std::vector< Point> pts;
-    for(ptrdiff_t d = 0; d <= full.forwardDist(i, j); ++d)
-      pts.push_back(full.vertex(full.wrapIndex(i + d)).point());
-
-    LineAndCoM line;
-    CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(), line.first,
-        line.second, CGAL::Dimension_tag< 0>());
-
-    return line;
-  }
-
-template< typename MapTraits>
-  typename CGAL::Linear_algebraCd< typename VoronoiPathTracer< MapTraits>::K::FT>::Matrix
-  VoronoiPathTracer< MapTraits>::calculateQuadraticForm(
-      const LineAndCoM & line) const
-  {
-    typedef typename CGAL::Linear_algebraCd< K::FT> Linalg;
-    // The quadratic form matrix summed for each line.  Least squares
-    // distance from point (x, y) to the lines will be
-    // (x, y, 1) Q (x, y, 1)^T
-    typename Linalg::Matrix Q(3, 3, 0.0);
-
-    const Vector & ortho = line.first.to_vector().perpendicular(
-        CGAL::COUNTERCLOCKWISE);
-    const K::FT lenSq = ortho.squared_length();
-    typename Linalg::Matrix v(3, 1);
-    v(0, 0) = ortho.x();
-    v(1, 0) = ortho.y();
-    v(2, 0) = -ortho * (line.second - CGAL::ORIGIN);
-    Q += v * Linalg::transpose(v) * (1.0 / lenSq);
-
-    return Q;
-  }
-
-template< typename MapTraits>
-  std::vector< typename VoronoiPathTracer< MapTraits>::Line>
-  VoronoiPathTracer< MapTraits>::calculateLeastSquaresSubpaths(
-      const Path & full, const PossiblePath & reduced,
-      const Voronoi & voronoi) const
-  {
-    SSLIB_ASSERT(!reduced.empty());
-    if(reduced.size() == 1)
-    {
-      const typename Voronoi::Halfedge_handle he = voronoi.dual(
-          full[*reduced.begin()].second);
-      SSLIB_ASSERT(he->has_source() || he->has_target());
-
-      const Point x0 =
-          he->has_source() ?
-              he->source()->point() : full[*reduced.begin()].first;
-      const Point x1 =
-          he->has_target() ?
-              he->target()->point() : full[*reduced.begin()].first;
-
-      return std::vector< Line>(1, Line(x0, x1));
-    }
-    else
-    {
-      std::vector< Line> lines(reduced.size() - 1);
-
-      PossiblePath::const_iterator it = reduced.begin();
-      const PossiblePath::const_iterator end = reduced.end();
-
-      Subpath sp;
-      sp.first = *it;
-      sp.second = *++it;
-
-      CGAL::linear_least_squares_fitting_2(full.verticesBegin() + sp.first,
-          full.verticesBegin() + (sp.second + 1), lines[0],
-          CGAL::Dimension_tag< 0>());
-
-      ++it;
-      for(size_t lineIdx = 1; lineIdx < lines.size(); ++lineIdx, ++it)
-      {
-        // Move the subpath to the next edge
-        sp = Subpath(sp.second, *it);
-
-        lines[lineIdx] = calculateLeastSquaresLine(full, sp.first, sp.second);
-      }
-      return lines;
-    }
-  }
-
-template< typename MapTraits>
-  typename VoronoiPathTracer< MapTraits>::Path
-  VoronoiPathTracer< MapTraits>::extractReducedPath(const Path & full,
-      const PossiblePath & reduced) const
-  {
-    if(reduced.empty())
-      return Path();
-
-    Path extracted(*full.getVoronoi());
-
-    // Only iterate from the second to the second last vertex indices
-    const PossiblePath::const_iterator first = reduced.begin();
-    const PossiblePath::const_iterator last = --(reduced.end());
-
-    size_t edgeIdx;
-
-    for(PossiblePath::const_iterator it = first; it != last; ++it)
-    {
-      PossiblePath::const_iterator next = it;
-      ++next;
-
-      edgeIdx = extracted.push_back(full.vertex(*it), full.vertex(*next), full,
-          full.edge(*it).delaunayEdge());
-      typename Path::Edge & edge = extracted.edge(edgeIdx);
-
-      edge.setLeastSqLine(calculateLeastSquaresLine(full, *it, *next));
-      edge.setQuadraticForm(calculateQuadraticForm(*edge.getLeastSqLine()));
-    }
-
-    return extracted;
-  }
-
-template< typename MapTraits>
   void
   VoronoiPathTracer< MapTraits>::adjustVertices(Path * const path) const
   {
-    if(path->numEdges() < 2)
-      return;
+    const std::vector< size_t> & optimal = path->getOptimalPath();
+    typename Path::Curve & curve = path->curve();
 
-    const typename Path::EdgeConstIterator last = --(path->edgesEnd());
-    typename Path::EdgeConstIterator next;
-    for(typename Path::EdgeConstIterator it = path->edgesBegin(); it != last;
-        ++it)
+    const size_t n = optimal.size();
+    SSLIB_ASSERT(n >= 2);
+
+    if(!path->isClosed())
+      curve.pushBack(path->vertexFront().point());
+
+    const size_t first = path->isClosed() ? 0 : 1;
+    size_t i, j, k;
+    for(size_t d = first; d < n - 1; ++d)
     {
-      next = it;
-      ++next;
+      i = optimal[path->isClosed() ? mod(d - 1, n) : d - 1];
+      j = optimal[d];
+      k = optimal[d + 1];
 
-      const typename Path::Edge & e1 = *it;
-      const typename Path::Edge & e2 = *next;
+      CGAL::Linear_algebraCd< K::FT>::Matrix Q = path->quadraticForm(i, j);
+      Q += path->quadraticForm(j, k);
 
-      if(e1.getQuadraticForm() && e2.getQuadraticForm())
-      {
-        typename Path::Vertex & vtx = path->vertex(e1.target());
-
-        CGAL::Linear_algebraCd< K::FT>::Matrix Q = *e1.getQuadraticForm();
-        Q += *e2.getQuadraticForm();
-
-        vtx.point() = joinLines(Q, vtx.domain());
-      }
+      curve.pushBack(joinLines(Q, path->vertex(j).domain()));
     }
+
+    if(!path->isClosed())
+      curve.pushBack(path->vertexBack().point());
   }
 
 template< typename MapTraits>
@@ -774,43 +636,40 @@ template< typename MapTraits>
 
     const BoundaryVertices & boundary = arr->getBoundaryVertices();
 
-    Polygon domain;
-    bool domainSet;
-    const typename Path::Edge * edge;
-
     for(BoundaryVertexIterator it = boundary.begin(), end = boundary.end();
         it != end; /*increment in loop body*/)
     {
       const BoundaryVertexRange range(it, boundary.upper_bound(it->first));
 
       CGAL::Linear_algebraCd< K::FT>::Matrix Q(3, 3, 0.0);
-      domainSet = false;
       BOOST_FOREACH(typename BoundaryVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
         const Path * const path = vtx.first;
+        const std::vector< size_t> & optimal = path->getOptimalPath();
+        SSLIB_ASSERT(optimal.size() >= 2);
 
-        edge = vtx.second == 0 ? &path->edgeFront() : &path->edgeBack();
-
-        SSLIB_ASSERT(edge->getQuadraticForm());
-        Q += *edge->getQuadraticForm();
-        // Use the first domain we come across - they should all be
-        // equivalent anyway
-        if(!domainSet)
-        {
-          domain = path->vertex(vtx.second).domain();
-          domainSet = true;
-        }
+        if(vtx.second == 0)
+          Q += path->quadraticForm(vtx.second, optimal[1]);
+        else
+          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.second);
       }
-      SSLIB_ASSERT(domainSet);
 
-      const Point optimal = joinLines(Q, domain);
+      const typename PathArrangement::VertexHandle & firstVtx =
+          range.first->second;
+      const Point joined = joinLines(Q,
+          firstVtx.first->vertex(firstVtx.second).domain());
 
       // Now save the optimal point to all the meeting vertices
       BOOST_FOREACH(typename BoundaryVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        vtx.first->vertex(vtx.second).point() = optimal;
+        Path * const path = vtx.first;
+
+        if(vtx.second == 0)
+          path->curve().vertexFront().point() = joined;
+        else
+          path->curve().vertexBack().point() = joined;
       }
 
       it = range.second;
@@ -834,27 +693,33 @@ template< typename MapTraits>
       const MeetingVertexRange range(it, meeting.upper_bound(it->first));
 
       CGAL::Linear_algebraCd< K::FT>::Matrix Q(3, 3, 0.0);
-      typename Path::Edge * edge;
       BOOST_FOREACH(typename MeetingVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
+        const Path * const path = vtx.first;
+        const std::vector< size_t> & optimal = path->getOptimalPath();
+        SSLIB_ASSERT(optimal.size() >= 2);
 
-        edge =
-            vtx.second == 0 ? &vtx.first->edgeFront() : &vtx.first->edgeBack();
-
-        SSLIB_ASSERT(edge->getQuadraticForm());
-        Q += *edge->getQuadraticForm();
+        if(vtx.second == 0)
+          Q += path->quadraticForm(vtx.second, optimal[1]);
+        else
+          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.second);
       }
 
       const typename PathArrangement::VertexHandle & firstVtx =
           range.first->second;
-      const Point optimal = joinLines(Q,
+      const Point joined = joinLines(Q,
           firstVtx.first->vertex(firstVtx.second).domain());
 
       BOOST_FOREACH(typename MeetingVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        vtx.first->vertex(vtx.second).point() = optimal;
+        Path * const path = vtx.first;
+
+        if(vtx.second == 0)
+          path->curve().vertexFront().point() = joined;
+        else
+          path->curve().vertexBack().point() = joined;
       }
 
       it = range.second;

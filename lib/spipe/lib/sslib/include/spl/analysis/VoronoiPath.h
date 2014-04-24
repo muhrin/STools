@@ -13,11 +13,15 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <map>
 #include <vector>
+
+#include <boost/optional.hpp>
 
 #include <CGAL/Linear_algebraCd.h>
 
 #include "spl/analysis/VoronoiPathUtility.h"
+#include "spl/analysis/TraceCurve.h"
 
 // FORWARD DECLARATIONS ///////
 
@@ -37,6 +41,11 @@ template< typename VD>
     typedef typename Voronoi::Delaunay_geom_traits GeomTraits;
     typedef CGAL::Polygon_2< GeomTraits> Polygon;
     typedef CGAL::Segment_2< GeomTraits> Segment;
+    typedef CGAL::Line_2< GeomTraits> Line;
+    typedef std::pair< Line, typename GeomTraits::Point_2> LineAndCentroid;
+    typedef typename CGAL::Linear_algebraCd< typename GeomTraits::FT>::Matrix Matrix;
+
+    typedef TraceCurve< VD> Curve;
 
     typedef std::pair< Point, typename Delaunay::Edge> value_type;
 
@@ -51,9 +60,11 @@ template< typename VD>
     typedef typename Vertices::const_iterator VertexConstIterator;
     typedef typename Edges::iterator EdgeIterator;
     typedef typename Edges::const_iterator EdgeConstIterator;
+    typedef std::pair< size_t, size_t> Subpath;
 
     VoronoiPath();
-    explicit VoronoiPath(const Voronoi & voronoi);
+    explicit
+    VoronoiPath(const Voronoi & voronoi);
     VoronoiPath(const VoronoiPath & path);
 
     size_t
@@ -114,12 +125,34 @@ template< typename VD>
 
     bool
     inRange(const ptrdiff_t index) const;
+    bool
+    inRange(const Subpath & subpath) const;
     ptrdiff_t
     forwardDist(const ptrdiff_t i, const ptrdiff_t j) const;
     ptrdiff_t
     wrapIndex(const ptrdiff_t i) const;
     ptrdiff_t
     safeIndex(const ptrdiff_t i) const;
+
+    const std::vector< size_t> &
+    getOptimalPath() const;
+    void
+    setOptimalPath(const std::vector< size_t> & path);
+
+    boost::optional< Label>
+    leftLabel() const;
+    boost::optional< Label>
+    rightLabel() const;
+
+    const LineAndCentroid &
+    leastSquaresLine(const size_t i, const size_t j) const;
+    const Matrix &
+    quadraticForm(const size_t i, const size_t j) const;
+
+    const Curve &
+    curve() const;
+    Curve &
+    curve();
 
   private:
     void
@@ -128,6 +161,10 @@ template< typename VD>
     const Voronoi * myVoronoi;
     Vertices myVertices;
     Edges myEdges;
+    Curve myCurve;
+    std::vector< size_t> myOptimalPath;
+    mutable std::map< Subpath, LineAndCentroid> mySubpathLines;
+    mutable std::map< Subpath, Matrix> myQuadraticForms;
   };
 
 template< typename VD>

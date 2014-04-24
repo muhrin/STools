@@ -18,7 +18,7 @@
 #include <boost/foreach.hpp>
 
 #include <CGAL/Line_2.h>
-#include <CGAL/Linear_algebraCd.h>
+#include <CGAL/linear_least_squares_fitting_2.h>
 #include <CGAL/Polygon_2.h>
 
 #include "spl/analysis/VoronoiPathUtility.h"
@@ -127,37 +127,23 @@ template< typename VD>
     {
       return myPath;
     }
-
-    const boost::optional< LineAndCoM> &
-    getLeastSqLine() const
-    {
-      return myLeastSqLine;
-    }
-    void
-    setLeastSqLine(const boost::optional< LineAndCoM> & lsq)
-    {
-      myLeastSqLine = lsq;
-    }
-
-    const boost::optional< Matrix> &
-    getQuadraticForm() const
-    {
-      return myQuadraticForm;
-    }
-    void
-    setQuadraticForm(const boost::optional< Matrix> & Q)
-    {
-      myQuadraticForm = Q;
-    }
     boost::optional< Label>
     leftLabel() const
     {
-      return myLeftLabel;
+      if(!isValid())
+        return boost::optional< Label>();
+
+      const Delaunay & delaunay = myPath->getVoronoi()->dual();
+      return myDelaunayEdge.first->vertex(delaunay.ccw(myDelaunayEdge.second))->info();
     }
     boost::optional< Label>
     rightLabel() const
     {
-      return myRightLabel;
+      if(!isValid())
+        return boost::optional< Label>();
+
+      const Delaunay & delaunay = myPath->getVoronoi()->dual();
+      return myDelaunayEdge.first->vertex(delaunay.cw(myDelaunayEdge.second))->info();
     }
 
   private:
@@ -171,7 +157,8 @@ template< typename VD>
             delaunayEdge)
     {
       SSLIB_ASSERT(myDelaunayEdge != typename Delaunay::Edge());
-      initLabels();
+      std::cout << path.vertex(mySource).point() << " "
+          << path.vertex(myTarget).point() - path.vertex(mySource).point() << "\n";
     }
 
     void
@@ -192,23 +179,6 @@ template< typename VD>
       mySource = newSource;
       myTarget = newTarget;
       setDelaunayEdge(myPath->getVoronoi()->dual().mirror_edge(delaunayEdge()));
-      std::swap(myLeftLabel, myRightLabel);
-    }
-    void
-    initLabels()
-    {
-      SSLIB_ASSERT(isValid());
-
-      const Delaunay & delaunay = myPath->getVoronoi()->dual();
-
-      myLeftLabel = myDelaunayEdge.first->vertex(
-          delaunay.ccw(myDelaunayEdge.second))->info();
-      myRightLabel = myDelaunayEdge.first->vertex(
-          delaunay.cw(myDelaunayEdge.second))->info();
-      std::cout << myPath->vertex(mySource).point() << " "
-          << myPath->vertex(myTarget).point() - myPath->vertex(mySource).point()
-          << " ";
-      std::cout << *myLeftLabel << ":" << *myRightLabel << "\n";
     }
     void
     setPath(const Path & path)
@@ -220,10 +190,6 @@ template< typename VD>
     size_t mySource;
     size_t myTarget;
     typename Delaunay::Edge myDelaunayEdge;
-    boost::optional< LineAndCoM> myLeastSqLine;
-    boost::optional< Matrix> myQuadraticForm;
-    boost::optional< Label> myLeftLabel;
-    boost::optional< Label> myRightLabel;
 
     friend class VoronoiPath< VD> ;
   };
@@ -514,6 +480,13 @@ template< typename VD>
   }
 
 template< typename VD>
+  bool
+  VoronoiPath< VD>::inRange(const Subpath & subpath) const
+  {
+    return inRange(subpath.first) && inRange(subpath.second);
+  }
+
+template< typename VD>
   ptrdiff_t
   VoronoiPath< VD>::forwardDist(const ptrdiff_t i, const ptrdiff_t j) const
   {
@@ -553,6 +526,110 @@ template< typename VD>
       return i < 0 ? n - (-i % n) : i % n;
     else
       return i < 0 ? 0 : (i >= n ? n - 1 : i);
+  }
+
+template< typename VD>
+  const std::vector< size_t> &
+  VoronoiPath< VD>::getOptimalPath() const
+  {
+    return myOptimalPath;
+  }
+
+template< typename VD>
+  void
+  VoronoiPath< VD>::setOptimalPath(const std::vector< size_t> & path)
+  {
+    BOOST_FOREACH(const size_t idx, path)
+      SSLIB_ASSERT(inRange(idx));
+    myOptimalPath = path;
+  }
+
+template< typename VD>
+  boost::optional< typename VoronoiPath< VD>::Label>
+  VoronoiPath< VD>::leftLabel() const
+  {
+    return edgeFront().leftLabel();
+  }
+
+template< typename VD>
+  boost::optional< typename VoronoiPath< VD>::Label>
+  VoronoiPath< VD>::rightLabel() const
+  {
+    return edgeFront().rightLabel();
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::LineAndCentroid &
+  VoronoiPath< VD>::leastSquaresLine(const size_t i, const size_t j) const
+  {
+    SSLIB_ASSERT(inRange(i));
+    SSLIB_ASSERT(inRange(j));
+
+    const typename std::map< Subpath, LineAndCentroid>::const_iterator it =
+        mySubpathLines.find(Subpath(i, j));
+    if(it != mySubpathLines.end())
+      return it->second;
+
+    std::vector< Point> pts;
+    for(ptrdiff_t d = 0; d <= forwardDist(i, j); ++d)
+      pts.push_back(vertex(wrapIndex(i + d)).point());
+
+    LineAndCentroid & line = mySubpathLines[Subpath(i, j)];
+    CGAL::linear_least_squares_fitting_2(pts.begin(), pts.end(), line.first,
+        line.second, CGAL::Dimension_tag< 0>());
+
+    return line;
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::Matrix &
+  VoronoiPath< VD>::quadraticForm(const size_t i, const size_t j) const
+  {
+    SSLIB_ASSERT(inRange(i));
+    SSLIB_ASSERT(inRange(j));
+
+    typedef typename GeomTraits::FT FT;
+
+    const typename std::map< Subpath, Matrix>::const_iterator it =
+        myQuadraticForms.find(Subpath(i, j));
+    if(it != myQuadraticForms.end())
+      return it->second;
+
+    typedef typename CGAL::Linear_algebraCd< FT> Linalg;
+    typedef typename GeomTraits::Vector_2 Vector;
+
+    // The quadratic form matrix summed for each line.  Least squares
+    // distance from point (x, y) to the lines will be
+    // (x, y, 1) Q (x, y, 1)^T
+    Matrix & Q = myQuadraticForms[Subpath(i, j)];
+    Q = typename Linalg::Matrix(3, 3, 0.0);
+
+    const LineAndCentroid line = leastSquaresLine(i, j);
+
+    const Vector & ortho = line.first.to_vector().perpendicular(
+        CGAL::COUNTERCLOCKWISE);
+    const FT lenSq = ortho.squared_length();
+    typename Linalg::Matrix v(3, 1);
+    v(0, 0) = ortho.x();
+    v(1, 0) = ortho.y();
+    v(2, 0) = -ortho * (line.second - CGAL::ORIGIN);
+    Q += v * Linalg::transpose(v) * (1.0 / lenSq);
+
+    return Q;
+  }
+
+template< typename VD>
+  const typename VoronoiPath< VD>::Curve &
+  VoronoiPath< VD>::curve() const
+  {
+    return myCurve;
+  }
+
+template< typename VD>
+  typename VoronoiPath< VD>::Curve &
+  VoronoiPath< VD>::curve()
+  {
+    return myCurve;
   }
 
 template< typename VD>

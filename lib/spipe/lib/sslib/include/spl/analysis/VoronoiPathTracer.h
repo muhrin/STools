@@ -66,8 +66,6 @@ template< typename MapTraits>
     typedef CGAL::Delaunay_triangulation_caching_degeneracy_removal_policy_2<
         Delaunay> AP;
 
-    typedef std::pair< Line, Point> LineAndCoM;
-
   public:
     typedef CGAL::Voronoi_diagram_2< Delaunay, AT, AP> Voronoi;
 
@@ -89,9 +87,8 @@ template< typename MapTraits>
   public:
     typedef VoronoiPath< Voronoi> Path;
     typedef VoronoiPathArrangement< Voronoi> PathArrangement;
-  private:
-    struct TracingData;
 
+  private:
     class DirectionChecker;
     struct PathInfo;
     struct MeetingInfo;
@@ -102,7 +99,7 @@ template< typename MapTraits>
     segment(const typename Delaunay::Edge & edge) const;
 
     PathArrangement
-    generatePaths(const Voronoi & voronoi, TracingData * const tracing) const;
+    generatePaths(const Voronoi & voronoi) const;
 
     std::vector< ptrdiff_t>
     findStraightPathsInternal(const Path & path,
@@ -120,17 +117,6 @@ template< typename MapTraits>
         const std::vector< ptrdiff_t> & longest) const;
     double
     penalty(const Path & fullPath, const Subpath & subpath) const;
-    std::vector< Line>
-    calculateLeastSquaresSubpaths(const Path & full,
-        const PossiblePath & reduced, const Voronoi & voronoi) const;
-    LineAndCoM
-    calculateLeastSquaresLine(const Path & full, const size_t i,
-        const size_t j) const;
-    typename CGAL::Linear_algebraCd< K::FT>::Matrix
-    calculateQuadraticForm(const LineAndCoM & line) const;
-
-    Path
-    extractReducedPath(const Path & full, const PossiblePath & reduced) const;
 
     void
     adjustVertices(Path * const path) const;
@@ -153,6 +139,12 @@ template< typename MapTraits>
     pEnd(const ptrdiff_t i, const Path & p) const
     {
       return p.isClosed() ? i + p.numVertices() : p.numVertices();
+    }
+
+    size_t
+    mod(const ptrdiff_t i, const ptrdiff_t n) const
+    {
+      return i < 0 ? n - (-i % n) : i % n;
     }
 
     ptrdiff_t
