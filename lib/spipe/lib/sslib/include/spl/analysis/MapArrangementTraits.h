@@ -13,11 +13,17 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <CGAL/basic.h>
+
+#ifdef CGAL_USE_CORE
+
 #include <boost/optional.hpp>
 
+#include <CGAL/Cartesian.h>
+#include <CGAL/CORE_algebraic_number_traits.h>
+#include <CGAL/Arr_Bezier_curve_traits_2.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arr_extended_dcel.h>
-#include <CGAL/Arr_segment_traits_2.h>
 
 // FORWARD DECLARATIONS ///////
 
@@ -26,12 +32,19 @@
 namespace spl {
 namespace analysis {
 
-template< typename K, typename LabelType>
+template< typename LabelType>
   class MapArrangementTraits
   {
   public:
     typedef LabelType Label;
-    typedef K Kernel;
+
+    typedef CGAL::CORE_algebraic_number_traits NtTraits;
+    typedef typename NtTraits::Rational NT;
+    typedef typename NtTraits::Rational Rational;
+    typedef typename NtTraits::Algebraic Algebraic;
+    typedef CGAL::Cartesian< Rational> RatKernel;
+    typedef CGAL::Cartesian< Algebraic> AlgKernel;
+    typedef RatKernel::Point_2 Point;
 
     struct VertexInfo
     {
@@ -52,7 +65,7 @@ template< typename K, typename LabelType>
     };
 
     // Arrangements stuff
-    typedef CGAL::Arr_segment_traits_2< K> ArrTraits;
+    typedef CGAL::Arr_Bezier_curve_traits_2< RatKernel, AlgKernel, NtTraits> ArrTraits;
     typedef CGAL::Arr_extended_dcel< ArrTraits, VertexInfo, HalfedgeInfo,
         FaceInfo> Dcel;
     typedef CGAL::Arrangement_2< ArrTraits, Dcel> Arrangement;
@@ -62,4 +75,5 @@ template< typename K, typename LabelType>
 }
 
 #endif /* SPL_WITH_CGAL */
+#endif // CGAL_USE_CORE
 #endif /* MAP_ARRANGEMENT_H */

@@ -13,8 +13,15 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <boost/foreach.hpp>
+#include <boost/range/iterator_range.hpp>
+
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Homogeneous.h>
+#include <CGAL/intersections.h>
+#include <CGAL/Polytope_distance_d.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/Polytope_distance_d_traits_2.h>
 
 #include "spl/analysis/MapArrangementTraits.h"
 #include "spl/utility/Range.h"
@@ -25,6 +32,66 @@
 
 namespace spl {
 namespace analysis {
+namespace detail {
+
+template< typename K>
+  CGAL::Point_2< K>
+  interval(const typename K::FT & lambda, const CGAL::Point_2< K> & x0,
+      const CGAL::Point_2< K> & x1)
+  {
+    return x0 + lambda * (x1 - x0);
+  }
+
+template< typename K>
+  boost::optional< CGAL::Point_2< K> >
+  intersectionPoint(const CGAL::Segment_2< K> & seg,
+      const CGAL::Polygon_2< K> & poly)
+  {
+    typedef CGAL::Point_2< K> Point;
+    typedef CGAL::Segment_2< K> Segment;
+    typedef CGAL::Polygon_2< K> Polygon;
+
+    typename CGAL::cpp11::result_of< typename K::Intersect_2
+    (Segment, Segment)>::type result;
+
+    for(typename Polygon::Edge_const_iterator it = poly.edges_begin(), end =
+        poly.edges_end(); it != end; ++it)
+    {
+      result = CGAL::intersection(seg, *it);
+      if(result)
+        if(const Point * p = boost::get< Point>(&*result))
+          return *p;
+    }
+    return boost::optional< Point>();
+  }
+
+template< typename K>
+  CGAL::Point_2< K>
+  closestPoint(const CGAL::Segment_2< K> & seg,
+      const CGAL::Polygon_2< K> & poly)
+  {
+    typedef CGAL::Point_2< K> Point;
+    typedef typename K::FT FT;
+
+    typedef CGAL::MP_Float ET;
+    typedef CGAL::Polytope_distance_d_traits_2< K, ET, typename K::RT> DistTraits;
+    typedef CGAL::Polytope_distance_d< DistTraits> PolyDist;
+
+    const Point line[] =
+      { seg.source(), seg.target() };
+    PolyDist dist(poly.vertices_begin(), poly.vertices_end(), line, line + 2);
+
+    typename PolyDist::Coordinate_iterator it =
+        dist.realizing_point_p_coordinates_begin();
+
+    const FT x(CGAL::to_double(*it));
+    const FT y(CGAL::to_double(*++it));
+    const FT denom(CGAL::to_double(*++it));
+
+    return Point(x / denom, y / denom);
+  }
+
+}
 
 // Convenience struct-typedef for getting the Delaunay vertex info label from a
 // Voronoi diagram type

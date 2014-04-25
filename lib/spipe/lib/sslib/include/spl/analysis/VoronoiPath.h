@@ -47,8 +47,6 @@ template< typename VD>
 
     typedef TraceCurve< VD> Curve;
 
-    typedef std::pair< Point, typename Delaunay::Edge> value_type;
-
     class Vertex;
     class Edge;
   private:
@@ -69,9 +67,6 @@ template< typename VD>
 
     size_t
     push_back(const typename Voronoi::Halfedge_handle & he);
-    size_t
-    push_back(const Vertex & vtx1, const Vertex & vtx2,
-        const VoronoiPath & path, const DelaunayEdge & dgEdge);
     size_t
     close(const typename Voronoi::Halfedge_handle & he);
 

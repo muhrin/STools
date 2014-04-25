@@ -280,40 +280,6 @@ template< typename VD>
 
 template< typename VD>
   size_t
-  VoronoiPath< VD>::push_back(const Vertex & vtx1, const Vertex & vtx2,
-      const VoronoiPath & path, const DelaunayEdge & dgEdge)
-  {
-    SSLIB_ASSERT(myVoronoi);
-    SSLIB_ASSERT(!isClosed());
-
-    // Create the first source vertex
-    if(myVertices.empty())
-      myVertices.push_back(vtx1);
-    else
-      SSLIB_ASSERT(myVertices.back().voronoiVertex() == vtx1.voronoiVertex());
-
-    if(path.isClosed() && !vtx2.isBoundary()
-        && vtx2.voronoiVertex() == vertexFront().voronoiVertex())
-    {
-      // The path is circular and this is the last edge
-      myEdges.push_back(Edge(*this, numVertices() - 1, 0, dgEdge));
-    }
-    else
-    {
-      SSLIB_ASSERT(myVertices.back().point() != vtx2.point());
-
-      myVertices.push_back(vtx2);
-
-      // Continuing the path
-      myEdges.push_back(
-          Edge(*this, numVertices() - 2, numVertices() - 1, dgEdge));
-    }
-
-    return myEdges.size() - 1;
-  }
-
-template< typename VD>
-  size_t
   VoronoiPath< VD>::close(const typename Voronoi::Halfedge_handle & he)
   {
     SSLIB_ASSERT(numVertices() > 1);

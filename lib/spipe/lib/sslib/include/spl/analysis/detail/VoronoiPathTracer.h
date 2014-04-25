@@ -125,25 +125,29 @@ template< typename MapTraits>
   typename VoronoiPathTracer< MapTraits>::PathArrangement
   VoronoiPathTracer< MapTraits>::generatePaths(const Voronoi & voronoi) const
   {
-    typename VoronoiPathTracer< MapTraits>::PathArrangement pathArr(voronoi);
-    decomposePaths(voronoi, &pathArr);
+    typename VoronoiPathTracer< MapTraits>::PathArrangement arr(voronoi);
+    decomposePaths(voronoi, &arr);
     //return tracing->pathArrangement;
 
     BOOST_FOREACH(Path & path,
-        boost::make_iterator_range(pathArr.pathsBegin(), pathArr.pathsEnd()))
+        boost::make_iterator_range(arr.pathsBegin(), arr.pathsEnd()))
     {
       const std::vector< ptrdiff_t> & longest = findStraightPathsInternal(path,
-          pathArr);
+          arr);
       const PossiblePath & optimal = findOptimumPath(path, longest);
       path.setOptimalPath(optimal);
 
       adjustVertices(&path);
     }
 
-    optimiseBoundaryVertices(&pathArr);
-    optimiseMeetingVertices(&pathArr);
+    optimiseBoundaryVertices(&arr);
+    optimiseMeetingVertices(&arr);
 
-    return pathArr;
+    BOOST_FOREACH(Path & path,
+        boost::make_iterator_range(arr.pathsBegin(), arr.pathsEnd()))
+      smooth(&path);
+
+    return arr;
   }
 
 template< typename MapTraits>
@@ -191,9 +195,9 @@ template< typename MapTraits>
           BOOST_FOREACH(typename PathArrangement::MeetingVerticesConst::const_reference vtx,
               meetingRange)
           {
-            const Path * const path2 = vtx.second.first;
+            const Path * const path2 = vtx.second.path();
             const typename Path::Edge & e2 =
-                vtx.second.second == 0 ? path2->edgeFront() : path2->edgeBack();
+                vtx.second.idx() == 0 ? path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
             // Put in the start and end vectors
@@ -236,9 +240,9 @@ template< typename MapTraits>
           BOOST_FOREACH(typename MeetingVertices::const_reference vtx,
               meetingRange)
           {
-            const Path * const path2 = vtx.second.first;
+            const Path * const path2 = vtx.second.path();
             const Edge & e2 =
-                vtx.second.second == 0 ? path2->edgeFront() : path2->edgeBack();
+                vtx.second.idx() == 0 ? path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
             // Put in the start and end vectors
@@ -271,17 +275,16 @@ template< typename MapTraits>
         BOOST_FOREACH(typename MeetingVertices::const_reference vtx1,
             meetingRange)
         {
-          const Path * const path1 = vtx1.second.first;
+          const Path * const path1 = vtx1.second.path();
           const Edge & e1 =
-              vtx1.second.second == 0 ? path1->edgeFront() : path1->edgeBack();
+              vtx1.second.idx() == 0 ? path1->edgeFront() : path1->edgeBack();
 
           BOOST_FOREACH(typename MeetingVertices::const_reference vtx2,
               meetingRange2)
           {
-            const Path * const path2 = vtx2.second.first;
+            const Path * const path2 = vtx2.second.path();
             const Edge & e2 =
-                vtx2.second.second == 0 ?
-                    path2->edgeFront() : path2->edgeBack();
+                vtx2.second.idx() == 0 ? path2->edgeFront() : path2->edgeBack();
 
             DirectionChecker dirs;
             // Put in the start and end vectors
@@ -645,28 +648,27 @@ template< typename MapTraits>
       BOOST_FOREACH(typename BoundaryVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        const Path * const path = vtx.first;
+        const Path * const path = vtx.path();
         const std::vector< size_t> & optimal = path->getOptimalPath();
         SSLIB_ASSERT(optimal.size() >= 2);
 
-        if(vtx.second == 0)
-          Q += path->quadraticForm(vtx.second, optimal[1]);
+        if(vtx.idx() == 0)
+          Q += path->quadraticForm(vtx.idx(), optimal[1]);
         else
-          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.second);
+          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.idx());
       }
 
       const typename PathArrangement::VertexHandle & firstVtx =
           range.first->second;
-      const Point joined = joinLines(Q,
-          firstVtx.first->vertex(firstVtx.second).domain());
+      const Point joined = joinLines(Q, firstVtx->domain());
 
       // Now save the optimal point to all the meeting vertices
       BOOST_FOREACH(typename BoundaryVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        Path * const path = vtx.first;
+        Path * const path = vtx.path();
 
-        if(vtx.second == 0)
+        if(vtx.idx() == 0)
           path->curve().vertexFront().point() = joined;
         else
           path->curve().vertexBack().point() = joined;
@@ -696,27 +698,26 @@ template< typename MapTraits>
       BOOST_FOREACH(typename MeetingVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        const Path * const path = vtx.first;
+        const Path * const path = vtx.path();
         const std::vector< size_t> & optimal = path->getOptimalPath();
         SSLIB_ASSERT(optimal.size() >= 2);
 
-        if(vtx.second == 0)
-          Q += path->quadraticForm(vtx.second, optimal[1]);
+        if(vtx.idx() == 0)
+          Q += path->quadraticForm(vtx.idx(), optimal[1]);
         else
-          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.second);
+          Q += path->quadraticForm(optimal[optimal.size() - 2], vtx.idx());
       }
 
       const typename PathArrangement::VertexHandle & firstVtx =
           range.first->second;
-      const Point joined = joinLines(Q,
-          firstVtx.first->vertex(firstVtx.second).domain());
+      const Point joined = joinLines(Q, firstVtx->domain());
 
       BOOST_FOREACH(typename MeetingVertices::const_reference v, range)
       {
         const typename PathArrangement::VertexHandle & vtx = v.second;
-        Path * const path = vtx.first;
+        Path * const path = vtx.path();
 
-        if(vtx.second == 0)
+        if(vtx.idx() == 0)
           path->curve().vertexFront().point() = joined;
         else
           path->curve().vertexBack().point() = joined;
@@ -724,6 +725,68 @@ template< typename MapTraits>
 
       it = range.second;
     }
+  }
+
+template< typename MapTraits>
+  void
+  VoronoiPathTracer< MapTraits>::smooth(Path * const path) const
+  {
+    const std::vector< size_t> & optimal = path->getOptimalPath();
+    const size_t start = path->isClosed() ? 0 : 1, end = optimal.size() - 2;
+    const ptrdiff_t n = path->isClosed() ? optimal.size() - 1 : optimal.size();
+
+    typename Path::Curve & curve = path->curve();
+    Vector v_ik, perp;
+    Point b_i, b_k, closest, mid, c, p4;
+    FT alpha, gamma;
+
+    if(!path->isClosed())
+      curve.vertexFront().end = detail::interval(0.5, curve.vertex(0).point(),
+          curve.vertex(1).point());
+
+    for(size_t j = start; j <= end; ++j)
+    {
+      const size_t i = mod(j - 1, n);
+      const size_t k = mod(j + 1, n);
+
+      const Point & p_i = curve.vertex(i).point();
+      const Point & p_j = curve.vertex(j).point();
+      const Point & p_k = curve.vertex(k).point();
+
+      b_i = detail::interval(0.5, p_i, p_j);
+      b_k = detail::interval(0.5, p_j, p_k);
+
+      v_ik = p_k - p_i;
+      mid = p_i + v_ik;
+
+      closest = detail::closestPoint(Segment(b_i, b_k),
+          path->vertex(optimal[i]).domain());
+      gamma = CGAL::sqrt(
+          CGAL::squared_distance(p_i, closest)
+              / CGAL::squared_distance(p_i, p_j));
+      alpha = 4 * gamma / 3;
+
+      curve.vertex(j).end = detail::interval(0.5, p_k, p_j); // TEMP: Startpoint
+
+      if(alpha <= 1)
+      {
+        if(alpha < 0.55)
+          alpha = 0.55;
+        else if(alpha > 1)
+          alpha = 1;
+
+        typename Path::Curve::Vertex::Bezier bezier;
+        bezier.alpha = alpha;
+
+        bezier.control[0] = detail::interval(0.5 * (1 + alpha), p_i, p_j); // Control point 1 & 2
+        bezier.control[1] = detail::interval(0.5 * (1 + alpha), p_k, p_j);
+        bezier.control[2] = detail::interval(0.5, p_k, p_j); // Endpoint
+
+        curve.vertex(j).setBezier(bezier);
+      }
+    }
+    if(!path->isClosed())
+      curve.vertexBack().end = curve.vertexBack().point();
   }
 
 template< typename MapTraits>

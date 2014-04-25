@@ -30,9 +30,12 @@ template< typename VD>
     typedef VD Voronoi;
     typedef typename Voronoi::Delaunay_graph Delaunay;
   public:
+    class VertexHandle;
+    class VertexConstHandle;
+
     typedef VoronoiPath< Voronoi> Path;
-    typedef std::pair< Path *, size_t> VertexHandle;
-    typedef std::pair< const Path *, size_t> VertexConstHandle;
+//    typedef std::pair< Path *, size_t> VertexHandle;
+//    typedef std::pair< const Path *, size_t> VertexConstHandle;
     typedef typename std::vector< Path>::iterator PathIterator;
     typedef typename std::vector< Path>::const_iterator PathConstIterator;
     typedef std::multimap< typename Voronoi::Vertex_handle, VertexHandle> MeetingVertices;

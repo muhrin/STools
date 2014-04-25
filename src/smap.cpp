@@ -20,8 +20,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-
 #include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
 #include <spl/analysis/MapArrangementTraits.h>
 #include <spl/analysis/VectorAnchorArrangementOutputter.h>
@@ -37,8 +35,7 @@ namespace spla = spl::analysis;
 
 // TYPEDEFS ////////////////////////////////////
 typedef std::string LabelType;
-typedef spl::analysis::MapArrangementTraits<
-    CGAL::Exact_predicates_exact_constructions_kernel, LabelType> MapTraits;
+typedef spl::analysis::MapArrangementTraits< LabelType> MapTraits;
 typedef spl::analysis::VoronoiPathTracer< MapTraits> PathTracer;
 typedef PathTracer::Point Point;
 typedef std::vector< std::pair< Point, LabelType> > Points;

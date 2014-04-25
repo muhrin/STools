@@ -90,16 +90,16 @@ template< typename Map, typename Label>
       //
       // labels.first = halfedge
       // labels.second = halfedge.twin()
-      if(e->curve().source() == e->source()->point())
-      {
-        e->data().label = labels.first;
-        e->twin()->data().label = labels.second;
-      }
-      else
-      {
-        e->data().label = labels.second;
-        e->twin()->data().label = labels.first;
-      }
+//      if(e->curve().source() == e->source()->point())
+//      {
+//        e->data().label = labels.first;
+//        e->twin()->data().label = labels.second;
+//      }
+//      else
+//      {
+//        e->data().label = labels.second;
+//        e->twin()->data().label = labels.first;
+//      }
     }
 
     Map * const myMap;
@@ -112,12 +112,13 @@ template< typename Map, typename Label>
 template< typename MapTraits, typename VD>
   struct MapBuilder
   {
-    typedef typename MapTraits::Kernel K;
+    //typedef typename MapTraits::Kernel K;
     typedef typename MapTraits::Label Label;
     typedef typename MapTraits::Arrangement Map;
     typedef VD Voronoi;
     typedef typename VD::Delaunay_graph Delaunay;
-    typedef typename Map::Point_2 Point;
+    //typedef typename Map::Point_2 Point;
+    typedef typename MapTraits::Point Point;
     typedef VoronoiPathArrangement< VD> PathArrangement;
     typedef typename PathArrangement::Path Path;
     typedef detail::MapObserver< Map, Label> EdgeLabeller;
@@ -125,6 +126,44 @@ template< typename MapTraits, typename VD>
     typedef std::map< typename VD::Vertex_handle, typename Map::Vertex_handle> MeetingVertices;
     typedef std::map< typename Delaunay::Edge, typename Map::Vertex_handle> BoundaryVertices;
     typedef std::map< const Path *, std::vector< typename Map::Vertex_handle> > PathVertices;
+
+    template< typename K>
+      void
+      point(const CGAL::Point_2< K> & pt)
+      {
+        std::cout << "(" << pt.x() << ", " << pt.y() << ")";
+      }
+
+    template< typename K>
+      void
+      moveTo(const CGAL::Point_2< K> & pt)
+      {
+        std::cout << "(Path.MOVETO, ";
+        point(pt);
+        std::cout << "),\n";
+      }
+
+    template< typename K>
+      void
+      curveTo(const CGAL::Point_2< K> (&control)[3])
+      {
+        std::cout << "(Path.CURVE4, ";
+        point(control[0]);
+        std::cout << "),\n(Path.CURVE4, ";
+        point(control[1]);
+        std::cout << "),\n(Path.CURVE4, ";
+        point(control[2]);
+        std::cout << "),\n";
+      }
+
+    template< typename K>
+      void
+      lineTo(const CGAL::Point_2< K> & pt)
+      {
+        std::cout << "(Path.LINETO, ";
+        point(pt);
+        std::cout << "),\n";
+      }
 
     void
     placePathEdges(const Path & path, Map * const map)
@@ -139,12 +178,27 @@ template< typename MapTraits, typename VD>
 
       const typename Path::Curve & curve = path.curve();
       Point p0, p1;
+
+      if(path.isClosed())
+        moveTo(curve.vertexBack().end);
+      else
+        moveTo(curve.vertexFront().point());
       for(size_t i = 0; i < curve.numVertices() - 1; ++i)
       {
+        const typename Path::Curve::Vertex & vi = curve.vertex(i);
+
         p0 = convert(curve.vertex(i).point());
         p1 = convert(curve.vertex(i + 1).point());
         if(p0 != p1)
           CGAL::insert(*map, Segment(p0, p1));
+
+        if(vi.getBezier())
+          curveTo(vi.getBezier()->control);
+        else
+        {
+          lineTo(p0);
+          lineTo(vi.end);
+        }
       }
       if(path.isClosed())
       {
@@ -153,6 +207,15 @@ template< typename MapTraits, typename VD>
         if(p0 != p1)
           CGAL::insert(*map, Segment(p0, p1));
       }
+      const typename Path::Curve::Vertex & vi = curve.vertexBack();
+      if(vi.getBezier())
+        curveTo(vi.getBezier()->control);
+      else
+      {
+        lineTo(curve.vertexBack().point());
+        lineTo(vi.end);
+      }
+
     }
 
     void
@@ -210,9 +273,9 @@ template< typename MapTraits, typename VD>
           // Create the first edge up to the intersection point on the boundary
           p0 = convert(cl->vertex(delaunay.ccw(edge.second))->point());
           p1 =
-              it->second.second == 0 ?
-                  convert(it->second.first->curve().vertexFront().point()) :
-                  convert(it->second.first->curve().vertexBack().point());
+              it->second.idx() == 0 ?
+                  convert(it->second.path()->curve().vertexFront().point()) :
+                  convert(it->second.path()->curve().vertexBack().point());
 
           // Insert the edge segment into the arrangement
           if(p0 != p1)

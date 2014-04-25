@@ -13,6 +13,8 @@
 
 #ifdef SPL_WITH_CGAL
 
+#include <boost/optional.hpp>
+
 // FORWARD DECLARATIONS ///////
 
 // DEFINITION ///////////////////////
@@ -23,13 +25,29 @@ namespace analysis {
 template< typename VD>
   class TraceCurve< VD>::Vertex
   {
+    typedef typename Kernel::FT FT;
   public:
-    Vertex()
+    struct Type
+    {
+      enum Value
+      {
+        CORNER, CURVE
+      };
+    };
+    struct Bezier
+    {
+      FT alpha;
+      FT beta;
+      Point start;
+      Point control[3];
+    };
+    Vertex() :
+        myType(Type::CORNER)
     {
     }
     explicit
     Vertex(const Point & point) :
-        myPoint(point)
+        myPoint(point), myType(Type::CORNER)
     {
 
     }
@@ -45,8 +63,32 @@ template< typename VD>
       return myPoint;
     }
 
+    const boost::optional< Bezier>
+    getBezier() const
+    {
+      return myBezier;
+    }
+    void
+    setBezier(const boost::optional< Bezier> & bezier)
+    {
+      myBezier = bezier;
+      if(myBezier)
+        myType = Type::CURVE;
+    }
+
+    typename Type::Value
+    type() const
+    {
+      return myType;
+    }
+
+    // TEMP HACK
+    Point end;
+
   private:
     Point myPoint;
+    typename Type::Value myType;
+    boost::optional< Bezier> myBezier;
   };
 
 template< typename VD>
@@ -94,6 +136,13 @@ template< typename VD>
 template< typename VD>
   const typename TraceCurve< VD>::Vertex &
   TraceCurve< VD>::vertex(const size_t i) const
+  {
+    return myVertices[i];
+  }
+
+template< typename VD>
+  typename TraceCurve< VD>::Vertex &
+  TraceCurve< VD>::vertex(const size_t i)
   {
     return myVertices[i];
   }

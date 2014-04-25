@@ -44,6 +44,8 @@ template< typename VD>
     vertexBack();
     const Vertex &
     vertex(const size_t i) const;
+    Vertex &
+    vertex(const size_t i);
 
   private:
     std::vector< Vertex> myVertices;

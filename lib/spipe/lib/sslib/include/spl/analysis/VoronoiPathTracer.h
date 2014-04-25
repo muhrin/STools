@@ -105,7 +105,7 @@ template< typename MapTraits>
     findStraightPathsInternal(const Path & path,
         const PathArrangement & arr) const;
     bool
-    isStraight(const Path & path, size_t vtxI, size_t vtxK) const;
+    isStraight(const Path & path, size_t i, size_t k) const;
     bool
     isStraight(const typename Delaunay::Edge & startEdge,
         const typename Delaunay::Edge & endEdge, const Path & path,
@@ -124,6 +124,8 @@ template< typename MapTraits>
     optimiseBoundaryVertices(PathArrangement * const arr) const;
     void
     optimiseMeetingVertices(PathArrangement * const arr) const;
+    void
+    smooth(Path * const path) const;
 
     Point
     joinLines(const CGAL::Linear_algebraCd< K::FT>::Matrix & quad,

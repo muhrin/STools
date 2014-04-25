@@ -23,6 +23,80 @@ namespace spl {
 namespace analysis {
 
 template< typename VD>
+  class VoronoiPathArrangement< VD>::VertexConstHandle
+  {
+  public:
+    VertexConstHandle() :
+        myPath(NULL), myVtxIndex(0)
+    {
+    }
+    VertexConstHandle(const Path & path, const size_t vtxIndex) :
+        myPath(&path), myVtxIndex(vtxIndex)
+    {
+    }
+    size_t
+    idx() const
+    {
+      return myVtxIndex;
+    }
+    const Path *
+    path() const
+    {
+      return myPath;
+    }
+    const typename Path::Vertex *
+    operator ->() const
+    {
+      return &myPath->vertex(myVtxIndex);
+    }
+    const typename Path::Vertex &
+    operator *() const
+    {
+      return myPath->vertex(myVtxIndex);
+    }
+  private:
+    const Path * myPath;
+    size_t myVtxIndex;
+  };
+
+template< typename VD>
+  class VoronoiPathArrangement< VD>::VertexHandle
+  {
+  public:
+    VertexHandle() :
+        myPath(NULL), myVtxIndex(0)
+    {
+    }
+    VertexHandle(Path * const path, const size_t vtxIndex) :
+        myPath(path), myVtxIndex(vtxIndex)
+    {
+    }
+    size_t
+    idx() const
+    {
+      return myVtxIndex;
+    }
+    Path *
+    path() const
+    {
+      return myPath;
+    }
+    typename Path::Vertex *
+    operator ->() const
+    {
+      return &myPath->vertex(myVtxIndex);
+    }
+    typename Path::Vertex &
+    operator *() const
+    {
+      return myPath->vertex(myVtxIndex);
+    }
+  private:
+    Path * myPath;
+    size_t myVtxIndex;
+  };
+
+template< typename VD>
   VoronoiPathArrangement< VD>::VoronoiPathArrangement(const Voronoi & voronoi) :
       myVoronoi(voronoi)
   {
@@ -130,7 +204,7 @@ template< typename VD>
             path.vertex(0).voronoiVertex();
         if(startVtx != typename Voronoi::Vertex_handle())
         {
-          meeting.insert(std::make_pair(startVtx, VertexConstHandle(&path, 0)));
+          meeting.insert(std::make_pair(startVtx, VertexConstHandle(path, 0)));
         }
         const typename Voronoi::Vertex_handle endVtx = path.vertex(
             path.numVertices() - 1).voronoiVertex();
@@ -138,7 +212,7 @@ template< typename VD>
         {
           meeting.insert(
               std::make_pair(endVtx,
-                  VertexConstHandle(&path, path.numVertices() - 1)));
+                  VertexConstHandle(path, path.numVertices() - 1)));
         }
       }
     }
@@ -161,9 +235,9 @@ template< typename VD>
         const size_t n = path.numVertices();
 
         // Check start vertex
-        if(path.vertex(0).isBoundary())
+        if(path.vertexFront().isBoundary())
         {
-          typename Delaunay::Edge e = path.vertex(0).getBoundaryEdge();
+          typename Delaunay::Edge e = path.vertexFront().getBoundaryEdge();
           if(!delaunay.is_infinite(e.first))
             e = delaunay.mirror_edge(e);
 
@@ -172,9 +246,9 @@ template< typename VD>
         }
 
         // Check end vertex
-        if(n > 1 && path.vertex(n - 1).isBoundary())
+        if(n > 1 && path.vertexBack().isBoundary())
         {
-          typename Delaunay::Edge e = path.vertex(n - 1).getBoundaryEdge();
+          typename Delaunay::Edge e = path.vertexBack().getBoundaryEdge();
           if(!delaunay.is_infinite(e.first))
             e = delaunay.mirror_edge(e);
 
@@ -209,7 +283,7 @@ template< typename VD>
             e = delaunay.mirror_edge(e);
 
           SSLIB_ASSERT(delaunay.is_infinite(e.first));
-          boundary.insert(std::make_pair(e, VertexConstHandle(&path, 0)));
+          boundary.insert(std::make_pair(e, VertexConstHandle(path, 0)));
         }
 
         // Check end vertex
@@ -220,7 +294,7 @@ template< typename VD>
             e = delaunay.mirror_edge(e);
 
           SSLIB_ASSERT(delaunay.is_infinite(e.first));
-          boundary.insert(std::make_pair(e, VertexConstHandle(&path, n - 1)));
+          boundary.insert(std::make_pair(e, VertexConstHandle(path, n - 1)));
         }
       }
     }
