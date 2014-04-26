@@ -142,7 +142,7 @@ template< typename MapTraits, typename VD>
       moveTo(const PathPoint & p)
       {
         std::cout << "(Path.MOVETO, " << point(p) << "),\n";
-        moveTo(TO_EXACT(p));
+        updatePos(TO_EXACT(p));
       }
       void
       lineTo(const PathPoint & p)
@@ -154,7 +154,7 @@ template< typename MapTraits, typename VD>
         if(pts[1] != myPos)
         {
           CGAL::insert(*myMap, Curve(pts, pts + 2));
-          moveTo(pts[1]);
+          updatePos(pts[1]);
         }
       }
       template< typename InputIterator>
@@ -172,7 +172,7 @@ template< typename MapTraits, typename VD>
             std::cout << pts.back() << "\n";
           }
           CGAL::insert(*myMap, Curve(pts.begin(), pts.end()));
-          moveTo(pts.back());
+          updatePos(pts.back());
         }
 
     private:
@@ -185,7 +185,7 @@ template< typename MapTraits, typename VD>
       static const IkToEk TO_EXACT;
 
       void
-      moveTo(const Point & p)
+      updatePos(const Point & p)
       {
         myPos = p;
         std::cout << myPos << "\n";
@@ -201,7 +201,6 @@ template< typename MapTraits, typename VD>
 
       Map * const myMap;
       Point myPos;
-      typename Map::Vertex_handle myLastVertex;
     };
 
     void
@@ -280,14 +279,16 @@ template< typename MapTraits, typename VD>
       } while(cl != start);
       start = cl; // Start at the newly found boundary edge (or the original start)
 
-      PathDrawer draw(map);
+      // Set up the labels
       EdgeLabeller labeller(map);
       labeller.setEdgeLabels(
           EdgeLabels(boost::optional< Label>(),
               cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->info()));
+
+      // Create the drawer
+      PathDrawer draw(map);
       draw.moveTo(cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->point());
 
-      typename Path::Point p1;
       const typename PathArrangement::BoundaryVerticesConst & boundaryVertices =
           arrangement.getBoundaryVertices();
       typename PathArrangement::BoundaryVerticesConst::const_iterator it;
@@ -308,7 +309,7 @@ template< typename MapTraits, typename VD>
           it = boundaryVertices.find(edge);
           SSLIB_ASSERT(it != boundaryVertices.end());
 
-          p1 =
+          const typename Path::Point & p1 =
               it->second.idx() == 0 ?
                   it->second.path()->curve().vertexFront().point() :
                   it->second.path()->curve().vertexBack().point();
@@ -433,9 +434,9 @@ template< typename MapTraits, typename VD>
     Builder builder;
 
     // Connect the edges
-//    BOOST_FOREACH(const typename Builder::Path & path,
-//        boost::make_iterator_range(pathArrangement.pathsBegin(), pathArrangement.pathsEnd()))
-//      builder.placePathEdges(path, &map);
+    BOOST_FOREACH(const typename Builder::Path & path,
+        boost::make_iterator_range(pathArrangement.pathsBegin(), pathArrangement.pathsEnd()))
+      builder.placePathEdges(path, &map);
 
     builder.createBoundary(pathArrangement, &map);
     builder.populateFaceLabels(&map);
