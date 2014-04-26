@@ -20,6 +20,7 @@
 #include <CGAL/Arr_observer.h>
 #include <CGAL/Point_2.h>
 #include <CGAL/Segment_2.h>
+#include <CGAL/Cartesian_converter.h>
 
 // FORWARD DECLARATIONS ///////
 
@@ -30,18 +31,18 @@ namespace analysis {
 namespace detail {
 
 template< typename Map, typename Label>
-  class MapObserver : CGAL::Arr_observer< Map>
+  class MapLabeller : CGAL::Arr_observer< Map>
   {
   public:
     typedef std::pair< boost::optional< Label>, boost::optional< Label> > EdgeLabels;
 
-    MapObserver(Map * const map) :
+    MapLabeller(Map * const map) :
         myMap(map)
     {
       this->attach(*myMap);
     }
     virtual
-    ~MapObserver()
+    ~MapLabeller()
     {
       this->detach();
     }
@@ -53,11 +54,12 @@ template< typename Map, typename Label>
     }
 
   private:
-
     virtual void
     after_create_edge(typename Map::Halfedge_handle e)
     {
       assignLabels(myEdgeLabels, e);
+      std::cout << "Edge created: " << e->source()->point() << " to "
+          << e->target()->point() << "\n";
     }
 
     virtual void
@@ -90,16 +92,17 @@ template< typename Map, typename Label>
       //
       // labels.first = halfedge
       // labels.second = halfedge.twin()
-//      if(e->curve().source() == e->source()->point())
-//      {
-//        e->data().label = labels.first;
-//        e->twin()->data().label = labels.second;
-//      }
-//      else
-//      {
-//        e->data().label = labels.second;
-//        e->twin()->data().label = labels.first;
-//      }
+
+      if(e->curve().source().is_same(e->source()->point()))
+      {
+        e->data().label = labels.first;
+        e->twin()->data().label = labels.second;
+      }
+      else // must have the halfedge going the other way
+      {
+        e->data().label = labels.second;
+        e->twin()->data().label = labels.first;
+      }
     }
 
     Map * const myMap;
@@ -112,64 +115,100 @@ template< typename Map, typename Label>
 template< typename MapTraits, typename VD>
   struct MapBuilder
   {
-    //typedef typename MapTraits::Kernel K;
     typedef typename MapTraits::Label Label;
     typedef typename MapTraits::Arrangement Map;
     typedef VD Voronoi;
     typedef typename VD::Delaunay_graph Delaunay;
-    //typedef typename Map::Point_2 Point;
     typedef typename MapTraits::Point Point;
     typedef VoronoiPathArrangement< VD> PathArrangement;
     typedef typename PathArrangement::Path Path;
-    typedef detail::MapObserver< Map, Label> EdgeLabeller;
+    typedef MapLabeller< Map, Label> EdgeLabeller;
 
     typedef std::map< typename VD::Vertex_handle, typename Map::Vertex_handle> MeetingVertices;
     typedef std::map< typename Delaunay::Edge, typename Map::Vertex_handle> BoundaryVertices;
     typedef std::map< const Path *, std::vector< typename Map::Vertex_handle> > PathVertices;
 
-    template< typename K>
-      void
-      point(const CGAL::Point_2< K> & pt)
+    class PathDrawer
+    {
+      typedef typename Path::Point PathPoint;
+
+    public:
+      explicit
+      PathDrawer(Map * const map) :
+          myMap(map)
       {
-        std::cout << "(" << pt.x() << ", " << pt.y() << ")";
+      }
+      void
+      moveTo(const PathPoint & p)
+      {
+        std::cout << "(Path.MOVETO, " << point(p) << "),\n";
+        moveTo(TO_EXACT(p));
+      }
+      void
+      lineTo(const PathPoint & p)
+      {
+        std::cout << "(Path.LINETO, " << point(p) << "),\n";
+
+        const Point pts[] =
+          { myPos, TO_EXACT(p) };
+        if(pts[1] != myPos)
+        {
+          CGAL::insert(*myMap, Curve(pts, pts + 2));
+          moveTo(pts[1]);
+        }
+      }
+      template< typename InputIterator>
+        void
+        curveTo(InputIterator first, InputIterator last)
+        {
+          for(InputIterator it = first; it != last; ++it)
+            std::cout << "(Path.CURVE4, " << point(*it) << "),\n";
+
+          std::vector< Point> pts(1, myPos);
+          BOOST_FOREACH(const typename Path::Point & p,
+              boost::make_iterator_range(first, last))
+          {
+            pts.push_back(TO_EXACT(p));
+            std::cout << pts.back() << "\n";
+          }
+          CGAL::insert(*myMap, Curve(pts.begin(), pts.end()));
+          moveTo(pts.back());
+        }
+
+    private:
+      typedef typename MapTraits::ArrTraits::Curve_2 Curve;
+      typedef CGAL::Cartesian_converter< typename Delaunay::Geom_traits,
+          typename MapTraits::RatKernel> IkToEk;
+
+      // Use this to convert the number type used by the Voronoi diagram paths
+      // to the rational type used by the arrangement
+      static const IkToEk TO_EXACT;
+
+      void
+      moveTo(const Point & p)
+      {
+        myPos = p;
+        std::cout << myPos << "\n";
       }
 
-    template< typename K>
-      void
-      moveTo(const CGAL::Point_2< K> & pt)
+      std::string
+      point(const PathPoint & pt)
       {
-        std::cout << "(Path.MOVETO, ";
-        point(pt);
-        std::cout << "),\n";
+        std::stringstream ss;
+        ss << "(" << pt.x() << ", " << pt.y() << ")";
+        return ss.str();
       }
 
-    template< typename K>
-      void
-      curveTo(const CGAL::Point_2< K> (&control)[3])
-      {
-        std::cout << "(Path.CURVE4, ";
-        point(control[0]);
-        std::cout << "),\n(Path.CURVE4, ";
-        point(control[1]);
-        std::cout << "),\n(Path.CURVE4, ";
-        point(control[2]);
-        std::cout << "),\n";
-      }
-
-    template< typename K>
-      void
-      lineTo(const CGAL::Point_2< K> & pt)
-      {
-        std::cout << "(Path.LINETO, ";
-        point(pt);
-        std::cout << "),\n";
-      }
+      Map * const myMap;
+      Point myPos;
+      typename Map::Vertex_handle myLastVertex;
+    };
 
     void
     placePathEdges(const Path & path, Map * const map)
     {
-      typedef typename K::Segment_2 Segment;
       typedef typename EdgeLabeller::EdgeLabels EdgeLabels;
+      typedef typename Path::Point PathPoint;
 
       // Set the edge labels
       EdgeLabeller labeller(map);
@@ -177,45 +216,39 @@ template< typename MapTraits, typename VD>
         labeller.setEdgeLabels(EdgeLabels(path.leftLabel(), path.rightLabel()));
 
       const typename Path::Curve & curve = path.curve();
-      Point p0, p1;
+      PathDrawer draw(map);
 
       if(path.isClosed())
-        moveTo(curve.vertexBack().end);
+        draw.moveTo(curve.vertexBack().end);
       else
-        moveTo(curve.vertexFront().point());
+        draw.moveTo(curve.vertexFront().point());
       for(size_t i = 0; i < curve.numVertices() - 1; ++i)
       {
         const typename Path::Curve::Vertex & vi = curve.vertex(i);
 
-        p0 = convert(curve.vertex(i).point());
-        p1 = convert(curve.vertex(i + 1).point());
-        if(p0 != p1)
-          CGAL::insert(*map, Segment(p0, p1));
-
         if(vi.getBezier())
-          curveTo(vi.getBezier()->control);
+        {
+          const PathPoint (&control)[3] = vi.getBezier()->control;
+          draw.curveTo(control, control + 3);
+        }
         else
         {
-          lineTo(p0);
-          lineTo(vi.end);
+          draw.lineTo(vi.point());
+          draw.lineTo(vi.end);
         }
       }
-      if(path.isClosed())
+      const typename Path::Curve::Vertex & lastVtx = curve.vertexBack();
+      if(lastVtx.getBezier())
       {
-        p0 = convert(curve.vertexBack().point());
-        p1 = convert(curve.vertexFront().point());
-        if(p0 != p1)
-          CGAL::insert(*map, Segment(p0, p1));
+        const PathPoint (&control)[3] = lastVtx.getBezier()->control;
+        draw.curveTo(control, control + 3);
       }
-      const typename Path::Curve::Vertex & vi = curve.vertexBack();
-      if(vi.getBezier())
-        curveTo(vi.getBezier()->control);
       else
       {
-        lineTo(curve.vertexBack().point());
-        lineTo(vi.end);
+        draw.lineTo(lastVtx.point());
+        if(path.isClosed())
+          draw.lineTo(lastVtx.point());
       }
-
     }
 
     void
@@ -229,7 +262,6 @@ template< typename MapTraits, typename VD>
       typedef typename Voronoi::Delaunay_graph Delaunay;
       typedef typename Delaunay::Edge Edge;
       typedef typename Delaunay::Face_circulator FaceCirculator;
-      typedef typename K::Segment_2 Segment;
       typedef typename EdgeLabeller::EdgeLabels EdgeLabels;
 
       const Voronoi & voronoi = arrangement.getVoronoi();
@@ -248,11 +280,14 @@ template< typename MapTraits, typename VD>
       } while(cl != start);
       start = cl; // Start at the newly found boundary edge (or the original start)
 
+      PathDrawer draw(map);
       EdgeLabeller labeller(map);
       labeller.setEdgeLabels(
           EdgeLabels(boost::optional< Label>(),
               cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->info()));
-      Point p0, p1;
+      draw.moveTo(cl->vertex(delaunay.ccw(cl->index(infiniteVertex)))->point());
+
+      typename Path::Point p1;
       const typename PathArrangement::BoundaryVerticesConst & boundaryVertices =
           arrangement.getBoundaryVertices();
       typename PathArrangement::BoundaryVerticesConst::const_iterator it;
@@ -260,52 +295,37 @@ template< typename MapTraits, typename VD>
       {
         const Edge edge(cl, cl->index(infiniteVertex));
 
+        std::cout << "FACES:" << map->number_of_faces() << std::endl;
+
         if(spansBoundary< Delaunay>(edge))
         {
           // Viewing a vertical edge with the infinite vertex (i) to its right
           // that span a boundary it looks like this:
+          //
           //   |.  <- ccw(i)
           // --|   <- The boundary edge that intersects the convex hull
           //   |.  <- cw(i)
           it = boundaryVertices.find(edge);
           SSLIB_ASSERT(it != boundaryVertices.end());
 
-          // Create the first edge up to the intersection point on the boundary
-          p0 = convert(cl->vertex(delaunay.ccw(edge.second))->point());
           p1 =
               it->second.idx() == 0 ?
-                  convert(it->second.path()->curve().vertexFront().point()) :
-                  convert(it->second.path()->curve().vertexBack().point());
+                  it->second.path()->curve().vertexFront().point() :
+                  it->second.path()->curve().vertexBack().point();
 
           // Insert the edge segment into the arrangement
-          if(p0 != p1)
-            CGAL::insert(*map, Segment(p0, p1));
+          draw.lineTo(p1);
 
           labeller.setEdgeLabels(
               EdgeLabels(boost::optional< Label>(),
                   cl->vertex(delaunay.cw(edge.second))->info()));
+        }
 
-          // Now create the second edge from the intersection point to the end
-          // of the Delaunay edge
-          p0 = p1;
-          p1 = convert(cl->vertex(delaunay.cw(edge.second))->point());
-          // Insert the edge segment into the arrangement
-          if(p0 != p1)
-            CGAL::insert(*map, Segment(p0, p1));
-        }
-        else
-        {
-          p0 = convert(cl->vertex(delaunay.ccw(edge.second))->point());
-          p1 = convert(cl->vertex(delaunay.cw(edge.second))->point());
-          // Insert the edge segment into the arrangement
-          if(p0 != p1)
-            CGAL::insert(*map, Segment(p0, p1));
-        }
+        draw.lineTo(cl->vertex(delaunay.cw(edge.second))->point());
 
         ++cl;
       } while(cl != start);
-
-      const Edge edge(cl, cl->index(infiniteVertex));
+      std::cout << "FACES:" << map->number_of_faces() << std::endl;
     }
 
     void
@@ -331,16 +351,15 @@ template< typename MapTraits, typename VD>
       }
     }
 
-    Point
-    convert(const typename Path::Point & pt)
-    {
-      return Point(pt.x(), pt.y());
-    }
-
     MeetingVertices meeting;
     BoundaryVertices boundary;
     PathVertices pathVertices;
   };
+
+template< typename MapTraits, typename VD>
+  const typename MapBuilder< MapTraits, VD>::PathDrawer::IkToEk MapBuilder<
+      MapTraits, VD>::PathDrawer::TO_EXACT;
+
 }
 
 template< class VD>
@@ -414,12 +433,14 @@ template< typename MapTraits, typename VD>
     Builder builder;
 
     // Connect the edges
-    BOOST_FOREACH(const typename Builder::Path & path,
-        boost::make_iterator_range(pathArrangement.pathsBegin(), pathArrangement.pathsEnd()))
-      builder.placePathEdges(path, &map);
+//    BOOST_FOREACH(const typename Builder::Path & path,
+//        boost::make_iterator_range(pathArrangement.pathsBegin(), pathArrangement.pathsEnd()))
+//      builder.placePathEdges(path, &map);
 
     builder.createBoundary(pathArrangement, &map);
     builder.populateFaceLabels(&map);
+
+    SSLIB_ASSERT(map.is_valid());
 
     return map;
   }

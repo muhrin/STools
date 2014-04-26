@@ -14,6 +14,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <armadillo>
+
 #include <CGAL/linear_least_squares_fitting_2.h>
 #include <CGAL/MP_Float.h>
 #include <CGAL/Gmpfr.h>

@@ -20,10 +20,8 @@
 #include <boost/tokenizer.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include <spl/analysis/GnuplotAnchorArrangementPlotter.h>
 #include <spl/analysis/MapArrangementTraits.h>
-#include <spl/analysis/VectorAnchorArrangementOutputter.h>
-#include <spl/analysis/VoronoiEdgeTracer.h>
+#include <spl/analysis/MatplotlibMapOutputter.h>
 #include <spl/analysis/VoronoiPathTracer.h>
 
 // FORWARD DECLARES //////////////////////////
@@ -39,7 +37,7 @@ typedef spl::analysis::MapArrangementTraits< LabelType> MapTraits;
 typedef spl::analysis::VoronoiPathTracer< MapTraits> PathTracer;
 typedef PathTracer::Point Point;
 typedef std::vector< std::pair< Point, LabelType> > Points;
-typedef spl::UniquePtr< spla::AnchorArrangementOutputter< MapTraits> >::Type ArrangementOutputterPtr;
+typedef spl::UniquePtr< spla::ArrangementMapOutputter< MapTraits> >::Type MapOutputterPtr;
 typedef MapTraits::Arrangement Map;
 
 // CONSTANTS ////////////////////////////////
@@ -63,7 +61,7 @@ struct InputOptions
 int
 processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 
-ArrangementOutputterPtr
+MapOutputterPtr
 generateOutputter(const InputOptions & in);
 
 int
@@ -72,10 +70,6 @@ main(const int argc, char * argv[])
   typedef boost::tokenizer< boost::char_separator< char> > Tok;
 
   using boost::lexical_cast;
-  using spl::analysis::AnchorPoint;
-  using std::abs;
-  using std::fabs;
-  using std::pow;
 
   static const boost::char_separator< char> tokSep(" \t");
 
@@ -151,8 +145,16 @@ main(const int argc, char * argv[])
   PathTracer tracer;
   const Map arr = tracer.generateMap(voronoi);
 
-  ArrangementOutputterPtr outputter = generateOutputter(in);
-  outputter->outputArrangement(arr);
+  MapOutputterPtr outputter = generateOutputter(in);
+  const std::string filename = "map." + outputter->fileExtension();
+  std::ofstream outFile(filename.c_str());
+  if(outFile.is_open())
+  {
+    outputter->outputArrangement(arr, &outFile);
+    outFile.close();
+  }
+  else
+    std::cerr << "ERROR: Failed to open " << filename << "\n";
 
   return 0;
 }
@@ -170,8 +172,8 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
         "smap\nUsage: " + exeName + " [options] input_file...\nOptions");
     general.add_options()("help", "Show help message")("input-file",
         po::value< std::string>(&in.inputFile), "input file")("steps,n",
-        po::value< std::string>(&in.outputter)->default_value("gnuplot"),
-        "The method of outputting the final map.  Possible options: gnuplot, vector");
+        po::value< std::string>(&in.outputter)->default_value("matplotlib"),
+        "The method of outputting the final map.  Possible options: matplotlib");
 
     po::positional_options_description p;
     p.add("input-file", 1);
@@ -199,27 +201,22 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     return 1;
   }
 
-  // Everything went fine
+// Everything went fine
   return 0;
 }
 
-ArrangementOutputterPtr
+MapOutputterPtr
 generateOutputter(const InputOptions & in)
 {
-  ArrangementOutputterPtr outputter;
+  MapOutputterPtr out;
 
-  if(in.outputter == "vector")
-    outputter.reset(new spla::VectorAnchorArrangementOutputter< MapTraits>());
-  else if(in.outputter == "gnuplot")
-  {
-    outputter.reset(
-        new spla::GnuplotAnchorArrangementPlotter< MapTraits>("map"));
-  }
+  if(in.outputter == "matplotlib")
+    out.reset(new spla::MatplotlibMapOutputter< MapTraits>());
   else
     std::cerr << "Error: unrecognised outputter - " << in.outputter
         << std::endl;
 
-  return outputter;
+  return out;
 }
 
 #endif /* SPL_WITH_CGAL */
