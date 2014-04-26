@@ -899,16 +899,16 @@ template< typename MapTraits>
   }
 
 template< typename MapTraits>
-  typename VoronoiPathTracer< MapTraits>::K::FT
+  typename VoronoiPathTracer< MapTraits>::FT
   VoronoiPathTracer< MapTraits>::quadDist(const Point & p,
-      const CGAL::Linear_algebraCd< K::FT>::Matrix & Q) const
+      const CGAL::Linear_algebraCd< FT>::Matrix & Q) const
   {
-    typename CGAL::Linear_algebraCd< K::FT>::Matrix v(3, 1);
+    typename CGAL::Linear_algebraCd< FT>::Matrix v(3, 1);
     v(0, 0) = p.x();
     v(1, 0) = p.y();
     v(2, 0) = 1;
 
-    return (CGAL::Linear_algebraCd< K::FT>::transpose(v) * Q * v)(0, 0);
+    return (CGAL::Linear_algebraCd< FT>::transpose(v) * Q * v)(0, 0);
   }
 
 }

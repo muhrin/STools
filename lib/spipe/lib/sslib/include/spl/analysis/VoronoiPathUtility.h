@@ -43,29 +43,6 @@ template< typename K>
   }
 
 template< typename K>
-  boost::optional< CGAL::Point_2< K> >
-  intersectionPoint(const CGAL::Segment_2< K> & seg,
-      const CGAL::Polygon_2< K> & poly)
-  {
-    typedef CGAL::Point_2< K> Point;
-    typedef CGAL::Segment_2< K> Segment;
-    typedef CGAL::Polygon_2< K> Polygon;
-
-    typename CGAL::cpp11::result_of< typename K::Intersect_2
-    (Segment, Segment)>::type result;
-
-    for(typename Polygon::Edge_const_iterator it = poly.edges_begin(), end =
-        poly.edges_end(); it != end; ++it)
-    {
-      result = CGAL::intersection(seg, *it);
-      if(result)
-        if(const Point * p = boost::get< Point>(&*result))
-          return *p;
-    }
-    return boost::optional< Point>();
-  }
-
-template< typename K>
   CGAL::Point_2< K>
   closestPoint(const CGAL::Segment_2< K> & seg,
       const CGAL::Polygon_2< K> & poly)

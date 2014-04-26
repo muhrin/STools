@@ -128,14 +128,14 @@ template< typename MapTraits>
     smooth(Path * const path) const;
 
     Point
-    joinLines(const CGAL::Linear_algebraCd< K::FT>::Matrix & quad,
+    joinLines(const CGAL::Linear_algebraCd< FT>::Matrix & quad,
         const Polygon & boundary) const;
     Polygon
     surroundingBoundary(const typename Delaunay::Edge & edge,
         const Voronoi & voronoi) const;
-    K::FT
+    FT
     quadDist(const Point & p,
-        const CGAL::Linear_algebraCd< K::FT>::Matrix & Q) const;
+        const CGAL::Linear_algebraCd< FT>::Matrix & Q) const;
 
     ptrdiff_t
     pEnd(const ptrdiff_t i, const Path & p) const

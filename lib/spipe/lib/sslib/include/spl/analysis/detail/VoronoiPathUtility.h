@@ -359,7 +359,7 @@ template< typename MapTraits, typename VD>
 
 template< typename MapTraits, typename VD>
   const typename MapBuilder< MapTraits, VD>::PathDrawer::IkToEk MapBuilder<
-      MapTraits, VD>::PathDrawer::TO_EXACT;
+      MapTraits, VD>::PathDrawer::TO_EXACT =  typename MapBuilder< MapTraits, VD>::PathDrawer::IkToEk();
 
 }
 
