@@ -410,7 +410,11 @@ template< typename MapTraits>
       const Segment edgeSegment = segment(edge.delaunayEdge());
       for(size_t l = 0; l < 4; ++l)
       {
+#if CGAL_VERSION_NR < 1040300000
+        if(!CGAL::intersection(ik[l], edgeSegment).empty())
+#else
         if(CGAL::intersection(ik[l], edgeSegment))
+#endif
         {
           // As soon as one of the segments intersects this Edge then we're
           // happy to move on
@@ -473,7 +477,11 @@ template< typename MapTraits>
       const Segment edgeSegment = segment(edge.delaunayEdge());
       for(size_t l = 0; l < 4; ++l)
       {
+#if CGAL_VERSION_NR < 1040300000
+        if(!CGAL::intersection(ik[l], edgeSegment).empty())
+#else
         if(CGAL::intersection(ik[l], edgeSegment))
+#endif
         {
           // As soon as one of the segments intersects this Edge then we're
           // happy to move on
