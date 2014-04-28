@@ -11,7 +11,7 @@
 #ifdef SPL_WITH_CGAL
 
 #include <boost/iterator/transform_iterator.hpp>
-#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <spl/analysis/GnuplotConvexHullPlotter.h>
 #include <spl/common/Structure.h>
