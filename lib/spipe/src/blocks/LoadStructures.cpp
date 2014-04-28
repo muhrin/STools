@@ -70,7 +70,9 @@ LoadStructures::start()
 
   while(!myStructureLocations.empty())
   {
-    const ssio::ResourceLocator & loc = myStructureLocations.back();
+    // Get the front of the queue
+    const ssio::ResourceLocator loc = myStructureLocations.front();
+    myStructureLocations.pop();
 
     // Load the structures
     ssio::StructuresContainer structures;
@@ -97,8 +99,6 @@ LoadStructures::start()
       // Send it on its way
       out(data);
     }
-
-    myStructureLocations.pop(); // Pop off the queue of structures to load
   }
 }
 

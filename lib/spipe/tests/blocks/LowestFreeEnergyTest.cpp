@@ -1,5 +1,5 @@
 /*
- * LoadSeedStructuresTest.cpp
+ * LowestFreeEnergyTest.cpp
  *
  *  Created on: Aug 18, 2011
  *      Author: Martin Uhrin
