@@ -12,6 +12,7 @@
 // INCLUDES /////////////////////////////////////////////
 #include "StructurePipe.h"
 
+#include <map>
 #include <string>
 
 #include <spl/SSLib.h>

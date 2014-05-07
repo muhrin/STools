@@ -92,6 +92,7 @@ BlockFactory::createBlock(BlockHandle * const blockOut,
     cutAndPaste->setPairDistances(*options.pairDistances);
 
   blockOut->reset(cutAndPaste.release());
+
   return true;
 }
 

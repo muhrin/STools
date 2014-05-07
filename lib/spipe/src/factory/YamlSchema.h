@@ -52,7 +52,6 @@ SCHEMER_MAP(BuildStructuresSchema, BuildStructures)
   element("num", &BuildStructures::num)->defaultValue(1);
   element("generator", &BuildStructures::generator);
 }
-;
 
 struct Clone
 {

@@ -1,4 +1,16 @@
 
+## spipe/build/
+
+set(spipe_Header_Files__build
+  build/BlockLoader.h
+)
+source_group("Header Files\\build" FILES ${spipe_Header_Files__build})
+
+set(spipe_Source_Files__build
+  build/BlockLoader.cpp
+)
+source_group("Source Files\\build" FILES ${spipe_Source_Files__build})
+
 ## spipe/blocks/
 
 set(spipe_Header_Files__blocks
@@ -151,6 +163,7 @@ set(spipe_Source_Files__
 source_group("Source Files" FILES ${spipe_Source_Files__})
 
 set(spipe_Header_Files
+  ${spipe_Header_Files__build}
   ${spipe_Header_Files__blocks}
   ${spipe_Header_Files__build}
   ${spipe_Header_Files__common}
@@ -161,6 +174,7 @@ set(spipe_Header_Files
 )
 
 set(spipe_Source_Files
+  ${spipe_Source_Files__build}
   ${spipe_Source_Files__blocks}
   ${spipe_Source_Files__build}
   ${spipe_Source_Files__common}
