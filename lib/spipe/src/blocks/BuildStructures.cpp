@@ -31,16 +31,16 @@
 namespace spipe {
 namespace blocks {
 
-namespace ssbc = ::spl::build_cell;
-namespace ssc = ::spl::common;
-namespace ssu = ::spl::utility;
+namespace ssbc = spl::build_cell;
+namespace ssc = spl::common;
+namespace ssu = spl::utility;
 
 const int BuildStructures::DEFAULT_MAX_ATTEMPTS = 1000;
 
 void
 BuildStructures::start()
 {
-  using ::spipe::common::StructureData;
+  using spipe::common::StructureData;
 
   int numToGenerate = myFixedNumGenerate ? myNumToGenerate : 100;
 
@@ -107,11 +107,11 @@ BuildStructures::in(::spipe::common::StructureData * const data)
     drop(data);
 }
 
-::std::string
+std::string
 BuildStructures::generateStructureName(const size_t structureNum) const
 {
   // Build up the name
-  ::std::stringstream ss;
+  std::stringstream ss;
   ss << common::generateStructureName(getEngine()->globalData()) << "-"
       << structureNum;
   return ss.str();
@@ -122,12 +122,12 @@ BuildStructures::generateStructure() const
 {
   ssc::StructurePtr str;
   const ssbc::GenerationSettings * const settings =
-      getEngine()->globalData().objectsStore.find(common::GlobalKeys::GENERATION_SETTINGS);
+      getEngine()->globalData().objectsStore.find(
+          common::GlobalKeys::GENERATION_SETTINGS);
 
   if(settings)
     myStructureGenerator->generateStructure(str,
-        getEngine()->sharedData().getSpeciesDatabase(),
-        *settings);
+        getEngine()->sharedData().getSpeciesDatabase(), *settings);
   else
     myStructureGenerator->generateStructure(str,
         getEngine()->sharedData().getSpeciesDatabase());

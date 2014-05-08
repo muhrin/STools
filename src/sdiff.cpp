@@ -295,7 +295,7 @@ main(const int argc, char * argv[])
 
   ComparatorPtr comparator = comp->generateBuffered();
 
-// Do the actual comparison based on command line options
+  // Do the actual comparison based on command line options
   if(in.mode == 'u')
     doPrintLists(groups, comparator, true, in);
   else if(in.mode == 's')
@@ -323,8 +323,8 @@ preprocessStructure(ssc::Structure & structure,
   if(!options.dontUsePrimitive)
     structure.makePrimitive();
 
-// If we are to be volume agnostic then set the volume
-// to 1.0 per atom
+  // If we are to be volume agnostic then set the volume
+  // to 1.0 per atom
   ssc::UnitCell * const unitCell = structure.getUnitCell();
   if(options.volumeAgnostic && unitCell)
   {

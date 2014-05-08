@@ -30,7 +30,7 @@ randomChar(const int seed = -1)
     return charset[seed % charset.length()];
 }
 
-::std::string
+std::string
 randomString(const size_t length)
 {
   std::string result;

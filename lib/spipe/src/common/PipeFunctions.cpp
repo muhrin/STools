@@ -16,12 +16,13 @@
 namespace spipe {
 namespace common {
 
-namespace fs = ::boost::filesystem;
-namespace ssu = ::spl::utility;
+namespace fs = boost::filesystem;
+namespace ssu = spl::utility;
 
-::std::string getOutputFileStem(const SharedData & shared, const GlobalData & global)
+std::string
+getOutputFileStem(const SharedData & shared, const GlobalData & global)
 {
-  ::std::string stem = global.getSeedName();
+  std::string stem = global.getSeedName();
   if(!stem.empty() && !shared.getInstanceName().empty())
   {
     stem += "-";
@@ -30,19 +31,20 @@ namespace ssu = ::spl::utility;
   return stem;
 }
 
-::boost::filesystem::path
+boost::filesystem::path
 getWorkingDir(const SharedData & shared, const GlobalData & global)
 {
   fs::path dir = shared.getWorkingDir();
-  if(!dir.empty() && ::spl::io::isAbsolute(dir))
+  if(!dir.empty() && spl::io::isAbsolute(dir))
     return dir;
 
   return global.getWorkingDir() / dir;
 }
 
-::std::string generateStructureName(const GlobalData & global)
+std::string
+generateStructureName(const GlobalData & global)
 {
-  ::std::string name = global.getSeedName();
+  std::string name = global.getSeedName();
   if(!name.empty())
     name += "-";
   name += ssu::generateUniqueName(4);
