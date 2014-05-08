@@ -28,19 +28,22 @@
 
 // My includes //
 #include "sinfo/Ancillary.h"
+#include "utility/TerminalFunctions.h"
 
 // NAMESPACES ////////////////////////////////
-using namespace ::stools::sinfo;
-namespace sp = ::spipe;
+using namespace stools;
+using namespace stools::sinfo;
+
+namespace sp = spipe;
 #ifdef SPL_WITH_CGAL
-namespace ssa = ::spl::analysis;
+namespace ssa = spl::analysis;
 #endif
-namespace ssu = ::spl::utility;
-namespace ssc = ::spl::common;
-namespace ssio = ::spl::io;
+namespace ssu = spl::utility;
+namespace ssc = spl::common;
+namespace ssio = spl::io;
 
 void
-addToken(const ::std::string & token, InputOptions & in);
+addToken(const std::string & token, InputOptions & in);
 
 int
 main(const int argc, char * argv[])
@@ -67,10 +70,9 @@ main(const int argc, char * argv[])
   TokensInfo tokensInfo;
 
   // Reprocess the tokens just in case any have been added
-  BOOST_FOREACH(const ::std::string & additionalToken, in.additionalTokens)
-  {
+  BOOST_FOREACH(const std::string & additionalToken, in.additionalTokens)
     addToken(additionalToken, in);
-  }
+
   result = getRequiredTokens(tokensInfo, tokensMap, in);
   if(result != Result::SUCCESS)
     return result;
@@ -83,19 +85,20 @@ main(const int argc, char * argv[])
   if(!in.filterString.empty())
   {
     if(!filterFormula.fromString(in.filterString))
-      ::std::cerr << "Failed to parse filter string: " << in.filterString
-          << ::std::endl;
+      utility::warning() << "Failed to parse filter string: " << in.filterString
+          << std::endl;
   }
   FormulaFilter formulaFilter(filterFormula);
 
-  ::std::string inputFile;
+  std::string inputFile;
   ssio::ResourceLocator structureLocator;
   BOOST_FOREACH(inputFile, in.inputFiles)
   {
     if(structureLocator.set(inputFile))
     {
       StructuresContainer loaded;
-      rwMan.readStructures(loaded, structureLocator);
+      rwMan.readStructures(loaded, structureLocator,
+          in.recursive ? std::numeric_limits< int>::max() : 0);
 
       structures.transfer(structures.end(), loaded);
     }
@@ -106,7 +109,7 @@ main(const int argc, char * argv[])
 
 #ifdef SPL_WITH_CGAL
   const bool useHullDist = in.maxHullDist
-      != MAX_HULL_DIST_IGNORE|| tokensInfo.getToken("hd") != NULL;
+      != MAX_HULL_DIST_IGNORE || tokensInfo.getToken("hd") != NULL;
   if(in.stableCompositions || useHullDist)
   {
     const ssa::ConvexHullStructures::EndpointLabels & endpoints =
@@ -163,28 +166,28 @@ main(const int argc, char * argv[])
       }
     }
     else
-      ::std::cerr << "Error: Found " << endpoints.size()
-          << " endpoints.  Need at least 2 to determine stable compositions.\n";
+      utility::warning() << "Found " << endpoints.size()
+          << " hull endpoints.  Need at least 2 to determine stable compositions.\n";
   }
 #endif
 
   // Filter out any that we don't want
   structures.erase(
-      ::std::remove_if(structures.begin(), structures.end(), formulaFilter),
+      std::remove_if(structures.begin(), structures.end(), formulaFilter),
       structures.end());
 
   if(in.compositionTop != 0)
   {
-    typedef ssio::StructuresContainer::iterator StructuresIterator;
-    typedef ::std::map< double, StructuresIterator> TopN;
-    typedef ::std::map< ssc::AtomsFormula, TopN> FormulasMap;
+    typedef ssio::StructuresContainer::iterator StructureIterator;
+    typedef std::map< double, StructureIterator> TopN;
+    typedef std::map< ssc::AtomsFormula, TopN> FormulasMap;
 
     FormulasMap formulasMap;
-    ::std::set< StructuresIterator> toRemove;
+    std::set< StructureIterator> toRemove;
     ssc::AtomsFormula formula;
 
     double enthalpyPerAtom;
-    for(StructuresIterator it = structures.begin(), end = structures.end();
+    for(StructureIterator it = structures.begin(), end = structures.end();
         it != end; ++it)
     {
       const double * const enthalpy = it->getProperty(
@@ -215,7 +218,7 @@ main(const int argc, char * argv[])
       }
     }
 
-    for(::std::set< StructuresIterator>::reverse_iterator it =
+    for(::std::set< StructureIterator>::reverse_iterator it =
         toRemove.rbegin(), end = toRemove.rend(); it != end; ++it)
     {
       structures.erase(*it);
@@ -298,15 +301,14 @@ main(const int argc, char * argv[])
 
   const size_t numToPrint =
       in.printTop == PRINT_ALL ?
-          sortedKeys.size() :
-          ::std::min(sortedKeys.size(), (size_t) in.printTop);
+          sortedKeys.size() : std::min(sortedKeys.size(), (size_t) in.printTop);
   printInfo(infoTable, sortedKeys, tokensInfo, in, numToPrint);
 
   return 0;
 }
 
 void
-addToken(const ::std::string & token, InputOptions & in)
+addToken(const std::string & token, InputOptions & in)
 {
   if(!in.infoString.empty())
     in.infoString += "";

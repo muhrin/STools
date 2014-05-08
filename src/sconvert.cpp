@@ -20,18 +20,20 @@
 
 // Local //
 #include "utility/BoostCapabilities.h"
+#include "utility/TerminalFunctions.h"
 
 // MACROS ////////////////////////////////////
 
 // NAMESPACES ////////////////////////////////
-namespace fs    = ::boost::filesystem;
-namespace po    = ::boost::program_options;
-namespace sp    = ::spipe;
-namespace ssc   = ::spl::common;
-namespace ssio  = ::spl::io;
-namespace ssu   = ::spl::utility;
+namespace fs    = boost::filesystem;
+namespace po    = boost::program_options;
+namespace sp    = spipe;
+namespace ssc   = spl::common;
+namespace ssio  = spl::io;
+namespace ssu   = spl::utility;
+namespace utility = stools::utility;
 
-typedef ::std::vector< ::std::string> StringsVector;
+typedef std::vector< std::string> StringsVector;
 
 struct InputOptions
 {
@@ -54,9 +56,9 @@ int main(const int argc, char * argv[])
 
   ssio::ResourceLocator fileIn, fileOut;
   if(!fileIn.set(in.inputOutputFiles[0]))
-    ::std::cerr << "Input file not valid" << ::std::endl;
+    utility::warning() << "Input file not valid\n";
   if(!fileOut.set(in.inputOutputFiles[1]))
-    ::std::cerr << "Output file not valid" << ::std::endl;
+    utility::warning() << "Output file not valid\n";
 
   ssio::StructureReadWriteManager rwMan;
   sp::utility::initStructureRwManDefault(rwMan);
@@ -64,14 +66,14 @@ int main(const int argc, char * argv[])
   ssio::StructuresContainer structures;
   if(rwMan.readStructures(structures, fileIn) == 0)
   {
-    ::std::cerr << "Error: Failed to read any structures." << ::std::endl;
+    utility::warning() << "Error: Failed to read any structures.\n";
     return 1;
   }
 
   BOOST_FOREACH(ssc::Structure & structure, structures)
   {
     if(!rwMan.writeStructure(structure, fileOut))
-      ::std::cerr << "Error: Failed to write structure to " << fileOut << ::std::endl;
+      utility::warning() << "Failed to write structure to " << fileOut << "\n";
   }
 
   return 0;
@@ -79,7 +81,7 @@ int main(const int argc, char * argv[])
 
 int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
 {
-  const ::std::string exeName(argv[0]);
+  const std::string exeName(argv[0]);
 
   in.inputOutputFiles.resize(2);
   try
@@ -102,7 +104,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
     if(vm.count("help"))
     {
-      ::std::cout << cmdLineOptions << ::std::endl;
+      std::cout << cmdLineOptions << "\n";
       return 1;
     }
 
@@ -110,7 +112,7 @@ int processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    ::std::cout << e.what() << "\n";
+    utility::error() << e.what() << "\n";
     return 1;
   }
   // Everything went fine

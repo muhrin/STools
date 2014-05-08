@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Debugging
+#set -x
+
+declare -a strs
+
+for i in "$@"
+do
+  if [ -f "$i" ]
+  then
+    strs[${#strs[*]}]=$i
+  elif [ -d "$i" ]
+  then
+    # Get the lowest for each stoichiometry in that folder
+    sinfo $i --composition-top 1 -n -i '$f$' -r 2> /dev/null
+  fi
+done
+
+if [ ${#strs[@]} != 0 ]
+then
+  # Find the lowest of the individual files given
+  sinfo --composition-top 1 -n -i '$f$' "${strs[@]}" 2> /dev/null
+fi

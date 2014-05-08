@@ -136,10 +136,8 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
           sepSq = arma::dot(sepVec, sepVec);
           if(sepSq < minSepSqs(row, col))
           {
-            if(fixed[row] || fixed[col])
-              prefactor = 1.0; // Only one fixed, displace it by the full amount
-            else
-              prefactor = 0.5; // None fixed, share displacement equally
+            // If both are free then share the displacement, otherwise all goes to one
+            prefactor = fixed[row] || fixed[col] ? 1.0 :  0.5;
 
             if(sepSq != 0.0)
             {
@@ -149,7 +147,7 @@ PointSeparator::separatePoints(SeparationData * const sepData) const
               // Generate the displacement vector
               dr = prefactor * sepDiff / sep * sepVec;
             }
-            else
+            else // overlapping, so perturb randomly
             {
               dr = arma::randu(3);
               dr *= 0.001 * sepData->separations(row, col) / arma::dot(dr, dr);

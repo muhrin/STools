@@ -283,9 +283,7 @@ StructureReadWriteManager::readStructures(StructuresContainer & outStructures,
     return numRead;
   }
   else if(fs::is_directory(locator.path()))
-  {
     return doReadAllStructuresFromPath(outStructures, locator.path(), maxDepth);
-  }
   else
     return 0;
 }

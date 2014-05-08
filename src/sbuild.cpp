@@ -26,6 +26,7 @@
 #include "factory/YamlSchema.h"
 #include "utility/BoostCapabilities.h"
 #include "utility/PipeDataInitialisation.h"
+#include "utility/TerminalFunctions.h"
 
 // MACROS ////////////////////////////////////
 
@@ -70,8 +71,8 @@ main(const int argc, char * argv[])
   buildSchema.nodeToValue(buildNode, &buildOptions, &log);
   if(log.hasErrors())
   {
-    std::cout << "Found errors:\n";
-    log.printErrors();
+    utility::error() << "\n";
+    log.printErrors(&utility::error());
     return 1;
   }
   spipe::utility::seedRandomNumberGenerator(buildOptions.rngSeed);
@@ -80,7 +81,7 @@ main(const int argc, char * argv[])
   factory::PipeEnginePtr engine = factory::createPipeEngine(buildOptions);
   if(!engine.get())
   {
-    std::cerr << "Error: Failed to create pipe engine" << std::endl;
+    utility::error() << "Failed to create pipe engine\n";
     return 1;
   }
 
@@ -90,7 +91,7 @@ main(const int argc, char * argv[])
   sp::BlockHandle pipe = factory.createBuildPipe(buildOptions);
   if(!pipe)
   {
-    std::cerr << "Failed to create build pipe" << std::endl;
+    utility::error() << "Failed to create build pipe\n";
     return 1;
   }
 
@@ -130,7 +131,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     // Deal with help first, otherwise missing required parameters will cause exception on vm.notify
     if(vm.count("help"))
     {
-      std::cout << cmdLineOptions << std::endl;
+      std::cout << cmdLineOptions << "\n";
       return 1;
     }
 
@@ -138,7 +139,7 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    std::cout << e.what() << "\n";
+    utility::error() << e.what() << "\n";
     return 1;
   }
 

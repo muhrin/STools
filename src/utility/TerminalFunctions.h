@@ -10,14 +10,23 @@
 #define TERMINAL_FUNCTIONS_H
 
 // INCLUDES /////////////////////////////////////////////
-
-
+#include <ostream>
 
 // FORWARD DECLARES ////////////////////////////////
 namespace stools {
 namespace utility {
 
-bool isStdInPipedOrFile();
+bool
+isStdInPipedOrFile();
+
+std::ostream &
+warning();
+
+std::ostream &
+error();
+
+std::ostream &
+info();
 
 }
 }

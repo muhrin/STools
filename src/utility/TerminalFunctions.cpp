@@ -9,6 +9,7 @@
 #include "utility/TerminalFunctions.h"
 
 #include <stdio.h>
+#include <iostream>
 
 #ifdef WIN32
 #  include <io.h>
@@ -23,7 +24,8 @@
 namespace stools {
 namespace utility {
 
-bool isStdInPipedOrFile()
+bool
+isStdInPipedOrFile()
 {
 #ifdef WIN32
   return !_isatty(_fileno(stdin));
@@ -33,6 +35,25 @@ bool isStdInPipedOrFile()
 #endif
 }
 
+std::ostream &
+warning()
+{
+  std::cerr << "Warning: ";
+  return std::cerr;
+}
+
+std::ostream &
+error()
+{
+  std::cerr << "Error: ";
+  return std::cerr;
+}
+
+std::ostream &
+info()
+{
+  return std::cout;
+}
 
 }
 }

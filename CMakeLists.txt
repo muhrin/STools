@@ -98,6 +98,7 @@ if(UNIX)
     scripts/castep_manip.inc
     scripts/castep_qsub_optimiser
     scripts/sgen_work
+    scripts/slowest
     scripts/potparams2queue
     scripts/srefine
     scripts/srun
