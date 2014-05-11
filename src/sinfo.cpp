@@ -20,8 +20,7 @@
 #include <spl/utility/Iterator.h>
 #include <spl/utility/UniqueStructureSet.h>
 
-// From StructurePipe
-#include <utility/PipeDataInitialisation.h>
+#include <spipe/utility/PipeDataInitialisation.h>
 
 // stools_common 
 #include <utility/CustomTokens.h>

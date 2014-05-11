@@ -21,8 +21,7 @@
 #include <spl/common/UnitCell.h>
 #include <spl/io/StructureReadWriteManager.h>
 
-// From StructurePipe
-#include <utility/PipeDataInitialisation.h>
+#include <spipe/utility/PipeDataInitialisation.h>
 
 // stools_common includes
 #include <utility/TerminalFunctions.h>

@@ -2,9 +2,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-## Include subprojects ################################
-
-add_subdirectory(lib/spipe)	# StructurePipe
+## External dependencies  #############################
 
 # Begin STools ########################################
 
@@ -18,12 +16,9 @@ set(STOOLS_VERSION "${STOOLS_VERSION_MAJOR}.${STOOLS_VERSION_MINOR}.${STOOLS_VER
 
 message(STATUS "Configuring STools ${STOOLS_VERSION}")
 
+include(cmake/utility.cmake)
+
 ## Configuration options ###############################
-
-# Custom paths to libraries #########
-set(ARMADILLO_ROOT "" CACHE FILEPATH "Path to armadillo linear algebra library")
-
-## End configuration options ###########################
 
 # Tell CMake where to find modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
@@ -61,11 +56,11 @@ if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()
 
-#
-# Yaml
-if(NOT YAML_CPP_LIBRARIES)
-  find_package(YamlCpp REQUIRED)
-endif(NOT YAML_CPP_LIBRARIES)
+find_package(YamlCpp REQUIRED)
+find_package_or_install(Schemer)
+find_package_or_install(SPL)
+find_package_or_install(SPipe)
+find_package(Spglib REQUIRED)
 
 ## END FIND PACKAGES ####################################
 
@@ -80,8 +75,9 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${PIPELIB_INCLUDE_DIRS}
+  ${SCHEMER_INCLUDE_DIRS}
+  ${SPL_INCLUDE_DIRS}
   ${SPIPE_INCLUDE_DIRS}
-  ${SSLIB_INCLUDE_DIRS}
   ${STOOLS_INCLUDE_DIRS}
 )
 
@@ -92,27 +88,6 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
-## SCRIPTS TO BE INSTALLED #################################
-if(UNIX)
-  set(STOOLS_SCRIPTS
-    scripts/castep_manip.inc
-    scripts/castep_qsub_optimiser
-    scripts/sgen_work
-    scripts/slowest
-    scripts/potparams2queue
-    scripts/srefine
-    scripts/srun
-    scripts/qsub_remote
-  )
-  install(PROGRAMS ${STOOLS_SCRIPTS}
-    DESTINATION "bin" COMPONENT scripts
-  )
-  add_custom_target(install_scripts
-    COMMAND
-    ${CMAKE_COMMAND}
-    -DCOMPONENT=scripts
-    -P cmake_install.cmake 
-    DEPENDS ${STOOLS_SCRIPTS}
-  )
-endif(UNIX)
+## SCRIPTS #################################
+add_subdirectory(scripts)
 

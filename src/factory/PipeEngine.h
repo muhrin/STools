@@ -14,7 +14,7 @@
 
 #include <spl/utility/HeterogeneousMap.h>
 
-#include <factory/PipeEngineFactory.h>
+#include <spipe/factory/factory.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 

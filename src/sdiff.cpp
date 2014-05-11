@@ -6,8 +6,6 @@
  */
 
 // INCLUDES //////////////////////////////////
-#include "StructurePipe.h"
-
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -25,9 +23,6 @@
 
 #include <armadillo>
 
-// From Pipelib //
-
-//
 #include <spl/common/AtomSpeciesDatabase.h>
 #include <spl/common/Structure.h>
 #include <spl/common/Types.h>
@@ -44,7 +39,7 @@
 #include <spl/utility/UniqueStructureSet.h>
 
 // From StructurePipe
-#include <utility/PipeDataInitialisation.h>
+#include <spipe/utility/PipeDataInitialisation.h>
 
 // Local includes //
 #include "utility/TerminalFunctions.h"

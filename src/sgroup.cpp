@@ -23,7 +23,7 @@
 #include <spl/io/StructureReadWriteManager.h>
 
 // From StructurePipe
-#include <utility/PipeDataInitialisation.h>
+#include <spipe/utility/PipeDataInitialisation.h>
 
 // My includes //
 

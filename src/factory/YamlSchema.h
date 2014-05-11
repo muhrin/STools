@@ -13,9 +13,7 @@
 
 #include <schemer/Schemer.h>
 
-// From SPipe
-#include <factory/YamlSchema.h>
-#include <factory/PipeEngineSchema.h>
+#include <spipe/factory/factory.h>
 
 // DEFINES //////////////////////////////////////////////
 

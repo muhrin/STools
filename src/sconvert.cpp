@@ -15,8 +15,7 @@
 #include <spl/common/Structure.h>
 #include <spl/io/StructureReadWriteManager.h>
 
-// From StructurePipe
-#include <utility/PipeDataInitialisation.h>
+#include <spipe/utility/PipeDataInitialisation.h>
 
 // Local //
 #include "utility/BoostCapabilities.h"

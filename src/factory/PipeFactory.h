@@ -16,10 +16,7 @@
 
 #include <spl/factory/SsLibFactoryYaml.h>
 
-// From SPipe
-#include <SpTypes.h>
-#include <blocks/KeepTopN.h>
-#include <factory/BlockFactory.h>
+#include <spipe/spipe.h>
 
 // FORWARD DECLARATIONS ////////////////////////////////////
 namespace spl {

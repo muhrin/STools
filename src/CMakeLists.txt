@@ -68,47 +68,14 @@ add_library(stools_common
   ${stools_Files}
 )
 
-add_dependencies(stools_common sslib spipe)
 
 # Libraries we need to link to
 target_link_libraries(stools_common
   ${Boost_LIBRARIES}
-  sslib
-  spipe
-)
-
-#################################
-## sbuild: Build a structure   ##
-#################################
-
-set(stools_Header_Files__sbuild
-)
-source_group("Header Files" FILES ${stools_Header_Files__sbuild})
-
-set(stools_Source_Files__sbuild
-  sbuild.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__sbuild})
-
-set(stools_Files__sbuild
-  ${stools_Header_Files__sbuild}
-  ${stools_Source_Files__sbuild}
-)
-
-add_executable(sbuild
-  ${stools_Files__sbuild}
-)
-
-add_dependencies(sbuild stools_common)
-
-# Libraries we need to link to
-target_link_libraries(sbuild
-  stools_common
-)
-
-set(stools_targets
-  ${stools_targets}
-  sbuild
+  ${SPL_LIBRARIES}
+  ${SPIPE_LIBRARIES}
+  ${SPL_LIBRARIES}
+  ${SPIPE_LIBRARIES}
 )
 
 ##############################################
@@ -406,40 +373,6 @@ target_link_libraries(sparamhash
 set(stools_targets
   ${stools_targets}
   sparamhash
-)
-
-#######################################
-## ssearch: General structure search ##
-#######################################
-
-set(stools_Header_Files__ssearch
-)
-source_group("Header Files" FILES ${stools_Header_Files__ssearch})
-
-set(stools_Source_Files__ssearch
-  ssearch.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__ssearch})
-
-set(stools_Files__ssearch
-  ${stools_Header_Files__ssearch}
-  ${stools_Source_Files__ssearch}
-)
-
-add_executable(ssearch
-  ${stools_Files__ssearch}
-)
-
-add_dependencies(ssearch stools_common)
-
-# Libraries we need to link to
-target_link_libraries(ssearch
-  stools_common
-)
-
-set(stools_targets
-  ${stools_targets}
-  ssearch
 )
 
 ############################################################
