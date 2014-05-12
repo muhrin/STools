@@ -7,21 +7,18 @@ cmake_minimum_required(VERSION 2.6)
 # Begin STools ########################################
 
 project(STools)
-set_property(TARGET PROPERTY PROJECT_LABEL "STools")
+set_property(TARGET PROPERTY PROJECT_LABEL ${PROJECT_NAME})
 
 set(STOOLS_VERSION_MAJOR 0)
 set(STOOLS_VERSION_MINOR 4)
 set(STOOLS_VERSION_PATCH 0)
 set(STOOLS_VERSION "${STOOLS_VERSION_MAJOR}.${STOOLS_VERSION_MINOR}.${STOOLS_VERSION_PATCH}")
 
-message(STATUS "Configuring STools ${STOOLS_VERSION}")
+message(STATUS "Configuring ${PROJECT_NAME} ${STOOLS_VERSION}")
 
 include(cmake/utility.cmake)
 
 ## Configuration options ###############################
-
-# Tell CMake where to find modules
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules/;${CMAKE_MODULE_PATH}")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/src/SToolsConfig.h.in"
@@ -41,7 +38,8 @@ find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
 
 #
 # Armadillo #
-find_package(Armadillo QUIET NO_MODULE PATH_SUFFIXES share/Armadillo/CMake)
+find_package(Armadillo QUIET CONFIG PATH_SUFFIXES share/Armadillo/CMake
+REQUIRED)
 if(NOT Armadillo_FOUND)
   # Try finding using FindArmadillo
   find_package(Armadillo)
@@ -49,9 +47,6 @@ if(NOT Armadillo_FOUND)
   set(Armadillo_FOUND ${ARMADILLO_FOUND})
 endif()
 
-if(NOT Armadillo_FOUND)
-  message(FATAL_ERROR "Armadillo not found, specify location via CMAKE_PREFIX_PATH or otherwise")
-endif()
 if("${ARMADILLO_INCLUDE_DIRS}" STREQUAL "")
   set(ARMADILLO_INCLUDE_DIRS "${ARMADILLO_ROOT}/include")
 endif()

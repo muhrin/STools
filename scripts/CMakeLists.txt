@@ -7,14 +7,14 @@ cmake_minimum_required(VERSION 2.6)
 # All bash scripts
 if(UNIX)
   set(STOOLS_SCRIPTS
-    scripts/castep_manip.inc
-    scripts/castep_qsub_optimiser
-    scripts/sgen_work
-    scripts/slowest
-    scripts/potparams2queue
-    scripts/srefine
-    scripts/srun
-    scripts/qsub_remote
+    castep_manip.inc
+    castep_qsub_optimiser
+    sgen_work
+    slowest
+    potparams2queue
+    srefine
+    srun
+    qsub_remote
   )
   install(PROGRAMS ${STOOLS_SCRIPTS}
     DESTINATION "bin" COMPONENT scripts
