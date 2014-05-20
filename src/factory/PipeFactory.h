@@ -177,17 +177,6 @@ template< class T>
 #endif
     }
 
-    // Are we doing a parameter sweep
-    if(options.sweepPotentialParams)
-    {
-      BlockHandle sweepStartBlock;
-      if(!myBlockFactory.createBlock(&sweepStartBlock,
-          *options.sweepPotentialParams))
-        return BlockHandle();
-
-      return sweepStartBlock;
-    }
-
     if(options.runPotParamsQueue)
     {
       BlockHandle runQueueBlock;

@@ -38,8 +38,7 @@ find_package(Boost 1.36.0 COMPONENTS system filesystem program_options REQUIRED)
 
 #
 # Armadillo #
-find_package(Armadillo QUIET CONFIG PATH_SUFFIXES share/Armadillo/CMake
-REQUIRED)
+find_package(Armadillo REQUIRED)
 if(NOT Armadillo_FOUND)
   # Try finding using FindArmadillo
   find_package(Armadillo)

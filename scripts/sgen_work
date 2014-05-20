@@ -20,13 +20,23 @@ do
 
 #  echo $param | sed -r "s/${RE_RANGE}/1:\1 2:\2 3:\3 4:\4 5:\5 6:\6 7:\7/"
 
-  from=`echo $param | sed -r "s/${RE_RANGE}/\1/"`
-  delta=`echo $param | sed -r "s/${RE_RANGE}/\4/"`
-  num=`echo $param | sed -r "s/${RE_RANGE}/\7/"`
+  # Check if the parameter matches the format for a number range
+  echo $param | grep -q -E "$RE_NUM"
+
+  if [ "$?" -eq "0" ]
+  then
+    from=`echo $param | sed -r "s/${RE_RANGE}/\1/"`
+    delta=`echo $param | sed -r "s/${RE_RANGE}/\4/"`
+    num=`echo $param | sed -r "s/${RE_RANGE}/\7/"`
+  else
+    from=$param
+    delta=0
+    num=0
+  fi
 
   if [ -z "$from" ]
   then
-    continue
+    num=$param
   fi
 
   if [ -z "$delta" ]

@@ -61,7 +61,6 @@ struct Search : public Build
 
   boost::optional< spipe::factory::blocks::RunPotentialParamsQueue> runPotParamsQueue;
   boost::optional< spipe::factory::blocks::SearchStoichiometries> searchStoichiometries;
-  boost::optional< spipe::factory::blocks::SweepPotentialParams> sweepPotentialParams;
   boost::optional< std::string> loadStructures;
   boost::optional< spipe::factory::blocks::CutAndPaste> cutAndPaste;
   boost::optional< spipe::factory::blocks::GeomOptimise> preGeomOptimise;
@@ -84,7 +83,6 @@ SCHEMER_MAP(SearchSchema, Search)
 
   element("runPotentialParamsQueue", &Search::runPotParamsQueue);
   element("searchStoichiometries", &Search::searchStoichiometries);
-  element("sweepPotentialParams", &Search::sweepPotentialParams);
   element("loadStructures", &Search::loadStructures);
   element("cutAndPaste", &Search::cutAndPaste);
   element("preGeomOptimise", &Search::preGeomOptimise);
