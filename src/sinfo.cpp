@@ -7,6 +7,7 @@
 
 // INCLUDES //////////////////////////////////
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/foreach.hpp>
 
 #include <spl/SSLib.h>
 #ifdef SPL_WITH_CGAL
