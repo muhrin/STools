@@ -10,7 +10,7 @@
 #include <boost/foreach.hpp>
 
 #include <spl/SSLib.h>
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 #  include <spl/analysis/ConvexHullStructures.h>
 #endif
 #include <spl/common/Types.h>
@@ -20,8 +20,6 @@
 #include <spl/utility/SortedDistanceComparator.h>
 #include <spl/utility/Iterator.h>
 #include <spl/utility/UniqueStructureSet.h>
-
-#include <spipe/utility/PipeDataInitialisation.h>
 
 // stools_common 
 #include <utility/CustomTokens.h>
@@ -34,8 +32,7 @@
 using namespace stools;
 using namespace stools::sinfo;
 
-namespace sp = spipe;
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
 namespace ssa = spl::analysis;
 #endif
 namespace ssu = spl::utility;
@@ -51,7 +48,6 @@ main(const int argc, char * argv[])
   typedef ssio::StructuresContainer StructuresContainer;
 
   ssio::StructureReadWriteManager rwMan;
-  sp::utility::initStructureRwManDefault(rwMan);
 
   // Set up all the tokens that we know about
   TokensMap tokensMap;
@@ -107,7 +103,7 @@ main(const int argc, char * argv[])
   if(structures.empty())
     return 1; // No structures found
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   const bool useHullDist = in.maxHullDist
       != MAX_HULL_DIST_IGNORE || tokensInfo.getToken("hd") != NULL;
   if(in.stableCompositions || useHullDist)

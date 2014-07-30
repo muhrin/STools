@@ -38,16 +38,12 @@
 #include <spl/utility/TransformFunctions.h>
 #include <spl/utility/UniqueStructureSet.h>
 
-// From StructurePipe
-#include <spipe/utility/PipeDataInitialisation.h>
-
 // Local includes //
 #include "utility/TerminalFunctions.h"
 
 // NAMESPACES ////////////////////////////////
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
-namespace sp = spipe;
 namespace ssu = spl::utility;
 namespace ssc = spl::common;
 namespace ssio = spl::io;
@@ -151,7 +147,7 @@ doDiffGroups(const LoadedGroups::StructuresGroup & g1,
     const LoadedGroups::StructuresGroup & g2, ComparatorPtr comparator,
     const InputOptions & in);
 
-::spl::UniquePtr< ssu::IStructureComparator>::Type
+spl::UniquePtr< ssu::IStructureComparator>::Type
 createComparator(const InputOptions & in);
 
 int
@@ -248,7 +244,6 @@ main(const int argc, char * argv[])
 
   ssc::AtomSpeciesDatabase speciesDb;
   ssio::StructureReadWriteManager rwMan;
-  sp::utility::initStructureRwManDefault(rwMan);
 
   size_t totalLoaded = 0;
   StructureGroups< size_t> groups;
@@ -443,7 +438,7 @@ doDiffGroups(const LoadedGroups::StructuresGroup & g1,
   }
 }
 
-::spl::UniquePtr< ssu::IStructureComparator>::Type
+spl::UniquePtr< ssu::IStructureComparator>::Type
 createComparator(const InputOptions & in)
 {
   spl::UniquePtr< ssu::IStructureComparator>::Type comp;

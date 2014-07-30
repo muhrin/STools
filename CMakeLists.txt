@@ -84,4 +84,3 @@ add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
 ## SCRIPTS #################################
 add_subdirectory(scripts)
-

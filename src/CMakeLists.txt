@@ -74,8 +74,6 @@ target_link_libraries(stools_common
   ${Boost_LIBRARIES}
   ${SPL_LIBRARIES}
   ${SPIPE_LIBRARIES}
-  ${SPL_LIBRARIES}
-  ${SPIPE_LIBRARIES}
 )
 
 ##############################################
@@ -180,7 +178,7 @@ set(stools_targets
 #############################################
 ## shull: Structures convex hull generator ##
 #############################################
-if(SSLIB_USE_CGAL)
+if(SPL_USE_CGAL)
 
 set(stools_Header_Files__shull
 )
@@ -212,7 +210,7 @@ set(stools_targets
   shull
 )
 
-endif(SSLIB_USE_CGAL)
+endif(SPL_USE_CGAL)
 
 ########################################
 ## sinfo: Print info about structures ##
@@ -289,7 +287,7 @@ set(stools_targets
 ################################
 ## smap: Structure phase map ##
 ################################
-if(SSLIB_USE_CGAL)
+if(SPL_USE_CGAL)
 
 add_executable(smap
   smap.cpp
@@ -307,7 +305,7 @@ set(stools_targets
   smap
 )
 
-endif(SSLIB_USE_CGAL)
+endif(SPL_USE_CGAL)
 
 ############################################
 ## smeasure: Structural measurements tool ##
@@ -379,7 +377,7 @@ set(stools_targets
 ## strian: Structure triangulation for nearest neighbour, ##
 ## coordination polyhedra etc.                            ##
 ############################################################
-if(SSLIB_USE_CGAL)
+if(SPL_USE_CGAL)
 
 set(stools_Header_Files__strian
 )
@@ -411,7 +409,7 @@ set(stools_targets
   strian
 )
 
-endif(SSLIB_USE_CGAL)
+endif(SPL_USE_CGAL)
   
   
 ## Installation #####

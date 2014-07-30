@@ -82,7 +82,7 @@ struct InputOptions
   double uniqueTolerance;
   std::string filterString;
   int compositionTop;
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   double maxHullDist;
   bool stableCompositions;
 #endif

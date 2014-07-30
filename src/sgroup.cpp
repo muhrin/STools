@@ -15,22 +15,17 @@
 
 // From Pipelib //
 
-//
 #include <spl/analysis/SpaceGroup.h>
 #include <spl/common/Structure.h>
 #include <spl/common/Types.h>
 #include <spl/io/ResourceLocator.h>
 #include <spl/io/StructureReadWriteManager.h>
 
-// From StructurePipe
-#include <spipe/utility/PipeDataInitialisation.h>
-
 // My includes //
 
 // NAMESPACES ////////////////////////////////
 namespace fs = ::boost::filesystem;
 namespace po = ::boost::program_options;
-namespace sp = ::spipe;
 namespace ssc = ::spl::common;
 namespace ssio = ::spl::io;
 namespace ssa = ::spl::analysis;
@@ -87,7 +82,6 @@ main(const int argc, char * argv[])
   }
 
   ssio::StructureReadWriteManager rwMan;
-  sp::utility::initStructureRwManDefault(rwMan);
 
   ssio::StructuresContainer loadedStructures;
   ssio::ResourceLocator structureLocator;

@@ -15,8 +15,6 @@
 #include <spl/common/Structure.h>
 #include <spl/io/StructureReadWriteManager.h>
 
-#include <spipe/utility/PipeDataInitialisation.h>
-
 // Local //
 #include "utility/BoostCapabilities.h"
 #include "utility/TerminalFunctions.h"
@@ -26,7 +24,6 @@
 // NAMESPACES ////////////////////////////////
 namespace fs    = boost::filesystem;
 namespace po    = boost::program_options;
-namespace sp    = spipe;
 namespace ssc   = spl::common;
 namespace ssio  = spl::io;
 namespace ssu   = spl::utility;
@@ -60,7 +57,6 @@ int main(const int argc, char * argv[])
     utility::warning() << "Output file not valid\n";
 
   ssio::StructureReadWriteManager rwMan;
-  sp::utility::initStructureRwManDefault(rwMan);
 
   ssio::StructuresContainer structures;
   if(rwMan.readStructures(structures, fileIn) == 0)

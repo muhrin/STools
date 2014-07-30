@@ -166,7 +166,7 @@ template< class T>
 
       startBlock = searchStoichsBlock;
 
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
       if(options.keepStableCompositions)
       {
         BlockHandle block;

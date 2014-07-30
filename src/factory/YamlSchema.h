@@ -66,7 +66,7 @@ struct Search : public Build
   boost::optional< spipe::factory::blocks::GeomOptimise> preGeomOptimise;
   boost::optional< spipe::factory::blocks::GeomOptimise> geomOptimise;
   boost::optional< spipe::factory::blocks::RemoveDuplicates> removeDuplicates;
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   boost::optional< spipe::factory::blocks::KeepStableCompositions> keepStableCompositions;
 #endif
   boost::optional< spipe::factory::blocks::KeepTopN> keepTopN;
@@ -88,7 +88,7 @@ SCHEMER_MAP(SearchSchema, Search)
   element("preGeomOptimise", &Search::preGeomOptimise);
   element("geomOptimise", &Search::geomOptimise);
   element("removeDuplicates", &Search::removeDuplicates);
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
   element("keepStableCompositions", &Search::keepStableCompositions);
 #endif
   element("keepTopN", &Search::keepTopN);

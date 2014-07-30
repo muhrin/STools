@@ -103,7 +103,7 @@ processInputOptions(InputOptions & in, const int argc, char * argv[], const Toke
         "tolernace to use when comparing unique structures")("composition-top",
         po::value< int>(&in.compositionTop)->default_value(0),
         "keep only the top n of each composition")
-#ifdef SPL_WITH_CGAL
+#ifdef SPL_USE_CGAL
         ("max-hull-dist",
         po::value< double>(&in.maxHullDist)->default_value(MAX_HULL_DIST_IGNORE),
         "only print structures that lie below this distance above the hull")

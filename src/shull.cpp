@@ -25,38 +25,33 @@
 #include <spl/io/ResourceLocator.h>
 #include <spl/io/StructureReadWriteManager.h>
 
-// From StructurePipe
-#include <utility/PipeDataInitialisation.h>
-
-// My includes //
 
 // NAMESPACES ////////////////////////////////
-namespace fs = ::boost::filesystem;
-namespace po = ::boost::program_options;
-namespace sp = ::spipe;
-namespace ssc = ::spl::common;
-namespace ssio = ::spl::io;
-namespace ssa = ::spl::analysis;
+namespace fs = boost::filesystem;
+namespace po = boost::program_options;
+namespace ssc = spl::common;
+namespace ssio = spl::io;
+namespace ssa = spl::analysis;
 
 struct InputOptions
 {
-  ::std::vector< ::std::string> inputFiles;
-  ::std::string outputter;
+  std::vector< std::string> inputFiles;
+  std::string outputter;
   bool flattenConvexProperty;
   bool hideTieLines;
   bool hideLabels;
   bool hideOffHull;
-  ::std::vector< ::std::string> customEndpoints;
-  ::std::string distanceStructure;
+  std::vector< std::string> customEndpoints;
+  std::string distanceStructure;
 };
 
-::spl::UniquePtr< ssa::ConvexHullOutputter>::Type
+spl::UniquePtr< ssa::ConvexHullOutputter>::Type
 generateOutputter(const InputOptions & in);
 
 int
 main(const int argc, char * argv[])
 {
-  const ::std::string exeName(argv[0]);
+  const std::string exeName(argv[0]);
 
   // Input options
   InputOptions in;
@@ -66,9 +61,9 @@ main(const int argc, char * argv[])
     po::options_description desc(
         "Usage: " + exeName + " [options] files...\nOptions:");
     desc.add_options()("help", "Show help message")("input-file",
-        po::value< ::std::vector< ::std::string> >(&in.inputFiles),
-        "input file(s)")("outputter,o",
-        po::value< ::std::string>(&in.outputter)->default_value("gnuplot"),
+        po::value< std::vector< std::string> >(&in.inputFiles), "input file(s)")(
+        "outputter,o",
+        po::value< std::string>(&in.outputter)->default_value("gnuplot"),
         "the hull outputter to use: gnuplot")("flatten,f",
         po::value< bool>(&in.flattenConvexProperty)->default_value(false)->zero_tokens(),
         "don't output convex property dimensions, only points that lie on the hull.")(
@@ -79,9 +74,9 @@ main(const int argc, char * argv[])
         "don't output labels for hull points")("hide-off-hull,h",
         po::value< bool>(&in.hideOffHull)->default_value(false)->zero_tokens(),
         "hide points not on the hull")("endpoints,e",
-        po::value< ::std::vector< ::std::string> >(&in.customEndpoints)->multitoken(),
+        po::value< std::vector< std::string> >(&in.customEndpoints)->multitoken(),
         "list of whitespace separated endpoints e.g. SiNi Fe")("distance,d",
-        po::value< ::std::string>(&in.distanceStructure),
+        po::value< std::string>(&in.distanceStructure),
         "calculate distance from hull to given structure");
 
     po::positional_options_description p;
@@ -95,7 +90,7 @@ main(const int argc, char * argv[])
     // Deal with help first, otherwise missing required parameters will cause exception
     if(vm.count("help"))
     {
-      ::std::cout << desc << ::std::endl;
+      std::cout << desc << std::endl;
       return 1;
     }
 
@@ -103,11 +98,11 @@ main(const int argc, char * argv[])
   }
   catch(std::exception& e)
   {
-    ::std::cout << e.what() << ::std::endl;
+    std::cout << e.what() << std::endl;
     return 1;
   }
 
-  ::std::vector< ssc::AtomsFormula> endpoints(in.customEndpoints.size());
+  std::vector< ssc::AtomsFormula> endpoints(in.customEndpoints.size());
   if(!in.customEndpoints.empty())
   {
     bool error = false;
@@ -115,8 +110,8 @@ main(const int argc, char * argv[])
     {
       if(!endpoints[i].fromString(in.customEndpoints[i]))
       {
-        ::std::cerr << "Unrecognised endpoint: " << in.customEndpoints[i]
-            << ::std::endl;
+        std::cerr << "Unrecognised endpoint: " << in.customEndpoints[i]
+            << std::endl;
         error = true;
       }
     }
@@ -125,23 +120,22 @@ main(const int argc, char * argv[])
   }
 
   ssio::StructureReadWriteManager rwMan;
-  sp::utility::initStructureRwManDefault(rwMan);
 
   ssio::StructuresContainer loadedStructures;
   ssio::ResourceLocator structureLocator;
 
-  BOOST_FOREACH(const ::std::string & inputFile, in.inputFiles)
+  BOOST_FOREACH(const std::string & inputFile, in.inputFiles)
   {
     if(!structureLocator.set(inputFile))
     {
-      ::std::cerr << "Invalid structure path " << inputFile << ". Skipping."
-          << ::std::endl;
+      std::cerr << "Invalid structure path " << inputFile << ". Skipping."
+          << std::endl;
       continue;
     }
     if(!fs::exists(structureLocator.path()))
     {
-      ::std::cerr << "File " << inputFile << " does not exist.  Skipping."
-          << ::std::endl;
+      std::cerr << "File " << inputFile << " does not exist.  Skipping."
+          << std::endl;
       continue;
     }
 
@@ -154,16 +148,16 @@ main(const int argc, char * argv[])
 
   if(endpoints.size() < 2)
   {
-    ::std::cerr
+    std::cerr
         << "Must have 2 or more endpoints to construct hull, currently have: ";
     BOOST_FOREACH(const ssc::AtomsFormula & formula, endpoints)
-      ::std::cerr << formula << " ";
-    ::std::cerr << ::std::endl;
+      std::cerr << formula << " ";
+    std::cerr << std::endl;
     return 1;
   }
 
   ssa::ConvexHull hullGenerator(endpoints);
-  const ::std::vector< ssa::ConvexHull::PointId> structureIds =
+  const std::vector< ssa::ConvexHull::PointId> structureIds =
       hullGenerator.addStructures(loadedStructures.begin(),
           loadedStructures.end());
 
@@ -173,20 +167,20 @@ main(const int argc, char * argv[])
   {
     if(!structureLocator.set(in.distanceStructure))
     {
-      ::std::cerr << "Invalid distance structure path " << in.distanceStructure
-          << ::std::endl;
+      std::cerr << "Invalid distance structure path " << in.distanceStructure
+          << std::endl;
       return 1;
     }
     if(!fs::exists(structureLocator.path()))
     {
-      ::std::cerr << "File " << in.distanceStructure << " does not exist"
-          << ::std::endl;
+      std::cerr << "File " << in.distanceStructure << " does not exist"
+          << std::endl;
       return 1;
     }
     distanceStructure = rwMan.readStructure(structureLocator);
     if(!distanceStructure.get())
     {
-      ::std::cerr << "Error reading distance structure." << ::std::endl;
+      std::cerr << "Error reading distance structure." << std::endl;
       return 1;
     }
   }
@@ -195,12 +189,12 @@ main(const int argc, char * argv[])
   {
     if(distanceStructure.get())
     {
-      ::spl::OptionalDouble dist = hullGenerator.distanceToHull(
+      spl::OptionalDouble dist = hullGenerator.distanceToHull(
           *distanceStructure);
       if(dist)
-        ::std::cout << *dist << ::std::endl;
+        std::cout << *dist << std::endl;
       else
-        ::std::cerr << "Failed to calculate distance to hull" << ::std::endl;
+        std::cerr << "Failed to calculate distance to hull" << std::endl;
     }
     else
     {
@@ -209,7 +203,7 @@ main(const int argc, char * argv[])
       for(size_t i = 0; i < structureIds.size(); ++i)
         infoSupplier.addStructure(loadedStructures[i], structureIds[i]);
 
-      ::spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter =
+      spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter =
           generateOutputter(in);
       if(outputter.get())
         outputter->outputHull(hullGenerator, infoSupplier);
@@ -219,10 +213,10 @@ main(const int argc, char * argv[])
   return 0;
 }
 
-::spl::UniquePtr< ssa::ConvexHullOutputter>::Type
+spl::UniquePtr< ssa::ConvexHullOutputter>::Type
 generateOutputter(const InputOptions & in)
 {
-  ::spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter;
+  spl::UniquePtr< ssa::ConvexHullOutputter>::Type outputter;
 
   if(in.outputter == "gnuplot")
   {
@@ -235,8 +229,8 @@ generateOutputter(const InputOptions & in)
     outputter.reset(gnuplot);
   }
   else
-    ::std::cerr << "Error: unrecognised outputter - " << in.outputter
-        << ::std::endl;
+    std::cerr << "Error: unrecognised outputter - " << in.outputter
+        << std::endl;
 
   return outputter;
 }
