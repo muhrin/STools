@@ -340,38 +340,6 @@ set(stools_targets
   smeasure
 )
 
-#################################################
-## sparamhash: Structural Parameters Hash tool ##
-#################################################
-set(stools_Header_Files__smeasure
-)
-source_group("Header Files" FILES ${stools_Header_Files__sparamhash})
-
-set(stools_Source_Files__sparamhash
-  sparamhash.cpp
-)
-source_group("Source Files" FILES ${stools_Source_Files__sparamhash})
-
-set(stools_Files__sparamhash
-  ${stools_Header_Files__sparamhash}
-  ${stools_Source_Files__sparamhash}
-)
-
-add_executable(sparamhash
-  ${stools_Files__sparamhash}
-)
-
-add_dependencies(smeasure stools_common)
-
-# Libraries we need to link to
-target_link_libraries(sparamhash
-  stools_common
-)
-
-set(stools_targets
-  ${stools_targets}
-  sparamhash
-)
 
 ############################################################
 ## strian: Structure triangulation for nearest neighbour, ##
