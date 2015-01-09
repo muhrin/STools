@@ -18,26 +18,25 @@
 
 // NAMESPACES ////////////////////////////////
 
-namespace fs = ::boost::filesystem;
-namespace ssa = ::spl::analysis;
-namespace ssc = ::spl::common;
-namespace ssio = ::spl::io;
+namespace fs = boost::filesystem;
+namespace ssa = spl::analysis;
+namespace ssc = spl::common;
+namespace ssio = spl::io;
 namespace structure_properties = ssc::structure_properties;
 
 namespace stools {
 namespace utility {
 
-EnergyToken::EnergyToken(const ::std::string & name,
-    const ::std::string & symbol, const double relativeTo,
-    const ::std::string & defaultFormatString, const bool usePerAtom) :
+EnergyToken::EnergyToken(const std::string & name, const std::string & symbol,
+    const double relativeTo, const std::string & defaultFormatString,
+    const bool usePerAtom) :
     TypedToken< double>(name, symbol, defaultFormatString), myRelativeTo(
         relativeTo), myUsePerAtom(usePerAtom)
 {
 }
 
-EnergyToken::EnergyToken(const ::std::string & name,
-    const ::std::string & symbol, const ::std::string & defaultFormatString,
-    const bool usePerAtom) :
+EnergyToken::EnergyToken(const std::string & name, const std::string & symbol,
+    const std::string & defaultFormatString, const bool usePerAtom) :
     TypedToken< double>(name, symbol, defaultFormatString), myRelativeTo(0.0), myUsePerAtom(
         usePerAtom)
 {
@@ -50,15 +49,14 @@ EnergyToken::setRelativeEnergy(const double relativeEnergy)
 }
 
 EnergyToken::StructureValue
-EnergyToken::doGetValue(const ::spl::common::Structure & structure) const
+EnergyToken::doGetValue(const spl::common::Structure & structure) const
 {
   StructureValue relativeEnergy;
   if(myUsePerAtom && structure.getNumAtoms() == 0)
     return relativeEnergy;
 
-  const double * const energy = structure.getProperty(
-      structure_properties::general::ENERGY_INTERNAL);
-  if(energy)
+  if(const double * const energy = structure.properties().find(
+      structure_properties::general::ENERGY_INTERNAL))
     relativeEnergy.reset(
         (myUsePerAtom ? *energy / structure.getNumAtoms() : *energy)
             - myRelativeTo);
@@ -66,18 +64,17 @@ EnergyToken::doGetValue(const ::spl::common::Structure & structure) const
   return relativeEnergy;
 }
 
-FormulaToken::FormulaToken(const ::std::string & name,
-    const ::std::string & symbol, const ::std::string & defaultFormatString,
-    const bool reduced) :
-    TypedToken< ::std::string>(name, symbol, defaultFormatString), myReduced(
+FormulaToken::FormulaToken(const std::string & name, const std::string & symbol,
+    const std::string & defaultFormatString, const bool reduced) :
+    TypedToken< std::string>(name, symbol, defaultFormatString), myReduced(
         reduced)
 {
 }
 
-::boost::optional< ::std::string>
-FormulaToken::doGetValue(const ::spl::common::Structure & structure) const
+boost::optional< std::string>
+FormulaToken::doGetValue(const spl::common::Structure & structure) const
 {
-  ::std::stringstream ss;
+  std::stringstream ss;
   ssc::AtomsFormula formula = structure.getComposition();
   if(myReduced)
     formula.reduce();
@@ -87,9 +84,9 @@ FormulaToken::doGetValue(const ::spl::common::Structure & structure) const
 
 namespace functions {
 
-typedef ::boost::optional< double> OptionalDouble;
-typedef ::boost::optional< ::std::string> OptionalString;
-typedef ::boost::optional< unsigned int> OptionalUInt;
+typedef boost::optional< double> OptionalDouble;
+typedef boost::optional< std::string> OptionalString;
+typedef boost::optional< unsigned int> OptionalUInt;
 
 OptionalString
 getName(const ssc::Structure & structure)
@@ -129,26 +126,25 @@ getEnergyPerAtom(const ssc::Structure & structure)
   if(structure.getNumAtoms() == 0)
     return energyPerAtom;
 
-  const double * const value = structure.getProperty(
-      structure_properties::general::ENERGY_INTERNAL);
-  if(value)
+  if(const double * const value = structure.properties().find(
+      structure_properties::general::ENERGY_INTERNAL))
     energyPerAtom.reset(*value / structure.getNumAtoms());
 
   return energyPerAtom;
 }
 
 OptionalUInt
-getNumAtoms(const ::spl::common::Structure & structure)
+getNumAtoms(const spl::common::Structure & structure)
 {
   return structure.getNumAtoms();
 }
 
-::boost::optional< ::std::string>
-getSpaceGroupSymbol(const ::spl::common::Structure & structure)
+boost::optional< std::string>
+getSpaceGroupSymbol(const spl::common::Structure & structure)
 {
-  ::boost::optional< ::std::string> spgroup;
+  boost::optional< std::string> spgroup;
 
-  const ::std::string * const spgroupSymbol = structure.getProperty(
+  const std::string * const spgroupSymbol = structure.properties().find(
       structure_properties::general::SPACEGROUP_SYMBOL);
 
   if(spgroupSymbol && !spgroupSymbol->empty() && (*spgroupSymbol) != "P1")
@@ -164,15 +160,15 @@ getSpaceGroupSymbol(const ::spl::common::Structure & structure)
   return spgroup;
 }
 
-::boost::optional< unsigned int>
-getSpaceGroupNumber(const ::spl::common::Structure & structure)
+boost::optional< unsigned int>
+getSpaceGroupNumber(const spl::common::Structure & structure)
 {
-  ::boost::optional< unsigned int> spgroup;
+  boost::optional< unsigned int> spgroup;
 
-  const unsigned int * const spgroupNumber = structure.getProperty(
+  const unsigned int * const spgroupNumber = structure.properties().find(
       structure_properties::general::SPACEGROUP_NUMBER);
 
-  if(spgroupNumber && (*spgroupNumber) != 1)
+  if(spgroupNumber && *spgroupNumber != 1)
     spgroup.reset(*spgroupNumber);
   else if(structure.getUnitCell())
   {
@@ -185,14 +181,13 @@ getSpaceGroupNumber(const ::spl::common::Structure & structure)
   return spgroup;
 }
 
-::boost::optional< ssio::ResourceLocator>
-getRelativeLoadPath(const ::spl::common::Structure & structure)
+boost::optional< ssio::ResourceLocator>
+getRelativeLoadPath(const spl::common::Structure & structure)
 {
-  ::boost::optional< ssio::ResourceLocator> loadLocator;
+  boost::optional< ssio::ResourceLocator> loadLocator;
 
-  const ssio::ResourceLocator * const absPath = structure.getProperty(
-      structure_properties::io::LAST_ABS_FILE_PATH);
-  if(absPath)
+  if(const ssio::ResourceLocator * const absPath = structure.properties().find(
+      structure_properties::io::LAST_ABS_FILE_PATH))
   {
     loadLocator.reset(*absPath);
     loadLocator->makeRelative(fs::current_path());

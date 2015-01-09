@@ -64,7 +64,7 @@ set(STOOLS_INCLUDE_DIRS
 )
 
 # Include directories with header files
-include_directories(
+include_directories(BEFORE
   ${Boost_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}

@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -23,6 +24,7 @@
 #include <spl/analysis/ArrangementMapOutputter.h>
 #include <spl/analysis/MapArrangementTraits.h>
 #include <spl/analysis/MatplotlibMapOutputter.h>
+#include <spl/analysis/RawMapOutputter.h>
 #include <spl/analysis/VoronoiPathTracer.h>
 #include <spl/io/BoostFilesystem.h>
 #include <spl/utility/DataTable.h>
@@ -44,9 +46,9 @@ typedef spl::analysis::MapArrangementTraits< LabelType> MapTraits;
 typedef spl::analysis::VoronoiPathTracer< MapTraits> Tracer;
 typedef Tracer::Point Point;
 typedef std::vector< Tracer::PointLabel> Points;
-typedef spl::UniquePtr< spla::ArrangementMapOutputter< MapTraits> >::Type MapOutputterPtr;
+typedef spla::ArrangementMapOutputter< MapTraits> Outputter;
+typedef spl::UniquePtr< Outputter >::Type MapOutputterPtr;
 typedef MapTraits::Arrangement Map;
-typedef std::map< LabelType, spla::ArrangementMapOutputter< MapTraits>::LabelProperties  > LabelsInfo;
 
 // CONSTANTS ////////////////////////////////
 
@@ -57,24 +59,26 @@ struct InputOptions
   bool dontSplitSharedVertices;
   std::string outputter;
   std::string labelsInfoFile;
+  std::string xLabel;
+  std::string yLabel;
 };
 
-struct TableRow : public spla::ArrangementMapOutputter< MapTraits>::LabelProperties
+struct TableRow
 {
+  boost::optional<int> colour;
+
   static TableRow
   fromStrings(const std::vector< std::string> & strings)
   {
-    SSLIB_ASSERT(strings.size() == 2);
+    SSLIB_ASSERT(strings.size() == 1);
 
     TableRow info;
-    if(!strings[0].empty())
-      info.name = strings[0];
 
-    if(!strings[1].empty())
+    if(!strings[0].empty())
     {
       try
       {
-        std::stringstream ss(strings[1]);
+        std::stringstream ss(strings[0]);
         int colour;
         ss >> std::hex >> colour;
         info.colour = colour;
@@ -82,7 +86,7 @@ struct TableRow : public spla::ArrangementMapOutputter< MapTraits>::LabelPropert
       catch(const std::exception & /*e*/)
       {
         utility::warning() << "Invalid colour value, " << strings[1]
-          << ", in labels file.  Use format: 0xrrggbb.\n";
+        << ", in labels file.  Use format: 0xrrggbb.\n";
       }
     }
 
@@ -92,11 +96,9 @@ struct TableRow : public spla::ArrangementMapOutputter< MapTraits>::LabelPropert
   std::vector< std::string>
   toStrings()
   {
-    std::vector< std::string> strings(2);
-    if(name)
-      strings[0] = *name;
+    std::vector< std::string> strings(1);
     if(colour)
-      strings[1] = boost::lexical_cast< std::string>(*colour);
+    strings[0] = boost::lexical_cast< std::string>(*colour);
     return strings;
   }
 };
@@ -110,8 +112,8 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[]);
 MapOutputterPtr
 generateOutputter(const InputOptions & in);
 
-LabelsInfo
-loadLabelsInfo(const InputOptions & in);
+void
+applySettings(const InputOptions & in, Outputter * const outputter);
 
 int
 main(const int argc, char * argv[])
@@ -119,8 +121,9 @@ main(const int argc, char * argv[])
   typedef boost::tokenizer< boost::char_separator< char> > Tok;
 
   using boost::lexical_cast;
+  using boost::algorithm::trim_copy;
 
-  static const boost::char_separator< char> tokSep(" \t");
+  static const boost::char_separator< char> tokSep(",\t ");
 
   //feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
@@ -158,15 +161,15 @@ main(const int argc, char * argv[])
         bool foundAll = false;
         try
         {
-          x = lexical_cast< Point::R::FT>(*it);
+          x = lexical_cast< Point::R::FT>(trim_copy(*it));
           if(++it == toker.end())
           continue;
 
-          y = lexical_cast< Point::R::FT>(*it);
+          y = lexical_cast< Point::R::FT>(trim_copy(*it));
           if(++it == toker.end())
           continue;
 
-          label = lexical_cast< LabelType>(*it);
+          label = lexical_cast< LabelType>(trim_copy(*it));
           foundAll = true;
         }
         catch(const boost::bad_lexical_cast & /*e*/)
@@ -176,10 +179,10 @@ main(const int argc, char * argv[])
         {
           const Point pt(x, y);
           if(pointSet.insert(pt).second)
-            points.push_back(std::make_pair(pt, label));
+          points.push_back(std::make_pair(pt, label));
           else
-            std::cerr << "Point (" << x << ", " << y
-              << ") found more than once, ignoring.\n";
+          std::cerr << "Point (" << x << ", " << y
+          << ") found more than once, ignoring.\n";
         }
       }
     }
@@ -189,19 +192,10 @@ main(const int argc, char * argv[])
 
   const Map arr = Tracer::processPath(points.begin(), points.end());
 
-  const LabelsInfo & labelsInfo = loadLabelsInfo(in);
-
   MapOutputterPtr outputter = generateOutputter(in);
-  const std::string filename = spl::io::stemString(in.inputFile) + "_map."
-      + outputter->fileExtension();
-  std::ofstream outFile(filename.c_str());
-  if(outFile.is_open())
-  {
-    outputter->outputArrangement(arr, labelsInfo, &outFile);
-    outFile.close();
-  }
-  else
-    std::cerr << "ERROR: Failed to open " << filename << "\n";
+  applySettings(in, outputter.get());
+
+  outputter->outputArrangement(arr);
 
   return 0;
 }
@@ -218,14 +212,15 @@ processCommandLineArgs(InputOptions & in, const int argc, char * argv[])
     po::options_description general(
         "smap\nUsage: " + exeName + " [options] input_file...\nOptions");
     general.add_options()("help", "Show help message")("input-file",
-        po::value< std::string>(&in.inputFile), "input file")("steps,n",
-        po::value< std::string>(&in.outputter)->default_value("matplotlib"),
-        "The method of outputting the final map.  Possible options: matplotlib")
-        ("labels_info,l", po::value< std::string>(&in.labelsInfoFile),
-            "The file containing information about the labels. \
+        po::value< std::string>(&in.inputFile), "input file")("outputter,f",
+        po::value< std::string>(&in.outputter)->default_value("raw"),
+        "The method of outputting the final map.  Possible options: raw, matplotlib")
+    ("labels_info,l", po::value< std::string>(&in.labelsInfoFile),
+        "The file containing information about the labels. \
             The format should be:\n\t[label], [name], [colour integer]\n. \
-            If not specified smap will look for a file called [input].labels")
-        ;
+            If not specified smap will look for a file called [input].labels")("xlabel,x",
+        po::value< std::string>(&in.xLabel), "The x-axis label")("ylabel,y",
+        po::value< std::string>(&in.yLabel), "The y-axis label");
 
     po::positional_options_description p;
     p.add("input-file", 1);
@@ -262,35 +257,45 @@ generateOutputter(const InputOptions & in)
 {
   MapOutputterPtr out;
 
-  if(in.outputter == "matplotlib")
+  if(in.outputter == "raw")
+    out.reset(new spla::RawMapOutputter<MapTraits>());
+  else if(in.outputter == "matplotlib")
     out.reset(new spla::MatplotlibMapOutputter< MapTraits>());
   else
-    std::cerr << "Error: unrecognised outputter - " << in.outputter
-      << std::endl;
+    std::cerr << "Error: unrecognised outputter - " << in.outputter << std::endl;
 
   return out;
 }
 
-LabelsInfo
-loadLabelsInfo(const InputOptions & in)
+void
+applySettings(const InputOptions & in, Outputter * const outputter)
 {
   typedef spl::utility::TypedAssociativeTable< LabelType, TableRow > LabelsTable;
 
   // If the user hasn't supplied a filename then try the input file + .labels
   const std::string infoFilename = in.labelsInfoFile.empty() ?
-      spl::io::stemString(in.inputFile) + ".labels" : in.labelsInfoFile;
-
-  LabelsInfo info;
+  spl::io::stemString(in.inputFile) + ".labels" : in.labelsInfoFile;
 
   if(fs::exists(infoFilename))
   {
+    std::map< LabelType, int> colourMap;
     const LabelsTable & table = LabelsTable::load(infoFilename, ",");
 
     BOOST_FOREACH(LabelsTable::const_reference entry, table)
-      info[entry.first] = entry.second;
+    {
+      if(entry.second.colour)
+        colourMap[entry.first] = *entry.second.colour;
+    }
+
+    outputter->setColourMap(colourMap);
   }
 
-  return info;
+  outputter->setSeedName(spl::io::stemString(in.inputFile));
+  if(!in.xLabel.empty())
+    outputter->setXLabel(in.xLabel);
+  if(!in.yLabel.empty())
+    outputter->setYLabel(in.yLabel);
+
 }
 
 #endif /* SPL_USE_CGAL */

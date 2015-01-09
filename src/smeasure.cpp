@@ -175,9 +175,9 @@ calcLengths(const StructuresContainer & structures, const InputOptions & in)
       for(int j = i; j < static_cast< int>(structure.getNumAtoms()); ++j)
         pairs.push_back(AtomPair(i, j));
 
-    const ssio::ResourceLocator * const locator = structure.getProperty(
+    const ssio::ResourceLocator & locator = *structure.properties().find(
         ssc::structure_properties::io::LAST_ABS_FILE_PATH);
-    std::cout << locator->path() << "\n";
+    std::cout << locator.path() << "\n";
     if(in.histogramMode)
       doHistogram(structure, pairs, in);
     else

@@ -306,9 +306,9 @@ preprocessStructure(ssc::Structure & structure,
     const ssio::ResourceLocator & loadLocation, const InputOptions & options)
 {
 // Make sure we know where we loaded the file from
-  if(!structure.getProperty(structure_properties::io::LAST_ABS_FILE_PATH))
-    structure.setProperty(structure_properties::io::LAST_ABS_FILE_PATH,
-        ssio::absolute(loadLocation));
+  if(!structure.properties().find(structure_properties::io::LAST_ABS_FILE_PATH))
+    structure.properties()[structure_properties::io::LAST_ABS_FILE_PATH] =
+        ssio::absolute(loadLocation);
 
   if(!options.dontUsePrimitive)
     structure.makePrimitive();
@@ -347,9 +347,8 @@ doPrintGroup(const LoadedGroups::StructuresGroup & group,
     insertResult = structuresSet.insert(structure);
     if(!in.summaryOnly && insertResult.second == printUniques)
     {
-      const ssio::ResourceLocator * locator = structure->getProperty(
-          structure_properties::io::LAST_ABS_FILE_PATH);
-      if(locator)
+      if(const ssio::ResourceLocator * locator = structure->properties().find(
+          structure_properties::io::LAST_ABS_FILE_PATH))
         std::cout << ssio::relative(*locator).string() << std::endl;
       else
         utility::warning() << "Couldn't find save path for structure "

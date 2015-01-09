@@ -86,9 +86,8 @@ template< typename T>
   StructurePropertyToken< T>::doGetValue(const ::spl::common::Structure & structure) const
   {
     StructureValue value;
-    const T * const valuePtr = structure.getProperty(myKey);
 
-    if(valuePtr)
+    if(const T * const valuePtr = structure.properties().find(myKey))
       value.reset(*valuePtr);
 
     return value;

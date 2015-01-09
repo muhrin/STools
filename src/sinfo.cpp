@@ -152,7 +152,7 @@ main(const int argc, char * argv[])
         for(StructuresContainer::iterator it = structures.begin();
             it != structures.end(); /* increment in loop body */)
         {
-          const double * const hullDist = it->getProperty(
+          const double * const hullDist = it->properties().find(
               ssc::structure_properties::general::HULL_DISTANCE);
           if(!hullDist || *hullDist > in.maxHullDist)
             it = structures.erase(it);
@@ -186,7 +186,7 @@ main(const int argc, char * argv[])
     for(StructureIterator it = structures.begin(), end = structures.end();
         it != end; ++it)
     {
-      const double * const enthalpy = it->getProperty(
+      const double * const enthalpy = it->properties().find(
           ssc::structure_properties::general::ENTHALPY);
       if(!enthalpy)
       {
